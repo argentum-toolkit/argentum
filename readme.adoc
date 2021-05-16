@@ -1,0 +1,252 @@
+= User component
+
+.Components diagram
+[plantuml]
+----
+component User as u
+component Authentication as auth
+component Registration as reg
+component Credentials as cred
+auth --> cred
+auth ---> u
+
+cred --> u
+
+----
+
+.Overview
+[plantuml]
+----
+@startuml
+actor User as user
+
+user -> reg: registration
+reg --> user: mail
+|||
+user -> reg: confirmation
+reg --> user: mail
+|||
+user -> login: login
+login --> user: token
+|||
+user -> action: do something
+action --> user: result
+
+@enduml
+----
+
+
+.Registration. Sequence diagram.
+[plantuml]
+----
+@startuml
+actor Guest as guest
+participant "Abstract \n**Registration** \n//<Credential Type>//   " as reg
+participant "**User Component**  " as uc
+participant "Abstract \n**Credential Component**   \n//<Credential Type>//   " as cred
+
+guest -> reg : Name, email, password
+reg -> uc: User parameters
+uc --> reg: User entity
+|||
+reg -> cred: credentials data
+|||
+cred -> uc: Check if user exists
+uc --> cred: bool
+|||
+cred --> reg: Result
+reg --> guest: Result
+
+@enduml
+----
+
+
+Then will be password confirmation
+
+.Login
+[plantuml]
+----
+@startuml
+actor User as user
+
+user -> login: credentials
+login -> cred
+cred --> login: user ID
+|||
+login --> u: get User
+u -> login: User entity
+|||
+login -> session: create session
+session --> login: token
+login --> user: token, user Id
+
+
+@enduml
+----
+
+
+Then will be secured actions
+
+[plantuml]
+----
+@startuml
+actor user
+
+participant Middleware as m
+
+user -> m
+m ->  s: token
+s --> m: userId
+m -> someController: userId + request
+
+
+@enduml
+----
+
+[plantuml]
+----
+
+namespace User {
+
+    namespace Entity {
+        enum UserStatus {
+            notConfirmed
+            active
+            inactive
+        }
+
+        class Anonymous {
+            - //UUID//  **id**
+            - //UUID//  **userId**
+        }
+
+        class User {
+            - //UUID//  **id**
+            - //String//   **firstName**
+            - //String//   **lastName**
+            - //String//   **email**
+            - //UserStatus//   **status**
+
+        }
+
+        Anonymous --* User
+
+        interface CredentialInterface
+    }
+
+    interface LoginHandler {
+        + execute()
+    }
+
+    interface RegistrationHandler {
+        + execute()
+    }
+
+    interface CredentialRepository {
+        + save()
+        + findById(id)
+        + check(  //Entity.CredentialInterface//      ** cred** )
+        + findByProviderId(     //providerId//    id)
+    }
+}
+
+
+
+
+'namespace SocialCredential {
+'
+'    namespace Entity {
+'        enum SocialProvider {
+'            google
+'            facebook
+'            linkedIn
+'        }
+'
+'        class SocialCredential {
+'            - //UUID//  **userId**
+'            - //String//   **socialId**   id in social network
+'            - //SocialProvider//   **provider**
+'        }
+'
+'        SocialCredential --* User.Entity.User
+'        SocialCredential --|> User.Entity.CredentialInterface
+'    }
+'
+'    namespace Service {
+'        class SocialRegistrationHandler {
+'        }
+'
+'        class SocialLoginHandler {
+'        }
+'
+'        SocialRegistrationHandler --|> User.RegistrationHandler
+'        SocialLoginHandler --|> User.LoginHandler
+'    }
+'}
+
+namespace PasswordCredential {
+    namespace Entity {
+        class PasswordCredential {
+            - //UUID//  **userId**
+            - //String//   **password**   encoded password
+            - //String//   **salt**
+        }
+
+        PasswordCredential ---* User.Entity.User
+        PasswordCredential ---|> User.Entity.CredentialInterface
+    }
+
+    namespace Service {
+        class PasswordRegistrationHandler {
+        }
+
+        class PasswordLoginHandler {
+        }
+
+        PasswordRegistrationHandler ---|> User.RegistrationHandler
+        PasswordLoginHandler ---|> User.LoginHandler
+    }
+
+}
+
+
+----
+
+
+[plantuml]
+----
+left to right direction
+actor BusinessMember as bm
+actor ProductCustomer as pc
+
+UseCase UserRegistration as uruc
+UseCase businessReg as "**Business Member creates account**
+
+    With business profile
+"
+
+UseCase pcuc as "**Product Customer  account **
+    With customer profile.
+    Optional
+"
+
+pc --> pcuc
+bm --> businessReg
+businessReg --> uruc
+pcuc --> uruc
+
+----
+
+[plantuml]
+----
+User -> r: registers
+r -> d:hash cred
+----
+
+
+== TODO
+
+* documentation, license
+* build scripts (tests, clippy (cargo clippy), rustfmt (cargo fmt --all -- --check), push artifacts)
+* pre-commit (clippy, rustfmt + autofix)
+* logger
