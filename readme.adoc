@@ -248,5 +248,6 @@ r -> d:hash cred
 
 * documentation, license
 * build scripts (tests, clippy (cargo clippy), rustfmt (cargo fmt --all -- --check), push artifacts)
+* https://crates.io/crates/cargo-release
 * pre-commit (clippy, rustfmt + autofix)
 * logger

@@ -18,7 +18,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_standard_business"
-version = "0.1.0"
+version = "0.1.0-dev"
 dependencies = [
  "regex",
  "thiserror",
