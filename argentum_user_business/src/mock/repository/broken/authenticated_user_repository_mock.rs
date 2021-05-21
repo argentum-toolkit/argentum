@@ -20,16 +20,18 @@ impl<'a> AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
     }
 }
 
+impl<'a> Default for AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
     fn find(&self, id: &Box<dyn IdTrait>) -> Option<AuthenticatedUser> {
-        match self.users.borrow().get(id) {
-            None => None,
-            Some(u) => Some(AuthenticatedUser::new(
-                &u.id().clone(),
-                u.name.clone(),
-                u.email.clone(),
-            )),
-        }
+        self.users
+            .borrow()
+            .get(id)
+            .map(|u| AuthenticatedUser::new(&u.id().clone(), u.name.clone(), u.email.clone()))
     }
 
     fn find_by_email(&self, email: &EmailAddress) -> Option<AuthenticatedUser> {

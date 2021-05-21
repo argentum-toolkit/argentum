@@ -22,15 +22,18 @@ impl<'a> AnonymousBindingRepositoryMock<'a> {
     }
 }
 
+impl<'a> Default for AnonymousBindingRepositoryMock<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock<'a> {
     fn find_by_user_id(&self, user_id: &Box<dyn IdTrait>) -> Option<AnonymousBinding> {
-        match self.sessions.borrow().get(user_id) {
-            None => None,
-            Some(b) => Some(AnonymousBinding::new(
-                b.user_id.clone(),
-                b.anonymous_id.clone(),
-            )),
-        }
+        self.sessions
+            .borrow()
+            .get(user_id)
+            .map(|b| AnonymousBinding::new(b.user_id.clone(), b.anonymous_id.clone()))
     }
 
     fn save(&self, binding: &AnonymousBinding) -> Result<(), AnonymousBindingRepositoryError> {

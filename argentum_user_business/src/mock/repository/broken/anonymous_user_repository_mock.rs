@@ -19,15 +19,18 @@ impl<'a> AnonymousRepositoryMockWithBrokenSave<'a> {
     }
 }
 
+impl<'a> Default for AnonymousRepositoryMockWithBrokenSave<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> AnonymousUserRepositoryTrait for AnonymousRepositoryMockWithBrokenSave<'a> {
     fn find(&self, id: &Box<dyn IdTrait>) -> Option<AnonymousUser> {
-        match self.users.borrow().get(id) {
-            None => None,
-            Some(u) => Some(AnonymousUser {
-                id: u.id.clone(),
-                created_at: u.created_at,
-            }),
-        }
+        self.users.borrow().get(id).map(|u| AnonymousUser {
+            id: u.id.clone(),
+            created_at: u.created_at,
+        })
     }
 
     fn save(&self, _user: &AnonymousUser) -> Result<(), SavingUserError> {

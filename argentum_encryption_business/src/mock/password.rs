@@ -11,6 +11,12 @@ impl EncryptorMock {
     }
 }
 
+impl Default for EncryptorMock {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Encryptor for EncryptorMock {
     fn encrypt(&self, password: &str) -> Result<(String, String), EncryptionError> {
         let salt = String::from(SALT);
@@ -23,6 +29,12 @@ impl Encryptor for EncryptorMock {
 impl ValidatorMock {
     pub fn new() -> ValidatorMock {
         ValidatorMock {}
+    }
+}
+
+impl Default for ValidatorMock {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
