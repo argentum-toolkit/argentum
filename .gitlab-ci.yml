@@ -1,0 +1,23 @@
+image: docker/compose:latest
+
+services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+
+variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    # See https://github.com/docker-library/docker/pull/166
+    DOCKER_TLS_CERTDIR: ""
+
+before_script:
+    - docker info
+    - docker-compose --version
+    - docker-compose build
+
+
+build:
+    stage: build
+    script:
+        - docker-compose run builder devops/scripts/check.sh
