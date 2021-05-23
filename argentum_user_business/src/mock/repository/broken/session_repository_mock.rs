@@ -20,16 +20,18 @@ impl<'a> SessionRepositoryMockWithBrokenSave<'a> {
     }
 }
 
+impl<'a> Default for SessionRepositoryMockWithBrokenSave<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave<'a> {
     fn find(&self, id: &Box<dyn IdTrait>) -> Option<Session> {
-        match self.sessions.borrow().get(id) {
-            None => None,
-            Some(s) => Some(Session::new(
-                s.id.clone(),
-                s.user_id.clone(),
-                s.token.clone(),
-            )),
-        }
+        self.sessions
+            .borrow()
+            .get(id)
+            .map(|s| Session::new(s.id.clone(), s.user_id.clone(), s.token.clone()))
     }
 
     fn find_by_token(&self, token: String) -> Option<Session> {

@@ -12,6 +12,12 @@ impl Pbkdf2 {
     }
 }
 
+impl Default for Pbkdf2 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 const CREDENTIAL_LEN: usize = digest::SHA512_OUTPUT_LEN;
 
 impl Encryptor for Pbkdf2 {
