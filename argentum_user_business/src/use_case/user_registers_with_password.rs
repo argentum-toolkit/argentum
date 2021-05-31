@@ -1,6 +1,6 @@
 use argentum_encryption_business::password::{EncryptionError, Encryptor};
 use argentum_standard_business::data_type::email::EmailAddress;
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 
 use crate::entity::credential::PasswordCredential;
 use crate::entity::user::AuthenticatedUser;
@@ -8,20 +8,19 @@ use crate::repository::password_credential_writer::PasswordCredentialWriterTrait
 use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
 use crate::value_object::name::Name;
 
-pub struct UserRegistersWithPasswordUc<'a> {
-    user_repository: &'a dyn AuthenticatedUserRepositoryTrait,
-    credential_writer: &'a dyn PasswordCredentialWriterTrait<'a>,
-    // encryptor: &'a dyn Encryptor<'a>
-    encryptor: &'a dyn Encryptor,
+pub struct UserRegistersWithPasswordUc<'s> {
+    user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
+    credential_writer: &'s dyn PasswordCredentialWriterTrait<'s>,
+    // encryptor: &'s dyn Encryptor<'s>
+    encryptor: &'s dyn Encryptor,
 }
 
-impl<'a> UserRegistersWithPasswordUc<'a> {
+impl<'s> UserRegistersWithPasswordUc<'s> {
     pub fn new(
-        user_repository: &'a dyn AuthenticatedUserRepositoryTrait,
-        credential_writer: &'a dyn PasswordCredentialWriterTrait<'a>,
-        // encryptor: &'a dyn Encryptor<'a>
-        encryptor: &'a dyn Encryptor,
-    ) -> UserRegistersWithPasswordUc<'a> {
+        user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
+        credential_writer: &'s dyn PasswordCredentialWriterTrait<'s>,
+        encryptor: &'s dyn Encryptor,
+    ) -> UserRegistersWithPasswordUc<'s> {
         UserRegistersWithPasswordUc {
             user_repository,
             credential_writer,
@@ -31,7 +30,7 @@ impl<'a> UserRegistersWithPasswordUc<'a> {
 
     pub fn execute(
         &self,
-        id: Box<dyn IdTrait>,
+        id: Id,
         name: Name,
         email: EmailAddress,
         password: String,
@@ -69,6 +68,7 @@ pub enum RegistrationError {
 
 #[cfg(test)]
 mod test {
+    use crate::mock::id_factory::IdFactoryMock;
     use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::broken::authenticated_user_repository_mock::AuthenticatedUserRepositoryMockWihBrokenSave;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
@@ -79,7 +79,7 @@ mod test {
     use crate::value_object::name::Name;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_standard_business::data_type::email::EmailAddress;
-    use argentum_standard_business::data_type::id::{IdTrait, IntId};
+    use argentum_standard_business::data_type::id::{Id, IdFactory};
 
     #[test]
     fn test_user_registers_with_password() -> Result<(), &'static str> {
@@ -92,8 +92,9 @@ mod test {
             &credential_writer,
             &encryptor,
         );
+        let id_factory = IdFactoryMock::new();
 
-        let id: Box<dyn IdTrait> = Box::new(IntId::new(1));
+        let id: Id = id_factory.create();
         let name = Name::new(String::from("John"), String::from("Cooper")).unwrap();
         let email = EmailAddress::new(String::from("demo@test.com")).unwrap();
         let password = String::from("123");
@@ -123,7 +124,9 @@ mod test {
             &encryptor,
         );
 
-        let id: Box<dyn IdTrait> = Box::new(IntId::new(1));
+        let id_factory = IdFactoryMock::new();
+
+        let id: Id = id_factory.create();
         let name = Name::new(String::from("John"), String::from("Cooper")).unwrap();
         let email = EmailAddress::new(String::from("demo@test.com")).unwrap();
         let password = String::from("123");

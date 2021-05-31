@@ -9,24 +9,24 @@ use crate::token::GeneratorTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
 
-pub struct UserLoginsWithPasswordUc<'a> {
-    user_repository: &'a dyn AuthenticatedUserRepositoryTrait,
-    anonymous_binding_repository: &'a dyn AnonymousBindingRepositoryTrait,
-    session_repository: &'a dyn SessionRepositoryTrait,
-    credential_checker: &'a PasswordCredentialChecker<'a>,
-    id_factory: &'a dyn IdFactory,
-    token_generator: &'a dyn GeneratorTrait,
+pub struct UserLoginsWithPasswordUc<'s> {
+    user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
+    anonymous_binding_repository: &'s dyn AnonymousBindingRepositoryTrait,
+    session_repository: &'s dyn SessionRepositoryTrait,
+    credential_checker: &'s PasswordCredentialChecker<'s>,
+    id_factory: &'s dyn IdFactory,
+    token_generator: &'s dyn GeneratorTrait,
 }
 
-impl<'a> UserLoginsWithPasswordUc<'a> {
+impl<'s> UserLoginsWithPasswordUc<'s> {
     pub fn new(
-        user_repository: &'a dyn AuthenticatedUserRepositoryTrait,
-        anonymous_binding_repository: &'a dyn AnonymousBindingRepositoryTrait,
-        session_repository: &'a dyn SessionRepositoryTrait,
-        credential_checker: &'a PasswordCredentialChecker<'a>,
-        id_factory: &'a dyn IdFactory,
-        token_generator: &'a dyn GeneratorTrait,
-    ) -> UserLoginsWithPasswordUc<'a> {
+        user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
+        anonymous_binding_repository: &'s dyn AnonymousBindingRepositoryTrait,
+        session_repository: &'s dyn SessionRepositoryTrait,
+        credential_checker: &'s PasswordCredentialChecker<'s>,
+        id_factory: &'s dyn IdFactory,
+        token_generator: &'s dyn GeneratorTrait,
+    ) -> UserLoginsWithPasswordUc<'s> {
         UserLoginsWithPasswordUc {
             user_repository,
             anonymous_binding_repository,
@@ -126,7 +126,7 @@ mod test {
     use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
     use argentum_encryption_business::password::Encryptor;
     use argentum_standard_business::data_type::email::EmailAddress;
-    use argentum_standard_business::data_type::id::{IdTrait, IntId};
+    use argentum_standard_business::data_type::id::{Id, IdFactory};
 
     #[test]
     fn test_user_logins_with_passwodr() -> Result<(), &'static str> {
@@ -150,7 +150,9 @@ mod test {
             &token_generator,
         );
 
-        let user_id: Box<dyn IdTrait> = Box::new(IntId::new(1));
+        let id_factory = IdFactoryMock::new();
+
+        let user_id: Id = id_factory.create();
         let name = Name::new(String::from("Some"), String::from("Name")).unwrap();
         let email = EmailAddress::new(String::from("test@test-mail.com")).unwrap();
         let password = String::from("12345");
@@ -162,7 +164,7 @@ mod test {
         user_repository.save(&user).expect("Can't save a user");
         credential_writer.write(Box::new(cred));
 
-        let anonymous_id: Box<dyn IdTrait> = Box::new(IntId::new(2));
+        let anonymous_id: Id = id_factory.create();
         let anonymous = AnonymousUser::new(&anonymous_id);
 
         let result = uc.execute(anonymous, email, password);

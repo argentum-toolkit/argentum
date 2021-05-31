@@ -1,4 +1,4 @@
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 use std::any::Any;
 
 pub trait Credential {
@@ -6,7 +6,7 @@ pub trait Credential {
 }
 
 pub struct PasswordCredential {
-    pub user_id: Box<dyn IdTrait>,
+    pub user_id: Id,
     pub password: String,
     pub salt: String,
 }
@@ -28,7 +28,7 @@ impl Clone for PasswordCredential {
 }
 
 impl PasswordCredential {
-    pub fn new(user_id: Box<dyn IdTrait>, password: String, salt: String) -> Self {
+    pub fn new(user_id: Id, password: String, salt: String) -> Self {
         PasswordCredential {
             user_id,
             password,

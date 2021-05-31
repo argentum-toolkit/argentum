@@ -1,4 +1,6 @@
-use argentum_standard_business::data_type::id::{IdFactory, IdTrait, IntId};
+use argentum_standard_business::data_type::id::{Id, IdFactory, IntId};
+
+use rand::Rng;
 
 pub struct IdFactoryMock {}
 
@@ -15,7 +17,10 @@ impl Default for IdFactoryMock {
 }
 
 impl IdFactory for IdFactoryMock {
-    fn create(&self) -> Box<dyn IdTrait> {
-        Box::new(IntId::new(123))
+    fn create(&self) -> Id {
+        let mut rng = rand::thread_rng();
+        let id = rng.gen_range(1..u64::MAX);
+
+        Box::new(IntId::new(id))
     }
 }

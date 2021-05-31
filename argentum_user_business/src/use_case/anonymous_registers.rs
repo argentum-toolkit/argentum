@@ -3,22 +3,22 @@ use crate::entity::user::{AnonymousUser, UserTrait};
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use crate::repository::user_repository::{AnonymousUserRepositoryTrait, SavingUserError};
 use crate::token::GeneratorTrait;
-use argentum_standard_business::data_type::id::{IdFactory, IdTrait};
+use argentum_standard_business::data_type::id::{Id, IdFactory};
 
-pub struct AnonymousRegistersUc<'a> {
-    id_factory: &'a dyn IdFactory,
-    user_repository: &'a dyn AnonymousUserRepositoryTrait,
-    session_repository: &'a dyn SessionRepositoryTrait,
-    token_generator: &'a dyn GeneratorTrait,
+pub struct AnonymousRegistersUc<'s> {
+    id_factory: &'s dyn IdFactory,
+    user_repository: &'s dyn AnonymousUserRepositoryTrait,
+    session_repository: &'s dyn SessionRepositoryTrait,
+    token_generator: &'s dyn GeneratorTrait,
 }
 
-impl<'a> AnonymousRegistersUc<'a> {
+impl<'s> AnonymousRegistersUc<'s> {
     pub fn new(
-        id_factory: &'a dyn IdFactory,
-        user_repository: &'a dyn AnonymousUserRepositoryTrait,
-        session_repository: &'a dyn SessionRepositoryTrait,
-        token_generator: &'a dyn GeneratorTrait,
-    ) -> AnonymousRegistersUc<'a> {
+        id_factory: &'s dyn IdFactory,
+        user_repository: &'s dyn AnonymousUserRepositoryTrait,
+        session_repository: &'s dyn SessionRepositoryTrait,
+        token_generator: &'s dyn GeneratorTrait,
+    ) -> AnonymousRegistersUc<'s> {
         AnonymousRegistersUc {
             id_factory,
             user_repository,
@@ -27,10 +27,7 @@ impl<'a> AnonymousRegistersUc<'a> {
         }
     }
 
-    pub fn execute(
-        &self,
-        id: &Box<dyn IdTrait>,
-    ) -> Result<(AnonymousUser, Session), AnonymousRegistrationError> {
+    pub fn execute(&self, id: &Id) -> Result<(AnonymousUser, Session), AnonymousRegistrationError> {
         let user = {
             let user = AnonymousUser::new(&id);
 
@@ -73,7 +70,7 @@ mod tests {
     use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
     use crate::use_case::anonymous_registers::{AnonymousRegistersUc, AnonymousRegistrationError};
-    use argentum_standard_business::data_type::id::{IdTrait, IntId};
+    use argentum_standard_business::data_type::id::{Id, IdFactory};
 
     #[test]
     fn anonymous_registers() -> Result<(), &'static str> {
@@ -89,8 +86,7 @@ mod tests {
             &token_generator,
         );
 
-        let anon_id: Box<dyn IdTrait> = Box::new(IntId::new(234));
-
+        let anon_id: Id = id_factory.create();
         let result = uc.execute(&anon_id);
 
         match result {
@@ -120,8 +116,7 @@ mod tests {
             &token_generator,
         );
 
-        let anon_id: Box<dyn IdTrait> = Box::new(IntId::new(234));
-
+        let anon_id: Id = id_factory.create();
         let result = uc.execute(&anon_id);
 
         match result {
@@ -146,8 +141,7 @@ mod tests {
             &token_generator,
         );
 
-        let anon_id: Box<dyn IdTrait> = Box::new(IntId::new(234));
-
+        let anon_id: Id = id_factory.create();
         let result = uc.execute(&anon_id);
 
         match result {

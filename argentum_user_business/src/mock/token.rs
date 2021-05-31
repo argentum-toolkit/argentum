@@ -1,5 +1,5 @@
 use crate::token::GeneratorTrait;
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 
 pub struct TokenGeneratorMock {}
 
@@ -11,7 +11,7 @@ impl TokenGeneratorMock {
 }
 
 impl GeneratorTrait for TokenGeneratorMock {
-    fn generate(&self, _user_id: &Box<dyn IdTrait>) -> String {
+    fn generate(&self, _user_id: &Id) -> String {
         String::from("Test token")
     }
 }

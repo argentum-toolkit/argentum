@@ -1,33 +1,30 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::marker::PhantomData;
 
 use crate::entity::session::Session;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 
-pub struct SessionRepositoryMock<'a> {
-    sessions: RefCell<HashMap<Box<dyn IdTrait>, Session>>,
-    phantom: PhantomData<&'a ()>,
+pub struct SessionRepositoryMock {
+    sessions: RefCell<HashMap<Id, Session>>,
 }
 
-impl<'a> SessionRepositoryMock<'a> {
-    pub fn new() -> SessionRepositoryMock<'a> {
+impl SessionRepositoryMock {
+    pub fn new() -> SessionRepositoryMock {
         SessionRepositoryMock {
             sessions: RefCell::new(HashMap::new()),
-            phantom: Default::default(),
         }
     }
 }
 
-impl<'a> Default for SessionRepositoryMock<'a> {
+impl Default for SessionRepositoryMock {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'a> SessionRepositoryTrait for SessionRepositoryMock<'a> {
-    fn find(&self, id: &Box<dyn IdTrait>) -> Option<Session> {
+impl SessionRepositoryTrait for SessionRepositoryMock {
+    fn find(&self, id: &Id) -> Option<Session> {
         self.sessions
             .borrow()
             .get(id)
@@ -68,10 +65,7 @@ impl<'a> SessionRepositoryTrait for SessionRepositoryMock<'a> {
         }
     }
 
-    fn delete_users_sessions(
-        &self,
-        user_id: &Box<dyn IdTrait>,
-    ) -> Result<(), SessionRepositoryError> {
+    fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
         for (k, s) in self.sessions.borrow().iter() {
             if &s.user_id == user_id {
                 self.sessions.borrow_mut().remove(k);

@@ -7,22 +7,22 @@ use argentum_user_business::use_case::user_logins_with_password::UserLoginsWithP
 use argentum_user_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
 use argentum_user_business::value_object::name::Name;
 
-pub struct App<'a> {
-    id_factory: &'a dyn IdFactory,
-    anonymous_registers_uc: &'a AnonymousRegistersUc<'a>,
-    user_logins_with_pw: &'a UserLoginsWithPasswordUc<'a>,
-    user_registers_with_pw: &'a UserRegistersWithPasswordUc<'a>,
-    user_authenticates_with_token: &'a UserAuthenticatesWithTokenUc<'a>,
+pub struct App<'s> {
+    id_factory: &'s dyn IdFactory,
+    anonymous_registers_uc: &'s AnonymousRegistersUc<'s>,
+    user_logins_with_pw: &'s UserLoginsWithPasswordUc<'s>,
+    user_registers_with_pw: &'s UserRegistersWithPasswordUc<'s>,
+    user_authenticates_with_token: &'s UserAuthenticatesWithTokenUc<'s>,
 }
 
-impl<'a> App<'a> {
+impl<'s> App<'s> {
     pub fn new(
-        id_factory: &'a dyn IdFactory,
-        anonymous_registers_uc: &'a AnonymousRegistersUc<'a>,
-        user_logins_with_pw: &'a UserLoginsWithPasswordUc<'a>,
-        user_registers_with_pw: &'a UserRegistersWithPasswordUc<'a>,
-        user_authenticates_with_token: &'a UserAuthenticatesWithTokenUc<'a>,
-    ) -> App<'a> {
+        id_factory: &'s dyn IdFactory,
+        anonymous_registers_uc: &'s AnonymousRegistersUc<'s>,
+        user_logins_with_pw: &'s UserLoginsWithPasswordUc<'s>,
+        user_registers_with_pw: &'s UserRegistersWithPasswordUc<'s>,
+        user_authenticates_with_token: &'s UserAuthenticatesWithTokenUc<'s>,
+    ) -> App<'s> {
         App {
             id_factory,
             anonymous_registers_uc,

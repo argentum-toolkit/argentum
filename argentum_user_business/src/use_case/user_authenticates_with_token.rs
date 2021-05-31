@@ -5,18 +5,18 @@ use crate::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
 
-pub struct UserAuthenticatesWithTokenUc<'a> {
-    user_repository: &'a dyn AuthenticatedUserRepositoryTrait,
-    anon_repository: &'a dyn AnonymousUserRepositoryTrait,
-    session_repository: &'a dyn SessionRepositoryTrait,
+pub struct UserAuthenticatesWithTokenUc<'s> {
+    user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
+    anon_repository: &'s dyn AnonymousUserRepositoryTrait,
+    session_repository: &'s dyn SessionRepositoryTrait,
 }
 
-impl<'a> UserAuthenticatesWithTokenUc<'a> {
+impl<'s> UserAuthenticatesWithTokenUc<'s> {
     pub fn new(
-        user_repository: &'a dyn AuthenticatedUserRepositoryTrait,
-        anon_repository: &'a dyn AnonymousUserRepositoryTrait,
-        session_repository: &'a dyn SessionRepositoryTrait,
-    ) -> UserAuthenticatesWithTokenUc<'a> {
+        user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
+        anon_repository: &'s dyn AnonymousUserRepositoryTrait,
+        session_repository: &'s dyn SessionRepositoryTrait,
+    ) -> UserAuthenticatesWithTokenUc<'s> {
         UserAuthenticatesWithTokenUc {
             user_repository,
             anon_repository,
@@ -56,11 +56,12 @@ pub enum AuthenticationError {
 #[cfg(test)]
 mod tests {
     use argentum_standard_business::data_type::email::EmailAddress;
-    use argentum_standard_business::data_type::id::{IdTrait, IntId};
+    use argentum_standard_business::data_type::id::{Id, IdFactory};
 
     use crate::entity::session::Session;
     use crate::entity::user::AuthenticatedUser;
     use crate::entity::user::User::{Anonymous, Authenticated};
+    use crate::mock::id_factory::IdFactoryMock;
     use crate::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
     use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
@@ -75,10 +76,11 @@ mod tests {
         let anonymous_user_repository = AnonymousUserRepositoryMock::new();
         let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
         let session_repository = SessionRepositoryMock::new();
+        let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Box<dyn IdTrait> = Box::new(IntId::new(1));
-        let session_id = Box::new(IntId::new(2));
+        let user_id: Id = id_factory.create();
+        let session_id = id_factory.create();
         let token = String::from("test-token");
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
@@ -127,10 +129,11 @@ mod tests {
         let anonymous_user_repository = AnonymousUserRepositoryMock::new();
         let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
         let session_repository = SessionRepositoryMock::new();
+        let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Box<dyn IdTrait> = Box::new(IntId::new(1));
-        let session_id = Box::new(IntId::new(2));
+        let user_id: Id = id_factory.create();
+        let session_id = id_factory.create();
         let token = String::from("test-token");
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
@@ -175,10 +178,11 @@ mod tests {
         let anonymous_user_repository = AnonymousUserRepositoryMock::new();
         let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
         let session_repository = SessionRepositoryMock::new();
+        let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Box<dyn IdTrait> = Box::new(IntId::new(1));
-        let session_id = Box::new(IntId::new(2));
+        let user_id: Id = id_factory.create();
+        let session_id = id_factory.create();
         let token = String::from("test-token");
         let session = Session::new(session_id, user_id.clone(), token.clone());
 

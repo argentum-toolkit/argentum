@@ -1,4 +1,4 @@
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::token::GeneratorTrait;
 use rand::Rng;
 
@@ -12,7 +12,7 @@ impl StringTokenGenerator {
 }
 
 impl GeneratorTrait for StringTokenGenerator {
-    fn generate(&self, _user_id: &Box<dyn IdTrait>) -> String {
+    fn generate(&self, _user_id: &Id) -> String {
         const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                                 abcdefghijklmnopqrstuvwxyz\
                                 0123456789-_";

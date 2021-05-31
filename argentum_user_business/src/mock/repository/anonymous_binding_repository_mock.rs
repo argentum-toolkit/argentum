@@ -1,35 +1,32 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::marker::PhantomData;
 
 use crate::entity::anonymous_binding::AnonymousBinding;
 use crate::repository::anonymous_binding_repository::{
     AnonymousBindingRepositoryError, AnonymousBindingRepositoryTrait,
 };
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 
-pub struct AnonymousBindingRepositoryMock<'a> {
-    sessions: RefCell<HashMap<Box<dyn IdTrait>, AnonymousBinding>>,
-    phantom: PhantomData<&'a ()>,
+pub struct AnonymousBindingRepositoryMock {
+    sessions: RefCell<HashMap<Id, AnonymousBinding>>,
 }
 
-impl<'a> AnonymousBindingRepositoryMock<'a> {
-    pub fn new() -> AnonymousBindingRepositoryMock<'a> {
+impl AnonymousBindingRepositoryMock {
+    pub fn new() -> AnonymousBindingRepositoryMock {
         AnonymousBindingRepositoryMock {
             sessions: RefCell::new(HashMap::new()),
-            phantom: Default::default(),
         }
     }
 }
 
-impl<'a> Default for AnonymousBindingRepositoryMock<'a> {
+impl Default for AnonymousBindingRepositoryMock {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'a> AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock<'a> {
-    fn find_by_user_id(&self, user_id: &Box<dyn IdTrait>) -> Option<AnonymousBinding> {
+impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
+    fn find_by_user_id(&self, user_id: &Id) -> Option<AnonymousBinding> {
         self.sessions
             .borrow()
             .get(user_id)

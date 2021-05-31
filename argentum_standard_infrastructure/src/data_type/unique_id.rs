@@ -1,4 +1,4 @@
-use argentum_standard_business::data_type::id::{IdFactory, IdTrait, Printable};
+use argentum_standard_business::data_type::id::{Id, IdFactory, IdTrait, Printable};
 use std::any::Any;
 use uuid::Uuid;
 
@@ -16,7 +16,7 @@ impl IdTrait for UniqueId {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn id_clone(&self) -> Box<dyn IdTrait> {
+    fn id_clone(&self) -> Id {
         Box::new(UniqueId::new(self.value))
     }
 }
@@ -49,12 +49,12 @@ impl Default for UniqueIdFactory {
 }
 
 impl IdFactory for UniqueIdFactory {
-    fn create(&self) -> Box<dyn IdTrait> {
+    fn create(&self) -> Id {
         Box::new(UniqueId::new(Uuid::new_v4()))
     }
 }
 
-pub fn new_unique_id() -> Box<dyn IdTrait> {
+pub fn new_unique_id() -> Id {
     Box::new(UniqueId::new(Uuid::new_v4()))
 }
 

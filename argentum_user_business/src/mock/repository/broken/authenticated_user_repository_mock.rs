@@ -1,33 +1,30 @@
 use crate::entity::user::{AuthenticatedUser, UserTrait};
 use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
 use argentum_standard_business::data_type::email::EmailAddress;
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::marker::PhantomData;
 
-pub struct AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
-    users: RefCell<HashMap<Box<dyn IdTrait>, AuthenticatedUser>>,
-    phantom: PhantomData<&'a ()>,
+pub struct AuthenticatedUserRepositoryMockWihBrokenSave {
+    users: RefCell<HashMap<Id, AuthenticatedUser>>,
 }
 
-impl<'a> AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
-    pub fn new() -> AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
+impl AuthenticatedUserRepositoryMockWihBrokenSave {
+    pub fn new() -> AuthenticatedUserRepositoryMockWihBrokenSave {
         AuthenticatedUserRepositoryMockWihBrokenSave {
             users: RefCell::new(HashMap::new()),
-            phantom: Default::default(),
         }
     }
 }
 
-impl<'a> Default for AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
+impl Default for AuthenticatedUserRepositoryMockWihBrokenSave {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'a> AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrokenSave<'a> {
-    fn find(&self, id: &Box<dyn IdTrait>) -> Option<AuthenticatedUser> {
+impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrokenSave {
+    fn find(&self, id: &Id) -> Option<AuthenticatedUser> {
         self.users
             .borrow()
             .get(id)
