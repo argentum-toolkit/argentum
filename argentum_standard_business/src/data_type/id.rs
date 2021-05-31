@@ -10,31 +10,33 @@ pub trait IdTrait: Any + Printable {
     //Convert to Any for comparison
     fn as_any(&self) -> &dyn Any;
 
-    fn id_clone(&self) -> Box<dyn IdTrait>;
+    fn id_clone(&self) -> Id;
 }
 
-impl PartialEq for Box<dyn IdTrait> {
-    fn eq(&self, other: &Box<dyn IdTrait>) -> bool {
+pub type Id = Box<dyn IdTrait>;
+
+impl PartialEq for dyn IdTrait {
+    fn eq(&self, other: &dyn IdTrait) -> bool {
         self.id_eq(other.as_any())
     }
 }
 
-impl Eq for Box<dyn IdTrait> {}
+impl Eq for dyn IdTrait {}
 
-impl Hash for Box<dyn IdTrait> {
+impl Hash for dyn IdTrait {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.to_string().hash(state)
     }
 }
 
-impl Clone for Box<dyn IdTrait> {
-    fn clone(&self) -> Box<dyn IdTrait> {
+impl Clone for Id {
+    fn clone(&self) -> Id {
         self.id_clone()
     }
 }
 
 pub trait IdFactory {
-    fn create(&self) -> Box<dyn IdTrait>;
+    fn create(&self) -> Id;
 }
 
 pub struct IntId {
@@ -50,7 +52,7 @@ impl IdTrait for IntId {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn id_clone(&self) -> Box<dyn IdTrait> {
+    fn id_clone(&self) -> Id {
         Box::new(IntId::new(self.value))
     }
 }

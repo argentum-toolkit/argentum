@@ -1,32 +1,29 @@
 use crate::entity::user::{AnonymousUser, UserTrait};
 use crate::repository::user_repository::{AnonymousUserRepositoryTrait, SavingUserError};
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::marker::PhantomData;
 
-pub struct AnonymousUserRepositoryMock<'a> {
-    users: RefCell<HashMap<Box<dyn IdTrait>, AnonymousUser>>,
-    phantom: PhantomData<&'a ()>,
+pub struct AnonymousUserRepositoryMock {
+    users: RefCell<HashMap<Id, AnonymousUser>>,
 }
 
-impl<'a> AnonymousUserRepositoryMock<'a> {
-    pub fn new() -> AnonymousUserRepositoryMock<'a> {
+impl AnonymousUserRepositoryMock {
+    pub fn new() -> AnonymousUserRepositoryMock {
         AnonymousUserRepositoryMock {
             users: RefCell::new(HashMap::new()),
-            phantom: Default::default(),
         }
     }
 }
 
-impl<'a> Default for AnonymousUserRepositoryMock<'a> {
+impl Default for AnonymousUserRepositoryMock {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'a> AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock<'a> {
-    fn find(&self, id: &Box<dyn IdTrait>) -> Option<AnonymousUser> {
+impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
+    fn find(&self, id: &Id) -> Option<AnonymousUser> {
         self.users.borrow().get(id).map(|u| AnonymousUser {
             id: u.id.clone(),
             created_at: u.created_at,

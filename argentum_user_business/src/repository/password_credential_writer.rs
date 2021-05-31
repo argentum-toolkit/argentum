@@ -2,11 +2,11 @@ use crate::entity::credential::{Credential, PasswordCredential};
 use crate::repository::credential_writer::CredentialWriterTrait;
 use crate::repository::password_credential_repository::PasswordCredentialRepository;
 
-pub trait PasswordCredentialWriterTrait<'a>: CredentialWriterTrait {
+pub trait PasswordCredentialWriterTrait<'s>: CredentialWriterTrait {
     fn write_password_credentials(&self, cred: &PasswordCredential);
 }
 
-impl<'a, T: PasswordCredentialWriterTrait<'a>> CredentialWriterTrait for T {
+impl<'s, T: PasswordCredentialWriterTrait<'s>> CredentialWriterTrait for T {
     fn write(&self, cred: Box<dyn Credential>) {
         let pass_cred = match cred.as_any().downcast_ref::<PasswordCredential>() {
             Some(b) => b,
@@ -17,17 +17,17 @@ impl<'a, T: PasswordCredentialWriterTrait<'a>> CredentialWriterTrait for T {
     }
 }
 
-pub struct PasswordCredentialWriter<'a> {
-    repository: &'a dyn PasswordCredentialRepository<'a>,
+pub struct PasswordCredentialWriter<'s> {
+    repository: &'s dyn PasswordCredentialRepository,
 }
 
-impl<'a> PasswordCredentialWriter<'a> {
-    pub fn new(repository: &'a dyn PasswordCredentialRepository<'a>) -> Self {
+impl<'s> PasswordCredentialWriter<'s> {
+    pub fn new(repository: &'s dyn PasswordCredentialRepository) -> Self {
         PasswordCredentialWriter { repository }
     }
 }
 
-impl<'a> PasswordCredentialWriterTrait<'a> for PasswordCredentialWriter<'a> {
+impl<'s> PasswordCredentialWriterTrait<'s> for PasswordCredentialWriter<'s> {
     fn write_password_credentials(&self, cred: &PasswordCredential) {
         self.repository.save(cred);
     }

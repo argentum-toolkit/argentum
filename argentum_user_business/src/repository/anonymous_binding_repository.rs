@@ -1,8 +1,8 @@
 use crate::entity::anonymous_binding::AnonymousBinding;
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 
 pub trait AnonymousBindingRepositoryTrait {
-    fn find_by_user_id(&self, id: &Box<dyn IdTrait>) -> Option<AnonymousBinding>;
+    fn find_by_user_id(&self, id: &Id) -> Option<AnonymousBinding>;
     fn save(&self, binding: &AnonymousBinding) -> Result<(), AnonymousBindingRepositoryError>;
 }
 

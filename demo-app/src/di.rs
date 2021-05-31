@@ -39,15 +39,11 @@ pub fn init() -> Result<(), String> {
     let user_registers_uc = UserRegistersWithPasswordUc::new(
         &authenticated_user_repository,
         &password_credential_writer,
-        // Box::new(pbkdf2_password),
         &pbkdf2_password,
     );
 
-    let password_credential_checker = PasswordCredentialChecker::new(
-        &password_credential_repository,
-        // Box::new(pbkdf2_password),
-        &pbkdf2_password,
-    );
+    let password_credential_checker =
+        PasswordCredentialChecker::new(&password_credential_repository, &pbkdf2_password);
 
     let anonymous_binding_repository = AnonymousBindingRepositoryMock::new();
     let user_logins_with_password_uc = UserLoginsWithPasswordUc::new(

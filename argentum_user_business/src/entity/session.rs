@@ -1,14 +1,14 @@
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 
 pub struct Session {
-    pub id: Box<dyn IdTrait>,
-    pub user_id: Box<dyn IdTrait>,
+    pub id: Id,
+    pub user_id: Id,
     pub token: String,
     //device_information???
 }
 
 impl Session {
-    pub fn new(id: Box<dyn IdTrait>, user_id: Box<dyn IdTrait>, token: String) -> Self {
+    pub fn new(id: Id, user_id: Id, token: String) -> Self {
         Session { id, user_id, token }
     }
 }

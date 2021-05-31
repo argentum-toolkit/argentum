@@ -1,33 +1,30 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::marker::PhantomData;
 
 use crate::entity::session::Session;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
-use argentum_standard_business::data_type::id::IdTrait;
+use argentum_standard_business::data_type::id::Id;
 
-pub struct SessionRepositoryMockWithBrokenSave<'a> {
-    sessions: RefCell<HashMap<Box<dyn IdTrait>, Session>>,
-    phantom: PhantomData<&'a ()>,
+pub struct SessionRepositoryMockWithBrokenSave {
+    sessions: RefCell<HashMap<Id, Session>>,
 }
 
-impl<'a> SessionRepositoryMockWithBrokenSave<'a> {
-    pub fn new() -> SessionRepositoryMockWithBrokenSave<'a> {
+impl SessionRepositoryMockWithBrokenSave {
+    pub fn new() -> SessionRepositoryMockWithBrokenSave {
         SessionRepositoryMockWithBrokenSave {
             sessions: RefCell::new(HashMap::new()),
-            phantom: Default::default(),
         }
     }
 }
 
-impl<'a> Default for SessionRepositoryMockWithBrokenSave<'a> {
+impl Default for SessionRepositoryMockWithBrokenSave {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'a> SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave<'a> {
-    fn find(&self, id: &Box<dyn IdTrait>) -> Option<Session> {
+impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
+    fn find(&self, id: &Id) -> Option<Session> {
         self.sessions
             .borrow()
             .get(id)
@@ -52,10 +49,7 @@ impl<'a> SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave<'a> {
         Err(SessionRepositoryError::Save)
     }
 
-    fn delete_users_sessions(
-        &self,
-        user_id: &Box<dyn IdTrait>,
-    ) -> Result<(), SessionRepositoryError> {
+    fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
         for (k, s) in self.sessions.borrow().iter() {
             if &s.user_id == user_id {
                 self.sessions.borrow_mut().remove(k);
