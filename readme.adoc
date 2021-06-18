@@ -32,6 +32,6 @@ devops/scripts/check-item.sh {{package-name}}
 * pre-commit (clippy, rustfmt + autofix)
 * `chrono = "0.4"` instead of `datetime = "0.5"`
 * improve errors processing
-* logger
 * events
 * notifications
+* logger
