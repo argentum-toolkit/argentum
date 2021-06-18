@@ -35,4 +35,10 @@ impl PasswordCredentialRepository for PasswordCredentialRepositoryMock {
             .get(&*id.to_string())
             .map(|c| PasswordCredential::new(c.user_id.clone(), c.password.clone(), c.salt.clone()))
     }
+
+    fn delete(&self, cred: &PasswordCredential) {
+        self.credentials
+            .borrow_mut()
+            .remove(&cred.user_id.to_string());
+    }
 }

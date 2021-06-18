@@ -4,7 +4,7 @@ use crate::entity::user::{AnonymousUser, UserTrait};
 use crate::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::session_repository::SessionRepositoryTrait;
-use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
+use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
 use crate::token::GeneratorTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
@@ -46,8 +46,11 @@ impl<'s> UserLoginsWithPasswordUc<'s> {
         let result = self.user_repository.find_by_email(&email);
 
         let user = match result {
-            Some(u) => u,
-            None => return Err(LoginError::WrongEmailOrPassword),
+            Ok(o) => match o {
+                Some(u) => u,
+                None => return Err(LoginError::WrongEmailOrPassword),
+            },
+            Err(e) => return Err(LoginError::GetUserError(e)),
         };
 
         let ok = self.credential_checker.check(user.id(), &password);
@@ -102,6 +105,9 @@ pub enum LoginError {
     #[error("Can't save session")]
     SaveSession,
 
+    #[error("Can't get an user. DB error")]
+    GetUserError(#[from] SavingUserError),
+
     #[error("Wrong email or password")]
     WrongEmailOrPassword,
 }
@@ -110,7 +116,6 @@ pub enum LoginError {
 mod test {
     use crate::entity::credential::PasswordCredential;
     use crate::entity::user::{AnonymousUser, AuthenticatedUser};
-    use crate::mock::id_factory::IdFactoryMock;
     use crate::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
     use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
@@ -127,23 +132,23 @@ mod test {
     use argentum_encryption_business::password::Encryptor;
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
+    use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
 
     #[test]
     fn test_user_logins_with_passwodr() -> Result<(), &'static str> {
         let user_repository = AuthenticatedUserRepositoryMock::new();
-        let anunymous_binding_repository = AnonymousBindingRepositoryMock::new();
+        let anonymous_binding_repository = AnonymousBindingRepositoryMock::new();
         let session_repository = SessionRepositoryMock::new();
-        let credendital_repository = PasswordCredentialRepositoryMock::new();
+        let credential_repository = PasswordCredentialRepositoryMock::new();
         let validator = ValidatorMock::new();
-        let credential_checker =
-            PasswordCredentialChecker::new(&credendital_repository, &validator);
+        let credential_checker = PasswordCredentialChecker::new(&credential_repository, &validator);
         let id_factory = IdFactoryMock::new();
         let token_generator = TokenGeneratorMock::new();
-        let credential_writer = PasswordCredentialWriter::new(&credendital_repository);
+        let credential_writer = PasswordCredentialWriter::new(&credential_repository);
 
         let uc = UserLoginsWithPasswordUc::new(
             &user_repository,
-            &anunymous_binding_repository,
+            &anonymous_binding_repository,
             &session_repository,
             &credential_checker,
             &id_factory,
@@ -173,7 +178,7 @@ mod test {
             Ok(s) => {
                 assert_eq!(s.user_id.to_string(), user_id.to_string());
 
-                let binding = anunymous_binding_repository
+                let binding = anonymous_binding_repository
                     .find_by_user_id(&user_id)
                     .unwrap();
                 assert_eq!(binding.anonymous_id.to_string(), anonymous_id.to_string());

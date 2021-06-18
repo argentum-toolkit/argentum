@@ -68,7 +68,6 @@ pub enum RegistrationError {
 
 #[cfg(test)]
 mod test {
-    use crate::mock::id_factory::IdFactoryMock;
     use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::broken::authenticated_user_repository_mock::AuthenticatedUserRepositoryMockWihBrokenSave;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
@@ -80,11 +79,12 @@ mod test {
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
+    use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
 
     #[test]
     fn test_user_registers_with_password() -> Result<(), &'static str> {
-        let credendital_repository = PasswordCredentialRepositoryMock::new();
-        let credential_writer = PasswordCredentialWriter::new(&credendital_repository);
+        let credential_repository = PasswordCredentialRepositoryMock::new();
+        let credential_writer = PasswordCredentialWriter::new(&credential_repository);
         let encryptor = EncryptorMock::new();
         let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
         let uc = UserRegistersWithPasswordUc::new(
@@ -114,8 +114,8 @@ mod test {
 
     #[test]
     fn test_user_registers_with_password_with_broken_user_repository() -> Result<(), &'static str> {
-        let credendital_repository = PasswordCredentialRepositoryMock::new();
-        let credential_writer = PasswordCredentialWriter::new(&credendital_repository);
+        let credential_repository = PasswordCredentialRepositoryMock::new();
+        let credential_writer = PasswordCredentialWriter::new(&credential_repository);
         let encryptor = EncryptorMock::new();
         let authenticated_user_repository = AuthenticatedUserRepositoryMockWihBrokenSave::new();
         let uc = UserRegistersWithPasswordUc::new(

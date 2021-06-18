@@ -24,25 +24,29 @@ impl Default for AuthenticatedUserRepositoryMock {
 }
 
 impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
-    fn find(&self, id: &Id) -> Option<AuthenticatedUser> {
-        self.users
+    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, SavingUserError> {
+        Ok(self
+            .users
             .borrow()
             .get(id)
-            .map(|u| AuthenticatedUser::new(&u.id().clone(), u.name.clone(), u.email.clone()))
+            .map(|u| AuthenticatedUser::new(&u.id().clone(), u.name.clone(), u.email.clone())))
     }
 
-    fn find_by_email(&self, email: &EmailAddress) -> Option<AuthenticatedUser> {
+    fn find_by_email(
+        &self,
+        email: &EmailAddress,
+    ) -> Result<Option<AuthenticatedUser>, SavingUserError> {
         for (_, u) in self.users.borrow().iter() {
             if &u.email == email {
-                return Some(AuthenticatedUser::new(
+                return Ok(Some(AuthenticatedUser::new(
                     &u.id().clone(),
                     u.name.clone(),
                     u.email.clone(),
-                ));
+                )));
             }
         }
 
-        None
+        Ok(None)
     }
 
     fn save(&self, user: &AuthenticatedUser) -> Result<(), SavingUserError> {
