@@ -1,13 +1,15 @@
-use crate::entity::anonymous_binding::AnonymousBinding;
 use crate::entity::session::Session;
-use crate::entity::user::{AnonymousUser, UserTrait};
-use crate::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::session_repository::SessionRepositoryTrait;
-use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
-use crate::token::GeneratorTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
+use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
+use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
+use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+use argentum_user_business::repository::user_repository::{
+    AuthenticatedUserRepositoryTrait, SavingUserError,
+};
+use argentum_user_business::token::GeneratorTrait;
 
 pub struct UserLoginsWithPasswordUc<'s> {
     user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
@@ -115,24 +117,24 @@ pub enum LoginError {
 #[cfg(test)]
 mod test {
     use crate::entity::credential::PasswordCredential;
-    use crate::entity::user::{AnonymousUser, AuthenticatedUser};
-    use crate::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
-    use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
-    use crate::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
     use crate::repository::credential_writer::CredentialWriterTrait;
     use crate::repository::password_credential_checker::PasswordCredentialChecker;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
-    use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
-    use crate::value_object::name::Name;
     use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
     use argentum_encryption_business::password::Encryptor;
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::entity::user::{AnonymousUser, AuthenticatedUser};
+    use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
+    use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+    use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+    use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use argentum_user_business::value_object::name::Name;
 
     #[test]
     fn test_user_logins_with_passwodr() -> Result<(), &'static str> {

@@ -1,10 +1,10 @@
 use crate::entity::restore_password_token::RestorePasswordToken;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
-use crate::token::GeneratorTrait;
 use crate::use_case::restore_password::error::RestorePasswordError;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
+use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+use argentum_user_business::token::GeneratorTrait;
 
 pub struct AnonymousRequestsRestoreToken<'s> {
     id_factory: &'s dyn IdFactory,
@@ -65,19 +65,19 @@ impl<'s> AnonymousRequestsRestoreToken<'s> {
 
 #[cfg(test)]
 mod tests {
-    use crate::entity::user::AuthenticatedUser;
-    use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-    use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use crate::use_case::restore_password::anonymous_requests_restore_token::{
         AnonymousRequestsRestoreToken, RestorePasswordError,
     };
-    use crate::value_object::name::Name;
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::entity::user::AuthenticatedUser;
+    use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+    use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use argentum_user_business::value_object::name::Name;
 
     #[test]
     fn anonymous_requests_restore_token() -> Result<(), &'static str> {

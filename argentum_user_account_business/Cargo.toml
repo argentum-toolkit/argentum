@@ -1,6 +1,6 @@
 [package]
-name = "argentum_user_business"
-description = "Business layer of user component"
+name = "argentum_user_account_business"
+description = "Business layer of user account component"
 version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
@@ -14,5 +14,6 @@ readme = "readme.adoc"
 #argentum_encryption_business = "0.1.0"
 argentum_encryption_business = { path = "../argentum_encryption_business", version = "0.1.0-dev" }
 argentum_standard_business = { path = "../argentum_standard_business", version = "0.1.0-dev" }
+argentum_user_business = { path = "../argentum_user_business", version = "0.1.0-dev" }
 chrono = "0.4"
 thiserror = "1.0"

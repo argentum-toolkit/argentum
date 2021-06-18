@@ -1,9 +1,11 @@
 use crate::entity::session::Session;
-use crate::entity::user::{AnonymousUser, UserTrait};
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
-use crate::repository::user_repository::{AnonymousUserRepositoryTrait, SavingUserError};
-use crate::token::GeneratorTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
+use argentum_user_business::repository::user_repository::{
+    AnonymousUserRepositoryTrait, SavingUserError,
+};
+use argentum_user_business::token::GeneratorTrait;
 
 pub struct AnonymousRegistersUc<'s> {
     id_factory: &'s dyn IdFactory,
@@ -63,14 +65,14 @@ pub enum AnonymousRegistrationError {
 
 #[cfg(test)]
 mod tests {
-    use crate::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
-    use crate::mock::repository::broken::anonymous_user_repository_mock::AnonymousRepositoryMockWithBrokenSave;
     use crate::mock::repository::broken::session_repository_mock::SessionRepositoryMockWithBrokenSave;
     use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
     use crate::use_case::anonymous_registers::{AnonymousRegistersUc, AnonymousRegistrationError};
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
+    use argentum_user_business::mock::repository::broken::anonymous_user_repository_mock::AnonymousRepositoryMockWithBrokenSave;
 
     #[test]
     fn anonymous_registers() -> Result<(), &'static str> {

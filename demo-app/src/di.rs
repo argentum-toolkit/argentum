@@ -1,19 +1,19 @@
+use crate::app::App;
+
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_user_business::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
-use argentum_user_business::repository::password_credential_checker::PasswordCredentialChecker;
-use argentum_user_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
-
-use crate::app::App;
+use argentum_user_account_business::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
+use argentum_user_account_business::mock::repository::session_repository_mock::SessionRepositoryMock;
+use argentum_user_account_business::repository::password_credential_checker::PasswordCredentialChecker;
+use argentum_user_account_business::repository::password_credential_writer::PasswordCredentialWriter;
+use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
+use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
+use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
+use argentum_user_account_infrastructure::token::StringTokenGenerator;
 use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
 use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
 use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
-use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
-use argentum_user_business::repository::password_credential_writer::PasswordCredentialWriter;
-use argentum_user_business::use_case::anonymous_registers::AnonymousRegistersUc;
-use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
-use argentum_user_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
-use argentum_user_infrastructure::token::StringTokenGenerator;
 
 pub fn init() -> Result<(), String> {
     let anonymous_user_repository = AnonymousUserRepositoryMock::new();

@@ -1,6 +1,6 @@
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryError;
-use crate::repository::user_repository::SavingUserError;
 use argentum_encryption_business::password::EncryptionError;
+use argentum_user_business::repository::user_repository::SavingUserError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RestorePasswordError {

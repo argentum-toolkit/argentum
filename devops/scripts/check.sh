@@ -8,7 +8,8 @@ packages=(
   'argentum_standard_business'
   'argentum_standard_infrastructure'
   'argentum_user_business'
-  'argentum_user_infrastructure'
+  'argentum_user_account_business'
+  'argentum_user_account_infrastructure'
   'demo-app'
 )
 

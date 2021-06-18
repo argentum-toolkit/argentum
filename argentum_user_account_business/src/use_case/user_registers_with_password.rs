@@ -1,12 +1,15 @@
+use crate::entity::credential::PasswordCredential;
+use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
+
 use argentum_encryption_business::password::{EncryptionError, Encryptor};
 use argentum_standard_business::data_type::email::EmailAddress;
-use argentum_standard_business::data_type::id::Id;
+use argentum_user_business::entity::user::AuthenticatedUser;
+use argentum_user_business::repository::user_repository::{
+    AuthenticatedUserRepositoryTrait, SavingUserError,
+};
+use argentum_user_business::value_object::name::Name;
 
-use crate::entity::credential::PasswordCredential;
-use crate::entity::user::AuthenticatedUser;
-use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
-use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
-use crate::value_object::name::Name;
+use argentum_standard_business::data_type::id::Id;
 
 pub struct UserRegistersWithPasswordUc<'s> {
     user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
@@ -68,18 +71,18 @@ pub enum RegistrationError {
 
 #[cfg(test)]
 mod test {
-    use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
-    use crate::mock::repository::broken::authenticated_user_repository_mock::AuthenticatedUserRepositoryMockWihBrokenSave;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::use_case::user_registers_with_password::{
         RegistrationError, UserRegistersWithPasswordUc,
     };
-    use crate::value_object::name::Name;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+    use argentum_user_business::mock::repository::broken::authenticated_user_repository_mock::AuthenticatedUserRepositoryMockWihBrokenSave;
+    use argentum_user_business::value_object::name::Name;
 
     #[test]
     fn test_user_registers_with_password() -> Result<(), &'static str> {

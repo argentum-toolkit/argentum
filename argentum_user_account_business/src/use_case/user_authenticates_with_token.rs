@@ -1,7 +1,7 @@
-use crate::entity::user::User;
-use crate::entity::user::User::{Anonymous, Authenticated};
 use crate::repository::session_repository::SessionRepositoryTrait;
-use crate::repository::user_repository::{
+use argentum_user_business::entity::user::User;
+use argentum_user_business::entity::user::User::{Anonymous, Authenticated};
+use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait, SavingUserError,
 };
 
@@ -65,17 +65,17 @@ mod tests {
     use argentum_standard_business::data_type::id::{Id, IdFactory};
 
     use crate::entity::session::Session;
-    use crate::entity::user::AuthenticatedUser;
-    use crate::entity::user::User::{Anonymous, Authenticated};
-    use crate::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
-    use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
     use crate::repository::session_repository::SessionRepositoryTrait;
-    use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use crate::use_case::user_authenticates_with_token::AuthenticationError;
     use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
-    use crate::value_object::name::Name;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::entity::user::AuthenticatedUser;
+    use argentum_user_business::entity::user::User::{Anonymous, Authenticated};
+    use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
+    use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+    use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use argentum_user_business::value_object::name::Name;
 
     #[test]
     fn test_authenticates_with_token() -> Result<(), &'static str> {

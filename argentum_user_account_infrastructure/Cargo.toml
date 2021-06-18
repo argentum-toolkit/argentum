@@ -1,6 +1,6 @@
 [package]
-name = "argentum_user_infrastructure"
-description = "Business layer of user package"
+name = "argentum_user_account_infrastructure"
+description = "Business layer of user account component"
 version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
@@ -14,5 +14,6 @@ readme = "readme.adoc"
 
 [dependencies]
 argentum_standard_business = { path = "../argentum_standard_business" }
+argentum_user_account_business = { path = "../argentum_user_account_business" }
 argentum_user_business = { path = "../argentum_user_business" }
 rand = "0.7"
