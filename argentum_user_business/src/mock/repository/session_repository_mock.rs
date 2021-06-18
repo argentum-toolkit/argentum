@@ -66,10 +66,18 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
     }
 
     fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
+        let mut id: Option<Id> = None;
+
         for (k, s) in self.sessions.borrow().iter() {
             if &s.user_id == user_id {
-                self.sessions.borrow_mut().remove(k);
+                id = Some(k.clone());
+
+                break;
             }
+        }
+
+        if let Some(id) = id {
+            self.sessions.borrow_mut().remove(&id);
         }
 
         Ok(())

@@ -8,8 +8,11 @@ use argentum_standard_business::data_type::id::Id;
 // }
 
 pub trait AuthenticatedUserRepositoryTrait {
-    fn find(&self, id: &Id) -> Option<AuthenticatedUser>;
-    fn find_by_email(&self, email: &EmailAddress) -> Option<AuthenticatedUser>;
+    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, SavingUserError>;
+    fn find_by_email(
+        &self,
+        email: &EmailAddress,
+    ) -> Result<Option<AuthenticatedUser>, SavingUserError>;
     fn save(&self, user: &AuthenticatedUser) -> Result<(), SavingUserError>;
 }
 
@@ -19,6 +22,7 @@ pub trait AnonymousUserRepositoryTrait {
 }
 
 #[derive(thiserror::Error, Debug)]
+//TODO: not only saving
 pub enum SavingUserError {
     #[error("Can't save an user")]
     Authenticated,
