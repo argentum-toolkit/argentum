@@ -15,5 +15,5 @@ readme = "readme.adoc"
 argentum_encryption_business = { path = "../argentum_encryption_business", version = "0.1.0-dev" }
 argentum_standard_business = { path = "../argentum_standard_business", version = "0.1.0-dev" }
 datetime = "0.5"
-rand = "0.8.0"
+chrono = "0.4"
 thiserror = "1.0"

@@ -1,5 +1,4 @@
-use argentum_standard_business::data_type::id::{Id, IdFactory, IntId};
-
+use crate::data_type::id::{Id, IdFactory, IntId};
 use rand::Rng;
 
 pub struct IdFactoryMock {}
