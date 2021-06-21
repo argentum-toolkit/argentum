@@ -1,6 +1,6 @@
 [package]
 name = "argentum_standard_infrastructure"
-description = "The infrastructure layer of standart package"
+description = "The infrastructure layer of standart component"
 version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"

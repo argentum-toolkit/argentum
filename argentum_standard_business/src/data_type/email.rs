@@ -59,8 +59,6 @@ mod tests {
 
         match res {
             Ok(email) => {
-                println!("{}", email_string);
-                println!("{}", email.as_string());
                 assert_eq!(email_string, email.as_string())
             }
             Err(_) => {

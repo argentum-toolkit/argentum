@@ -3,26 +3,72 @@
 == Packages documentation
 
 * link:argentum_user_business/readme.adoc[Argentum User Business package]
-* link:argentum_user_infrastructure/readme.adoc[Argentum User Infrastructure package]
+* link:argentum_user_account_business/readme.adoc[Argentum User Account Business package]
+* link:argentum_user_account_infrastructure/readme.adoc[Argentum User Account Infrastructure package]
 
 === How to setup project
 
 * clone repository
 * `devops/scripts/setup.sh`
 
+
+=== Project structure
+Rusty Argentum projects is composed from components.
+Each component is splited to two packages:
+business package for abstractions and infrastructure package for details of implementation.
+
+What is abstractions? Abstractions are clean business model.
+It is the main core of project which responsible for only business logic.
+Business package should not depend on 3-rd party packages it is possible.
+To follow this restriction you should use Dependency Inversion Principle.
+
+What is details? Details are: database adapters, RESTful API, RPC API
+and other connections with world.
+
+
+[plantuml, format="svg"]
+....
+rectangle "Rusty Argentum" {
+    component Encryption as e {
+        package "Encryption Business" as abstractions
+        package "Encryption Infrastructure" as details
+
+        details --> abstractions
+    }
+}
+....
+
+
+WARNING: Business packages should be independent
+or should depend only on another business components.
+
+NOTE: Infrastructure packages can depend on business packages, on infrastructure packages
+or on 3-rd party packages.
+
+WARNING: Circular dependencies is forbidden.
+
 == Contribution Guideline
 
 === How to check code
 
 .Code style, tests
-```bash
+[source,bash]
+....
 devops/scripts/check.sh
-```
+....
 
 .Check only one package
-```bash
+[source,bash]
+....
 devops/scripts/check-item.sh {{package-name}}
-```
+....
+
+
+=== Allowed 3-rd party packages for business packages of Rusty Argentum
+
+* *thiserror* - errors
+* *chrono* - time
+
 
 == TODO
 
@@ -30,8 +76,6 @@ devops/scripts/check-item.sh {{package-name}}
 * build scripts (behaviour tests, push artifacts)
 * https://crates.io/crates/cargo-release
 * pre-commit (clippy, rustfmt + autofix)
-* `chrono = "0.4"` instead of `datetime = "0.5"`
 * improve errors processing
 * events
 * notifications
-* logger

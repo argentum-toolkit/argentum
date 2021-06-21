@@ -1,9 +1,9 @@
 use crate::entity::credential::PasswordCredential;
 use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use crate::use_case::restore_password::error::RestorePasswordError;
 use argentum_encryption_business::password::Encryptor;
+use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 
 pub struct AnonymousWithTokenChangesPassword<'s> {
     user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
@@ -81,23 +81,23 @@ impl<'s> AnonymousWithTokenChangesPassword<'s> {
 #[cfg(test)]
 mod tests {
     use crate::entity::restore_password_token::RestorePasswordToken;
-    use crate::entity::user::AuthenticatedUser;
-    use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
     use crate::repository::password_credential_repository::PasswordCredentialRepository;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-    use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
-    use crate::token::GeneratorTrait;
     use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
     use crate::use_case::restore_password::error::RestorePasswordError;
-    use crate::value_object::name::Name;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::entity::user::AuthenticatedUser;
+    use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+    use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use argentum_user_business::token::GeneratorTrait;
+    use argentum_user_business::value_object::name::Name;
     use std::thread;
     use std::time::Duration;
 

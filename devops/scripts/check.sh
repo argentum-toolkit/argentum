@@ -5,10 +5,13 @@ set -ex
 packages=(
   'argentum_encryption_business'
   'argentum_encryption_infrastructure'
+  'argentum_log_business'
+  'argentum_log_infrastructure'
   'argentum_standard_business'
   'argentum_standard_infrastructure'
   'argentum_user_business'
-  'argentum_user_infrastructure'
+  'argentum_user_account_business'
+  'argentum_user_account_infrastructure'
   'demo-app'
 )
 

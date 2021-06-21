@@ -1,13 +1,16 @@
-use crate::entity::anonymous_binding::AnonymousBinding;
 use crate::entity::session::Session;
-use crate::entity::user::{AnonymousUser, UserTrait};
-use crate::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::session_repository::SessionRepositoryTrait;
-use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
-use crate::token::GeneratorTrait;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
+use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
+use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
+use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+use argentum_user_business::repository::user_repository::{
+    AuthenticatedUserRepositoryTrait, SavingUserError,
+};
+use argentum_user_business::token::GeneratorTrait;
 
 pub struct UserLoginsWithPasswordUc<'s> {
     user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
@@ -16,6 +19,7 @@ pub struct UserLoginsWithPasswordUc<'s> {
     credential_checker: &'s PasswordCredentialChecker<'s>,
     id_factory: &'s dyn IdFactory,
     token_generator: &'s dyn GeneratorTrait,
+    logger: &'s dyn LoggerTrait,
 }
 
 impl<'s> UserLoginsWithPasswordUc<'s> {
@@ -26,6 +30,7 @@ impl<'s> UserLoginsWithPasswordUc<'s> {
         credential_checker: &'s PasswordCredentialChecker<'s>,
         id_factory: &'s dyn IdFactory,
         token_generator: &'s dyn GeneratorTrait,
+        logger: &'s dyn LoggerTrait,
     ) -> UserLoginsWithPasswordUc<'s> {
         UserLoginsWithPasswordUc {
             user_repository,
@@ -34,6 +39,7 @@ impl<'s> UserLoginsWithPasswordUc<'s> {
             credential_checker,
             id_factory,
             token_generator,
+            logger,
         }
     }
 
@@ -74,26 +80,18 @@ impl<'s> UserLoginsWithPasswordUc<'s> {
             .session_repository
             .delete_users_sessions(&anonymous.id())
         {
-            Ok(_) => {
-                // TODO: log
-                println!("INFO: anonymous session deleted")
-            }
-            Err(_) => {
-                // TODO: log error
-                println!("WARNING: anonymous session is not deleted")
-            }
+            Ok(_) => self.logger.info("Anonymous session deleted".to_string()),
+            Err(_) => self
+                .logger
+                .warning("Anonymous session is not deleted".to_string()),
         };
 
         let binding = AnonymousBinding::new(user.id(), anonymous.id());
         match self.anonymous_binding_repository.save(&binding) {
-            Ok(_) => {
-                // TODO: log
-                println!("INFO: anonymous binding saved")
-            }
-            Err(_) => {
-                // TODO: log error
-                println!("WARNING: anonymous binding is not saved")
-            }
+            Ok(_) => self.logger.info("Anonymous binding saved".to_string()),
+            Err(_) => self
+                .logger
+                .warning("Anonymous binding is not saved".to_string()),
         }
 
         result
@@ -115,24 +113,25 @@ pub enum LoginError {
 #[cfg(test)]
 mod test {
     use crate::entity::credential::PasswordCredential;
-    use crate::entity::user::{AnonymousUser, AuthenticatedUser};
-    use crate::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
-    use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
-    use crate::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
     use crate::repository::credential_writer::CredentialWriterTrait;
     use crate::repository::password_credential_checker::PasswordCredentialChecker;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
-    use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
-    use crate::value_object::name::Name;
     use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
     use argentum_encryption_business::password::Encryptor;
+    use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::entity::user::{AnonymousUser, AuthenticatedUser};
+    use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
+    use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+    use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+    use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use argentum_user_business::value_object::name::Name;
 
     #[test]
     fn test_user_logins_with_passwodr() -> Result<(), &'static str> {
@@ -146,6 +145,9 @@ mod test {
         let token_generator = TokenGeneratorMock::new();
         let credential_writer = PasswordCredentialWriter::new(&credential_repository);
 
+        let log_writer = StdoutWriter::new();
+        let logger = DefaultLogger::new(Level::Trace, &log_writer);
+
         let uc = UserLoginsWithPasswordUc::new(
             &user_repository,
             &anonymous_binding_repository,
@@ -153,6 +155,7 @@ mod test {
             &credential_checker,
             &id_factory,
             &token_generator,
+            &logger,
         );
 
         let id_factory = IdFactoryMock::new();

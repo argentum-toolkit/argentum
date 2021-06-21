@@ -1,6 +1,6 @@
 [package]
-name = "argentum_standard_business"
-description = "The business layer of standart component"
+name = "argentum_log_infrastructure"
+description = "Business layer of encryption"
 version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
@@ -11,6 +11,6 @@ documentation = "https://github.com/rusty-argentum/argentum"
 readme = "readme.adoc"
 
 [dependencies]
-regex = "1.4.2"
-thiserror = "1.0"
-rand = "0.8.0"
+argentum_log_business = { path = "../argentum_log_business" }
+chrono = "0.4.19"
+ansi_term = "0.12.1"

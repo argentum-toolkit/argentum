@@ -1,10 +1,10 @@
 use argentum_standard_business::data_type::id::Id;
-use datetime::LocalDateTime;
+use chrono::{DateTime, Utc};
 
 pub struct AnonymousBinding {
     pub user_id: Id,
     pub anonymous_id: Id,
-    pub created_at: LocalDateTime,
+    pub created_at: DateTime<Utc>,
 }
 
 impl AnonymousBinding {
@@ -12,7 +12,7 @@ impl AnonymousBinding {
         AnonymousBinding {
             user_id,
             anonymous_id,
-            created_at: LocalDateTime::now(),
+            created_at: Utc::now(),
         }
     }
 }

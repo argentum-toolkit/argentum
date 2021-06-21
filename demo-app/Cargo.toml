@@ -17,6 +17,9 @@ argentum_encryption_infrastructure = { path = "../argentum_encryption_infrastruc
 argentum_standard_business = { path = "../argentum_standard_business" }
 argentum_standard_infrastructure = { path = "../argentum_standard_infrastructure" }
 argentum_user_business = { path = "../argentum_user_business" }
-argentum_user_infrastructure = { path = "../argentum_user_infrastructure" }
+argentum_user_account_business = { path = "../argentum_user_account_business" }
+argentum_user_account_infrastructure = { path = "../argentum_user_account_infrastructure" }
+argentum_log_business = { path = "../argentum_log_business" }
+argentum_log_infrastructure = { path = "../argentum_log_infrastructure" }
 rand = "0.7"
 thiserror = "1.0"
