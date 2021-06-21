@@ -1,6 +1,8 @@
 use crate::app::App;
 
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
+use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_business::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
 use argentum_user_account_business::mock::repository::session_repository_mock::SessionRepositoryMock;
@@ -19,6 +21,8 @@ pub fn init() -> Result<(), String> {
     let anonymous_user_repository = AnonymousUserRepositoryMock::new();
     let session_repository = SessionRepositoryMock::new();
     let unique_id_factory = UniqueIdFactory::new();
+    let log_writer = PrettyWriter::new();
+    let logger = DefaultLogger::new(Level::Trace, &log_writer);
 
     let token_generator = StringTokenGenerator::new();
 
@@ -53,6 +57,7 @@ pub fn init() -> Result<(), String> {
         &password_credential_checker,
         &unique_id_factory,
         &token_generator,
+        &logger,
     );
 
     let user_authenticates_with_token_uc = UserAuthenticatesWithTokenUc::new(
@@ -67,6 +72,7 @@ pub fn init() -> Result<(), String> {
         &user_logins_with_password_uc,
         &user_registers_uc,
         &user_authenticates_with_token_uc,
+        &logger,
     );
 
     app.run()

@@ -79,4 +79,3 @@ devops/scripts/check-item.sh {{package-name}}
 * improve errors processing
 * events
 * notifications
-* logger

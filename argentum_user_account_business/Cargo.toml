@@ -13,6 +13,7 @@ readme = "readme.adoc"
 [dependencies]
 #argentum_encryption_business = "0.1.0"
 argentum_encryption_business = { path = "../argentum_encryption_business", version = "0.1.0-dev" }
+argentum_log_business = { path = "../argentum_log_business" }
 argentum_standard_business = { path = "../argentum_standard_business", version = "0.1.0-dev" }
 argentum_user_business = { path = "../argentum_user_business", version = "0.1.0-dev" }
 chrono = "0.4"

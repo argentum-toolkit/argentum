@@ -1,6 +1,7 @@
 use crate::entity::session::Session;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::session_repository::SessionRepositoryTrait;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
@@ -18,6 +19,7 @@ pub struct UserLoginsWithPasswordUc<'s> {
     credential_checker: &'s PasswordCredentialChecker<'s>,
     id_factory: &'s dyn IdFactory,
     token_generator: &'s dyn GeneratorTrait,
+    logger: &'s dyn LoggerTrait,
 }
 
 impl<'s> UserLoginsWithPasswordUc<'s> {
@@ -28,6 +30,7 @@ impl<'s> UserLoginsWithPasswordUc<'s> {
         credential_checker: &'s PasswordCredentialChecker<'s>,
         id_factory: &'s dyn IdFactory,
         token_generator: &'s dyn GeneratorTrait,
+        logger: &'s dyn LoggerTrait,
     ) -> UserLoginsWithPasswordUc<'s> {
         UserLoginsWithPasswordUc {
             user_repository,
@@ -36,6 +39,7 @@ impl<'s> UserLoginsWithPasswordUc<'s> {
             credential_checker,
             id_factory,
             token_generator,
+            logger,
         }
     }
 
@@ -76,26 +80,18 @@ impl<'s> UserLoginsWithPasswordUc<'s> {
             .session_repository
             .delete_users_sessions(&anonymous.id())
         {
-            Ok(_) => {
-                // TODO: log
-                println!("INFO: anonymous session deleted")
-            }
-            Err(_) => {
-                // TODO: log error
-                println!("WARNING: anonymous session is not deleted")
-            }
+            Ok(_) => self.logger.info("Anonymous session deleted".to_string()),
+            Err(_) => self
+                .logger
+                .warning("Anonymous session is not deleted".to_string()),
         };
 
         let binding = AnonymousBinding::new(user.id(), anonymous.id());
         match self.anonymous_binding_repository.save(&binding) {
-            Ok(_) => {
-                // TODO: log
-                println!("INFO: anonymous binding saved")
-            }
-            Err(_) => {
-                // TODO: log error
-                println!("WARNING: anonymous binding is not saved")
-            }
+            Ok(_) => self.logger.info("Anonymous binding saved".to_string()),
+            Err(_) => self
+                .logger
+                .warning("Anonymous binding is not saved".to_string()),
         }
 
         result
@@ -126,6 +122,7 @@ mod test {
     use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
     use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
     use argentum_encryption_business::password::Encryptor;
+    use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
@@ -148,6 +145,9 @@ mod test {
         let token_generator = TokenGeneratorMock::new();
         let credential_writer = PasswordCredentialWriter::new(&credential_repository);
 
+        let log_writer = StdoutWriter::new();
+        let logger = DefaultLogger::new(Level::Trace, &log_writer);
+
         let uc = UserLoginsWithPasswordUc::new(
             &user_repository,
             &anonymous_binding_repository,
@@ -155,6 +155,7 @@ mod test {
             &credential_checker,
             &id_factory,
             &token_generator,
+            &logger,
         );
 
         let id_factory = IdFactoryMock::new();

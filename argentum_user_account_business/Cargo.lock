@@ -17,6 +17,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "argentum_log_business"
+version = "0.1.0-dev"
+dependencies = [
+ "chrono",
+]
+
+[[package]]
 name = "argentum_standard_business"
 version = "0.1.0-dev"
 dependencies = [
@@ -30,6 +37,7 @@ name = "argentum_user_account_business"
 version = "0.1.0-dev"
 dependencies = [
  "argentum_encryption_business",
+ "argentum_log_business",
  "argentum_standard_business",
  "argentum_user_business",
  "chrono",

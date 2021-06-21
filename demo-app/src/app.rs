@@ -1,3 +1,4 @@
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
@@ -13,6 +14,7 @@ pub struct App<'s> {
     user_logins_with_pw: &'s UserLoginsWithPasswordUc<'s>,
     user_registers_with_pw: &'s UserRegistersWithPasswordUc<'s>,
     user_authenticates_with_token: &'s UserAuthenticatesWithTokenUc<'s>,
+    logger: &'s dyn LoggerTrait,
 }
 
 impl<'s> App<'s> {
@@ -22,6 +24,7 @@ impl<'s> App<'s> {
         user_logins_with_pw: &'s UserLoginsWithPasswordUc<'s>,
         user_registers_with_pw: &'s UserRegistersWithPasswordUc<'s>,
         user_authenticates_with_token: &'s UserAuthenticatesWithTokenUc<'s>,
+        logger: &'s dyn LoggerTrait,
     ) -> App<'s> {
         App {
             id_factory,
@@ -29,10 +32,18 @@ impl<'s> App<'s> {
             user_logins_with_pw,
             user_registers_with_pw,
             user_authenticates_with_token,
+            logger,
         }
     }
 
     pub fn run(&self) -> Result<(), String> {
+        self.logger.trace("Demo trace log".to_string());
+        self.logger.debug("Demo debug log".to_string());
+        self.logger.info("Demo info log".to_string());
+        self.logger.warning("Demo warning log".to_string());
+        self.logger.error("Demo error log".to_string());
+        self.logger.critical("Demo critical log".to_string());
+
         let anon_id = self.id_factory.create();
 
         let anon_registration_result = self.anonymous_registers_uc.execute(&anon_id);
