@@ -1,0 +1,6 @@
+= Rusty Argentum. Event. Business layer.
+
+== Restrictions
+* Event listeners should handle events idempotently
+* Events don't have prioritization
+* Event dispatching can't be cancelled

@@ -2,6 +2,7 @@
 
 == Packages documentation
 
+* link:argentum_event_business/readme.adoc[Argentum Event Business package]
 * link:argentum_user_business/readme.adoc[Argentum User Business package]
 * link:argentum_user_account_business/readme.adoc[Argentum User Account Business package]
 * link:argentum_user_account_infrastructure/readme.adoc[Argentum User Account Infrastructure package]
