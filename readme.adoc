@@ -14,9 +14,9 @@
 
 
 === Project structure
-Rusty Argentum projects is composed from components.
-Each component is splited to two packages:
-business package for abstractions and infrastructure package for details of implementation.
+Rusty Argentum project is composed of components.
+Each component is split to two crates:
+business crate for abstractions and infrastructure crate for details of implementation.
 
 What is abstractions? Abstractions are clean business model.
 It is the main core of project which responsible for only business logic.
@@ -26,9 +26,8 @@ To follow this restriction you should use Dependency Inversion Principle.
 What is details? Details are: database adapters, RESTful API, RPC API
 and other connections with world.
 
-
 [plantuml, format="svg"]
-....
+----
 rectangle "Rusty Argentum" {
     component Encryption as e {
         package "Encryption Business" as abstractions
@@ -37,7 +36,7 @@ rectangle "Rusty Argentum" {
         details --> abstractions
     }
 }
-....
+----
 
 
 WARNING: Business packages should be independent

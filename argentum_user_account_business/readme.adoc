@@ -3,7 +3,7 @@
 == User workflow Overview
 
 .Overview sequence diagram
-[plantuml]
+[plantuml, format="svg"]
 ----
 @startuml
 actor User as user
@@ -27,7 +27,7 @@ action --> user: result
 == Authentication
 
 .Authentication sequence diagram
-[plantuml]
+[plantuml, format="svg"]
 ----
 @startuml
 actor user
