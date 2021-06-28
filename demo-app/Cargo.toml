@@ -14,6 +14,7 @@ readme = "readme.adoc"
 #argentum_encryption_business = "0.1.0"
 argentum_encryption_business = { path = "../argentum_encryption_business", version = "0.1.0-dev" }
 argentum_encryption_infrastructure = { path = "../argentum_encryption_infrastructure" }
+argentum_event_business = { path = "../argentum_event_business", version = "0.1.0-dev" }
 argentum_standard_business = { path = "../argentum_standard_business" }
 argentum_standard_infrastructure = { path = "../argentum_standard_infrastructure" }
 argentum_user_business = { path = "../argentum_user_business" }

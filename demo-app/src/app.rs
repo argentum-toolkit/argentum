@@ -44,6 +44,22 @@ impl<'s> App<'s> {
         self.logger.error("Demo error log".to_string());
         self.logger.critical("Demo critical log".to_string());
 
+        // events
+        pub struct DemoEvent {}
+        argentum_event_business::event_boilerplate!(DemoEvent, DemoListenerTrait, DemoDispatcher);
+
+        pub struct DemoListener {}
+
+        impl DemoListenerTrait for DemoListener {
+            fn listen(&self, _e: &DemoEvent) {
+                println!("Listening demo event")
+            }
+        }
+
+        let demo_dispatcher = DemoDispatcher::new(vec![DemoListener {}]);
+        demo_dispatcher.dispatch(&DemoEvent {});
+        //events end
+
         let anon_id = self.id_factory.create();
 
         let anon_registration_result = self.anonymous_registers_uc.execute(&anon_id);
