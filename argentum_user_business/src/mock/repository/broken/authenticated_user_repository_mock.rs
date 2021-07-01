@@ -1,5 +1,5 @@
 use crate::entity::user::{AuthenticatedUser, UserTrait};
-use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
+use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use std::cell::RefCell;
@@ -24,7 +24,7 @@ impl Default for AuthenticatedUserRepositoryMockWihBrokenSave {
 }
 
 impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrokenSave {
-    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, SavingUserError> {
+    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         Ok(self
             .users
             .borrow()
@@ -35,7 +35,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrok
     fn find_by_email(
         &self,
         email: &EmailAddress,
-    ) -> Result<Option<AuthenticatedUser>, SavingUserError> {
+    ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         for (_, u) in self.users.borrow().iter() {
             if &u.email == email {
                 return Ok(Some(AuthenticatedUser::new(
@@ -49,7 +49,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrok
         Ok(None)
     }
 
-    fn save(&self, _user: &AuthenticatedUser) -> Result<(), SavingUserError> {
-        Err(SavingUserError::Authenticated)
+    fn save(&self, _user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
+        Err(ExternalUserError::Authenticated)
     }
 }

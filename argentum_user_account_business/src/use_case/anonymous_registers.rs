@@ -3,7 +3,7 @@ use crate::repository::session_repository::{SessionRepositoryError, SessionRepos
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::user_repository::{
-    AnonymousUserRepositoryTrait, SavingUserError,
+    AnonymousUserRepositoryTrait, ExternalUserError,
 };
 use argentum_user_business::token::GeneratorTrait;
 
@@ -57,7 +57,7 @@ impl<'s> AnonymousRegistersUc<'s> {
 #[derive(thiserror::Error, Debug)]
 pub enum AnonymousRegistrationError {
     #[error("Can't save anonymous")]
-    SavingAnonymousError(#[from] SavingUserError),
+    SavingAnonymousError(#[from] ExternalUserError),
 
     #[error("Can't save session")]
     SavingSessionError(#[from] SessionRepositoryError),

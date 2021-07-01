@@ -1,5 +1,5 @@
 use crate::entity::user::{AuthenticatedUser, UserTrait};
-use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, SavingUserError};
+use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use std::cell::RefCell;
@@ -24,7 +24,7 @@ impl Default for AuthenticatedUserRepositoryMock {
 }
 
 impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
-    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, SavingUserError> {
+    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         Ok(self
             .users
             .borrow()
@@ -35,7 +35,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
     fn find_by_email(
         &self,
         email: &EmailAddress,
-    ) -> Result<Option<AuthenticatedUser>, SavingUserError> {
+    ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         for (_, u) in self.users.borrow().iter() {
             if &u.email == email {
                 return Ok(Some(AuthenticatedUser::new(
@@ -49,7 +49,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
         Ok(None)
     }
 
-    fn save(&self, user: &AuthenticatedUser) -> Result<(), SavingUserError> {
+    fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
         // TODO: check if key exists
         // if self.users. contains_key(user.get_id().clone()) {
         //     return Err("Already exists".parse().unwrap());
@@ -69,7 +69,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
             .is_none()
         {
             true => Ok(()),
-            false => Err(SavingUserError::Authenticated),
+            false => Err(ExternalUserError::Authenticated),
         }
     }
 }

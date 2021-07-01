@@ -2,7 +2,7 @@ use crate::repository::session_repository::SessionRepositoryTrait;
 use argentum_user_business::entity::user::User;
 use argentum_user_business::entity::user::User::{Anonymous, Authenticated};
 use argentum_user_business::repository::user_repository::{
-    AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait, SavingUserError,
+    AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
 
 pub struct UserAuthenticatesWithTokenUc<'s> {
@@ -56,7 +56,7 @@ pub enum AuthenticationError {
     WrongToken,
 
     #[error("User repository error")]
-    UserRepositoryError(#[from] SavingUserError),
+    UserRepositoryError(#[from] ExternalUserError),
 }
 
 #[cfg(test)]

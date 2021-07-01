@@ -6,7 +6,9 @@
 ///
 /// The way to create event and boilerplate to listening and dispatching
 ///
-/// ```ignore
+/// ```rust
+/// use argentum_event_business::event_boilerplate;
+///
 /// // Event type
 /// pub struct MyEvent {}
 ///
@@ -17,7 +19,9 @@
 ///
 /// It is equivalent of a code below.
 ///
-/// ```ignore
+/// ```rust
+/// use argentum_event_business::event_boilerplate;
+///
 /// pub struct MyEvent {}
 ///
 /// pub trait MyEventListenerTrait {
