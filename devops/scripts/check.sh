@@ -5,8 +5,11 @@ set -ex
 packages=(
   'argentum_encryption_business'
   'argentum_encryption_infrastructure'
+  'argentum_event_business'
   'argentum_log_business'
   'argentum_log_infrastructure'
+  'argentum_notification_business'
+  'argentum_notification_infrastructure'
   'argentum_standard_business'
   'argentum_standard_infrastructure'
   'argentum_user_business'

@@ -1,11 +1,11 @@
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryError;
 use argentum_encryption_business::password::EncryptionError;
-use argentum_user_business::repository::user_repository::SavingUserError;
+use argentum_user_business::repository::user_repository::ExternalUserError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RestorePasswordError {
     #[error("Can't get user data. DB error")]
-    GetUserError(#[from] SavingUserError),
+    GetUserError(#[from] ExternalUserError),
 
     #[error("User is not found")]
     UserNotFoundError,

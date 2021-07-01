@@ -1,5 +1,5 @@
 use crate::entity::user::{AnonymousUser, UserTrait};
-use crate::repository::user_repository::{AnonymousUserRepositoryTrait, SavingUserError};
+use crate::repository::user_repository::{AnonymousUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::id::Id;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -30,7 +30,7 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
         })
     }
 
-    fn save(&self, user: &AnonymousUser) -> Result<(), SavingUserError> {
+    fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError> {
         // TODO: check if key exists
 
         let u = AnonymousUser {
@@ -45,7 +45,7 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
             .is_none()
         {
             true => Ok(()),
-            false => Err(SavingUserError::Anonymous),
+            false => Err(ExternalUserError::Anonymous),
         }
     }
 }

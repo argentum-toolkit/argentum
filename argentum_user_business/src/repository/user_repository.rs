@@ -2,28 +2,22 @@ use crate::entity::user::{AnonymousUser, AuthenticatedUser};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 
-// pub trait UserRepositoryTrait<I: IdTrait, U: UserTrait<I>> {
-//     // fn find(&self, id: I) -> Result<U, Error>;
-//     fn save(&self, user: U) -> Result<U, Error>;
-// }
-
 pub trait AuthenticatedUserRepositoryTrait {
-    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, SavingUserError>;
+    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError>;
     fn find_by_email(
         &self,
         email: &EmailAddress,
-    ) -> Result<Option<AuthenticatedUser>, SavingUserError>;
-    fn save(&self, user: &AuthenticatedUser) -> Result<(), SavingUserError>;
+    ) -> Result<Option<AuthenticatedUser>, ExternalUserError>;
+    fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError>;
 }
 
 pub trait AnonymousUserRepositoryTrait {
     fn find(&self, id: &Id) -> Option<AnonymousUser>;
-    fn save(&self, user: &AnonymousUser) -> Result<(), SavingUserError>;
+    fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError>;
 }
 
 #[derive(thiserror::Error, Debug)]
-//TODO: not only saving
-pub enum SavingUserError {
+pub enum ExternalUserError {
     #[error("Can't save an user")]
     Authenticated,
 

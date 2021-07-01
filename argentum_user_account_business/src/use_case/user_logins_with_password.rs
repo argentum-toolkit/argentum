@@ -8,7 +8,7 @@ use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
 use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use argentum_user_business::repository::user_repository::{
-    AuthenticatedUserRepositoryTrait, SavingUserError,
+    AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
 use argentum_user_business::token::GeneratorTrait;
 
@@ -104,7 +104,7 @@ pub enum LoginError {
     SaveSession,
 
     #[error("Can't get an user. DB error")]
-    GetUserError(#[from] SavingUserError),
+    GetUserError(#[from] ExternalUserError),
 
     #[error("Wrong email or password")]
     WrongEmailOrPassword,

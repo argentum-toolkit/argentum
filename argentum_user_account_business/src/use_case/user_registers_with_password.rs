@@ -5,7 +5,7 @@ use argentum_encryption_business::password::{EncryptionError, Encryptor};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{
-    AuthenticatedUserRepositoryTrait, SavingUserError,
+    AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
 use argentum_user_business::value_object::name::Name;
 
@@ -65,8 +65,8 @@ pub enum RegistrationError {
     #[error("Can't encrypt password")]
     EncryptionError(#[from] EncryptionError),
 
-    #[error("Can't save user")]
-    SavingError(#[from] SavingUserError),
+    #[error("External user's error")]
+    SavingError(#[from] ExternalUserError),
 }
 
 #[cfg(test)]

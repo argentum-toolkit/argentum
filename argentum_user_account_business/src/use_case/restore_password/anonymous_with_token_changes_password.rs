@@ -1,8 +1,12 @@
 use crate::entity::credential::PasswordCredential;
 use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
-use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
+use crate::repository::restore_password_token_repository::{
+    RestorePasswordTokenRepositoryError, RestorePasswordTokenRepositoryTrait,
+};
 use crate::use_case::restore_password::error::RestorePasswordError;
+
 use argentum_encryption_business::password::Encryptor;
+use argentum_log_business::LoggerTrait;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 
 pub struct AnonymousWithTokenChangesPassword<'s> {
@@ -11,6 +15,7 @@ pub struct AnonymousWithTokenChangesPassword<'s> {
     credential_writer: &'s dyn PasswordCredentialWriterTrait<'s>,
     encryptor: &'s dyn Encryptor,
     token_ttl: u32, //configurable ttl in seconds
+    logger: &'s dyn LoggerTrait,
 }
 
 impl<'s> AnonymousWithTokenChangesPassword<'s> {
@@ -20,6 +25,7 @@ impl<'s> AnonymousWithTokenChangesPassword<'s> {
         encryptor: &'s dyn Encryptor,
         credential_writer: &'s dyn PasswordCredentialWriterTrait<'s>,
         token_ttl: u32,
+        logger: &'s dyn LoggerTrait,
     ) -> AnonymousWithTokenChangesPassword<'s> {
         AnonymousWithTokenChangesPassword {
             user_repository,
@@ -27,6 +33,7 @@ impl<'s> AnonymousWithTokenChangesPassword<'s> {
             credential_writer,
             encryptor,
             token_ttl,
+            logger,
         }
     }
 
@@ -66,12 +73,15 @@ impl<'s> AnonymousWithTokenChangesPassword<'s> {
         let cred = PasswordCredential::new(user.id.clone(), hashed_password, salt);
         self.credential_writer.write(Box::new(cred));
 
-        if self
+        let e = RestorePasswordTokenRepositoryError::Save;
+        self.logger
+            .warning(format!("Restore password token is not deleted. {:?}", e));
+        if let Err(e) = self
             .restore_password_token_repository
             .delete_users_tokens(&user.id)
-            .is_err()
         {
-            //TODO: log error
+            self.logger
+                .warning(format!("Restore password token is not deleted. {:?}", e));
         }
 
         Ok(())
@@ -89,7 +99,9 @@ mod tests {
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
     use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
     use crate::use_case::restore_password::error::RestorePasswordError;
+
     use argentum_encryption_business::mock::password::EncryptorMock;
+    use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
@@ -111,12 +123,15 @@ mod tests {
         let credential_writer = PasswordCredentialWriter::new(&credential_repository);
         let encryptor = EncryptorMock::new();
 
+        let writer = StdoutWriter::new();
+        let logger = DefaultLogger::new(Level::Info, &writer);
         let uc = AnonymousWithTokenChangesPassword::new(
             &user_repository,
             &token_repository,
             &encryptor,
             &credential_writer,
             100,
+            &logger,
         );
 
         let user_id = id_factory.create();
@@ -157,12 +172,16 @@ mod tests {
         let credential_writer = PasswordCredentialWriter::new(&credential_repository);
         let encryptor = EncryptorMock::new();
 
+        let writer = StdoutWriter::new();
+        let logger = DefaultLogger::new(Level::Info, &writer);
+
         let uc = AnonymousWithTokenChangesPassword::new(
             &user_repository,
             &token_repository,
             &encryptor,
             &credential_writer,
             1,
+            &logger,
         );
 
         let user_id = id_factory.create();
