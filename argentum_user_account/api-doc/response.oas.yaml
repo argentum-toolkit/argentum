@@ -1,0 +1,29 @@
+openapi: 3.0.3
+
+info:
+  title: User Account component's responses
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  responses:
+    AnonymousRegisteredSuccessfully:
+      description: Created
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "type.oas.yaml#/components/schemas/AnonymousRegistrationResult"
+
+    UserRegisteredSuccessfully:
+      description: Created
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "type.oas.yaml#/components/schemas/RegistrationWithPasswordResult"
+
+    UserLoggedInSuccessfully:
+      description: OK
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "type.oas.yaml#/components/schemas/LoginResult"

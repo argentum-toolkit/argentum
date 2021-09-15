@@ -1,0 +1,21 @@
+openapi: 3.0.3
+
+info:
+  title: User component's types (schemas)
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  schemas:
+    UserName:
+      properties:
+        first:
+          type: string
+          minLength: 1
+          maxLength: 255
+        last:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+        - first

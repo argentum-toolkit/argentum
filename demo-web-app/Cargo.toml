@@ -1,0 +1,29 @@
+[package]
+name = "argentum_demo_web_app"
+description = "Demo web app of argentum toolkit"
+version = "0.1.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "BSD-3-Clause"
+edition = "2018"
+homepage = "https://github.com/rusty-argentum/argentum"
+repository = "https://github.com/rusty-argentum/argentum"
+documentation = "https://github.com/rusty-argentum/argentum"
+readme = "readme.adoc"
+
+[dependencies]
+actix-web = "3.3.2"
+
+argentum_encryption_business = { path = "../argentum_encryption/business", version = "0.1.0-dev" }
+argentum_encryption_infrastructure = { path = "../argentum_encryption/infrastructure" }
+argentum_event_business = { path = "../argentum_event/business", version = "0.1.0-dev" }
+argentum_notification_business = { path = "../argentum_notification/business", version = "0.1.0-dev" }
+argentum_notification_infrastructure = { path = "../argentum_notification/infrastructure", version = "0.1.0-dev" }
+argentum_standard_business = { path = "../argentum_standard/business" }
+argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure" }
+argentum_user_business = { path = "../argentum_user/business" }
+argentum_user_account_business = { path = "../argentum_user_account/business" }
+argentum_user_account_infrastructure = { path = "../argentum_user_account/infrastructure" }
+argentum_log_business = { path = "../argentum_log/business" }
+argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
+
+serde = { version = "1.0", features = ["derive"] }

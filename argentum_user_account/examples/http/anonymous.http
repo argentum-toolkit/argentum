@@ -1,0 +1,9 @@
+
+POST http://{{host}}{{baseUrl}}/user/anonymous-register
+Content-Type: application/json
+
+> {%
+    client.global.set('authToken', response.body.token);
+%}
+
+###

@@ -1,0 +1,18 @@
+openapi: 3.0.3
+
+info:
+  title: "Standard component: request bodies"
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  requestBodies:
+    Empty:
+      description: "Empty request body"
+      required: false
+      content:
+        "application/json":
+          schema: {}
+
+#            $ref: "type.oas.yaml#/components/schemas/RegistrationWithPasswordSchema"
+

@@ -1,0 +1,24 @@
+openapi: 3.0.3
+
+info:
+  title: Standard component's types (schemas)
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  schemas:
+    ProblemDetail:
+      title: Schema for error response
+      description: "RFC 7807 Problem Details for HTTP APIs"
+      required:
+        - code
+        - title
+      properties:
+        code:
+          type: integer
+          format: int32
+          minimum: 400
+          maximum: 599
+        message:
+          type: string
+

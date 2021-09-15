@@ -1,0 +1,41 @@
+openapi: 3.0.3
+
+info:
+  title: User Account component's request bodies
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  requestBodies:
+    RegistrationWithPasswordRequestBody:
+      description: "Data required to register with email and password"
+      required: true
+      content:
+        "application/json":
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/RegistrationWithPasswordSchema"
+
+    LoginWithPasswordRequestBody:
+      description: "Required data to login with email and password"
+      required: true
+      content:
+        "application/json":
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/LoginWithPasswordSchema"
+
+    RequestRestoreTokenRequestBody:
+      description: "Required data to get restore password token"
+      required: true
+      content:
+        "application/json":
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/RequestRestoreTokenSchema"
+
+    ChangePasswordRequestBody:
+      description: "Required data to change password with token"
+      required: true
+      content:
+        "application/json":
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/ChangePasswordSchema"
+

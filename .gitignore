@@ -1,2 +1,8 @@
-*/target
+/.asciidoctor
 /.idea
+.asciidoctor
+**/.asciidoctor
+/*/target
+/*/*/target
+*.pem
+*.key
