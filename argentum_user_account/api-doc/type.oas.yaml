@@ -1,0 +1,84 @@
+openapi: 3.0.3
+
+info:
+  title: User Account component's types (schemas)
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  schemas:
+    RegistrationWithPasswordSchema:
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          $ref: '../../argentum_user/api-doc/types.oas.yaml#/components/schemas/UserName'
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - name
+        - password
+
+    AnonymousRegistrationResult:
+      properties:
+        aonymous_id:
+          type: string
+          format: uuid
+        token:
+          type: string
+      required:
+        - aonymous_id
+        - token
+
+    RegistrationWithPasswordResult:
+      properties:
+        id:
+          type: string
+          format: uuid
+      required:
+        - id
+
+    LoginResult:
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        token:
+          type: string
+      required:
+        - user_id
+        - token
+
+    LoginWithPasswordSchema:
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - password
+
+    RequestRestoreTokenSchema:
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+
+    ChangePasswordSchema:
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          format: password
+      required:
+        - token
+        - password

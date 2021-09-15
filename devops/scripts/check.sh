@@ -3,19 +3,20 @@
 set -ex
 
 packages=(
-  'argentum_encryption_business'
-  'argentum_encryption_infrastructure'
-  'argentum_event_business'
-  'argentum_log_business'
-  'argentum_log_infrastructure'
-  'argentum_notification_business'
-  'argentum_notification_infrastructure'
-  'argentum_standard_business'
-  'argentum_standard_infrastructure'
-  'argentum_user_business'
-  'argentum_user_account_business'
-  'argentum_user_account_infrastructure'
+  'argentum_encryption/business'
+  'argentum_encryption/infrastructure'
+  'argentum_event/business'
+  'argentum_log/business'
+  'argentum_log/infrastructure'
+  'argentum_notification/business'
+  'argentum_notification/infrastructure'
+  'argentum_standard/business'
+  'argentum_standard/infrastructure'
+  'argentum_user/business'
+  'argentum_user_account/business'
+  'argentum_user_account/infrastructure'
   'demo-app'
+  'demo-web-app'
 )
 
 SOURCE="${BASH_SOURCE[0]}"

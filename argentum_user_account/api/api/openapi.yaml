@@ -1,0 +1,334 @@
+openapi: 3.0.3
+info:
+  contact:
+    url: https://gitlab.com/rusty-argentum/argentum
+  description: This is demo app
+  license:
+    name: BSD-3
+  title: Demo app
+  version: 0.1.0-dev
+externalDocs:
+  description: Find more info here
+  url: https://gitlab.com/rusty-argentum/argentum
+servers:
+- description: The production API server
+  url: http://localhost:{port}/{basePath}
+  variables:
+    port:
+      default: "8080"
+      enum:
+      - "80"
+      - "8080"
+    basePath:
+      default: api/v1
+security:
+- bearerAuth: []
+tags:
+- description: Managing of the anonymous
+  name: anonymous
+- description: Managing of the user account
+  name: user-account
+paths:
+  /user/anonymous-register:
+    post:
+      description: Anonymous registers without any data
+      operationId: anonymousRegisters
+      requestBody:
+        $ref: '#/components/requestBodies/Empty'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnonymousRegistrationResult'
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Bad request
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Bad request
+      summary: Anonymous registers
+      tags:
+      - anonymous
+  /user/register:
+    post:
+      description: User registers with email and password
+      operationId: registerWithPassword
+      requestBody:
+        $ref: '#/components/requestBodies/RegistrationWithPasswordRequestBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationWithPasswordResult'
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Bad request
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Bad request
+      summary: User registers with password
+      tags:
+      - user-account
+  /user/password-login:
+    post:
+      description: Login as an user
+      operationId: loginWithPassword
+      requestBody:
+        $ref: '#/components/requestBodies/LoginWithPasswordRequestBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResult'
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Bad request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Unauthorized
+      summary: Login as an user
+      tags:
+      - user-account
+  /user/restore-password/token-request:
+    post:
+      description: Requested token and link will be sent to email
+      operationId: requestRestoreToken
+      requestBody:
+        $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Bad request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Unauthorized
+      summary: Anonymous requests restore password token
+      tags:
+      - user-account
+  /user/restore-password/change-password:
+    post:
+      description: Final step of restoring password process
+      operationId: changePasswordWithToken
+      requestBody:
+        $ref: '#/components/requestBodies/ChangePasswordRequestBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Bad request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Unauthorized
+      summary: User with token changes his password
+      tags:
+      - user-account
+components:
+  requestBodies:
+    Empty:
+      content:
+        application/json:
+          schema:
+            type: object
+      description: Empty request body
+      required: false
+    RegistrationWithPasswordRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrationWithPasswordSchema'
+      description: Data required to register with email and password
+      required: true
+    LoginWithPasswordRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginWithPasswordSchema'
+      description: Required data to login with email and password
+      required: true
+    RequestRestoreTokenRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestRestoreTokenSchema'
+      description: Required data to get restore password token
+      required: true
+    ChangePasswordRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChangePasswordSchema'
+      description: Required data to change password with token
+      required: true
+  schemas:
+    AnonymousRegistrationResult:
+      example:
+        aonymous_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        token: token
+      properties:
+        aonymous_id:
+          format: uuid
+          type: string
+        token:
+          type: string
+      required:
+      - aonymous_id
+      - token
+    ProblemDetail:
+      description: RFC 7807 Problem Details for HTTP APIs
+      properties:
+        code:
+          format: int32
+          maximum: 599
+          minimum: 400
+          type: integer
+        message:
+          type: string
+      required:
+      - code
+      - title
+      title: Schema for error response
+    RegistrationWithPasswordResult:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+      required:
+      - id
+    LoginResult:
+      example:
+        user_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        token: token
+      properties:
+        user_id:
+          format: uuid
+          type: string
+        token:
+          type: string
+      required:
+      - token
+      - user_id
+    RegistrationWithPasswordSchema:
+      example:
+        password: password
+        name:
+          last: last
+          first: first
+        email: email
+      properties:
+        email:
+          format: email
+          type: string
+        name:
+          $ref: '#/components/schemas/UserName'
+        password:
+          format: password
+          type: string
+      required:
+      - email
+      - name
+      - password
+    LoginWithPasswordSchema:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          format: email
+          type: string
+        password:
+          format: password
+          type: string
+      required:
+      - email
+      - password
+    RequestRestoreTokenSchema:
+      example:
+        email: email
+      properties:
+        email:
+          format: email
+          type: string
+      required:
+      - email
+    ChangePasswordSchema:
+      example:
+        password: password
+        token: token
+      properties:
+        token:
+          type: string
+        password:
+          format: password
+          type: string
+      required:
+      - password
+      - token
+    UserName:
+      example:
+        last: last
+        first: first
+      properties:
+        first:
+          maxLength: 255
+          minLength: 1
+          type: string
+        last:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - first
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+

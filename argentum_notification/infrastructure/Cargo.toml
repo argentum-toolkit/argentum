@@ -1,0 +1,17 @@
+[package]
+name = "argentum_notification_infrastructure"
+description = "Infrastructure layer of notification component"
+version = "0.1.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "BSD-3-Clause"
+edition = "2018"
+homepage = "https://github.com/rusty-argentum/argentum"
+repository = "https://github.com/rusty-argentum/argentum"
+documentation = "https://github.com/rusty-argentum/argentum"
+readme = "readme.adoc"
+
+[dependencies]
+argentum_notification_business = { path = "../../argentum_notification/business", version = "0.1.0-dev" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = "0.1.0-dev" }
+argentum_user_business = { path = "../../argentum_user/business", version = "0.1.0-dev" }
+lettre = "0.10.0-rc.3"

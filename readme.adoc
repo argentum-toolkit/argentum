@@ -2,15 +2,17 @@
 
 == Packages documentation
 
-* link:argentum_event_business/readme.adoc[Argentum Event Business package]
-* link:argentum_user_business/readme.adoc[Argentum User Business package]
-* link:argentum_user_account_business/readme.adoc[Argentum User Account Business package]
-* link:argentum_user_account_infrastructure/readme.adoc[Argentum User Account Infrastructure package]
+* link:argentum_event/business/readme.adoc[Argentum Event Business package]
+* link:argentum_user/business/readme.adoc[Argentum User Business package]
+* link:argentum_user_account/business/readme.adoc[Argentum User Account Business package]
+* link:argentum_user_account/infrastructure/readme.adoc[Argentum User Account Infrastructure package]
 
 === How to setup project
 
 * clone repository
 * `devops/scripts/setup.sh`
+
+=== Why "Argentum"?
 
 
 === Project structure
@@ -54,13 +56,13 @@ WARNING: Circular dependencies is forbidden.
 .Code style, tests
 [source,bash]
 ....
-devops/scripts/check.sh
+$ devops/scripts/check.sh
 ....
 
 .Check only one package
 [source,bash]
 ....
-devops/scripts/check-item.sh {{package-name}}
+$ devops/scripts/check-item.sh {{package-name}}
 ....
 
 
@@ -70,12 +72,35 @@ devops/scripts/check-item.sh {{package-name}}
 * *chrono* - time
 
 
+== OpenAPI
+
+Pull new version of generator image
+[source, bash]
+....
+$ docker pull openapitools/openapi-generator-cli
+....
+
+How to generate a server library
+[source, bash]
+....
+$ docker run --rm -v "${PWD}:/local" -u $(id -u ${USER}):$(id -g ${USER}) openapitools/openapi-generator-cli generate \
+    -i /local/argentum_user_account/api-doc/openapi.yaml \
+    -g rust-server \
+    -o /local/argentum_user_account/api \
+    -c /local/argentum_user_account/api-doc/openapi.config.json
+
+$ cargo fmt --manifest-path argentum_user_account/api/Cargo.toml
+....
+
 == TODO
+
+* improve error HTTP responses
+* add examples to OpenAPI doc
+* validation
 
 * documentation, license
 * build scripts (behaviour tests, push artifacts)
 * https://crates.io/crates/cargo-release
 * pre-commit (clippy, rustfmt + autofix)
 * improve errors processing
-* events
 * notifications

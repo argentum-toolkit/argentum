@@ -1,0 +1,29 @@
+POST http://{{host}}{{baseUrl}}/user/register
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "email": "troy.odonnell@examples.io",
+    "name": {
+        "first": "Troy",
+        "last": "Odonnell"
+    },
+    "password": "123"
+}
+
+###
+
+POST http://{{host}}{{baseUrl}}/user/login
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "email": "troy.odonnell@examples.io",
+    "password":"123"
+}
+
+> {%
+    client.global.set('authToken', response.body.token);
+%}
+
+###

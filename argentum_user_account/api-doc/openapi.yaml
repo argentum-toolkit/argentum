@@ -1,0 +1,133 @@
+openapi: 3.0.3
+
+info:
+  title: Demo app
+  version: 0.1.0-dev
+
+  description: This is demo app
+  license:
+    name: BSD-3
+
+  contact:
+    url: https://gitlab.com/rusty-argentum/argentum
+
+servers:
+  - url: http://localhost:{port}/{basePath}
+    description: The production API server
+    variables:
+      port:
+        enum:
+          - '80'
+          - '8080'
+        default: '8080'
+      basePath:
+        default: api/v1
+
+externalDocs:
+  description: Find more info here
+  url: https://gitlab.com/rusty-argentum/argentum
+
+paths:
+  /user/anonymous-register:
+    post:
+      summary: Anonymous registers
+      description: Anonymous registers without any data
+      tags:
+        - anonymous
+      operationId: anonymousRegisters
+      requestBody:
+        $ref: "../../argentum_standard/api-doc/request.oas.yaml#/components/requestBodies/Empty"
+      responses:
+        '201':
+          $ref: "./response.oas.yaml#/components/responses/AnonymousRegisteredSuccessfully"
+        '400':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
+        '422':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
+
+  /user/register:
+    post:
+      summary: User registers with password
+      description: User registers with email and password
+      tags:
+        - user-account
+      operationId: registerWithPassword
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/RegistrationWithPasswordRequestBody"
+      responses:
+        '201':
+          $ref: "./response.oas.yaml#/components/responses/UserRegisteredSuccessfully"
+        '400':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
+        '422':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
+
+  /user/password-login:
+    post:
+      summary: Login as an user
+      description: Login as an user
+      tags:
+        - user-account
+      operationId: loginWithPassword
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/LoginWithPasswordRequestBody"
+
+      responses:
+        '200':
+          $ref: "./response.oas.yaml#/components/responses/UserLoggedInSuccessfully"
+        '400':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
+        '401':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
+
+  /user/restore-password/token-request:
+    post:
+      summary: Anonymous requests restore password token
+      description: Requested token and link will be sent to email
+      tags:
+        - user-account
+      operationId: requestRestoreToken
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/RequestRestoreTokenRequestBody"
+
+      responses:
+        '200':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/EmptyOk"
+        '400':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
+        '401':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
+
+  /user/restore-password/change-password:
+    post:
+      summary: User with token changes his password
+      description: Final step of restoring password process
+      tags:
+        - user-account
+      operationId: changePasswordWithToken
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/ChangePasswordRequestBody"
+
+      responses:
+        '200':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/EmptyOk"
+        '400':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
+        '401':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+tags:
+  - name: anonymous
+    description: Managing of the anonymous
+
+  - name: user-account
+    description: Managing of the user account
+
+security:
+  - bearerAuth: []

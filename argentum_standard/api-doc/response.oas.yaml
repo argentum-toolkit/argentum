@@ -1,0 +1,35 @@
+openapi: 3.0.3
+
+info:
+  title: User Account component's responses
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  responses:
+    EmptyOk:
+      description: OK
+      content:
+        application/json:
+            schema: {}
+
+    400:
+      description: Bad request
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
+
+    401:
+      description: Unauthorized
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
+
+    422:
+      description: Bad request
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"

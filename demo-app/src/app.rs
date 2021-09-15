@@ -7,25 +7,26 @@ use argentum_user_account_business::use_case::user_logins_with_password::UserLog
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
 use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::value_object::name::Name;
+use std::sync::Arc;
 
-pub struct App<'s> {
-    id_factory: &'s dyn IdFactory,
-    anonymous_registers_uc: &'s AnonymousRegistersUc<'s>,
-    user_logins_with_pw: &'s UserLoginsWithPasswordUc<'s>,
-    user_registers_with_pw: &'s UserRegistersWithPasswordUc<'s>,
-    user_authenticates_with_token: &'s UserAuthenticatesWithTokenUc<'s>,
-    logger: &'s dyn LoggerTrait,
+pub struct App {
+    id_factory: Arc<dyn IdFactory>,
+    anonymous_registers_uc: Arc<AnonymousRegistersUc>,
+    user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+    user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
+    user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
+    logger: Arc<dyn LoggerTrait>,
 }
 
-impl<'s> App<'s> {
+impl App {
     pub fn new(
-        id_factory: &'s dyn IdFactory,
-        anonymous_registers_uc: &'s AnonymousRegistersUc<'s>,
-        user_logins_with_pw: &'s UserLoginsWithPasswordUc<'s>,
-        user_registers_with_pw: &'s UserRegistersWithPasswordUc<'s>,
-        user_authenticates_with_token: &'s UserAuthenticatesWithTokenUc<'s>,
-        logger: &'s dyn LoggerTrait,
-    ) -> App<'s> {
+        id_factory: Arc<dyn IdFactory>,
+        anonymous_registers_uc: Arc<AnonymousRegistersUc>,
+        user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+        user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
+        user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
+        logger: Arc<dyn LoggerTrait>,
+    ) -> App {
         App {
             id_factory,
             anonymous_registers_uc,
@@ -116,7 +117,9 @@ impl<'s> App<'s> {
             Err(e) => return Err(e.to_string()),
         };
 
-        let login_result = self.user_logins_with_pw.execute(anon2, email2, password2);
+        let login_result = self
+            .user_logins_with_pw
+            .execute(Some(anon2), email2, password2);
 
         let login = match login_result {
             Ok(l) => {
