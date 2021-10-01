@@ -1,3 +1,4 @@
+use crate::repository::credential_writer::CredentialWriterError;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryError;
 use argentum_encryption_business::password::EncryptionError;
 use argentum_user_business::repository::user_repository::ExternalUserError;
@@ -17,7 +18,14 @@ pub enum RestorePasswordError {
     TokenExpired,
 
     #[error("Can't save token")]
-    TokenRepositoryError(#[from] RestorePasswordTokenRepositoryError),
+    TokenRepositoryError(#[source] RestorePasswordTokenRepositoryError),
+
+    #[error("Can't save token")]
+    CredentialWriterError(
+        #[source]
+        #[from]
+        CredentialWriterError,
+    ),
 
     #[error("Can't encrypt new password")]
     PasswordEncryptionError(#[from] EncryptionError),

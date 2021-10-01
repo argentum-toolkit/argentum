@@ -21,7 +21,7 @@ pub async fn anonymous_registers(
 
     match result {
         Ok((anonymous, session)) => {
-            let id = id_factory.id_to_uuid(anonymous.id);
+            let id = id_factory.id_to_uuid(&anonymous.id);
 
             let schema = AnonymousRegistrationResult::new(id, session.token);
             HttpResponse::Created().json(&schema)

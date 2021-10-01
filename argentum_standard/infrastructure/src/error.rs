@@ -6,7 +6,7 @@ use std::fmt::Result;
 #[derive(thiserror::Error)]
 pub enum InternalError {
     #[error("Internal Server Error")]
-    Server(#[from] Box<dyn Error>),
+    Server(#[source] Box<dyn Error>),
 }
 
 fn error_chain_fmt(e: &impl Error, f: &mut Formatter<'_>) -> Result {

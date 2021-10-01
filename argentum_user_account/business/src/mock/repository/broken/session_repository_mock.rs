@@ -24,30 +24,33 @@ impl Default for SessionRepositoryMockWithBrokenSave {
 }
 
 impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
-    fn find(&self, id: &Id) -> Option<Session> {
-        self.sessions
+    fn find(&self, id: &Id) -> Result<Option<Session>, SessionRepositoryError> {
+        let session = self
+            .sessions
             .read()
             .unwrap()
             .get(id)
-            .map(|s| Session::new(s.id.clone(), s.user_id.clone(), s.token.clone()))
+            .map(|s| Session::new(s.id.clone(), s.user_id.clone(), s.token.clone()));
+
+        Ok(session)
     }
 
-    fn find_by_token(&self, token: String) -> Option<Session> {
+    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
         for (_, s) in self.sessions.read().unwrap().iter() {
             if s.token == token {
-                return Some(Session::new(
+                return Ok(Some(Session::new(
                     s.id.clone(),
                     s.user_id.clone(),
                     s.token.clone(),
-                ));
+                )));
             }
         }
 
-        None
+        Ok(None)
     }
 
     fn save(&self, _session: &Session) -> Result<(), SessionRepositoryError> {
-        Err(SessionRepositoryError::Save)
+        Err(SessionRepositoryError::Save(None))
     }
 
     fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {

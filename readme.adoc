@@ -12,6 +12,26 @@
 * clone repository
 * `devops/scripts/setup.sh`
 
+
+=== How to start
+
+Database:
+[bash]
+----
+docker-compose up service.user_account.db
+cd argentum_user_account/infrastructure
+diesel migration run
+----
+
+Demo web application:
+
+[bash]
+----
+cd demo-webapp
+cargo run
+----
+
+
 === Why "Argentum"?
 
 

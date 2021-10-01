@@ -23,7 +23,11 @@ argentum_user_account_api = { path = "../api" }
 argentum_user_account_business = { path = "../business" }
 argentum_user_business = { path = "../../argentum_user/business" }
 
+chrono = { version = "0.4.19", features = ["serde"] }
 derive_more = "0.99.16"
+diesel = { version = "1.4.4", features = ["postgres", "r2d2", "uuidv07", "chrono"] }
+dotenv = "0.15.0"
 futures-util = "0.3.16"
 serde = { version = "1.0", features = ["derive"] }
 rand = "0.7"
+uuid = { version = "0.8", features = ["serde", "v4"] }

@@ -38,21 +38,18 @@ pub async fn login_with_password(
 
     match result {
         Ok(session) => {
-            let id = id_factory.id_to_uuid(session.user_id);
+            let id = id_factory.id_to_uuid(&session.user_id);
 
             let schema = LoginWithPasswordResponse::OK(LoginResult::new(id, session.token));
             HttpResponse::Ok().json(&schema)
         }
+        Err(LoginError::WrongEmailOrPassword) => {
+            build_unprocessable_entity_response(format!("{}", LoginError::WrongEmailOrPassword))
+        }
+        Err(e) => {
+            logger.error(format!("{:?}", InternalError::Server(Box::new(e))));
 
-        Err(e) => match e {
-            LoginError::SaveSession | LoginError::GetUserError(_) => {
-                logger.error(format!("{:?}", InternalError::Server(Box::new(e))));
-
-                build_internal_server_error_response()
-            }
-            LoginError::WrongEmailOrPassword => {
-                build_unprocessable_entity_response(format!("{}", e))
-            }
-        },
+            build_internal_server_error_response()
+        }
     }
 }

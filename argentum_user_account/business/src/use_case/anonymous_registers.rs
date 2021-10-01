@@ -34,12 +34,9 @@ impl AnonymousRegistersUc {
         let user = {
             let user = AnonymousUser::new(&id);
 
-            let result = self.user_repository.save(&user);
+            self.user_repository.save(&user)?;
 
-            match result {
-                Ok(_) => user,
-                Err(e) => return Err(AnonymousRegistrationError::SavingAnonymousError(e)),
-            }
+            user
         };
 
         let session = Session::new(
@@ -48,20 +45,27 @@ impl AnonymousRegistersUc {
             self.token_generator.generate(&id),
         );
 
-        match self.session_repository.save(&session) {
-            Ok(_) => Ok((user, session)),
-            Err(e) => Err(AnonymousRegistrationError::SavingSessionError(e)),
-        }
+        self.session_repository.save(&session)?;
+
+        Ok((user, session))
     }
 }
 
 #[derive(thiserror::Error, Debug)]
 pub enum AnonymousRegistrationError {
     #[error("Can't save anonymous")]
-    SavingAnonymousError(#[from] ExternalUserError),
+    SavingAnonymousError(
+        #[from]
+        #[source]
+        ExternalUserError,
+    ),
 
     #[error("Can't save session")]
-    SavingSessionError(#[from] SessionRepositoryError),
+    SavingSessionError(
+        #[from]
+        #[source]
+        SessionRepositoryError,
+    ),
 }
 
 #[cfg(test)]

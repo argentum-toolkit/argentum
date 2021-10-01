@@ -24,26 +24,29 @@ impl Default for SessionRepositoryMock {
 }
 
 impl SessionRepositoryTrait for SessionRepositoryMock {
-    fn find(&self, id: &Id) -> Option<Session> {
-        self.sessions
+    fn find(&self, id: &Id) -> Result<Option<Session>, SessionRepositoryError> {
+        let session = self
+            .sessions
             .read()
             .unwrap()
             .get(id)
-            .map(|s| Session::new(s.id.clone(), s.user_id.clone(), s.token.clone()))
+            .map(|s| Session::new(s.id.clone(), s.user_id.clone(), s.token.clone()));
+
+        Ok(session)
     }
 
-    fn find_by_token(&self, token: String) -> Option<Session> {
+    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
         for (_, s) in self.sessions.read().unwrap().iter() {
             if s.token == token {
-                return Some(Session::new(
+                return Ok(Some(Session::new(
                     s.id.clone(),
                     s.user_id.clone(),
                     s.token.clone(),
-                ));
+                )));
             }
         }
 
-        None
+        Ok(None)
     }
 
     fn save(&self, session: &Session) -> Result<(), SessionRepositoryError> {
@@ -63,7 +66,7 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
             .is_none()
         {
             true => Ok(()),
-            false => Err(SessionRepositoryError::Save),
+            false => Err(SessionRepositoryError::Save(None)),
         }
     }
 

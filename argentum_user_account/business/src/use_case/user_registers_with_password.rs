@@ -9,6 +9,7 @@ use argentum_user_business::repository::user_repository::{
 };
 use argentum_user_business::value_object::name::Name;
 
+use crate::repository::credential_writer::CredentialWriterError;
 use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
@@ -40,32 +41,24 @@ impl UserRegistersWithPasswordUc {
     ) -> Result<AuthenticatedUser, RegistrationError> {
         let result = self.user_repository.find_by_email(&email);
 
-        match result {
-            Ok(o) => {
-                if o.is_some() {
-                    return Err(RegistrationError::EmailAlreadyExists);
-                }
-            }
-            Err(e) => return Err(RegistrationError::SavingError(e)),
-        };
+        if result?.is_some() {
+            return Err(RegistrationError::EmailAlreadyExists);
+        }
 
         //save user
         let user = {
             //it is `temporary mutability` pattern
             let user = AuthenticatedUser::new(&id, name, email);
-            let result = self.user_repository.save(&user);
+            self.user_repository.save(&user)?;
 
-            match result {
-                Ok(_) => user,
-                Err(e) => return Err(RegistrationError::SavingError(e)),
-            }
+            user
         };
 
         //save credentials
         let (hashed_password, salt) = self.encryptor.encrypt(&password)?;
 
         let cred = PasswordCredential::new(id.clone(), hashed_password, salt);
-        self.credential_writer.write(Box::new(cred));
+        self.credential_writer.write(Box::new(cred))?;
 
         Ok(user)
     }
@@ -77,10 +70,25 @@ pub enum RegistrationError {
     EmailAlreadyExists,
 
     #[error("Can't encrypt password")]
-    EncryptionError(#[from] EncryptionError),
+    EncryptionError(
+        #[source]
+        #[from]
+        EncryptionError,
+    ),
 
     #[error("External user's error")]
-    SavingError(#[from] ExternalUserError),
+    SavingUserError(
+        #[from]
+        #[source]
+        ExternalUserError,
+    ),
+
+    #[error("External user's error")]
+    SavingCredentialsError(
+        #[source]
+        #[from]
+        CredentialWriterError,
+    ),
 }
 
 #[cfg(test)]
@@ -157,7 +165,7 @@ mod test {
                 Err("Should return an error")
             }
             Err(e) => match e {
-                RegistrationError::SavingError(_) => Ok(()),
+                RegistrationError::SavingUserError(_) => Ok(()),
                 _ => Err("Wrong Error"),
             },
         }

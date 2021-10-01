@@ -35,7 +35,7 @@ pub async fn register_with_password(
 
     match result {
         Ok(user) => {
-            let id = id_factory.id_to_uuid(user.id);
+            let id = id_factory.id_to_uuid(&user.id);
 
             let schema = RegistrationWithPasswordResult::new(id);
             HttpResponse::Created().json(&schema)
@@ -45,7 +45,7 @@ pub async fn register_with_password(
             RegistrationError::EmailAlreadyExists => {
                 build_unprocessable_entity_response(format!("{}", e))
             }
-            RegistrationError::EncryptionError(_) | RegistrationError::SavingError(_) => {
+            _ => {
                 logger.error(format!("{:?}", InternalError::Server(Box::new(e))));
 
                 build_internal_server_error_response()

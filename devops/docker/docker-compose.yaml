@@ -6,3 +6,18 @@ services:
     working_dir: /code
     volumes:
       - ../..:/code
+
+  service.user_account.db:
+    image: 'postgres:13.4'
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    user: $HOST_UID:$HOST_GID
+    volumes:
+      - ../../var/db/user_account/data:/var/lib/postgresql/data
+    tmpfs:
+      - /tmp:exec,size=1G
+    ports:
+      - "5432:5432"
+    #TODO: close ports for production mode
