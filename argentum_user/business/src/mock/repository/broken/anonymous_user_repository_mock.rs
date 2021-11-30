@@ -23,14 +23,14 @@ impl Default for AnonymousRepositoryMockWithBrokenSave {
 }
 
 impl AnonymousUserRepositoryTrait for AnonymousRepositoryMockWithBrokenSave {
-    fn find(&self, id: &Id) -> Option<AnonymousUser> {
-        self.users.read().unwrap().get(id).map(|u| AnonymousUser {
+    fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
+        Ok(self.users.read().unwrap().get(id).map(|u| AnonymousUser {
             id: u.id.clone(),
             created_at: u.created_at,
-        })
+        }))
     }
 
     fn save(&self, _user: &AnonymousUser) -> Result<(), ExternalUserError> {
-        Err(ExternalUserError::Anonymous)
+        Err(ExternalUserError::Anonymous(None))
     }
 }

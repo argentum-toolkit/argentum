@@ -4,7 +4,7 @@ version = "0.1.0-dev"
 authors = []
 description = "This is demo app"
 license = "Unlicense"
-edition = "2018"
+edition = "2021"
 
 [features]
 default = ["client", "server"]

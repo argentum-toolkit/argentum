@@ -3,9 +3,6 @@ use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_user_account_business::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
-use argentum_user_account_business::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
-use argentum_user_account_business::mock::repository::session_repository_mock::SessionRepositoryMock;
 use argentum_user_account_business::repository::password_credential_checker::PasswordCredentialChecker;
 use argentum_user_account_business::repository::password_credential_writer::PasswordCredentialWriter;
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
@@ -14,11 +11,16 @@ use argentum_user_account_business::use_case::user_authenticates_with_token::Use
 use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
 use argentum_user_account_infrastructure::token::StringTokenGenerator;
-use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
-use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
-use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
-use std::sync::Arc;
 use argentum_user_account_business::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
+use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
+use argentum_user_account_infrastructure::db_diesel::repository::password_credential_repository::PasswordCredentialRepository;
+use argentum_user_account_infrastructure::db_diesel::repository::session_repository::SessionRepository;
+use argentum_user_account_infrastructure::db_diesel::repository::restore_password_token_repository::RestorePasswordTokenRepository;
+use argentum_user_infrastructure::db_diesel::repository::anonymous_binding_repository::AnonymousBindingRepository;
+use argentum_user_infrastructure::db_diesel::repository::anonymous_user_repository::AnonymousUserRepository;
+use argentum_user_infrastructure::db_diesel::repository::authenticated_user_repository::AuthenticatedUserRepository;
+
+use std::sync::Arc;
 
 pub struct DiC {
     // Public services
@@ -57,9 +59,23 @@ impl DiC {
 }
 
 pub fn di_factory() -> DiC {
-    let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
-    let session_repository = Arc::new(SessionRepositoryMock::new());
+    let user_account_pg_connection_pool_manager =
+        Arc::new(ConnectionPoolManager::new("AG_USER_ACCOUNT_DATABASE_URL"));
+
+    let user_pg_connection_pool_manager =
+        Arc::new(ConnectionPoolManager::new("AG_USER_DATABASE_URL"));
+
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
+
+    let anonymous_user_repository = Arc::new(AnonymousUserRepository::new(
+        user_pg_connection_pool_manager.clone(),
+        unique_id_factory.clone(),
+    ));
+
+    let session_repository = Arc::new(SessionRepository::new(
+        user_account_pg_connection_pool_manager.clone(),
+        unique_id_factory.clone(),
+    ));
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
@@ -72,8 +88,14 @@ pub fn di_factory() -> DiC {
         token_generator.clone(),
     ));
 
-    let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
-    let password_credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
+    let authenticated_user_repository = Arc::new(AuthenticatedUserRepository::new(
+        user_pg_connection_pool_manager.clone(),
+        unique_id_factory.clone(),
+    ));
+    let password_credential_repository = Arc::new(PasswordCredentialRepository::new(
+        user_account_pg_connection_pool_manager.clone(),
+        unique_id_factory.clone(),
+    ));
 
     let password_credential_writer = Arc::new(PasswordCredentialWriter::new(
         password_credential_repository.clone(),
@@ -92,7 +114,11 @@ pub fn di_factory() -> DiC {
         pbkdf2_password_encryptor.clone(),
     ));
 
-    let anonymous_binding_repository = Arc::new(AnonymousBindingRepositoryMock::new());
+    let anonymous_binding_repository = Arc::new(AnonymousBindingRepository::new(
+        user_pg_connection_pool_manager,
+        unique_id_factory.clone(),
+    ));
+
     let user_logins_with_password_uc = Arc::new(UserLoginsWithPasswordUc::new(
         authenticated_user_repository.clone(),
         anonymous_binding_repository,
@@ -111,7 +137,11 @@ pub fn di_factory() -> DiC {
 
     let notificator = Arc::new(StdoutNotificator::new());
 
-    let restore_password_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
+    let restore_password_token_repository = Arc::new(RestorePasswordTokenRepository::new(
+        user_account_pg_connection_pool_manager,
+        unique_id_factory.clone(),
+    ));
+    // let restore_password_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
 
     let anonymous_requests_restore_token_uc = Arc::new(AnonymousRequestsRestoreToken::new(
         "Rusty Argentum demo web application".to_string(),

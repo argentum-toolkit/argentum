@@ -4,7 +4,7 @@ description = "Demo web app of argentum toolkit"
 version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/rusty-argentum/argentum"
 repository = "https://github.com/rusty-argentum/argentum"
 documentation = "https://github.com/rusty-argentum/argentum"
@@ -21,6 +21,7 @@ argentum_notification_infrastructure = { path = "../argentum_notification/infras
 argentum_standard_business = { path = "../argentum_standard/business" }
 argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure" }
 argentum_user_business = { path = "../argentum_user/business" }
+argentum_user_infrastructure = { path = "../argentum_user/infrastructure" }
 argentum_user_account_business = { path = "../argentum_user_account/business" }
 argentum_user_account_infrastructure = { path = "../argentum_user_account/infrastructure" }
 argentum_log_business = { path = "../argentum_log/business" }

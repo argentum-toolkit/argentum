@@ -4,7 +4,7 @@ description = "Business layer of user account component"
 version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/rusty-argentum/argentum"
 repository = "https://github.com/rusty-argentum/argentum"
 documentation = "https://github.com/rusty-argentum/argentum"
@@ -17,5 +17,5 @@ argentum_log_business = { path = "../../argentum_log/business" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = "0.1.0-dev" }
 argentum_user_business = { path = "../../argentum_user/business", version = "0.1.0-dev" }
 argentum_notification_business = { path = "../../argentum_notification/business", version = "0.1.0-dev" }
-chrono = "0.4"
+chrono = "0.4.19"
 thiserror = "1.0"

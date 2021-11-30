@@ -64,13 +64,13 @@ impl AnonymousWithTokenChangesPassword {
             },
         };
 
-        self.credential_writer.delete_for_user(&user.id);
+        self.credential_writer.delete_for_user(&user.id)?;
 
         //save credentials
         let (hashed_password, salt) = self.encryptor.encrypt(&password)?;
 
         let cred = PasswordCredential::new(user.id.clone(), hashed_password, salt);
-        self.credential_writer.write(Box::new(cred));
+        self.credential_writer.write(Box::new(cred))?;
 
         if let Err(e) = self
             .restore_password_token_repository
@@ -90,7 +90,7 @@ mod tests {
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
-    use crate::repository::password_credential_repository::PasswordCredentialRepository;
+    use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
     use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
@@ -153,7 +153,7 @@ mod tests {
             return Err("Password is not changed");
         }
 
-        if let None = credential_repository.find_by_user_id(&user_id) {
+        if let Ok(None) = credential_repository.find_by_user_id(&user_id) {
             return Err("Can't find new password");
         }
 

@@ -1,5 +1,6 @@
 use crate::entity::restore_password_token::RestorePasswordToken;
 use argentum_standard_business::data_type::id::Id;
+use std::error::Error;
 
 pub trait RestorePasswordTokenRepositoryTrait: Sync + Send {
     fn find(
@@ -21,8 +22,11 @@ pub trait RestorePasswordTokenRepositoryTrait: Sync + Send {
 #[derive(thiserror::Error, Debug)]
 pub enum RestorePasswordTokenRepositoryError {
     #[error("Can't save session")]
-    Save,
+    Save(#[source] Option<Box<dyn Error>>),
 
     #[error("Can't delete session")]
-    Delete,
+    Delete(#[source] Option<Box<dyn Error>>),
+
+    #[error("Restore Password Token repository error")]
+    Other(#[source] Option<Box<dyn Error>>),
 }

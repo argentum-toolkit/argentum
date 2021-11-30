@@ -1,6 +1,8 @@
 use crate::entity::session::Session;
-use crate::repository::password_credential_checker::PasswordCredentialChecker;
-use crate::repository::session_repository::SessionRepositoryTrait;
+use crate::repository::password_credential_checker::{
+    PasswordCredentialChecker, PasswordCredentialCheckerError,
+};
+use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
@@ -52,17 +54,12 @@ impl UserLoginsWithPasswordUc {
     ) -> Result<Session, LoginError> {
         let result = self.user_repository.find_by_email(&email);
 
-        let user = match result {
-            Ok(o) => match o {
-                Some(u) => u,
-                None => return Err(LoginError::WrongEmailOrPassword),
-            },
-            Err(e) => return Err(LoginError::GetUserError(e)),
+        let user = match result? {
+            Some(u) => u,
+            None => return Err(LoginError::WrongEmailOrPassword),
         };
 
-        let ok = self.credential_checker.check(user.id(), &password);
-
-        if !ok {
+        if !self.credential_checker.check(user.id(), &password)? {
             return Err(LoginError::WrongEmailOrPassword);
         }
 
@@ -72,10 +69,7 @@ impl UserLoginsWithPasswordUc {
             self.token_generator.generate(&user.id),
         );
 
-        let result = match self.session_repository.save(&session) {
-            Ok(_) => Result::Ok(session),
-            Err(_) => Err(LoginError::SaveSession),
-        };
+        self.session_repository.save(&session)?;
 
         if let Some(anonymous) = anonymous {
             match self
@@ -97,17 +91,32 @@ impl UserLoginsWithPasswordUc {
             }
         }
 
-        result
+        Result::Ok(session)
     }
 }
 
 #[derive(thiserror::Error, Debug)]
 pub enum LoginError {
     #[error("Can't save session")]
-    SaveSession,
+    SaveSession(
+        #[source]
+        #[from]
+        SessionRepositoryError,
+    ),
 
     #[error("Can't get an user. DB error")]
-    GetUserError(#[from] ExternalUserError),
+    GetUserError(
+        #[source]
+        #[from]
+        ExternalUserError,
+    ),
+
+    #[error("Can't get an user. DB error")]
+    PasswordCredentialCheckerError(
+        #[source]
+        #[from]
+        PasswordCredentialCheckerError,
+    ),
 
     #[error("Wrong email or password")]
     WrongEmailOrPassword,
@@ -190,6 +199,7 @@ mod test {
 
                 let binding = anonymous_binding_repository
                     .find_by_user_id(&user_id)
+                    .unwrap()
                     .unwrap();
                 assert_eq!(binding.anonymous_id.to_string(), anonymous_id.to_string());
 

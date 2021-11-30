@@ -77,7 +77,7 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
             .is_none()
         {
             true => Ok(()),
-            false => Err(RestorePasswordTokenRepositoryError::Save),
+            false => Err(RestorePasswordTokenRepositoryError::Save(None)),
         }
     }
 

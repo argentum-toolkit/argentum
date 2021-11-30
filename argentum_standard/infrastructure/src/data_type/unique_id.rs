@@ -45,7 +45,7 @@ impl UniqueIdFactory {
         Box::new(UniqueId::new(uuid))
     }
 
-    pub fn id_to_uuid(&self, id: Id) -> Uuid {
+    pub fn id_to_uuid(&self, id: &Id) -> Uuid {
         id.as_any()
             .downcast_ref::<UniqueId>()
             .map(|id| id.value)

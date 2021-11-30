@@ -3,7 +3,12 @@ use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::{web, Error, HttpMessage, HttpResponse};
-use argentum_standard_infrastructure::actix_web::http_problem::HttpProblemError;
+use argentum_log_business::LoggerTrait;
+use argentum_standard_infrastructure::actix_web::http_problem::{
+    build_internal_server_error_response, HttpProblemError,
+};
+use argentum_standard_infrastructure::error::InternalError;
+use argentum_user_account_business::use_case::user_authenticates_with_token::AuthenticationError as BusinessAuthenticationError;
 use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use derive_more::{Display, Error};
 use futures_util::future::{err, ok, Ready};
@@ -106,16 +111,25 @@ where
                 .app_data::<web::Data<Arc<UserAuthenticatesWithTokenUc>>>()
                 .unwrap();
 
+            let logger = req.app_data::<web::Data<Arc<dyn LoggerTrait>>>().unwrap();
+
             let user = match uc.execute(token) {
                 Ok(user) => user,
-                Err(_) => {
+                Err(BusinessAuthenticationError::UserNotFound)
+                | Err(BusinessAuthenticationError::WrongToken) => {
                     return Box::pin(async move {
-                        //TODO: log error
                         err(AuthenticationError {
                             details: "can't authenticate",
                         })
                         .await?
                     });
+                }
+                Err(e) => {
+                    logger.error(format!("{:?}", InternalError::Server(Box::new(e))));
+
+                    return Box::pin(
+                        async move { err(build_internal_server_error_response()).await? },
+                    );
                 }
             };
 

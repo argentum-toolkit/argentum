@@ -1,4 +1,4 @@
-use crate::repository::session_repository::SessionRepositoryTrait;
+use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use argentum_user_business::entity::user::User;
 use argentum_user_business::entity::user::User::{Anonymous, Authenticated};
 use argentum_user_business::repository::user_repository::{
@@ -26,23 +26,16 @@ impl UserAuthenticatesWithTokenUc {
     }
 
     pub fn execute(&self, token: String) -> Result<User, AuthenticationError> {
-        let session_result = self.session_repository.find_by_token(token);
-
-        let session = match session_result {
+        let session = match self.session_repository.find_by_token(token)? {
             Some(s) => s,
             None => return Err(AuthenticationError::WrongToken),
         };
 
-        let user = self.user_repository.find(&session.user_id);
-
-        match user {
-            Err(e) => Err(AuthenticationError::UserRepositoryError(e)),
-            Ok(o) => match o {
-                Some(u) => Ok(Authenticated(u)),
-                None => match self.anon_repository.find(&session.user_id) {
-                    Some(a) => Ok(Anonymous(a)),
-                    None => Err(AuthenticationError::UserNotFound),
-                },
+        match self.user_repository.find(&session.user_id)? {
+            Some(u) => Ok(Authenticated(u)),
+            None => match self.anon_repository.find(&session.user_id)? {
+                Some(a) => Ok(Anonymous(a)),
+                None => Err(AuthenticationError::UserNotFound),
             },
         }
     }
@@ -57,7 +50,18 @@ pub enum AuthenticationError {
     WrongToken,
 
     #[error("User repository error")]
-    UserRepositoryError(#[from] ExternalUserError),
+    UserRepositoryError(
+        #[source]
+        #[from]
+        ExternalUserError,
+    ),
+
+    #[error("Session repository error")]
+    SessionRepositoryError(
+        #[source]
+        #[from]
+        SessionRepositoryError,
+    ),
 }
 
 #[cfg(test)]
