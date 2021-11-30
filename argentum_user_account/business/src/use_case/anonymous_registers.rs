@@ -32,7 +32,7 @@ impl AnonymousRegistersUc {
 
     pub fn execute(&self, id: &Id) -> Result<(AnonymousUser, Session), AnonymousRegistrationError> {
         let user = {
-            let user = AnonymousUser::new(&id);
+            let user = AnonymousUser::new(id);
 
             self.user_repository.save(&user)?;
 
@@ -42,7 +42,7 @@ impl AnonymousRegistersUc {
         let session = Session::new(
             self.id_factory.create(),
             user.id().clone(),
-            self.token_generator.generate(&id),
+            self.token_generator.generate(id),
         );
 
         self.session_repository.save(&session)?;

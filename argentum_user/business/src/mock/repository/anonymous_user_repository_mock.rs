@@ -23,11 +23,11 @@ impl Default for AnonymousUserRepositoryMock {
 }
 
 impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
-    fn find(&self, id: &Id) -> Option<AnonymousUser> {
-        self.users.read().unwrap().get(id).map(|u| AnonymousUser {
+    fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
+        Ok(self.users.read().unwrap().get(id).map(|u| AnonymousUser {
             id: u.id.clone(),
             created_at: u.created_at,
-        })
+        }))
     }
 
     fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError> {
@@ -46,7 +46,7 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
             .is_none()
         {
             true => Ok(()),
-            false => Err(ExternalUserError::Anonymous),
+            false => Err(ExternalUserError::Anonymous(None)),
         }
     }
 }

@@ -1,6 +1,6 @@
 [package]
-name = "argentum_user_account_infrastructure"
-description = "Business layer of user account component"
+name = "argentum_user_infrastructure"
+description = "Business layer of user component"
 version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
@@ -13,21 +13,13 @@ readme = "readme.adoc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "3.3.2"
-actix-http = "3.0.0-beta.10"
-
-argentum_log_business = { path = "../../argentum_log/business" }
 argentum_standard_business = { path = "../../argentum_standard/business" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }
-argentum_user_account_api = { path = "../api" }
-argentum_user_account_business = { path = "../business" }
 argentum_user_business = { path = "../../argentum_user/business" }
 
 chrono = { version = "0.4.19", features = ["serde"] }
 derive_more = "0.99.16"
 diesel = { version = "1.4.4", features = ["postgres", "r2d2", "uuidv07", "chrono"] }
 dotenv = "0.15.0"
-futures-util = "0.3.16"
 serde = { version = "1.0", features = ["derive"] }
-rand = "0.7"
 uuid = { version = "0.8", features = ["serde", "v4"] }

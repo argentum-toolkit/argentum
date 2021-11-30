@@ -26,12 +26,18 @@ impl Default for AnonymousBindingRepositoryMock {
 }
 
 impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
-    fn find_by_user_id(&self, user_id: &Id) -> Option<AnonymousBinding> {
-        self.sessions
+    fn find_by_user_id(
+        &self,
+        user_id: &Id,
+    ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
+        let binding = self
+            .sessions
             .read()
             .unwrap()
             .get(user_id)
-            .map(|b| AnonymousBinding::new(b.user_id.clone(), b.anonymous_id.clone()))
+            .map(|b| AnonymousBinding::new(b.user_id.clone(), b.anonymous_id.clone()));
+
+        Ok(binding)
     }
 
     fn save(&self, binding: &AnonymousBinding) -> Result<(), AnonymousBindingRepositoryError> {
@@ -47,7 +53,7 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
             .is_none()
         {
             true => Ok(()),
-            false => Err(AnonymousBindingRepositoryError::Save),
+            false => Err(AnonymousBindingRepositoryError::Save(None)),
         }
     }
 }

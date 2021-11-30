@@ -13,6 +13,7 @@ packages=(
   'argentum_standard/business'
   'argentum_standard/infrastructure'
   'argentum_user/business'
+  'argentum_user/infrastructure'
   'argentum_user_account/business'
   'argentum_user_account/infrastructure'
   'demo-app'

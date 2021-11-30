@@ -199,6 +199,7 @@ mod test {
 
                 let binding = anonymous_binding_repository
                     .find_by_user_id(&user_id)
+                    .unwrap()
                     .unwrap();
                 assert_eq!(binding.anonymous_id.to_string(), anonymous_id.to_string());
 

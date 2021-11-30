@@ -31,7 +31,7 @@ impl PasswordCredentialChecker {
             Ok(Some(cred)) => {
                 let res =
                     self.validator
-                        .validate(password, &cred.salt.as_str(), &cred.password.as_str());
+                        .validate(password, cred.salt.as_str(), cred.password.as_str());
 
                 Ok(res)
             }

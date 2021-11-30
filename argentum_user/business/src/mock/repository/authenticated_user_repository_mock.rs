@@ -71,7 +71,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
             .is_none()
         {
             true => Ok(()),
-            false => Err(ExternalUserError::Authenticated),
+            false => Err(ExternalUserError::Authenticated(None)),
         }
     }
 }

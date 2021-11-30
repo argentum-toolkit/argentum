@@ -33,7 +33,7 @@ impl UserAuthenticatesWithTokenUc {
 
         match self.user_repository.find(&session.user_id)? {
             Some(u) => Ok(Authenticated(u)),
-            None => match self.anon_repository.find(&session.user_id) {
+            None => match self.anon_repository.find(&session.user_id)? {
                 Some(a) => Ok(Anonymous(a)),
                 None => Err(AuthenticationError::UserNotFound),
             },

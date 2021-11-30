@@ -115,7 +115,7 @@ impl SessionRepositoryTrait for SessionRepository {
 
         let result = diesel::delete(
             dsl::ag_user_account_session
-                .filter(dsl::user_id.eq(self.id_factory.id_to_uuid(&user_id))),
+                .filter(dsl::user_id.eq(self.id_factory.id_to_uuid(user_id))),
         )
         .execute(&conn);
 

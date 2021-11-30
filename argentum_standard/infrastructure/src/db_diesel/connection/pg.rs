@@ -18,11 +18,11 @@ fn init_pool(database_url: &str) -> Result<PgPool, PoolError> {
     Pool::builder().build(manager)
 }
 
-pub fn establish_connection() -> PgPool {
+pub fn establish_connection(env_name: &str) -> PgPool {
     dotenv().ok();
 
     //TODO: move it to configuration
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var(env_name).expect(format!("{} must be set", env_name).as_str());
     init_pool(&database_url).expect("Failed to create pool")
 }
 
@@ -31,8 +31,8 @@ pub struct ConnectionPoolManager {
 }
 
 impl ConnectionPoolManager {
-    pub fn new() -> ConnectionPoolManager {
-        let pool = establish_connection();
+    pub fn new(env_name: &str) -> ConnectionPoolManager {
+        let pool = establish_connection(env_name);
 
         ConnectionPoolManager { pool }
     }
@@ -41,11 +41,5 @@ impl ConnectionPoolManager {
         self.pool
             .get()
             .map_err(|e| ConnectionError::CantGetConnection(Box::new(e)))
-    }
-}
-
-impl Default for ConnectionPoolManager {
-    fn default() -> Self {
-        Self::new()
     }
 }
