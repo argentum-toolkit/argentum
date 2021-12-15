@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   builder:
+    image: itcreator/rusty-argentum-rust-dev
     build: .
     working_dir: /code
     volumes:
