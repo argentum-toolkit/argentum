@@ -1,0 +1,9 @@
+= Rusty Argentum. User Component
+
+== Packages documentation
+
+* link:business/readme.adoc[Package with the business logic]
+* link:infrastructure/readme.adoc[Package with the infrastructure code]
+
+Also, this package contains API documentation, that can be used in other packages
+

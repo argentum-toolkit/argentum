@@ -1,0 +1,36 @@
+= Quick start
+
+== Requirements
+
+* Docker
+* Docker Compose
+* Rust 1.56+
+* Cargo
+
+== Setup project
+
+* clone repository
+* `devops/scripts/setup.sh`
+
+
+== Start Databases
+[bash]
+----
+docker-compose up service.user.db service.user_account.db
+----
+
+== Run demo web application:
+
+[bash]
+----
+cd demo-webapp
+cargo run
+----
+
+== Or run demo cli application:
+
+[bash]
+----
+cd demo-app
+cargo run
+----
