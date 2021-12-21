@@ -2,6 +2,8 @@
 
 set -ex
 
+rustc -V && cargo -V
+
 packages=(
   'argentum_encryption/business'
   'argentum_encryption/infrastructure'

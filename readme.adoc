@@ -124,6 +124,7 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 * documentation
 * build scripts (behaviour tests, push artifacts)
+* run docker images as a local user
 * https://crates.io/crates/cargo-release
 * improve errors processing
 * notifications
