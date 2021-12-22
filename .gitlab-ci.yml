@@ -14,7 +14,7 @@ variables:
 before_script:
     - docker info
     - docker-compose --version
-    - docker-compose build
+    - docker-compose pull builder
 
 
 build:

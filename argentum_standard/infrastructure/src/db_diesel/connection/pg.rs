@@ -22,7 +22,7 @@ pub fn establish_connection(env_name: &str) -> PgPool {
     dotenv().ok();
 
     //TODO: move it to configuration
-    let database_url = env::var(env_name).expect(format!("{} must be set", env_name).as_str());
+    let database_url = env::var(env_name).unwrap_or_else(|_| panic!("{} must be set", env_name));
     init_pool(&database_url).expect("Failed to create pool")
 }
 

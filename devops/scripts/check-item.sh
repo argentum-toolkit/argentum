@@ -7,6 +7,7 @@ CURRENT_DIR=$(pwd)
 
 cd $ITEM_DIR
 
+cargo build
 cargo clippy
 cargo fmt --all -- --check
 cargo test

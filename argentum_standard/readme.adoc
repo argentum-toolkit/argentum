@@ -1,0 +1,11 @@
+= Rusty Argentum. Standard Component
+
+This is a component with set of the most common things (e.g. data types)
+
+== Packages documentation
+
+* link:business/readme.adoc[Package with the business logic]
+* link:infrastructure/readme.adoc[Package with the infrastructure code]
+
+Also, this package contains API documentation, that can be used in other packages
+

@@ -13,8 +13,8 @@ readme = "readme.adoc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "3.3.2"
-actix-http = "3.0.0-beta.10"
+actix-web = "3.3.3"
+actix-http = "3.0.0-beta.16"
 
 argentum_log_business = { path = "../../argentum_log/business" }
 argentum_standard_business = { path = "../../argentum_standard/business" }
@@ -24,10 +24,10 @@ argentum_user_account_business = { path = "../business" }
 argentum_user_business = { path = "../../argentum_user/business" }
 
 chrono = { version = "0.4.19", features = ["serde"] }
-derive_more = "0.99.16"
-diesel = { version = "1.4.4", features = ["postgres", "r2d2", "uuidv07", "chrono"] }
+derive_more = "0.99.17"
+diesel = { version = "1.4.8", features = ["postgres", "r2d2", "uuidv07", "chrono"] }
 dotenv = "0.15.0"
-futures-util = "0.3.16"
+futures-util = "0.3.19"
 serde = { version = "1.0", features = ["derive"] }
-rand = "0.7"
+rand = "0.8.4"
 uuid = { version = "0.8", features = ["serde", "v4"] }

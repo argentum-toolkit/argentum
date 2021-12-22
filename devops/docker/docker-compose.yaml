@@ -2,10 +2,12 @@ version: "3.8"
 
 services:
   builder:
+    image: itcreator/rusty-argentum-rust-dev
     build: .
     working_dir: /code
     volumes:
       - ../..:/code
+      - ../../var/cargo/common:/usr/local/cargo/registry
 
   service.user.db:
     image: 'postgres:13.4'

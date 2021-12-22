@@ -5,55 +5,66 @@
 
 toc::[]
 
-== Packages documentation
+== Why "Argentum"?
+Rusty Argentum was made to provide the easiest way to implement microservices and bac-end applications on Rust programming language.
+Our goal is to allow everyone to create applications without deep knowledge of Rust.
+Of course knowledge of the Rust will be great advantage. But Rusty Argentum helps you make your first steps as easy as possible and will save much time in the future.
+Your learning process will be iterative and easier than without Rusty Argentum.
 
-* link:argentum_event/business/readme.adoc[Argentum Event Business package]
-* link:argentum_user/business/readme.adoc[Argentum User Business package]
-* link:argentum_user_account/business/readme.adoc[Argentum User Account Business package]
-* link:argentum_user_account/infrastructure/readme.adoc[Argentum User Account Infrastructure package]
-
-=== How to setup project
-
-* clone repository
-* `devops/scripts/setup.sh`
-
-
-=== How to start
-
-Database:
-[bash]
+.Steps to be ready to create effective applications with Rusty Argentum
+[plantuml, format="svg"]
 ----
-docker-compose up service.user.db
-docker-compose up service.user_account.db
-cd argentum_user_account/infrastructure
-diesel migration run
+:Run Argentum Demo Application;
+:Read Basic Rust Documentation;
+:Create Your new Argentum component;
+:Read more Rust Documentation;
+:Now you can quickly create RESTful applications with Argentum;
+
 ----
 
-Demo web application:
+[TIP]
+====
+**Getting Started with Rusty Argentum**.
 
-[bash]
-----
-cd demo-webapp
-cargo run
-----
+You can try Rusty Argentum with Docker without deep diving into Rust or the architecture of Rusty Argentum.
+
+It is easy with link:docs/quick-start.adoc[Quick Start Guide]
+====
+
+== Components documentation
+
+* link:argentum_encryption/readme.adoc[Argentum Encryption]
+* link:argentum_event/readme.adoc[Argentum Event]
+* link:argentum_log/readme.adoc[Argentum Log]
+* link:argentum_notification/readme.adoc[Argentum Notification]
+* link:argentum_standard/readme.adoc[Argentum Standard]
+* link:argentum_user/readme.adoc[Argentum User]
+* link:argentum_user_account/readme.adoc[Argentum User Account]
+* link:argentum_user_account/readme.adoc[Argentum User Account]
 
 
-=== Why "Argentum"?
-
-
-=== Project structure
+== Rusty Argentum Architecture. Short description
 Rusty Argentum project is composed of components.
-Each component is split to two crates:
-business crate for abstractions and infrastructure crate for details of implementation.
+Each component is usually split to several crates:
 
-What is abstractions? Abstractions are clean business model.
-It is the main core of project which responsible for only business logic.
-Business package should not depend on 3-rd party packages it is possible.
+- business crate for abstractions
+- infrastructure crate for details of implementation.
+- OpenAPI documentation (Swagger)
+- Generated API package
+
+What is **abstractions**? Abstractions are a clean business model.
+It is the main core of the project which responsible for only business logic.
+A Business package should not depend on 3-rd party packages it is possible.
 To follow this restriction you should use Dependency Inversion Principle.
 
-What is details? Details are: database adapters, RESTful API, RPC API
+What is **details**? Details are: database adapters, RESTful API, RPC API
 and other connections with world.
 
+NOTE: Of course, you are free to follow other project structures.
+However, we advise you to pay maximum attention to the business logic of your application
+and separate it from the infrastructure.
+
+.The main idea of the architecture of Rusty Argentum
 [plantuml, format="svg"]
 ----
 rectangle "Rusty Argentum" {
@@ -67,15 +78,22 @@ rectangle "Rusty Argentum" {
 ----
 
 
-WARNING: Business packages should be independent
-or should depend only on another business components.
+WARNING: Package with business logic should be independent
+or should depend only on other business packages.
 
-NOTE: Infrastructure packages can depend on business packages, on infrastructure packages
+NOTE: Infrastructure packages can depend on business packages,
+on other infrastructure packages
 or on 3-rd party packages.
 
-WARNING: Circular dependencies is forbidden.
+WARNING: Circular dependencies are forbidden.
 
-== Contribution Guideline
+== Contributing Guideline
+
+If you want to contribute to Rusty Argentum you just need to follow couple easy rules:
+
+- Be sure that you code follow code standards
+- Your code with business logic doesn't depend on infrastructure code and 3-rd party code
+
 
 === How to check code
 
@@ -98,80 +116,15 @@ $ devops/scripts/check-item.sh {{package-name}}
 * *chrono* - time
 
 
-== OpenAPI
-
-Pull new version of generator image
-[source, bash]
-....
-$ docker pull openapitools/openapi-generator-cli
-....
-
-How to generate a server library
-[source, bash]
-....
-$ docker run --rm -v "${PWD}:/local" -u $(id -u ${USER}):$(id -g ${USER}) openapitools/openapi-generator-cli generate \
-    -i /local/argentum_user_account/api-doc/openapi.yaml \
-    -g rust-server \
-    -o /local/argentum_user_account/api \
-    -c /local/argentum_user_account/api-doc/openapi.config.json
-
-$ cargo fmt --manifest-path argentum_user_account/api/Cargo.toml
-....
-
-== How to create new package
-
-=== Init package
-
-* Create a package folder
-* Add check item to file `link:devops/scripts/check.sh[devops/scripts/check.sh]`
-* Create cargo package
-** `cargo init`
-** configure `Cargo.toml` parameters
-* create `readme.adoc` file
-
-=== Add Diesel ORM support if required
-
-WARNING:    You should do it nly for infrastructure packages if it is required.
-            Business packages must not be dependent on 3rd party code.
-
-NOTE:   Diesel ORM manual https://diesel.rs/guides/getting-started
-
-* Configure environment
-** Add new variable to `.env` `POSTGRES_DB_FOR_{$componentName}`=`$dbName`
-** Add new variable with connection string to `.env`. E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
-* Add new BD service to 'docker-compose.yaml' with name `service.{$componentName}.db`
-* Add dependencies to `Cargo.toml`
-** `diesel = { version = "1.4.4", features = ["postgres", "r2d2", "uuidv07", "chrono"] }`
-** `dotenv = "0.15.0"`
-** `chrono = { version = "0.4.19", features = ["serde"] }`
-** `serde = { version = "1.0", features = ["derive"] }`
-** `uuid = { version = "0.8", features = ["serde", "v4"] }`
-
-* Setup diesel
-    `DATABASE_URL=postgres://dev:dev@*:54321/argentum_user diesel setup`
-* Update diesel.toml
-   `file = "src/db_diesel/schema.rs"`
-* Create folder `{$componentName}/infrastructure/src/db_diesel`
-* Create migrations `DATABASE_URL=postgres://dev:dev@*:54321/argentum_user diesel migration generate create_argentum_user`
-* Write the SQL for migrations (`up.sql`)
-* `DATABASE_URL=postgres://dev:dev@*:54321/argentum_user diesel migration run`
-* Init a connection manager in `di.rs`
-    `let user_pg_connection_pool_manager = Arc::new(ConnectionPoolManager::new("AG_USER_DATABASE_URL"));`
-* Add it as a dependency to your repositories
-* Create file `src/diesel_db/models.rs`
-
-
-NOTE: NOTE: When you create a new DB for a new component we recommend you make `name of DB `
-equal to the name of the component. E.g. for component with name `User` we will create db with name `argentum_user`
-
 == TODO
 
 * improve error HTTP responses
 * add examples to OpenAPI doc
 * validation
 
-* documentation, license
+* documentation
 * build scripts (behaviour tests, push artifacts)
+* run docker images as a local user
 * https://crates.io/crates/cargo-release
 * improve errors processing
 * notifications

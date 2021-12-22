@@ -186,7 +186,7 @@ mod test {
         let cred = PasswordCredential::new(user_id.clone(), hashed_password, salt);
 
         user_repository.save(&user).expect("Can't save a user");
-        credential_writer.write(Box::new(cred));
+        credential_writer.write(Box::new(cred)).unwrap();
 
         let anonymous_id: Id = id_factory.create();
         let anonymous = AnonymousUser::new(&anonymous_id);

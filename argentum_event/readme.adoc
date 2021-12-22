@@ -1,0 +1,5 @@
+= Rusty Argentum. Event Component
+
+== Packages documentation
+
+* link:business/readme.adoc[Package with the business logic]

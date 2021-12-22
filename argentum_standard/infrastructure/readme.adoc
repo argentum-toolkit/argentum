@@ -1,1 +1,1 @@
-= Rusty Argentum Encryption. An infrastructure layer.
+= Rusty Argentum Standard. An infrastructure layer.
