@@ -1,4 +1,4 @@
-use actix_http::http::header;
+use actix_http::header;
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;

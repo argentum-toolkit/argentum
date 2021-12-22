@@ -17,11 +17,11 @@ impl GeneratorTrait for StringTokenGenerator {
                                 abcdefghijklmnopqrstuvwxyz\
                                 0123456789-_";
         let mut rng = rand::thread_rng();
-        let len: usize = rng.gen_range(30, 500);
+        let len: usize = rng.gen_range(30..=500);
 
         let token: String = (0..len)
             .map(|_| {
-                let idx = rng.gen_range(0, CHARSET.len());
+                let idx = rng.gen_range(0..=CHARSET.len());
                 CHARSET[idx] as char
             })
             .collect();
