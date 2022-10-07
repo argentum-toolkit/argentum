@@ -467,6 +467,7 @@ dependencies = [
 name = "argentum_standard_business"
 version = "0.1.0-dev"
 dependencies = [
+ "chrono",
  "rand 0.8.4",
  "regex",
  "thiserror",

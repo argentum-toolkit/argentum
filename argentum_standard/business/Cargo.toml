@@ -11,6 +11,7 @@ documentation = "https://github.com/rusty-argentum/argentum"
 readme = "readme.adoc"
 
 [dependencies]
+chrono = { version = "0.4.19", features = ["serde"] }
 regex = "1.4.2"
 thiserror = "1.0"
 rand = "0.8.0"

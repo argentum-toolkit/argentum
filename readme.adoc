@@ -6,7 +6,7 @@
 toc::[]
 
 == Why "Argentum"?
-Rusty Argentum was made to provide the easiest way to implement microservices and bac-end applications on Rust programming language.
+Rusty Argentum was made to provide the easiest way to implement microservices and back-end applications on Rust programming language.
 Our goal is to allow everyone to create applications without deep knowledge of Rust.
 Of course knowledge of the Rust will be great advantage. But Rusty Argentum helps you make your first steps as easy as possible and will save much time in the future.
 Your learning process will be iterative and easier than without Rusty Argentum.
@@ -94,6 +94,9 @@ If you want to contribute to Rusty Argentum you just need to follow couple easy 
 - Be sure that you code follow code standards
 - Your code with business logic doesn't depend on infrastructure code and 3-rd party code
 
+=== How to create new component
+
+We prepared the guide how to link:docs/create-component.adoc[create new component].
 
 === How to check code
 
@@ -123,8 +126,11 @@ $ devops/scripts/check-item.sh {{package-name}}
 * validation
 
 * documentation
+** codegen
+** other?
 * build scripts (behaviour tests, push artifacts)
 * run docker images as a local user
 * https://crates.io/crates/cargo-release
 * improve errors processing
 * notifications
+* macro for creation Id types (for user, for account for event)

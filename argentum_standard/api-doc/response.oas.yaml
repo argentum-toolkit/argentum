@@ -28,7 +28,7 @@ components:
             $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
 
     422:
-      description: Bad request
+      description: Unprocessable Entity
       content:
         "application/problem+json":
           schema:
