@@ -138,12 +138,12 @@ mod test {
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::data_type::Name;
     use argentum_user_business::entity::user::{AnonymousUser, AuthenticatedUser};
     use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
-    use argentum_user_business::value_object::name::Name;
     use std::sync::Arc;
 
     #[test]
@@ -177,7 +177,7 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let user_id: Id = id_factory.create();
-        let name = Name::new(String::from("Some"), String::from("Name")).unwrap();
+        let name = Name::new(String::from("Some"), Some(String::from("Name")), None).unwrap();
         let email = EmailAddress::new(String::from("test@test-mail.com")).unwrap();
         let password = String::from("12345");
         let user = AuthenticatedUser::new(&user_id, name, email.clone());

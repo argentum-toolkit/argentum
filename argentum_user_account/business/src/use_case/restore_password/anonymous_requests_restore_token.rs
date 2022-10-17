@@ -75,6 +75,11 @@ impl AnonymousRequestsRestoreToken {
             return Err(RestorePasswordError::TokenRepositoryError(e));
         }
 
+        let last = match user.name.last {
+            Some(l) => l,
+            None => "".to_string(),
+        };
+
         let body = format!(
             "<p>Hello, dear <b>{} {}</b>!</p>
 
@@ -90,7 +95,7 @@ impl AnonymousRequestsRestoreToken {
 
         ",
             user.name.first,
-            user.name.last,
+            last,
             self.product_name,
             self.restore_password_front_url,
             token,
@@ -122,10 +127,10 @@ mod tests {
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::data_type::Name;
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
-    use argentum_user_business::value_object::name::Name;
     use std::sync::Arc;
 
     #[test]
@@ -151,7 +156,9 @@ mod tests {
         );
 
         let user_id = id_factory.create();
-        let user_name = Name::new("Dionne".to_string(), "Morrison".to_string()).unwrap();
+        let user_name =
+            Name::new("Dionne".to_string(), Some("Morrison".to_string()), None).unwrap();
+
         let email = EmailAddress::new("test@mail.com".to_string()).unwrap();
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());

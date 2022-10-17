@@ -9,7 +9,7 @@ use argentum_user_business::repository::user_repository::{
 };
 
 use argentum_standard_business::data_type::email::EmailAddress;
-use argentum_user_business::value_object::name::Name;
+use argentum_user_business::data_type::Name;
 use std::sync::Arc;
 
 use diesel::prelude::*;
@@ -49,7 +49,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
                     Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
                 };
 
-                let name = match Name::new(u.first_name, u.last_name) {
+                let name = match Name::new(u.first_name, Some(u.last_name), None) {
                     Ok(n) => n,
                     Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
                 };
@@ -91,13 +91,14 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
                         Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
                     };
 
-                    let name =
-                        match Name::new(item.first_name.to_string(), item.last_name.to_string()) {
-                            Ok(n) => n,
-                            Err(e) => {
-                                return Err(ExternalUserError::Authenticated(Some(Box::new(e))))
-                            }
-                        };
+                    let name = match Name::new(
+                        item.first_name.to_string(),
+                        Some(item.last_name.to_string()),
+                        None,
+                    ) {
+                        Ok(n) => n,
+                        Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
+                    };
 
                     Ok(Some(AuthenticatedUser {
                         id: self.id_factory.uuid_to_id(item.id),
@@ -115,12 +116,17 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
     fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
         use crate::db_diesel::schema::ag_user_authenticated;
 
+        let last = match user.name.last.clone() {
+            Some(l) => l,
+            None => "".to_string(),
+        };
+
         let id = self.id_factory.id_to_uuid(&user.id);
         let new_user = AuthenticatedUserModel {
             id,
             created_at: user.created_at,
             first_name: user.name.first.clone(),
-            last_name: user.name.last.clone(),
+            last_name: last.clone(),
             email: user.email.as_string(),
         };
 

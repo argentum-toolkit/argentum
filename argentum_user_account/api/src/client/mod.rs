@@ -63,7 +63,7 @@ fn into_base_path(
         }
     }
 
-    let host = uri.host().ok_or_else(|| ClientInitError::MissingHost)?;
+    let host = uri.host().ok_or(ClientInitError::MissingHost)?;
     let port = uri
         .port_u16()
         .map(|x| format!(":{}", x))
@@ -206,7 +206,7 @@ where
                 let connector = connector
                     .https()
                     .build()
-                    .map_err(|e| ClientInitError::SslError(e))?;
+                    .map_err(ClientInitError::SslError)?;
                 HyperClient::Https(hyper::client::Client::builder().build(connector))
             }
             _ => {
@@ -257,7 +257,7 @@ where
         let https_connector = Connector::builder()
             .https()
             .build()
-            .map_err(|e| ClientInitError::SslError(e))?;
+            .map_err(ClientInitError::SslError)?;
         Self::try_new_with_connector(base_path, Some("https"), https_connector)
     }
 
@@ -278,7 +278,7 @@ where
             .https()
             .pin_server_certificate(ca_certificate)
             .build()
-            .map_err(|e| ClientInitError::SslError(e))?;
+            .map_err(ClientInitError::SslError)?;
         Self::try_new_with_connector(base_path, Some("https"), https_connector)
     }
 
@@ -306,7 +306,7 @@ where
             .pin_server_certificate(ca_certificate)
             .client_authentication(client_key, client_certificate)
             .build()
-            .map_err(|e| ClientInitError::SslError(e))?;
+            .map_err(ClientInitError::SslError)?;
         Self::try_new_with_connector(base_path, Some("https"), https_connector)
     }
 }
@@ -444,13 +444,7 @@ where
             },
         );
 
-        let header = HeaderValue::from_str(
-            Has::<XSpanIdString>::get(context)
-                .0
-                .clone()
-                .to_string()
-                .as_str(),
-        );
+        let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
         request.headers_mut().insert(
             HeaderName::from_static("x-span-id"),
             match header {
@@ -464,8 +458,10 @@ where
             },
         );
 
+        #[allow(clippy::collapsible_match)]
         if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
             // Currently only authentication with Basic and Bearer are supported
+            #[allow(clippy::single_match, clippy::match_single_binding)]
             match auth_data {
                 &AuthData::Bearer(ref bearer_header) => {
                     let auth = swagger::auth::Header(bearer_header.clone());
@@ -486,48 +482,55 @@ where
             }
         }
 
-        let mut response = client_service
+        let response = client_service
             .call((request, context.clone()))
             .map_err(|e| ApiError(format!("No response received: {}", e)))
             .await?;
 
         match response.status().as_u16() {
-            200 => {
+            201 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::AnonymousRegistrationResult>(body)?;
-                Ok(AnonymousRegistersResponse::OK(body))
+                let body = serde_json::from_str::<models::AnonymousRegistrationResult>(body)
+                    .map_err(|e| {
+                        ApiError(format!("Response body did not match the schema: {}", e))
+                    })?;
+                Ok(AnonymousRegistersResponse::Created(body))
             }
             400 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(AnonymousRegistersResponse::BadRequest(body))
             }
             422 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
-                Ok(AnonymousRegistersResponse::BadRequest_2(body))
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
+                Ok(AnonymousRegistersResponse::UnprocessableEntity(body))
             }
             code => {
                 let headers = response.headers().clone();
-                let body = response.into_body().take(100).to_raw().await;
+                let body = response.into_body().take(100).into_raw().await;
                 Err(ApiError(format!(
                     "Unexpected response code {}:\n{:?}\n\n{}",
                     code,
@@ -597,13 +600,7 @@ where
                 }
             },
         );
-        let header = HeaderValue::from_str(
-            Has::<XSpanIdString>::get(context)
-                .0
-                .clone()
-                .to_string()
-                .as_str(),
-        );
+        let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
         request.headers_mut().insert(
             HeaderName::from_static("x-span-id"),
             match header {
@@ -617,8 +614,10 @@ where
             },
         );
 
+        #[allow(clippy::collapsible_match)]
         if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
             // Currently only authentication with Basic and Bearer are supported
+            #[allow(clippy::single_match, clippy::match_single_binding)]
             match auth_data {
                 &AuthData::Bearer(ref bearer_header) => {
                     let auth = swagger::auth::Header(bearer_header.clone());
@@ -639,7 +638,7 @@ where
             }
         }
 
-        let mut response = client_service
+        let response = client_service
             .call((request, context.clone()))
             .map_err(|e| ApiError(format!("No response received: {}", e)))
             .await?;
@@ -648,39 +647,45 @@ where
             200 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<serde_json::Value>(body)?;
+                let body = serde_json::from_str::<serde_json::Value>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(ChangePasswordWithTokenResponse::OK(body))
             }
             400 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(ChangePasswordWithTokenResponse::BadRequest(body))
             }
             401 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(ChangePasswordWithTokenResponse::Unauthorized(body))
             }
             code => {
                 let headers = response.headers().clone();
-                let body = response.into_body().take(100).to_raw().await;
+                let body = response.into_body().take(100).into_raw().await;
                 Err(ApiError(format!(
                     "Unexpected response code {}:\n{:?}\n\n{}",
                     code,
@@ -746,13 +751,7 @@ where
                 }
             },
         );
-        let header = HeaderValue::from_str(
-            Has::<XSpanIdString>::get(context)
-                .0
-                .clone()
-                .to_string()
-                .as_str(),
-        );
+        let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
         request.headers_mut().insert(
             HeaderName::from_static("x-span-id"),
             match header {
@@ -766,8 +765,10 @@ where
             },
         );
 
+        #[allow(clippy::collapsible_match)]
         if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
             // Currently only authentication with Basic and Bearer are supported
+            #[allow(clippy::single_match, clippy::match_single_binding)]
             match auth_data {
                 &AuthData::Bearer(ref bearer_header) => {
                     let auth = swagger::auth::Header(bearer_header.clone());
@@ -788,7 +789,7 @@ where
             }
         }
 
-        let mut response = client_service
+        let response = client_service
             .call((request, context.clone()))
             .map_err(|e| ApiError(format!("No response received: {}", e)))
             .await?;
@@ -797,39 +798,45 @@ where
             200 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::LoginResult>(body)?;
+                let body = serde_json::from_str::<models::LoginResult>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(LoginWithPasswordResponse::OK(body))
             }
             400 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(LoginWithPasswordResponse::BadRequest(body))
             }
             401 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(LoginWithPasswordResponse::Unauthorized(body))
             }
             code => {
                 let headers = response.headers().clone();
-                let body = response.into_body().take(100).to_raw().await;
+                let body = response.into_body().take(100).into_raw().await;
                 Err(ApiError(format!(
                     "Unexpected response code {}:\n{:?}\n\n{}",
                     code,
@@ -895,13 +902,7 @@ where
                 }
             },
         );
-        let header = HeaderValue::from_str(
-            Has::<XSpanIdString>::get(context)
-                .0
-                .clone()
-                .to_string()
-                .as_str(),
-        );
+        let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
         request.headers_mut().insert(
             HeaderName::from_static("x-span-id"),
             match header {
@@ -915,8 +916,10 @@ where
             },
         );
 
+        #[allow(clippy::collapsible_match)]
         if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
             // Currently only authentication with Basic and Bearer are supported
+            #[allow(clippy::single_match, clippy::match_single_binding)]
             match auth_data {
                 &AuthData::Bearer(ref bearer_header) => {
                     let auth = swagger::auth::Header(bearer_header.clone());
@@ -937,48 +940,55 @@ where
             }
         }
 
-        let mut response = client_service
+        let response = client_service
             .call((request, context.clone()))
             .map_err(|e| ApiError(format!("No response received: {}", e)))
             .await?;
 
         match response.status().as_u16() {
-            200 => {
+            201 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::RegistrationWithPasswordResult>(body)?;
-                Ok(RegisterWithPasswordResponse::OK(body))
+                let body = serde_json::from_str::<models::RegistrationWithPasswordResult>(body)
+                    .map_err(|e| {
+                        ApiError(format!("Response body did not match the schema: {}", e))
+                    })?;
+                Ok(RegisterWithPasswordResponse::Created(body))
             }
             400 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(RegisterWithPasswordResponse::BadRequest(body))
             }
             422 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
-                Ok(RegisterWithPasswordResponse::BadRequest_2(body))
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
+                Ok(RegisterWithPasswordResponse::UnprocessableEntity(body))
             }
             code => {
                 let headers = response.headers().clone();
-                let body = response.into_body().take(100).to_raw().await;
+                let body = response.into_body().take(100).into_raw().await;
                 Err(ApiError(format!(
                     "Unexpected response code {}:\n{:?}\n\n{}",
                     code,
@@ -1049,13 +1059,7 @@ where
             },
         );
 
-        let header = HeaderValue::from_str(
-            Has::<XSpanIdString>::get(context)
-                .0
-                .clone()
-                .to_string()
-                .as_str(),
-        );
+        let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
         request.headers_mut().insert(
             HeaderName::from_static("x-span-id"),
             match header {
@@ -1069,8 +1073,10 @@ where
             },
         );
 
+        #[allow(clippy::collapsible_match)]
         if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
             // Currently only authentication with Basic and Bearer are supported
+            #[allow(clippy::single_match, clippy::match_single_binding)]
             match auth_data {
                 &AuthData::Bearer(ref bearer_header) => {
                     let auth = swagger::auth::Header(bearer_header.clone());
@@ -1091,7 +1097,7 @@ where
             }
         }
 
-        let mut response = client_service
+        let response = client_service
             .call((request, context.clone()))
             .map_err(|e| ApiError(format!("No response received: {}", e)))
             .await?;
@@ -1100,39 +1106,45 @@ where
             200 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<serde_json::Value>(body)?;
+                let body = serde_json::from_str::<serde_json::Value>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(RequestRestoreTokenResponse::OK(body))
             }
             400 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(RequestRestoreTokenResponse::BadRequest(body))
             }
             401 => {
                 let body = response.into_body();
                 let body = body
-                    .to_raw()
+                    .into_raw()
                     .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
                     .await?;
                 let body = str::from_utf8(&body)
                     .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body)?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
                 Ok(RequestRestoreTokenResponse::Unauthorized(body))
             }
             code => {
                 let headers = response.headers().clone();
-                let body = response.into_body().take(100).to_raw().await;
+                let body = response.into_body().take(100).into_raw().await;
                 Err(ApiError(format!(
                     "Unexpected response code {}:\n{:?}\n\n{}",
                     code,

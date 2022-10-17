@@ -22,3 +22,17 @@ components:
         message:
           type: string
 
+    DateRange:
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: string
+          format: date-time
+          example: 2022-10-17T09:28:31.220Z
+        end:
+          type: string
+          format: date-time
+          example: 2022-11-17T09:28:31.220Z

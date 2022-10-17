@@ -7,8 +7,6 @@ use futures::{future, Stream, StreamExt, TryFutureExt, TryStreamExt};
 use hyper::server::conn::Http;
 use hyper::service::Service;
 use log::info;
-#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "ios")))]
-use openssl::ssl::SslAcceptorBuilder;
 use std::future::Future;
 use std::marker::PhantomData;
 use std::net::SocketAddr;
@@ -20,7 +18,7 @@ use swagger::{Has, XSpanIdString};
 use tokio::net::TcpListener;
 
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "ios")))]
-use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
+use openssl::ssl::{Ssl, SslAcceptor, SslAcceptorBuilder, SslFiletype, SslMethod};
 
 use argentum_user_account_api::models;
 
@@ -34,6 +32,7 @@ pub async fn create(addr: &str, https: bool) {
 
     let service = MakeAllowAllAuthenticator::new(service, "cosmo");
 
+    #[allow(unused_mut)]
     let mut service =
         argentum_user_account_api::server::context::MakeAddContext::<_, EmptyContext>::new(service);
 
@@ -52,25 +51,21 @@ pub async fn create(addr: &str, https: bool) {
             ssl.set_private_key_file("examples/server-key.pem", SslFiletype::PEM)
                 .expect("Failed to set private key");
             ssl.set_certificate_chain_file("examples/server-chain.pem")
-                .expect("Failed to set cerificate chain");
+                .expect("Failed to set certificate chain");
             ssl.check_private_key()
                 .expect("Failed to check private key");
 
-            let tls_acceptor = Arc::new(ssl.build());
-            let mut tcp_listener = TcpListener::bind(&addr).await.unwrap();
-            let mut incoming = tcp_listener.incoming();
+            let tls_acceptor = ssl.build();
+            let tcp_listener = TcpListener::bind(&addr).await.unwrap();
 
-            while let (Some(tcp), rest) = incoming.into_future().await {
-                if let Ok(tcp) = tcp {
+            loop {
+                if let Ok((tcp, _)) = tcp_listener.accept().await {
+                    let ssl = Ssl::new(tls_acceptor.context()).unwrap();
                     let addr = tcp.peer_addr().expect("Unable to get remote address");
                     let service = service.call(addr);
-                    let tls_acceptor = Arc::clone(&tls_acceptor);
 
                     tokio::spawn(async move {
-                        let tls = tokio_openssl::accept(&*tls_acceptor, tcp)
-                            .await
-                            .map_err(|_| ())?;
-
+                        let tls = tokio_openssl::SslStream::new(ssl, tcp).map_err(|_| ())?;
                         let service = service.await.map_err(|_| ())?;
 
                         Http::new()
@@ -79,8 +74,6 @@ pub async fn create(addr: &str, https: bool) {
                             .map_err(|_| ())
                     });
                 }
-
-                incoming = rest;
             }
         }
     } else {
@@ -130,7 +123,7 @@ where
             body,
             context.get().0.clone()
         );
-        Err("Generic failuare".into())
+        Err(ApiError("Generic failure".into()))
     }
 
     /// User with token changes his password
@@ -145,7 +138,7 @@ where
             change_password_schema,
             context.get().0.clone()
         );
-        Err("Generic failuare".into())
+        Err(ApiError("Generic failure".into()))
     }
 
     /// Login as an user
@@ -160,7 +153,7 @@ where
             login_with_password_schema,
             context.get().0.clone()
         );
-        Err("Generic failuare".into())
+        Err(ApiError("Generic failure".into()))
     }
 
     /// User registers with password
@@ -175,7 +168,7 @@ where
             registration_with_password_schema,
             context.get().0.clone()
         );
-        Err("Generic failuare".into())
+        Err(ApiError("Generic failure".into()))
     }
 
     /// Anonymous requests restore password token
@@ -190,6 +183,6 @@ where
             request_restore_token_schema,
             context.get().0.clone()
         );
-        Err("Generic failuare".into())
+        Err(ApiError("Generic failure".into()))
     }
 }

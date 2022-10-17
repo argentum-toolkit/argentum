@@ -5,8 +5,8 @@ use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegi
 use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
+use argentum_user_business::data_type::Name;
 use argentum_user_business::entity::user::AnonymousUser;
-use argentum_user_business::value_object::name::Name;
 use std::sync::Arc;
 
 pub struct App {
@@ -83,7 +83,7 @@ impl App {
 
         let user_id = self.id_factory.create();
 
-        let name_res = Name::new(String::from("Sarah"), String::from("Connor"));
+        let name_res = Name::new(String::from("Sarah"), Some(String::from("Connor")), None);
         let name = match name_res {
             Ok(name) => name,
             Err(e) => return Err(e.to_string()),

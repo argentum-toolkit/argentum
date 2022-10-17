@@ -14,7 +14,7 @@ To see how to make this your own, look here:
 [README]((https://openapi-generator.tech))
 
 - API version: 0.1.0-dev
-- Build date: 2021-09-14T15:05:12.494534Z[Etc/UTC]
+- Build date: 2022-10-12T17:20:57.610938Z[Etc/UTC]
 
 For more information, please visit [https://gitlab.com/rusty-argentum/argentum](https://gitlab.com/rusty-argentum/argentum)
 

@@ -101,11 +101,11 @@ mod tests {
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::data_type::Name;
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use argentum_user_business::token::GeneratorTrait;
-    use argentum_user_business::value_object::name::Name;
     use std::sync::Arc;
     use std::thread;
     use std::time::Duration;
@@ -133,7 +133,8 @@ mod tests {
         );
 
         let user_id = id_factory.create();
-        let user_name = Name::new("Dionne".to_string(), "Morrison".to_string()).unwrap();
+        let user_name =
+            Name::new("Dionne".to_string(), Some("Morrison".to_string()), None).unwrap();
         let email = EmailAddress::new("test@mail.com".to_string()).unwrap();
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
@@ -184,7 +185,9 @@ mod tests {
         );
 
         let user_id = id_factory.create();
-        let user_name = Name::new("Dionne".to_string(), "Morrison".to_string()).unwrap();
+        let user_name =
+            Name::new("Dionne".to_string(), Some("Morrison".to_string()), None).unwrap();
+
         let email = EmailAddress::new("test@mail.com".to_string()).unwrap();
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
