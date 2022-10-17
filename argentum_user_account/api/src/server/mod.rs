@@ -109,7 +109,7 @@ where
 {
     pub fn new(api_impl: T) -> Self {
         Service {
-            api_impl: api_impl,
+            api_impl,
             marker: PhantomData,
         }
     }
@@ -123,7 +123,7 @@ where
     fn clone(&self) -> Self {
         Service {
             api_impl: self.api_impl.clone(),
-            marker: self.marker.clone(),
+            marker: self.marker,
         }
     }
 }
@@ -155,15 +155,15 @@ where
             let (method, uri, headers) = (parts.method, parts.uri, parts.headers);
             let path = paths::GLOBAL_REGEX_SET.matches(uri.path());
 
-            match &method {
+            match method {
                 // AnonymousRegisters - POST /user/anonymous-register
-                &hyper::Method::POST if path.matched(paths::ID_USER_ANONYMOUS_REGISTER) => {
+                hyper::Method::POST if path.matched(paths::ID_USER_ANONYMOUS_REGISTER) => {
                     {
-                        let authorization = match (&context as &dyn Has<Option<Authorization>>)
+                        let authorization = match *(&context as &dyn Has<Option<Authorization>>)
                             .get()
                         {
-                            &Some(ref authorization) => authorization,
-                            &None => {
+                            Some(ref authorization) => authorization,
+                            None => {
                                 return Ok(Response::builder()
                                     .status(StatusCode::FORBIDDEN)
                                     .body(Body::from("Unauthenticated"))
@@ -175,7 +175,7 @@ where
                     // Body parameters (note that non-required body parameters will ignore garbage
                     // values, rather than causing a 400 response). Produce warning header and logs for
                     // any unused fields.
-                    let result = body.to_raw().await;
+                    let result = body.into_raw().await;
                     match result {
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
@@ -199,7 +199,7 @@ where
                                 let mut response = Response::new(Body::empty());
                                 response.headers_mut().insert(
                                             HeaderName::from_static("x-span-id"),
-                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().as_str())
                                                 .expect("Unable to create X-Span-ID header value"));
 
                                         if !unused_elements.is_empty() {
@@ -211,14 +211,14 @@ where
 
                                         match result {
                                             Ok(rsp) => match rsp {
-                                                AnonymousRegistersResponse::OK
+                                                AnonymousRegistersResponse::Created
                                                     (body)
                                                 => {
-                                                    *response.status_mut() = StatusCode::from_u16(200).expect("Unable to turn 200 into a StatusCode");
+                                                    *response.status_mut() = StatusCode::from_u16(201).expect("Unable to turn 201 into a StatusCode");
                                                     response.headers_mut().insert(
                                                         CONTENT_TYPE,
                                                         HeaderValue::from_str("application/json")
-                                                            .expect("Unable to create Content-Type header for ANONYMOUS_REGISTERS_OK"));
+                                                            .expect("Unable to create Content-Type header for ANONYMOUS_REGISTERS_CREATED"));
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
@@ -233,14 +233,14 @@ where
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
-                                                AnonymousRegistersResponse::BadRequest_2
+                                                AnonymousRegistersResponse::UnprocessableEntity
                                                     (body)
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(422).expect("Unable to turn 422 into a StatusCode");
                                                     response.headers_mut().insert(
                                                         CONTENT_TYPE,
                                                         HeaderValue::from_str("application/problem+json")
-                                                            .expect("Unable to create Content-Type header for ANONYMOUS_REGISTERS_BAD_REQUEST_2"));
+                                                            .expect("Unable to create Content-Type header for ANONYMOUS_REGISTERS_UNPROCESSABLE_ENTITY"));
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
@@ -263,15 +263,15 @@ where
                 }
 
                 // ChangePasswordWithToken - POST /user/restore-password/change-password
-                &hyper::Method::POST
+                hyper::Method::POST
                     if path.matched(paths::ID_USER_RESTORE_PASSWORD_CHANGE_PASSWORD) =>
                 {
                     {
-                        let authorization = match (&context as &dyn Has<Option<Authorization>>)
+                        let authorization = match *(&context as &dyn Has<Option<Authorization>>)
                             .get()
                         {
-                            &Some(ref authorization) => authorization,
-                            &None => {
+                            Some(ref authorization) => authorization,
+                            None => {
                                 return Ok(Response::builder()
                                     .status(StatusCode::FORBIDDEN)
                                     .body(Body::from("Unauthenticated"))
@@ -283,7 +283,7 @@ where
                     // Body parameters (note that non-required body parameters will ignore garbage
                     // values, rather than causing a 400 response). Produce warning header and logs for
                     // any unused fields.
-                    let result = body.to_raw().await;
+                    let result = body.into_raw().await;
                     match result {
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
@@ -317,7 +317,7 @@ where
                                 let mut response = Response::new(Body::empty());
                                 response.headers_mut().insert(
                                             HeaderName::from_static("x-span-id"),
-                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().as_str())
                                                 .expect("Unable to create X-Span-ID header value"));
 
                                         if !unused_elements.is_empty() {
@@ -381,13 +381,13 @@ where
                 }
 
                 // LoginWithPassword - POST /user/password-login
-                &hyper::Method::POST if path.matched(paths::ID_USER_PASSWORD_LOGIN) => {
+                hyper::Method::POST if path.matched(paths::ID_USER_PASSWORD_LOGIN) => {
                     {
-                        let authorization = match (&context as &dyn Has<Option<Authorization>>)
+                        let authorization = match *(&context as &dyn Has<Option<Authorization>>)
                             .get()
                         {
-                            &Some(ref authorization) => authorization,
-                            &None => {
+                            Some(ref authorization) => authorization,
+                            None => {
                                 return Ok(Response::builder()
                                     .status(StatusCode::FORBIDDEN)
                                     .body(Body::from("Unauthenticated"))
@@ -399,7 +399,7 @@ where
                     // Body parameters (note that non-required body parameters will ignore garbage
                     // values, rather than causing a 400 response). Produce warning header and logs for
                     // any unused fields.
-                    let result = body.to_raw().await;
+                    let result = body.into_raw().await;
                     match result {
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
@@ -433,7 +433,7 @@ where
                                 let mut response = Response::new(Body::empty());
                                 response.headers_mut().insert(
                                             HeaderName::from_static("x-span-id"),
-                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().as_str())
                                                 .expect("Unable to create X-Span-ID header value"));
 
                                         if !unused_elements.is_empty() {
@@ -497,13 +497,13 @@ where
                 }
 
                 // RegisterWithPassword - POST /user/register
-                &hyper::Method::POST if path.matched(paths::ID_USER_REGISTER) => {
+                hyper::Method::POST if path.matched(paths::ID_USER_REGISTER) => {
                     {
-                        let authorization = match (&context as &dyn Has<Option<Authorization>>)
+                        let authorization = match *(&context as &dyn Has<Option<Authorization>>)
                             .get()
                         {
-                            &Some(ref authorization) => authorization,
-                            &None => {
+                            Some(ref authorization) => authorization,
+                            None => {
                                 return Ok(Response::builder()
                                     .status(StatusCode::FORBIDDEN)
                                     .body(Body::from("Unauthenticated"))
@@ -515,7 +515,7 @@ where
                     // Body parameters (note that non-required body parameters will ignore garbage
                     // values, rather than causing a 400 response). Produce warning header and logs for
                     // any unused fields.
-                    let result = body.to_raw().await;
+                    let result = body.into_raw().await;
                     match result {
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
@@ -549,7 +549,7 @@ where
                                 let mut response = Response::new(Body::empty());
                                 response.headers_mut().insert(
                                             HeaderName::from_static("x-span-id"),
-                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().as_str())
                                                 .expect("Unable to create X-Span-ID header value"));
 
                                         if !unused_elements.is_empty() {
@@ -561,14 +561,14 @@ where
 
                                         match result {
                                             Ok(rsp) => match rsp {
-                                                RegisterWithPasswordResponse::OK
+                                                RegisterWithPasswordResponse::Created
                                                     (body)
                                                 => {
-                                                    *response.status_mut() = StatusCode::from_u16(200).expect("Unable to turn 200 into a StatusCode");
+                                                    *response.status_mut() = StatusCode::from_u16(201).expect("Unable to turn 201 into a StatusCode");
                                                     response.headers_mut().insert(
                                                         CONTENT_TYPE,
                                                         HeaderValue::from_str("application/json")
-                                                            .expect("Unable to create Content-Type header for REGISTER_WITH_PASSWORD_OK"));
+                                                            .expect("Unable to create Content-Type header for REGISTER_WITH_PASSWORD_CREATED"));
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
@@ -583,14 +583,14 @@ where
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
-                                                RegisterWithPasswordResponse::BadRequest_2
+                                                RegisterWithPasswordResponse::UnprocessableEntity
                                                     (body)
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(422).expect("Unable to turn 422 into a StatusCode");
                                                     response.headers_mut().insert(
                                                         CONTENT_TYPE,
                                                         HeaderValue::from_str("application/problem+json")
-                                                            .expect("Unable to create Content-Type header for REGISTER_WITH_PASSWORD_BAD_REQUEST_2"));
+                                                            .expect("Unable to create Content-Type header for REGISTER_WITH_PASSWORD_UNPROCESSABLE_ENTITY"));
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
@@ -613,15 +613,15 @@ where
                 }
 
                 // RequestRestoreToken - POST /user/restore-password/token-request
-                &hyper::Method::POST
+                hyper::Method::POST
                     if path.matched(paths::ID_USER_RESTORE_PASSWORD_TOKEN_REQUEST) =>
                 {
                     {
-                        let authorization = match (&context as &dyn Has<Option<Authorization>>)
+                        let authorization = match *(&context as &dyn Has<Option<Authorization>>)
                             .get()
                         {
-                            &Some(ref authorization) => authorization,
-                            &None => {
+                            Some(ref authorization) => authorization,
+                            None => {
                                 return Ok(Response::builder()
                                     .status(StatusCode::FORBIDDEN)
                                     .body(Body::from("Unauthenticated"))
@@ -633,7 +633,7 @@ where
                     // Body parameters (note that non-required body parameters will ignore garbage
                     // values, rather than causing a 400 response). Produce warning header and logs for
                     // any unused fields.
-                    let result = body.to_raw().await;
+                    let result = body.into_raw().await;
                     match result {
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
@@ -667,7 +667,7 @@ where
                                 let mut response = Response::new(Body::empty());
                                 response.headers_mut().insert(
                                             HeaderName::from_static("x-span-id"),
-                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().as_str())
                                                 .expect("Unable to create X-Span-ID header value"));
 
                                         if !unused_elements.is_empty() {
@@ -752,32 +752,32 @@ where
 /// Request parser for `Api`.
 pub struct ApiRequestParser;
 impl<T> RequestParser<T> for ApiRequestParser {
-    fn parse_operation_id(request: &Request<T>) -> Result<&'static str, ()> {
+    fn parse_operation_id(request: &Request<T>) -> Option<&'static str> {
         let path = paths::GLOBAL_REGEX_SET.matches(request.uri().path());
-        match request.method() {
+        match *request.method() {
             // AnonymousRegisters - POST /user/anonymous-register
-            &hyper::Method::POST if path.matched(paths::ID_USER_ANONYMOUS_REGISTER) => {
-                Ok("AnonymousRegisters")
+            hyper::Method::POST if path.matched(paths::ID_USER_ANONYMOUS_REGISTER) => {
+                Some("AnonymousRegisters")
             }
             // ChangePasswordWithToken - POST /user/restore-password/change-password
-            &hyper::Method::POST
+            hyper::Method::POST
                 if path.matched(paths::ID_USER_RESTORE_PASSWORD_CHANGE_PASSWORD) =>
             {
-                Ok("ChangePasswordWithToken")
+                Some("ChangePasswordWithToken")
             }
             // LoginWithPassword - POST /user/password-login
-            &hyper::Method::POST if path.matched(paths::ID_USER_PASSWORD_LOGIN) => {
-                Ok("LoginWithPassword")
+            hyper::Method::POST if path.matched(paths::ID_USER_PASSWORD_LOGIN) => {
+                Some("LoginWithPassword")
             }
             // RegisterWithPassword - POST /user/register
-            &hyper::Method::POST if path.matched(paths::ID_USER_REGISTER) => {
-                Ok("RegisterWithPassword")
+            hyper::Method::POST if path.matched(paths::ID_USER_REGISTER) => {
+                Some("RegisterWithPassword")
             }
             // RequestRestoreToken - POST /user/restore-password/token-request
-            &hyper::Method::POST if path.matched(paths::ID_USER_RESTORE_PASSWORD_TOKEN_REQUEST) => {
-                Ok("RequestRestoreToken")
+            hyper::Method::POST if path.matched(paths::ID_USER_RESTORE_PASSWORD_TOKEN_REQUEST) => {
+                Some("RequestRestoreToken")
             }
-            _ => Err(()),
+            _ => None,
         }
     }
 }

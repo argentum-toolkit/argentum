@@ -3,11 +3,11 @@ use crate::repository::password_credential_writer::PasswordCredentialWriterTrait
 
 use argentum_encryption_business::password::{EncryptionError, Encryptor};
 use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_user_business::data_type::Name;
 use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{
     AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
-use argentum_user_business::value_object::name::Name;
 
 use crate::repository::credential_writer::CredentialWriterError;
 use argentum_standard_business::data_type::id::Id;
@@ -102,9 +102,9 @@ mod test {
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::data_type::Name;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::mock::repository::broken::authenticated_user_repository_mock::AuthenticatedUserRepositoryMockWihBrokenSave;
-    use argentum_user_business::value_object::name::Name;
     use std::sync::Arc;
 
     #[test]
@@ -121,7 +121,7 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let id: Id = id_factory.create();
-        let name = Name::new(String::from("John"), String::from("Cooper")).unwrap();
+        let name = Name::new(String::from("John"), Some(String::from("Cooper")), None).unwrap();
         let email = EmailAddress::new(String::from("demo@test.com")).unwrap();
         let password = String::from("123");
         let result = uc.execute(id.clone(), name, email, password);
@@ -153,7 +153,7 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let id: Id = id_factory.create();
-        let name = Name::new(String::from("John"), String::from("Cooper")).unwrap();
+        let name = Name::new(String::from("John"), Some(String::from("Cooper")), None).unwrap();
         let email = EmailAddress::new(String::from("demo@test.com")).unwrap();
         let password = String::from("123");
         let result = uc.execute(id.clone(), name, email, password);

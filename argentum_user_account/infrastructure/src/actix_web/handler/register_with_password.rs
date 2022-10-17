@@ -13,7 +13,7 @@ use argentum_user_account_api::models::{
 use argentum_user_account_business::use_case::user_registers_with_password::{
     RegistrationError, UserRegistersWithPasswordUc,
 };
-use argentum_user_business::value_object::name::Name;
+use argentum_user_business::data_type::Name;
 use std::sync::Arc;
 
 pub async fn register_with_password(
@@ -28,7 +28,7 @@ pub async fn register_with_password(
 
     let result = uc.execute(
         user_id,
-        Name::new(json_name.first, json_name.last.unwrap()).unwrap(),
+        Name::new(json_name.first, Some(json_name.last.unwrap()), None).unwrap(),
         EmailAddress::new(json.email.clone()).unwrap(),
         json.password.clone(),
     );

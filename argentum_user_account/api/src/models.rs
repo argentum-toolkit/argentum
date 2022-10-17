@@ -15,11 +15,9 @@ pub struct AnonymousRegistrationResult {
 }
 
 impl AnonymousRegistrationResult {
+    #[allow(clippy::new_without_default)]
     pub fn new(aonymous_id: uuid::Uuid, token: String) -> AnonymousRegistrationResult {
-        AnonymousRegistrationResult {
-            aonymous_id: aonymous_id,
-            token: token,
-        }
+        AnonymousRegistrationResult { aonymous_id, token }
     }
 }
 
@@ -28,13 +26,13 @@ impl AnonymousRegistrationResult {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for AnonymousRegistrationResult {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
-        // Skipping aonymous_id in query parameter serialization
+        let params: Vec<Option<String>> = vec![
+            // Skipping aonymous_id in query parameter serialization
+            Some("token".to_string()),
+            Some(self.token.to_string()),
+        ];
 
-        params.push("token".to_string());
-        params.push(self.token.to_string());
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -45,8 +43,9 @@ impl std::str::FromStr for AnonymousRegistrationResult {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub aonymous_id: Vec<uuid::Uuid>,
             pub token: Vec<String>,
@@ -55,7 +54,7 @@ impl std::str::FromStr for AnonymousRegistrationResult {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -69,14 +68,16 @@ impl std::str::FromStr for AnonymousRegistrationResult {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "aonymous_id" => intermediate_rep.aonymous_id.push(
                         <uuid::Uuid as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                            .map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "token" => intermediate_rep.token.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -96,12 +97,12 @@ impl std::str::FromStr for AnonymousRegistrationResult {
                 .aonymous_id
                 .into_iter()
                 .next()
-                .ok_or("aonymous_id missing in AnonymousRegistrationResult".to_string())?,
+                .ok_or_else(|| "aonymous_id missing in AnonymousRegistrationResult".to_string())?,
             token: intermediate_rep
                 .token
                 .into_iter()
                 .next()
-                .ok_or("token missing in AnonymousRegistrationResult".to_string())?,
+                .ok_or_else(|| "token missing in AnonymousRegistrationResult".to_string())?,
         })
     }
 }
@@ -166,11 +167,9 @@ pub struct ChangePasswordSchema {
 }
 
 impl ChangePasswordSchema {
+    #[allow(clippy::new_without_default)]
     pub fn new(token: String, password: String) -> ChangePasswordSchema {
-        ChangePasswordSchema {
-            token: token,
-            password: password,
-        }
+        ChangePasswordSchema { token, password }
     }
 }
 
@@ -179,15 +178,14 @@ impl ChangePasswordSchema {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for ChangePasswordSchema {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
+        let params: Vec<Option<String>> = vec![
+            Some("token".to_string()),
+            Some(self.token.to_string()),
+            Some("password".to_string()),
+            Some(self.password.to_string()),
+        ];
 
-        params.push("token".to_string());
-        params.push(self.token.to_string());
-
-        params.push("password".to_string());
-        params.push(self.password.to_string());
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -198,8 +196,9 @@ impl std::str::FromStr for ChangePasswordSchema {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub token: Vec<String>,
             pub password: Vec<String>,
@@ -208,7 +207,7 @@ impl std::str::FromStr for ChangePasswordSchema {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -222,14 +221,15 @@ impl std::str::FromStr for ChangePasswordSchema {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "token" => intermediate_rep.token.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "password" => intermediate_rep.password.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -249,12 +249,12 @@ impl std::str::FromStr for ChangePasswordSchema {
                 .token
                 .into_iter()
                 .next()
-                .ok_or("token missing in ChangePasswordSchema".to_string())?,
+                .ok_or_else(|| "token missing in ChangePasswordSchema".to_string())?,
             password: intermediate_rep
                 .password
                 .into_iter()
                 .next()
-                .ok_or("password missing in ChangePasswordSchema".to_string())?,
+                .ok_or_else(|| "password missing in ChangePasswordSchema".to_string())?,
         })
     }
 }
@@ -319,11 +319,9 @@ pub struct LoginResult {
 }
 
 impl LoginResult {
+    #[allow(clippy::new_without_default)]
     pub fn new(user_id: uuid::Uuid, token: String) -> LoginResult {
-        LoginResult {
-            user_id: user_id,
-            token: token,
-        }
+        LoginResult { user_id, token }
     }
 }
 
@@ -332,13 +330,13 @@ impl LoginResult {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for LoginResult {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
-        // Skipping user_id in query parameter serialization
+        let params: Vec<Option<String>> = vec![
+            // Skipping user_id in query parameter serialization
+            Some("token".to_string()),
+            Some(self.token.to_string()),
+        ];
 
-        params.push("token".to_string());
-        params.push(self.token.to_string());
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -349,8 +347,9 @@ impl std::str::FromStr for LoginResult {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub user_id: Vec<uuid::Uuid>,
             pub token: Vec<String>,
@@ -359,7 +358,7 @@ impl std::str::FromStr for LoginResult {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -373,14 +372,16 @@ impl std::str::FromStr for LoginResult {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "user_id" => intermediate_rep.user_id.push(
                         <uuid::Uuid as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                            .map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "token" => intermediate_rep.token.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -400,12 +401,12 @@ impl std::str::FromStr for LoginResult {
                 .user_id
                 .into_iter()
                 .next()
-                .ok_or("user_id missing in LoginResult".to_string())?,
+                .ok_or_else(|| "user_id missing in LoginResult".to_string())?,
             token: intermediate_rep
                 .token
                 .into_iter()
                 .next()
-                .ok_or("token missing in LoginResult".to_string())?,
+                .ok_or_else(|| "token missing in LoginResult".to_string())?,
         })
     }
 }
@@ -466,11 +467,9 @@ pub struct LoginWithPasswordSchema {
 }
 
 impl LoginWithPasswordSchema {
+    #[allow(clippy::new_without_default)]
     pub fn new(email: String, password: String) -> LoginWithPasswordSchema {
-        LoginWithPasswordSchema {
-            email: email,
-            password: password,
-        }
+        LoginWithPasswordSchema { email, password }
     }
 }
 
@@ -479,15 +478,14 @@ impl LoginWithPasswordSchema {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for LoginWithPasswordSchema {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
+        let params: Vec<Option<String>> = vec![
+            Some("email".to_string()),
+            Some(self.email.to_string()),
+            Some("password".to_string()),
+            Some(self.password.to_string()),
+        ];
 
-        params.push("email".to_string());
-        params.push(self.email.to_string());
-
-        params.push("password".to_string());
-        params.push(self.password.to_string());
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -498,8 +496,9 @@ impl std::str::FromStr for LoginWithPasswordSchema {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub email: Vec<String>,
             pub password: Vec<String>,
@@ -508,7 +507,7 @@ impl std::str::FromStr for LoginWithPasswordSchema {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -522,14 +521,15 @@ impl std::str::FromStr for LoginWithPasswordSchema {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "email" => intermediate_rep.email.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "password" => intermediate_rep.password.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -549,12 +549,12 @@ impl std::str::FromStr for LoginWithPasswordSchema {
                 .email
                 .into_iter()
                 .next()
-                .ok_or("email missing in LoginWithPasswordSchema".to_string())?,
+                .ok_or_else(|| "email missing in LoginWithPasswordSchema".to_string())?,
             password: intermediate_rep
                 .password
                 .into_iter()
                 .next()
-                .ok_or("password missing in LoginWithPasswordSchema".to_string())?,
+                .ok_or_else(|| "password missing in LoginWithPasswordSchema".to_string())?,
         })
     }
 }
@@ -621,9 +621,10 @@ pub struct ProblemDetail {
 }
 
 impl ProblemDetail {
+    #[allow(clippy::new_without_default)]
     pub fn new(code: u32) -> ProblemDetail {
         ProblemDetail {
-            code: code,
+            code,
             message: None,
         }
     }
@@ -634,17 +635,15 @@ impl ProblemDetail {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for ProblemDetail {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
+        let params: Vec<Option<String>> = vec![
+            Some("code".to_string()),
+            Some(self.code.to_string()),
+            self.message
+                .as_ref()
+                .map(|message| vec!["message".to_string(), message.to_string()].join(",")),
+        ];
 
-        params.push("code".to_string());
-        params.push(self.code.to_string());
-
-        if let Some(ref message) = self.message {
-            params.push("message".to_string());
-            params.push(message.to_string());
-        }
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -655,8 +654,9 @@ impl std::str::FromStr for ProblemDetail {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub code: Vec<u32>,
             pub message: Vec<String>,
@@ -665,7 +665,7 @@ impl std::str::FromStr for ProblemDetail {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -679,13 +679,15 @@ impl std::str::FromStr for ProblemDetail {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "code" => intermediate_rep.code.push(
-                        <u32 as std::str::FromStr>::from_str(val).map_err(|x| format!("{}", x))?,
+                        <u32 as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "message" => intermediate_rep.message.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -705,7 +707,7 @@ impl std::str::FromStr for ProblemDetail {
                 .code
                 .into_iter()
                 .next()
-                .ok_or("code missing in ProblemDetail".to_string())?,
+                .ok_or_else(|| "code missing in ProblemDetail".to_string())?,
             message: intermediate_rep.message.into_iter().next(),
         })
     }
@@ -764,8 +766,9 @@ pub struct RegistrationWithPasswordResult {
 }
 
 impl RegistrationWithPasswordResult {
+    #[allow(clippy::new_without_default)]
     pub fn new(id: uuid::Uuid) -> RegistrationWithPasswordResult {
-        RegistrationWithPasswordResult { id: id }
+        RegistrationWithPasswordResult { id }
     }
 }
 
@@ -774,10 +777,12 @@ impl RegistrationWithPasswordResult {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for RegistrationWithPasswordResult {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
-        // Skipping id in query parameter serialization
+        let params: Vec<Option<String>> = vec![
+            // Skipping id in query parameter serialization
 
-        params.join(",").to_string()
+        ];
+
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -788,8 +793,9 @@ impl std::str::FromStr for RegistrationWithPasswordResult {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub id: Vec<uuid::Uuid>,
         }
@@ -797,7 +803,7 @@ impl std::str::FromStr for RegistrationWithPasswordResult {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -811,10 +817,12 @@ impl std::str::FromStr for RegistrationWithPasswordResult {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "id" => intermediate_rep.id.push(
                         <uuid::Uuid as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                            .map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -835,7 +843,7 @@ impl std::str::FromStr for RegistrationWithPasswordResult {
                 .id
                 .into_iter()
                 .next()
-                .ok_or("id missing in RegistrationWithPasswordResult".to_string())?,
+                .ok_or_else(|| "id missing in RegistrationWithPasswordResult".to_string())?,
         })
     }
 }
@@ -899,15 +907,16 @@ pub struct RegistrationWithPasswordSchema {
 }
 
 impl RegistrationWithPasswordSchema {
+    #[allow(clippy::new_without_default)]
     pub fn new(
         email: String,
         name: models::UserName,
         password: String,
     ) -> RegistrationWithPasswordSchema {
         RegistrationWithPasswordSchema {
-            email: email,
-            name: name,
-            password: password,
+            email,
+            name,
+            password,
         }
     }
 }
@@ -917,17 +926,15 @@ impl RegistrationWithPasswordSchema {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for RegistrationWithPasswordSchema {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
+        let params: Vec<Option<String>> = vec![
+            Some("email".to_string()),
+            Some(self.email.to_string()),
+            // Skipping name in query parameter serialization
+            Some("password".to_string()),
+            Some(self.password.to_string()),
+        ];
 
-        params.push("email".to_string());
-        params.push(self.email.to_string());
-
-        // Skipping name in query parameter serialization
-
-        params.push("password".to_string());
-        params.push(self.password.to_string());
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -938,8 +945,9 @@ impl std::str::FromStr for RegistrationWithPasswordSchema {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub email: Vec<String>,
             pub name: Vec<models::UserName>,
@@ -949,7 +957,7 @@ impl std::str::FromStr for RegistrationWithPasswordSchema {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -963,18 +971,20 @@ impl std::str::FromStr for RegistrationWithPasswordSchema {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "email" => intermediate_rep.email.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "name" => intermediate_rep.name.push(
                         <models::UserName as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                            .map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "password" => intermediate_rep.password.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -995,17 +1005,17 @@ impl std::str::FromStr for RegistrationWithPasswordSchema {
                 .email
                 .into_iter()
                 .next()
-                .ok_or("email missing in RegistrationWithPasswordSchema".to_string())?,
+                .ok_or_else(|| "email missing in RegistrationWithPasswordSchema".to_string())?,
             name: intermediate_rep
                 .name
                 .into_iter()
                 .next()
-                .ok_or("name missing in RegistrationWithPasswordSchema".to_string())?,
+                .ok_or_else(|| "name missing in RegistrationWithPasswordSchema".to_string())?,
             password: intermediate_rep
                 .password
                 .into_iter()
                 .next()
-                .ok_or("password missing in RegistrationWithPasswordSchema".to_string())?,
+                .ok_or_else(|| "password missing in RegistrationWithPasswordSchema".to_string())?,
         })
     }
 }
@@ -1063,8 +1073,9 @@ pub struct RequestRestoreTokenSchema {
 }
 
 impl RequestRestoreTokenSchema {
+    #[allow(clippy::new_without_default)]
     pub fn new(email: String) -> RequestRestoreTokenSchema {
-        RequestRestoreTokenSchema { email: email }
+        RequestRestoreTokenSchema { email }
     }
 }
 
@@ -1073,12 +1084,10 @@ impl RequestRestoreTokenSchema {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for RequestRestoreTokenSchema {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
+        let params: Vec<Option<String>> =
+            vec![Some("email".to_string()), Some(self.email.to_string())];
 
-        params.push("email".to_string());
-        params.push(self.email.to_string());
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -1089,8 +1098,9 @@ impl std::str::FromStr for RequestRestoreTokenSchema {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub email: Vec<String>,
         }
@@ -1098,7 +1108,7 @@ impl std::str::FromStr for RequestRestoreTokenSchema {
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -1112,10 +1122,11 @@ impl std::str::FromStr for RequestRestoreTokenSchema {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "email" => intermediate_rep.email.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -1135,7 +1146,7 @@ impl std::str::FromStr for RequestRestoreTokenSchema {
                 .email
                 .into_iter()
                 .next()
-                .ok_or("email missing in RequestRestoreTokenSchema".to_string())?,
+                .ok_or_else(|| "email missing in RequestRestoreTokenSchema".to_string())?,
         })
     }
 }
@@ -1198,13 +1209,19 @@ pub struct UserName {
     #[serde(rename = "last")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last: Option<String>,
+
+    #[serde(rename = "patronymic")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub patronymic: Option<String>,
 }
 
 impl UserName {
+    #[allow(clippy::new_without_default)]
     pub fn new(first: String) -> UserName {
         UserName {
-            first: first,
+            first,
             last: None,
+            patronymic: None,
         }
     }
 }
@@ -1214,17 +1231,18 @@ impl UserName {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for UserName {
     fn to_string(&self) -> String {
-        let mut params: Vec<String> = vec![];
+        let params: Vec<Option<String>> = vec![
+            Some("first".to_string()),
+            Some(self.first.to_string()),
+            self.last
+                .as_ref()
+                .map(|last| vec!["last".to_string(), last.to_string()].join(",")),
+            self.patronymic
+                .as_ref()
+                .map(|patronymic| vec!["patronymic".to_string(), patronymic.to_string()].join(",")),
+        ];
 
-        params.push("first".to_string());
-        params.push(self.first.to_string());
-
-        if let Some(ref last) = self.last {
-            params.push("last".to_string());
-            params.push(last.to_string());
-        }
-
-        params.join(",").to_string()
+        params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
 }
 
@@ -1235,17 +1253,19 @@ impl std::str::FromStr for UserName {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
         #[derive(Default)]
-        // An intermediate representation of the struct to use for parsing.
+        #[allow(dead_code)]
         struct IntermediateRep {
             pub first: Vec<String>,
             pub last: Vec<String>,
+            pub patronymic: Vec<String>,
         }
 
         let mut intermediate_rep = IntermediateRep::default();
 
         // Parse into intermediate representation
-        let mut string_iter = s.split(',').into_iter();
+        let mut string_iter = s.split(',');
         let mut key_result = string_iter.next();
 
         while key_result.is_some() {
@@ -1259,14 +1279,19 @@ impl std::str::FromStr for UserName {
             };
 
             if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
                 match key {
+                    #[allow(clippy::redundant_clone)]
                     "first" => intermediate_rep.first.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
+                    #[allow(clippy::redundant_clone)]
                     "last" => intermediate_rep.last.push(
-                        <String as std::str::FromStr>::from_str(val)
-                            .map_err(|x| format!("{}", x))?,
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    #[allow(clippy::redundant_clone)]
+                    "patronymic" => intermediate_rep.patronymic.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
                     ),
                     _ => {
                         return std::result::Result::Err(
@@ -1286,8 +1311,9 @@ impl std::str::FromStr for UserName {
                 .first
                 .into_iter()
                 .next()
-                .ok_or("first missing in UserName".to_string())?,
+                .ok_or_else(|| "first missing in UserName".to_string())?,
             last: intermediate_rep.last.into_iter().next(),
+            patronymic: intermediate_rep.patronymic.into_iter().next(),
         })
     }
 }

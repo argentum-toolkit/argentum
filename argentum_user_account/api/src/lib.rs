@@ -7,6 +7,8 @@
     unused_extern_crates,
     non_camel_case_types
 )]
+#![allow(unused_imports, unused_attributes)]
+#![allow(clippy::derive_partial_eq_without_eq, clippy::blacklisted_name)]
 
 use async_trait::async_trait;
 use futures::Stream;
@@ -17,18 +19,18 @@ use swagger::{ApiError, ContextWrapper};
 
 type ServiceError = Box<dyn Error + Send + Sync + 'static>;
 
-pub const BASE_PATH: &'static str = "/api/v1";
-pub const API_VERSION: &'static str = "0.1.0-dev";
+pub const BASE_PATH: &str = "/api/v1";
+pub const API_VERSION: &str = "0.1.0-dev";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 pub enum AnonymousRegistersResponse {
-    /// OK
-    OK(models::AnonymousRegistrationResult),
+    /// Created
+    Created(models::AnonymousRegistrationResult),
     /// Bad request
     BadRequest(models::ProblemDetail),
-    /// Bad request
-    BadRequest_2(models::ProblemDetail),
+    /// Unprocessable Entity
+    UnprocessableEntity(models::ProblemDetail),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -56,12 +58,12 @@ pub enum LoginWithPasswordResponse {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 pub enum RegisterWithPasswordResponse {
-    /// OK
-    OK(models::RegistrationWithPasswordResult),
+    /// Created
+    Created(models::RegistrationWithPasswordResult),
     /// Bad request
     BadRequest(models::ProblemDetail),
-    /// Bad request
-    BadRequest_2(models::ProblemDetail),
+    /// Unprocessable Entity
+    UnprocessableEntity(models::ProblemDetail),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -77,6 +79,7 @@ pub enum RequestRestoreTokenResponse {
 
 /// API
 #[async_trait]
+#[allow(clippy::too_many_arguments, clippy::ptr_arg)]
 pub trait Api<C: Send + Sync> {
     fn poll_ready(
         &self,
@@ -123,6 +126,7 @@ pub trait Api<C: Send + Sync> {
 
 /// API where `Context` isn't passed on every API call
 #[async_trait]
+#[allow(clippy::too_many_arguments, clippy::ptr_arg)]
 pub trait ApiNoContext<C: Send + Sync> {
     fn poll_ready(
         &self,
@@ -168,7 +172,7 @@ where
     Self: Sized,
 {
     /// Binds this API to a context.
-    fn with_context(self: Self, context: C) -> ContextWrapper<Self, C>;
+    fn with_context(self, context: C) -> ContextWrapper<Self, C>;
 }
 
 impl<T: Api<C> + Send + Sync, C: Clone + Send + Sync> ContextWrapperExt<C> for T {

@@ -75,12 +75,12 @@ mod tests {
     use crate::use_case::user_authenticates_with_token::AuthenticationError;
     use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
+    use argentum_user_business::data_type::Name;
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::entity::user::User::{Anonymous, Authenticated};
     use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
-    use argentum_user_business::value_object::name::Name;
     use std::sync::Arc;
 
     #[test]
@@ -96,7 +96,7 @@ mod tests {
         let token = String::from("test-token");
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::new(String::from("aaaa"), String::from("bbbb")).unwrap(),
+            Name::new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
             EmailAddress::new(String::from("aa@a.com")).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
@@ -149,7 +149,7 @@ mod tests {
         let token = String::from("test-token");
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::new(String::from("aaaa"), String::from("bbbb")).unwrap(),
+            Name::new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
             EmailAddress::new(String::from("aa@a.com")).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());

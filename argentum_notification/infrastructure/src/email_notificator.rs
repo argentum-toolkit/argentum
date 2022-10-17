@@ -59,14 +59,14 @@ impl<'s> NotificatorTrait for EmailNotificator<'s> {
             Err(e) => return Err(NotificationError::UserRepositoryError(e)),
         };
 
-        let to_mbox = format!(
-            "{} {} <{}>",
-            user.name.first,
-            user.name.last,
-            user.email.as_string()
-        )
-        .parse()
-        .unwrap();
+        let last = match user.name.last {
+            Some(l) => l,
+            None => "".to_string(),
+        };
+
+        let to_mbox = format!("{} {} <{}>", user.name.first, last, user.email.as_string())
+            .parse()
+            .unwrap();
 
         let building_result = Message::builder()
             .from(self.from.parse().unwrap())
