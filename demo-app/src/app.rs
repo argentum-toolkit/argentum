@@ -76,7 +76,7 @@ impl App {
         match anon_auth_result {
             Ok(_) => {}
             Err(e) => {
-                println!("Error: {}", e.to_string());
+                println!("Error: {}", e);
                 return Err(e.to_string());
             }
         };
@@ -127,7 +127,7 @@ impl App {
                 l
             }
             Err(e) => {
-                println!("Login error: {}", e.to_string());
+                println!("Login error: {}", e);
                 return Err(e.to_string());
             }
         };
@@ -140,7 +140,7 @@ impl App {
                 Ok(())
             }
             Err(e) => {
-                println!("Error: {}", e.to_string());
+                println!("Error: {}", e);
                 Err(e.to_string())
             }
         }
