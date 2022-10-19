@@ -126,7 +126,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
             id,
             created_at: user.created_at,
             first_name: user.name.first.clone(),
-            last_name: last.clone(),
+            last_name: last,
             email: user.email.as_string(),
         };
 
