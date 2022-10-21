@@ -47,7 +47,7 @@ impl Clone for Name {
         Name {
             first: self.first.clone(),
             last: self.last.clone(),
-            patronymic: None,
+            patronymic: self.patronymic.clone(),
         }
     }
 }
