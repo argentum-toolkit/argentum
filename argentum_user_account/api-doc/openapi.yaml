@@ -9,7 +9,7 @@ info:
     name: BSD-3
 
   contact:
-    url: https://gitlab.com/rusty-argentum/argentum
+    url: https://gitlab.com/argentum-toolkit/argentum
 
 servers:
   - url: http://localhost:{port}/{basePath}
@@ -25,7 +25,7 @@ servers:
 
 externalDocs:
   description: Find more info here
-  url: https://gitlab.com/rusty-argentum/argentum
+  url: https://gitlab.com/argentum-toolkit/argentum
 
 paths:
   /user/anonymous-register:

@@ -144,7 +144,7 @@ pub fn di_factory() -> DiC {
     // let restore_password_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
 
     let anonymous_requests_restore_token_uc = Arc::new(AnonymousRequestsRestoreToken::new(
-        "Rusty Argentum demo web application".to_string(),
+        "Argentum ToolKit demo web application".to_string(),
         "http://localhost:8080/change-password/".to_string(),
         unique_id_factory.clone(),
         authenticated_user_repository.clone(),

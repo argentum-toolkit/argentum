@@ -1,2 +1,2 @@
-= Rusty Argentum User. An Business layer.
+= Argentum ToolKit User. An Business layer.
 

@@ -1,4 +1,4 @@
-= Rusty Argentum. Notification Component
+= Argentum ToolKit. Notification Component
 
 == Packages documentation
 

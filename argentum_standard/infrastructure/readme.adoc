@@ -1,1 +1,1 @@
-= Rusty Argentum Standard. An infrastructure layer.
+= Argentum ToolKit Standard. An infrastructure layer.

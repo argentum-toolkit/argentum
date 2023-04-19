@@ -1,17 +1,17 @@
 :toc: macro
 :toclevels: 3
 
-= Rusty Argentum
+= Argentum ToolKit
 
 toc::[]
 
 == Why "Argentum"?
-Rusty Argentum was made to provide the easiest way to implement microservices and back-end applications on Rust programming language.
+Argentum ToolKit was made to provide the easiest way to implement microservices and back-end applications on Rust programming language.
 Our goal is to allow everyone to create applications without deep knowledge of Rust.
-Of course knowledge of the Rust will be great advantage. But Rusty Argentum helps you make your first steps as easy as possible and will save much time in the future.
-Your learning process will be iterative and easier than without Rusty Argentum.
+Of course knowledge of the Rust will be great advantage. But Argentum ToolKit helps you make your first steps as easy as possible and will save much time in the future.
+Your learning process will be iterative and easier than without Argentum ToolKit.
 
-.Steps to be ready to create effective applications with Rusty Argentum
+.Steps to be ready to create effective applications with Argentum ToolKit
 [plantuml, format="svg"]
 ----
 :Run Argentum Demo Application;
@@ -24,9 +24,9 @@ Your learning process will be iterative and easier than without Rusty Argentum.
 
 [TIP]
 ====
-**Getting Started with Rusty Argentum**.
+**Getting Started with Argentum ToolKit**.
 
-You can try Rusty Argentum with Docker without deep diving into Rust or the architecture of Rusty Argentum.
+You can try Argentum ToolKit with Docker without deep diving into Rust or the architecture of Argentum ToolKit.
 
 It is easy with link:docs/quick-start.adoc[Quick Start Guide]
 ====
@@ -40,11 +40,10 @@ It is easy with link:docs/quick-start.adoc[Quick Start Guide]
 * link:argentum_standard/readme.adoc[Argentum Standard]
 * link:argentum_user/readme.adoc[Argentum User]
 * link:argentum_user_account/readme.adoc[Argentum User Account]
-* link:argentum_user_account/readme.adoc[Argentum User Account]
 
 
-== Rusty Argentum Architecture. Short description
-Rusty Argentum project is composed of components.
+== Argentum ToolKit Architecture. Short description
+Argentum ToolKit project is composed of components.
 Each component is usually split to several crates:
 
 - business crate for abstractions
@@ -64,10 +63,10 @@ NOTE: Of course, you are free to follow other project structures.
 However, we advise you to pay maximum attention to the business logic of your application
 and separate it from the infrastructure.
 
-.The main idea of the architecture of Rusty Argentum
+.The main idea of the architecture of Argentum ToolKit
 [plantuml, format="svg"]
 ----
-rectangle "Rusty Argentum" {
+rectangle "Argentum ToolKit" {
     component Encryption as e {
         package "Encryption Business" as abstractions
         package "Encryption Infrastructure" as details
@@ -87,9 +86,14 @@ or on 3-rd party packages.
 
 WARNING: Circular dependencies are forbidden.
 
+== Features
+
+- Independent components
+- Dependency Injection
+
 == Contributing Guideline
 
-If you want to contribute to Rusty Argentum you just need to follow couple easy rules:
+If you want to contribute to Argentum ToolKit you just need to follow couple easy rules:
 
 - Be sure that you code follow code standards
 - Your code with business logic doesn't depend on infrastructure code and 3-rd party code
@@ -113,7 +117,7 @@ $ devops/scripts/check-item.sh {{package-name}}
 ....
 
 
-=== Allowed 3-rd party packages for business packages of Rusty Argentum
+=== Allowed 3-rd party packages for business packages of Argentum ToolKit
 
 * *thiserror* - errors
 * *chrono* - time

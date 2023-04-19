@@ -1,1 +1,1 @@
-= Rusty Argentum User Account. An infrastructure layer.
+= Argentum ToolKit User Account. An infrastructure layer.

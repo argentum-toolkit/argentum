@@ -1,1 +1,1 @@
-= Rusty Argentum. Log. Business layer.
+= Argentum ToolKit. Log. Business layer.
