@@ -1,4 +1,4 @@
-= Rusty Argentum. Standard Component
+= Argentum ToolKit. Standard Component
 
 This is a component with set of the most common things (e.g. data types)
 

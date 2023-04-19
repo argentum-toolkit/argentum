@@ -1,1 +1,1 @@
-= Rusty Argentum. Notification. Business layer.
+= Argentum ToolKit. Notification. Business layer.

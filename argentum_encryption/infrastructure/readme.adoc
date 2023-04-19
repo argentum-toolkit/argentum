@@ -1,1 +1,1 @@
-= Rusty Argentum Encryption. An infrastructure layer.
+= Argentum ToolKit Encryption. An infrastructure layer.

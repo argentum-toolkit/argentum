@@ -1,4 +1,4 @@
-= Rusty Argentum. Log Component
+= Argentum ToolKit. Log Component
 
 == Packages documentation
 

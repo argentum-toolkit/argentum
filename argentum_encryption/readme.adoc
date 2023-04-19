@@ -1,4 +1,4 @@
-= Rusty Argentum. Encryption Component
+= Argentum ToolKit. Encryption Component
 
 == Packages documentation
 

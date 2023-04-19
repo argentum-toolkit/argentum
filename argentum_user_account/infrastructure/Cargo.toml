@@ -5,9 +5,9 @@ version = "0.1.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
-homepage = "https://github.com/rusty-argentum/argentum"
-repository = "https://github.com/rusty-argentum/argentum"
-documentation = "https://github.com/rusty-argentum/argentum"
+homepage = "https://github.com/argentum-toolkit/argentum"
+repository = "https://github.com/argentum-toolkit/argentum"
+documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

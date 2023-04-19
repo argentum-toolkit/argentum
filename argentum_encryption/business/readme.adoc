@@ -1,1 +1,1 @@
-= Rusty Argentum. Encryption. A business layer.
+= Argentum ToolKit. Encryption. A business layer.

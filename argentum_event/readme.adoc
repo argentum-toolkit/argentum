@@ -1,4 +1,4 @@
-= Rusty Argentum. Event Component
+= Argentum ToolKit. Event Component
 
 == Packages documentation
 

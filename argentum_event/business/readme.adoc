@@ -1,4 +1,4 @@
-= Rusty Argentum. Event. Business layer.
+= Argentum ToolKit. Event. Business layer.
 
 == Restrictions
 * Event listeners should handle events idempotently

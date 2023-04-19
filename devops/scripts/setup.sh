@@ -10,6 +10,9 @@ echo "Initialization of Data Base"
 docker compose stop
 docker compose up -d service.user.db service.user_account.db
 
+#todo: wait-for-it.sh
+sleep 10
+
 cd argentum_user/infrastructure
 DATABASE_URL=postgres://dev:dev@*:54321/argentum_user diesel migration run
 cd ../..
@@ -20,6 +23,6 @@ cd ../..
 
 docker compose stop
 
-echo "Data Base is initialized"
+echo "Database is initialized"
 
 echo "Setup finished"

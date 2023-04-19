@@ -1,4 +1,4 @@
-= Rusty Argentum. User Component
+= Argentum ToolKit. User Component
 
 == Packages documentation
 

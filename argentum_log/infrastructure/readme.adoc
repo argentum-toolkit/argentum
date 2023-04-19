@@ -1,1 +1,1 @@
-= Rusty Argentum. Log. Infrastructure layer.
+= Argentum ToolKit. Log. Infrastructure layer.
