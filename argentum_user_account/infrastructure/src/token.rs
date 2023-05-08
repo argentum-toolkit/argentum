@@ -21,7 +21,7 @@ impl GeneratorTrait for StringTokenGenerator {
 
         let token: String = (0..len)
             .map(|_| {
-                let idx = rng.gen_range(0..=CHARSET.len());
+                let idx = rng.gen_range(0..=CHARSET.len() - 1);
                 CHARSET[idx] as char
             })
             .collect();

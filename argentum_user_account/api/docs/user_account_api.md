@@ -1,6 +1,6 @@
 # user_account_api
 
-All URIs are relative to *http://localhost:8080/api/v1*
+All URIs are relative to *http://localhost:8082/api/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

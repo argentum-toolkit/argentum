@@ -11,7 +11,7 @@ pub fn create_user_account_scope() -> Scope {
     web::scope("/api/v1/user")
         .route("/anonymous-register", web::post().to(anonymous_registers))
         .route("/register", web::post().to(register_with_password))
-        .route("/login", web::post().to(login_with_password))
+        .route("/password-login", web::post().to(login_with_password))
         .route(
             "/restore-password/token-request",
             web::post().to(request_restore_token),

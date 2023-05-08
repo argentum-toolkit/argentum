@@ -134,8 +134,8 @@ mod tests {
 
         let user_id = id_factory.create();
         let user_name =
-            Name::new("Dionne".to_string(), Some("Morrison".to_string()), None).unwrap();
-        let email = EmailAddress::new("test@mail.com".to_string()).unwrap();
+            Name::try_new("Dionne".to_string(), Some("Morrison".to_string()), None).unwrap();
+        let email = EmailAddress::try_new("test@mail.com".to_string()).unwrap();
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 
@@ -186,9 +186,9 @@ mod tests {
 
         let user_id = id_factory.create();
         let user_name =
-            Name::new("Dionne".to_string(), Some("Morrison".to_string()), None).unwrap();
+            Name::try_new("Dionne".to_string(), Some("Morrison".to_string()), None).unwrap();
 
-        let email = EmailAddress::new("test@mail.com".to_string()).unwrap();
+        let email = EmailAddress::try_new("test@mail.com".to_string()).unwrap();
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 

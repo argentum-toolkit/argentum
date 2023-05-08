@@ -8,7 +8,7 @@
     non_camel_case_types
 )]
 #![allow(unused_imports, unused_attributes)]
-#![allow(clippy::derive_partial_eq_without_eq, clippy::blacklisted_name)]
+#![allow(clippy::derive_partial_eq_without_eq, clippy::disallowed_names)]
 
 use async_trait::async_trait;
 use futures::Stream;

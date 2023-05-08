@@ -13,6 +13,15 @@ info:
 
 servers:
   - url: http://localhost:{port}/{basePath}
+    description: Dev API Server with CORS
+    variables:
+      port:
+        enum:
+          - '8082'
+        default: '8082'
+      basePath:
+        default: api/v1
+  - url: http://localhost:{port}/{basePath}
     description: The production API server
     variables:
       port:

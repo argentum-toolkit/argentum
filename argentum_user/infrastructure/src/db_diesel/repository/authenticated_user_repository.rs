@@ -44,12 +44,12 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
 
         match results {
             Ok(u) => {
-                let email = match EmailAddress::new(u.email) {
+                let email = match EmailAddress::try_new(u.email) {
                     Ok(e) => e,
                     Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
                 };
 
-                let name = match Name::new(u.first_name, Some(u.last_name), None) {
+                let name = match Name::try_new(u.first_name, Some(u.last_name), None) {
                     Ok(n) => n,
                     Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
                 };
@@ -86,12 +86,12 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
         match results {
             Ok(items) => match items.first() {
                 Some(item) => {
-                    let email = match EmailAddress::new(item.email.to_string()) {
+                    let email = match EmailAddress::try_new(item.email.to_string()) {
                         Ok(e) => e,
                         Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
                     };
 
-                    let name = match Name::new(
+                    let name = match Name::try_new(
                         item.first_name.to_string(),
                         Some(item.last_name.to_string()),
                         None,

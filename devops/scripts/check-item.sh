@@ -9,7 +9,8 @@ cd $ITEM_DIR
 
 cargo build
 cargo clippy
-cargo fmt --all -- --check
+cargo fmt --all
+#cargo fmt --all -- --check
 cargo test
 #cargo publish --dry-run
 

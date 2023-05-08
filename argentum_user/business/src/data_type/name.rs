@@ -17,7 +17,7 @@ pub struct Name {
 }
 
 impl Name {
-    pub fn new(
+    pub fn try_new(
         first: String,
         last: Option<String>,
         patronymic: Option<String>,

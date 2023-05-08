@@ -6,6 +6,15 @@
 * Docker Compose
 * Rust 1.56+
 * Cargo
+* Diesel
+
+== Dependencies
+
+[bash]
+----
+rustup update stable
+cargo install diesel_cli
+----
 
 == Setup project
 
@@ -16,7 +25,7 @@
 == Start Databases
 [bash]
 ----
-docker-compose up service.user.db service.user_account.db
+docker compose up service.user.db service.user_account.db
 ----
 
 == Run demo web application:
