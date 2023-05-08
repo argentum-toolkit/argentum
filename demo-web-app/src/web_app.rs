@@ -43,7 +43,7 @@ pub async fn start_server(di: DiC) -> std::io::Result<()> {
                 .service(create_user_account_scope())
                 .default_service(create_default_service())
         })
-        .bind("127.0.0.1:8080")?
+        .bind("0.0.0.0:8080")?
         .run()
         .await
     }

@@ -53,7 +53,7 @@ fn main() {
             Arg::with_name("port")
                 .long("port")
                 .takes_value(true)
-                .default_value("8080")
+                .default_value("8082")
                 .help("Port to contact"),
         )
         .get_matches();

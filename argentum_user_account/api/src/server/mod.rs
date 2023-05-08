@@ -180,7 +180,7 @@ where
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
                                 let param_body: Option<serde_json::Value> = if !body.is_empty() {
-                                    let deserializer = &mut serde_json::Deserializer::from_slice(&*body);
+                                    let deserializer = &mut serde_json::Deserializer::from_slice(&body);
                                     match serde_ignored::deserialize(deserializer, |path| {
                                             warn!("Ignoring unknown field in body: {}", path);
                                             unused_elements.push(path.to_string());
@@ -288,7 +288,7 @@ where
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
                                 let param_change_password_schema: Option<models::ChangePasswordSchema> = if !body.is_empty() {
-                                    let deserializer = &mut serde_json::Deserializer::from_slice(&*body);
+                                    let deserializer = &mut serde_json::Deserializer::from_slice(&body);
                                     match serde_ignored::deserialize(deserializer, |path| {
                                             warn!("Ignoring unknown field in body: {}", path);
                                             unused_elements.push(path.to_string());
@@ -404,7 +404,7 @@ where
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
                                 let param_login_with_password_schema: Option<models::LoginWithPasswordSchema> = if !body.is_empty() {
-                                    let deserializer = &mut serde_json::Deserializer::from_slice(&*body);
+                                    let deserializer = &mut serde_json::Deserializer::from_slice(&body);
                                     match serde_ignored::deserialize(deserializer, |path| {
                                             warn!("Ignoring unknown field in body: {}", path);
                                             unused_elements.push(path.to_string());
@@ -520,7 +520,7 @@ where
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
                                 let param_registration_with_password_schema: Option<models::RegistrationWithPasswordSchema> = if !body.is_empty() {
-                                    let deserializer = &mut serde_json::Deserializer::from_slice(&*body);
+                                    let deserializer = &mut serde_json::Deserializer::from_slice(&body);
                                     match serde_ignored::deserialize(deserializer, |path| {
                                             warn!("Ignoring unknown field in body: {}", path);
                                             unused_elements.push(path.to_string());
@@ -638,7 +638,7 @@ where
                             Ok(body) => {
                                 let mut unused_elements = Vec::new();
                                 let param_request_restore_token_schema: Option<models::RequestRestoreTokenSchema> = if !body.is_empty() {
-                                    let deserializer = &mut serde_json::Deserializer::from_slice(&*body);
+                                    let deserializer = &mut serde_json::Deserializer::from_slice(&body);
                                     match serde_ignored::deserialize(deserializer, |path| {
                                             warn!("Ignoring unknown field in body: {}", path);
                                             unused_elements.push(path.to_string());

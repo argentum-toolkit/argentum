@@ -1,9 +1,9 @@
 [package]
 name = "argentum_user_account_api"
 version = "0.1.0-dev"
-authors = []
+authors = ["OpenAPI Generator team and contributors"]
 description = "This is demo app"
-license = "Unlicense"
+license = "BSD-3"
 edition = "2018"
 
 [features]

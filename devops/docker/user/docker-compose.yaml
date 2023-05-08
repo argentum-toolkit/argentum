@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+   service.user.db:
+    image: 'postgres:13.4'
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_FOR_ARGENTUM_USER}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    #    user: $HOST_UID:$HOST_GID
+    volumes:
+      - ../../../var/db/user/data:/var/lib/postgresql/data
+    tmpfs:
+      - /tmp:exec,size=1G
+    ports:
+      - "54321:5432"
+    #TODO: close ports for production mode

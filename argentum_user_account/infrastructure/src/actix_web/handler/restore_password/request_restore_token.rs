@@ -16,7 +16,7 @@ pub async fn request_restore_token(
     logger: web::Data<Arc<dyn LoggerTrait>>,
     json: web::Json<RequestRestoreTokenSchema>,
 ) -> impl Responder {
-    let email = match EmailAddress::new(json.email.clone()) {
+    let email = match EmailAddress::try_new(json.email.clone()) {
         Ok(email) => email,
         Err(_) => return HttpResponse::BadRequest().body("Wrong email address"),
     };

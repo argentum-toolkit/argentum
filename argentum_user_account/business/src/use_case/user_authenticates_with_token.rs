@@ -96,8 +96,8 @@ mod tests {
         let token = String::from("test-token");
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
-            EmailAddress::new(String::from("aa@a.com")).unwrap(),
+            Name::try_new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
+            EmailAddress::try_new(String::from("aa@a.com")).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
 
@@ -149,8 +149,8 @@ mod tests {
         let token = String::from("test-token");
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
-            EmailAddress::new(String::from("aa@a.com")).unwrap(),
+            Name::try_new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
+            EmailAddress::try_new(String::from("aa@a.com")).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
 

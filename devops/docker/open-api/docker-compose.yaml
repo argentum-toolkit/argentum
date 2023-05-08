@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger_ui_container
+    ports:
+      - "8083:8080"
+    volumes:
+      - ../../..:/usr/share/nginx/html/doc
+    environment:
+      URLS: "[
+                { url: 'doc/argentum_user_account/api/api/openapi.yaml', name: 'User Account'},
+            ]"

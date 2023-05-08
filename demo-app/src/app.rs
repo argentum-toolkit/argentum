@@ -83,12 +83,12 @@ impl App {
 
         let user_id = self.id_factory.create();
 
-        let name_res = Name::new(String::from("Sarah"), Some(String::from("Connor")), None);
+        let name_res = Name::try_new(String::from("Sarah"), Some(String::from("Connor")), None);
         let name = match name_res {
             Ok(name) => name,
             Err(e) => return Err(e.to_string()),
         };
-        let email_res = EmailAddress::new(String::from("sarah-connor@example.com"));
+        let email_res = EmailAddress::try_new(String::from("sarah-connor@example.com"));
         let email = match email_res {
             Ok(email) => email,
             Err(e) => return Err(e.to_string()),
@@ -109,7 +109,7 @@ impl App {
 
         let anon_id2 = self.id_factory.create();
         let anon2 = AnonymousUser::new(&anon_id2);
-        let email_res2 = EmailAddress::new(String::from("sarah-connor@example.com"));
+        let email_res2 = EmailAddress::try_new(String::from("sarah-connor@example.com"));
         let password2 = String::from("111");
 
         let email2 = match email_res2 {

@@ -28,8 +28,8 @@ pub async fn register_with_password(
 
     let result = uc.execute(
         user_id,
-        Name::new(json_name.first, Some(json_name.last.unwrap()), None).unwrap(),
-        EmailAddress::new(json.email.clone()).unwrap(),
+        Name::try_new(json_name.first, Some(json_name.last.unwrap()), None).unwrap(),
+        EmailAddress::try_new(json.email.clone()).unwrap(),
         json.password.clone(),
     );
 

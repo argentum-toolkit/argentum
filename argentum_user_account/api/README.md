@@ -14,7 +14,7 @@ To see how to make this your own, look here:
 [README]((https://openapi-generator.tech))
 
 - API version: 0.1.0-dev
-- Build date: 2022-10-12T17:20:57.610938Z[Etc/UTC]
+- Build date: 2023-05-08T22:14:00.309301Z[Etc/UTC]
 
 For more information, please visit [https://gitlab.com/argentum-toolkit/argentum](https://gitlab.com/argentum-toolkit/argentum)
 
@@ -91,7 +91,7 @@ See https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost:8080/api/v1*
+All URIs are relative to *http://localhost:8082/api/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

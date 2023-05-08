@@ -11,6 +11,15 @@ externalDocs:
   description: Find more info here
   url: https://gitlab.com/argentum-toolkit/argentum
 servers:
+- description: Dev API Server with CORS
+  url: "http://localhost:{port}/{basePath}"
+  variables:
+    port:
+      default: "8082"
+      enum:
+      - "8082"
+    basePath:
+      default: api/v1
 - description: The production API server
   url: "http://localhost:{port}/{basePath}"
   variables:
@@ -304,8 +313,8 @@ components:
         password: password
         name:
           patronymic: patronymic
-          last: last
-          first: first
+          last: Marko
+          first: Winston
         email: email
       properties:
         email:
@@ -359,14 +368,16 @@ components:
     UserName:
       example:
         patronymic: patronymic
-        last: last
-        first: first
+        last: Marko
+        first: Winston
       properties:
         first:
+          example: Winston
           maxLength: 255
           minLength: 1
           type: string
         last:
+          example: Marko
           maxLength: 255
           minLength: 1
           type: string

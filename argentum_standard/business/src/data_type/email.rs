@@ -12,7 +12,7 @@ pub enum WrongEmailError {
 pub struct EmailAddress(String);
 
 impl EmailAddress {
-    pub fn new(email: String) -> Result<EmailAddress, WrongEmailError> {
+    pub fn try_new(email: String) -> Result<EmailAddress, WrongEmailError> {
         if email.is_empty() {
             return Err(WrongEmailError::Empty);
         }
@@ -55,7 +55,7 @@ mod tests {
     #[test]
     fn test_new_valid_email_address() {
         let email_string = String::from("man@example.com");
-        let res = EmailAddress::new(email_string.clone());
+        let res = EmailAddress::try_new(email_string.clone());
 
         match res {
             Ok(email) => {
@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn test_new_wrong_email_address() {
         let email_string = String::from("a@aa");
-        let res = EmailAddress::new(email_string.clone());
+        let res = EmailAddress::try_new(email_string.clone());
 
         match res {
             Ok(_) => {

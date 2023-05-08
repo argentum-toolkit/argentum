@@ -121,8 +121,8 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let id: Id = id_factory.create();
-        let name = Name::new(String::from("John"), Some(String::from("Cooper")), None).unwrap();
-        let email = EmailAddress::new(String::from("demo@test.com")).unwrap();
+        let name = Name::try_new(String::from("John"), Some(String::from("Cooper")), None).unwrap();
+        let email = EmailAddress::try_new(String::from("demo@test.com")).unwrap();
         let password = String::from("123");
         let result = uc.execute(id.clone(), name, email, password);
 
@@ -153,8 +153,8 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let id: Id = id_factory.create();
-        let name = Name::new(String::from("John"), Some(String::from("Cooper")), None).unwrap();
-        let email = EmailAddress::new(String::from("demo@test.com")).unwrap();
+        let name = Name::try_new(String::from("John"), Some(String::from("Cooper")), None).unwrap();
+        let email = EmailAddress::try_new(String::from("demo@test.com")).unwrap();
         let password = String::from("123");
         let result = uc.execute(id.clone(), name, email, password);
 

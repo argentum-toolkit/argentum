@@ -32,7 +32,7 @@ pub async fn login_with_password(
 
     let result = uc.execute(
         Some(anonymous),
-        EmailAddress::new(json.email.clone()).unwrap(),
+        EmailAddress::try_new(json.email.clone()).unwrap(),
         json.password.clone(),
     );
 
