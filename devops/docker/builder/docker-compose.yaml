@@ -2,8 +2,10 @@ version: "3.8"
 
 services:
   builder:
-    image: itcreator/argentum-toolkit-rust-dev
-    build: .
+    image: itcreator/argentum-toolkit-rs-dev
+    build:
+      context: ../../..
+      dockerfile: devops/docker/builder/Dockerfile
     working_dir: /code
     volumes:
       - ../../..:/code

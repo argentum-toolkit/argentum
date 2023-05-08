@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   cors:
+    image: itcreator/argentum-toolkit-cors-dev
     build:
       context: ../../..
       dockerfile: devops/docker/cors/Dockerfile
