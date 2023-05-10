@@ -12,6 +12,6 @@ impl TokenGeneratorMock {
 
 impl GeneratorTrait for TokenGeneratorMock {
     fn generate(&self, _user_id: &Id) -> String {
-        String::from("Test token")
+        "Test token".into()
     }
 }

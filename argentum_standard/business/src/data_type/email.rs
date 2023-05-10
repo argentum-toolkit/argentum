@@ -9,6 +9,7 @@ pub enum WrongEmailError {
     WrongEmail,
 }
 
+#[derive(Clone, PartialEq)]
 pub struct EmailAddress(String);
 
 impl EmailAddress {
@@ -36,25 +37,13 @@ impl EmailAddress {
     }
 }
 
-impl PartialEq for EmailAddress {
-    fn eq(&self, other: &Self) -> bool {
-        other.0 == self.0
-    }
-}
-
-impl Clone for EmailAddress {
-    fn clone(&self) -> EmailAddress {
-        EmailAddress(self.0.clone())
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::data_type::email::EmailAddress;
+    use crate::data_type::email::{EmailAddress, WrongEmailError};
 
     #[test]
     fn test_new_valid_email_address() {
-        let email_string = String::from("man@example.com");
+        let email_string = "man@example.com".to_string();
         let res = EmailAddress::try_new(email_string.clone());
 
         match res {
@@ -68,17 +57,24 @@ mod tests {
     }
 
     #[test]
-    fn test_new_wrong_email_address() {
-        let email_string = String::from("a@aa");
-        let res = EmailAddress::try_new(email_string.clone());
+    fn test_new_empty_email_address() -> Result<(), &'static str> {
+        let res = EmailAddress::try_new("".into());
 
         match res {
-            Ok(_) => {
-                assert_eq!(true, false)
-            }
-            Err(_) => {
-                assert_eq!(true, true)
-            }
+            Ok(_) => Err("`try_new` should return an error"),
+            Err(WrongEmailError::Empty) => Ok(()),
+            Err(WrongEmailError::WrongEmail) => Err("Wrong error type"),
+        }
+    }
+
+    #[test]
+    fn test_new_wrong_email_address() -> Result<(), &'static str> {
+        let res = EmailAddress::try_new("a@aa".into());
+
+        match res {
+            Ok(_) => Err("`try_new` should return an error"),
+            Err(WrongEmailError::Empty) => Err("Wrong error type"),
+            Err(WrongEmailError::WrongEmail) => Ok(()),
         }
     }
 }

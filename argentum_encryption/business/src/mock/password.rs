@@ -1,5 +1,6 @@
 use crate::password::{EncryptionError, Encryptor, Validator};
 
+//TODO: implement better SALT
 const SALT: &str = "encoded_";
 
 pub struct EncryptorMock {}
@@ -19,7 +20,7 @@ impl Default for EncryptorMock {
 
 impl Encryptor for EncryptorMock {
     fn encrypt(&self, password: &str) -> Result<(String, String), EncryptionError> {
-        let salt = String::from(SALT);
+        let salt = SALT.to_string();
         let hash = [SALT, password].join("");
 
         Ok((hash, salt))

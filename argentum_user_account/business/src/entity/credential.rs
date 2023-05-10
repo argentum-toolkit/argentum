@@ -5,6 +5,7 @@ pub trait Credential {
     fn as_any(&self) -> &dyn Any;
 }
 
+#[derive(Clone)]
 pub struct PasswordCredential {
     pub user_id: Id,
     pub password: String,
@@ -14,16 +15,6 @@ pub struct PasswordCredential {
 impl Credential for PasswordCredential {
     fn as_any(&self) -> &dyn Any {
         self
-    }
-}
-
-impl Clone for PasswordCredential {
-    fn clone(&self) -> PasswordCredential {
-        PasswordCredential {
-            user_id: self.user_id.clone(),
-            password: self.password.clone(),
-            salt: self.salt.clone(),
-        }
     }
 }
 

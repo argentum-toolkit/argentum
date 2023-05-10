@@ -93,11 +93,11 @@ mod tests {
         //Data
         let user_id: Id = id_factory.create();
         let session_id = id_factory.create();
-        let token = String::from("test-token");
+        let token = "test-token".to_string();
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::try_new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
-            EmailAddress::try_new(String::from("aa@a.com")).unwrap(),
+            Name::try_new("aaaa".into(), Some("bbbb".into()), None).unwrap(),
+            EmailAddress::try_new("aa@a.com".into()).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
 
@@ -146,11 +146,11 @@ mod tests {
         //Data
         let user_id: Id = id_factory.create();
         let session_id = id_factory.create();
-        let token = String::from("test-token");
+        let token = "test-token".to_string();
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::try_new(String::from("aaaa"), Some(String::from("bbbb")), None).unwrap(),
-            EmailAddress::try_new(String::from("aa@a.com")).unwrap(),
+            Name::try_new("aaaa".into(), Some("bbbb".into()), None).unwrap(),
+            EmailAddress::try_new("aa@a.com".into()).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
 
@@ -169,7 +169,7 @@ mod tests {
             session_repository,
         );
 
-        let result = uc.execute(String::from("wrong-test-token"));
+        let result = uc.execute("wrong-test-token".into());
 
         match result {
             Ok(_) => {
@@ -195,7 +195,7 @@ mod tests {
         //Data
         let user_id: Id = id_factory.create();
         let session_id = id_factory.create();
-        let token = String::from("test-token");
+        let token = "test-token".to_string();
         let session = Session::new(session_id, user_id.clone(), token.clone());
 
         //Prefilling
