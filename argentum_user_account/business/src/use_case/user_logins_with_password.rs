@@ -177,9 +177,9 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let user_id: Id = id_factory.create();
-        let name = Name::try_new(String::from("Some"), Some(String::from("Name")), None).unwrap();
-        let email = EmailAddress::try_new(String::from("test@test-mail.com")).unwrap();
-        let password = String::from("12345");
+        let name = Name::try_new("Some".into(), Some("Name".into()), None).unwrap();
+        let email = EmailAddress::try_new("test@test-mail.com".into()).unwrap();
+        let password = "12345".to_string();
         let user = AuthenticatedUser::new(&user_id, name, email.clone());
         let encryptor = EncryptorMock::new();
         let (hashed_password, salt) = encryptor.encrypt(&password).unwrap();

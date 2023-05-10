@@ -86,14 +86,14 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
         match results {
             Ok(items) => match items.first() {
                 Some(item) => {
-                    let email = match EmailAddress::try_new(item.email.to_string()) {
+                    let email = match EmailAddress::try_new(item.email.clone()) {
                         Ok(e) => e,
                         Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
                     };
 
                     let name = match Name::try_new(
-                        item.first_name.to_string(),
-                        Some(item.last_name.to_string()),
+                        item.first_name.clone(),
+                        Some(item.last_name.clone()),
                         None,
                     ) {
                         Ok(n) => n,

@@ -1,6 +1,7 @@
 use chrono::{Date, DateTime, Duration, Utc};
 use std::mem;
 
+#[derive(Clone)]
 pub struct DateRange(pub Date<Utc>, pub Date<Utc>);
 
 impl DateRange {
@@ -26,12 +27,6 @@ impl Iterator for DateRange {
         } else {
             None
         }
-    }
-}
-
-impl Clone for DateRange {
-    fn clone(&self) -> DateRange {
-        DateRange(self.0, self.1)
     }
 }
 
