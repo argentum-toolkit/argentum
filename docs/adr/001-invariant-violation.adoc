@@ -1,0 +1,144 @@
+:source-highlighter: rouge
+
+= Invariant Violation
+
+== Context and Problem Statement
+Requests validation, error handling and model integrity are important parts of robust application. User-friendly error messages are necessary to achieve good user experience. This document describes the way how to write robust code with pretty error messages.
+
+
+=== Why we don't use validators
+
+Validation assumes that data type instance can be in a valid or invalid state. We design our types to be always valid.
+
+Validators bring *temporal coupling*. It means that we should be sure that instance of data type will be validated before first usage. In our case, we have instance of data type that will be consistent independent of previous operations.
+
+
+
+== Decision
+
+* For business entities value objects aggregates and other data types should implement custom types.
+* Instances of this types should not have ability to have invalid state.
+* In case when instance can't be created from incoming data constructor should return result `Err<Violations>`
+
+Struct `Violations` contains fields `errors` for his own errors and `items` for violations of internal fields.
+
+.Example
+[source, rust]
+----
+pub struct EmailAddress(String);
+
+impl EmailAddress {
+    pub fn try_new(email: String) -> Result<EmailAddress, Violations> {
+        if email.is_empty() {
+            //Constant will be converted into `Violation`
+            return Err(ERR_EMAIL_EMPTY.into());
+        }
+
+        let re = Regex::new(
+            r"(?x) # enable insigificant whitespace mode
+            ^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$
+        ")
+        .unwrap();
+
+        if re.is_match(email.as_str()) {
+            Ok(EmailAddress(email))
+        } else {
+            //Constant will be converted into `Violation`
+            Err(ERR_WRONG_EMAIL.into())
+        }
+    }
+}
+----
+
+=== Handling of nested objects
+
+In this case we recommend to use `builder`. It means that builder will collect raw data, but constructor of custom type will receive only valid parameters.
+
+.Example
+[source, rust]
+----
+#[derive(Clone, Debug)]
+pub struct Name {
+    pub first: NamePart,
+    pub last: Option<NamePart>,
+}
+
+impl Name {
+    pub fn new(first: NamePart, last: Option<NamePart>) -> Self {
+        Self {
+            first,
+            last,
+        }
+    }
+}
+
+const ERR_WRONG_NAME: &str = "Wrong name";
+
+pub struct NameBuilder {
+    first: Option<NamePart>,
+    last: Option<NamePart>,
+    violations: ViolationObject,
+}
+
+impl NameBuilder {
+    pub fn new(first: String) -> Self {
+        let mut violations = HashMap::new();
+
+        let first_name = match NamePart::try_new(first) {
+            Ok(f) => Some(f),
+            Err(v) => {
+                violations.insert("first".into(), v);
+                None
+            }
+        };
+
+        Self {
+            first: first_name,
+            last: None,
+            violations,
+        }
+    }
+
+    pub fn last(mut self, last: Option<String>) -> Self {
+        self.last = match last {
+            None => None,
+            Some(l) => match NamePart::try_new(l) {
+                Ok(ln) => Some(ln),
+                Err(v) => {
+                    self.violations.insert("last".into(), v);
+
+                    None
+                }
+            },
+        };
+
+        self
+    }
+
+    pub fn try_build(&self) -> Result<Name, Violations> {
+        if self.violations.is_empty() {
+            Ok(Name::new(
+                self.first.clone().unwrap(),
+                self.last.clone(),
+            ))
+        } else {
+            Err(Violations::new(
+                vec![ERR_WRONG_NAME.to_string()],
+                Some(ViolationItems::Object(self.violations.clone())),
+            ))
+        }
+    }
+}
+
+
+----
+
+== Consequences +/-
+<TBD>
+-
+
+== How to check (Validation)
+<TBD>
+
+== Links
+<TBD>

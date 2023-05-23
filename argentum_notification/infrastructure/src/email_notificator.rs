@@ -60,13 +60,18 @@ impl<'s> NotificatorTrait for EmailNotificator<'s> {
         };
 
         let last = match user.name.last {
-            Some(l) => l,
+            Some(l) => l.to_string(),
             None => "".to_string(),
         };
 
-        let to_mbox = format!("{} {} <{}>", user.name.first, last, user.email.as_string())
-            .parse()
-            .unwrap();
+        let to_mbox = format!(
+            "{} {} <{}>",
+            user.name.first.to_string(),
+            last,
+            user.email.as_string()
+        )
+        .parse()
+        .unwrap();
 
         let building_result = Message::builder()
             .from(self.from.parse().unwrap())

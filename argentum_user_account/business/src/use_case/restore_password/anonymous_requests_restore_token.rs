@@ -76,7 +76,7 @@ impl AnonymousRequestsRestoreToken {
         }
 
         let last = match user.name.last {
-            Some(l) => l,
+            Some(l) => l.to_string(),
             None => "".to_string(),
         };
 
@@ -94,7 +94,7 @@ impl AnonymousRequestsRestoreToken {
             </p>
 
         ",
-            user.name.first,
+            user.name.first.to_string(),
             last,
             self.product_name,
             self.restore_password_front_url,
@@ -127,7 +127,7 @@ mod tests {
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
-    use argentum_user_business::data_type::Name;
+    use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
@@ -156,7 +156,10 @@ mod tests {
         );
 
         let user_id = id_factory.create();
-        let user_name = Name::try_new("Dionne".into(), Some("Morrison".into()), None).unwrap();
+        let user_name = NameBuilder::new("Dionne".into())
+            .last(Some("Morrison".into()))
+            .try_build()
+            .unwrap();
 
         let email = EmailAddress::try_new("test@mail.com".into()).unwrap();
 

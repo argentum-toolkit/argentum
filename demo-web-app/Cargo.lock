@@ -563,6 +563,7 @@ dependencies = [
  "diesel",
  "dotenv",
  "serde",
+ "thiserror",
  "uuid",
 ]
 
