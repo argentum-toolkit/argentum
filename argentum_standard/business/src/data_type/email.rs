@@ -1,21 +1,17 @@
+use crate::invariant_violation::Violations;
 use regex::Regex;
-use thiserror::Error;
 
-#[derive(Error, Debug)]
-pub enum WrongEmailError {
-    #[error("Email should not be empty")]
-    Empty,
-    #[error("Wrong email address")]
-    WrongEmail,
-}
+const ERR_EMAIL_EMPTY: &str = "Email should not be empty";
+const ERR_WRONG_EMAIL: &str = "Wrong email address";
 
 #[derive(Clone, PartialEq)]
 pub struct EmailAddress(String);
 
 impl EmailAddress {
-    pub fn try_new(email: String) -> Result<EmailAddress, WrongEmailError> {
+    pub fn try_new(email: String) -> Result<EmailAddress, Violations> {
         if email.is_empty() {
-            return Err(WrongEmailError::Empty);
+            //Constant will be converted into `Violation`
+            return Err(ERR_EMAIL_EMPTY.into());
         }
 
         let re = Regex::new(
@@ -28,10 +24,12 @@ impl EmailAddress {
         if re.is_match(email.as_str()) {
             Ok(EmailAddress(email))
         } else {
-            Err(WrongEmailError::WrongEmail)
+            //Constant will be converted into `Violation`
+            Err(ERR_WRONG_EMAIL.into())
         }
     }
 
+    //TODO: to_string
     pub fn as_string(&self) -> String {
         self.0.clone()
     }
@@ -39,7 +37,7 @@ impl EmailAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::email::{EmailAddress, WrongEmailError};
+    use crate::data_type::email::{EmailAddress, ERR_EMAIL_EMPTY, ERR_WRONG_EMAIL};
 
     #[test]
     fn test_new_valid_email_address() {
@@ -47,34 +45,36 @@ mod tests {
         let res = EmailAddress::try_new(email_string.clone());
 
         match res {
-            Ok(email) => {
-                assert_eq!(email_string, email.as_string())
-            }
-            Err(_) => {
-                assert_eq!(true, false)
-            }
+            Ok(email) => assert_eq!(email_string, email.as_string()),
+            Err(_) => assert!(false),
         }
     }
 
     #[test]
-    fn test_new_empty_email_address() -> Result<(), &'static str> {
+    fn test_new_empty_email_address() {
         let res = EmailAddress::try_new("".into());
 
-        match res {
-            Ok(_) => Err("`try_new` should return an error"),
-            Err(WrongEmailError::Empty) => Ok(()),
-            Err(WrongEmailError::WrongEmail) => Err("Wrong error type"),
+        assert!(res.is_err());
+
+        if let Err(violations) = res {
+            assert!(violations.items.is_none());
+            assert_eq!(violations.errors.len(), 1);
+            let v = violations.errors.first().unwrap();
+            assert_eq!(v, ERR_EMAIL_EMPTY)
         }
     }
 
     #[test]
-    fn test_new_wrong_email_address() -> Result<(), &'static str> {
+    fn test_new_wrong_email_address() {
         let res = EmailAddress::try_new("a@aa".into());
 
-        match res {
-            Ok(_) => Err("`try_new` should return an error"),
-            Err(WrongEmailError::Empty) => Err("Wrong error type"),
-            Err(WrongEmailError::WrongEmail) => Ok(()),
+        assert!(res.is_err());
+
+        if let Err(violations) = res {
+            assert!(violations.items.is_none());
+            assert_eq!(violations.errors.len(), 1);
+            let v = violations.errors.first().unwrap();
+            assert_eq!(v, ERR_WRONG_EMAIL)
         }
     }
 }

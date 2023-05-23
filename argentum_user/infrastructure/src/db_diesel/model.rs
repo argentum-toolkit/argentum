@@ -10,6 +10,7 @@ pub struct AuthenticatedUserModel {
     pub id: Uuid,
     pub created_at: DateTime<Utc>,
     pub first_name: String,
+    //TODO: optional???
     pub last_name: String,
     pub email: String,
 }

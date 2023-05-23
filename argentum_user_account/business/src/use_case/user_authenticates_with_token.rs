@@ -75,7 +75,7 @@ mod tests {
     use crate::use_case::user_authenticates_with_token::AuthenticationError;
     use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
-    use argentum_user_business::data_type::Name;
+    use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::entity::user::User::{Anonymous, Authenticated};
     use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
@@ -96,7 +96,10 @@ mod tests {
         let token = "test-token".to_string();
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::try_new("aaaa".into(), Some("bbbb".into()), None).unwrap(),
+            NameBuilder::new("Dionne".into())
+                .last(Some("Morrison".into()))
+                .try_build()
+                .unwrap(),
             EmailAddress::try_new("aa@a.com".into()).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
@@ -149,7 +152,10 @@ mod tests {
         let token = "test-token".to_string();
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
-            Name::try_new("aaaa".into(), Some("bbbb".into()), None).unwrap(),
+            NameBuilder::new("Dionne".into())
+                .last(Some("Morrison".into()))
+                .try_build()
+                .unwrap(),
             EmailAddress::try_new("aa@a.com".into()).unwrap(),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());

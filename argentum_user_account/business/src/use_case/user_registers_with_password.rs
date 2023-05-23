@@ -102,7 +102,7 @@ mod test {
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
-    use argentum_user_business::data_type::Name;
+    use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::mock::repository::broken::authenticated_user_repository_mock::AuthenticatedUserRepositoryMockWihBrokenSave;
     use std::sync::Arc;
@@ -121,7 +121,10 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let id: Id = id_factory.create();
-        let name = Name::try_new("John".into(), Some("Cooper".into()), None).unwrap();
+        let name = NameBuilder::new("John".into())
+            .last(Some("Cooper".into()))
+            .try_build()
+            .unwrap();
         let email = EmailAddress::try_new("demo@test.com".into()).unwrap();
         let password = "123".into();
         let result = uc.execute(id.clone(), name, email, password);
@@ -153,7 +156,10 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let id: Id = id_factory.create();
-        let name = Name::try_new("John".into(), Some("Cooper".into()), None).unwrap();
+        let name = NameBuilder::new("John".into())
+            .last(Some("Cooper".into()))
+            .try_build()
+            .unwrap();
         let email = EmailAddress::try_new("demo@test.com".into()).unwrap();
         let password = "123".into();
         let result = uc.execute(id.clone(), name, email, password);

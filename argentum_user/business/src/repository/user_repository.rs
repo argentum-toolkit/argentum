@@ -18,6 +18,8 @@ pub trait AnonymousUserRepositoryTrait: Send + Sync {
     fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError>;
 }
 
+// Not business errors.
+// This enum covers cases when errors where triggered via 3rd party libraries or via wrong configuration
 #[derive(thiserror::Error, Debug)]
 pub enum ExternalUserError {
     #[error("Can't save an user")]

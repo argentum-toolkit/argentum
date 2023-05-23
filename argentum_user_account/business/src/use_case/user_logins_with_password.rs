@@ -138,7 +138,7 @@ mod test {
     use argentum_standard_business::data_type::email::EmailAddress;
     use argentum_standard_business::data_type::id::{Id, IdFactory};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
-    use argentum_user_business::data_type::Name;
+    use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::entity::user::{AnonymousUser, AuthenticatedUser};
     use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
@@ -177,7 +177,10 @@ mod test {
         let id_factory = IdFactoryMock::new();
 
         let user_id: Id = id_factory.create();
-        let name = Name::try_new("Some".into(), Some("Name".into()), None).unwrap();
+        let name = NameBuilder::new("Dionne".into())
+            .last(Some("Morrison".into()))
+            .try_build()
+            .unwrap();
         let email = EmailAddress::try_new("test@test-mail.com".into()).unwrap();
         let password = "12345".to_string();
         let user = AuthenticatedUser::new(&user_id, name, email.clone());

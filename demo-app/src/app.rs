@@ -5,7 +5,7 @@ use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegi
 use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
-use argentum_user_business::data_type::Name;
+use argentum_user_business::data_type::builder::NameBuilder;
 use argentum_user_business::entity::user::AnonymousUser;
 use std::sync::Arc;
 
@@ -83,17 +83,12 @@ impl App {
 
         let user_id = self.id_factory.create();
 
-        let name_res = Name::try_new("Sarah".into(), Some("Connor".into()), None);
-        let name = match name_res {
-            Ok(name) => name,
-            Err(e) => return Err(e.to_string()),
-        };
+        let name = NameBuilder::new("Sarah".into())
+            .last(Some("Connor".into()))
+            .try_build()
+            .unwrap();
 
-        let email_res = EmailAddress::try_new("sarah-connor@example.com".into());
-        let email = match email_res {
-            Ok(email) => email,
-            Err(e) => return Err(e.to_string()),
-        };
+        let email = EmailAddress::try_new("sarah-connor@example.com".into()).unwrap();
         let password = "111".into();
 
         let res = self
@@ -110,13 +105,8 @@ impl App {
 
         let anon_id2 = self.id_factory.create();
         let anon2 = AnonymousUser::new(&anon_id2);
-        let email_res2 = EmailAddress::try_new("sarah-connor@example.com".into());
+        let email2 = EmailAddress::try_new("sarah-connor@example.com".into()).unwrap();
         let password2 = "111".to_string();
-
-        let email2 = match email_res2 {
-            Ok(email) => email,
-            Err(e) => return Err(e.to_string()),
-        };
 
         let login_result = self
             .user_logins_with_pw
