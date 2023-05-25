@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 pub type ViolationObject = HashMap<String, Violations>;
 pub type ViolationArray = Vec<Violations>;
+pub type InvariantResult<T> = Result<T, Violations>;
 
 #[derive(Debug, Clone)]
 pub enum ViolationItem {
@@ -40,9 +41,9 @@ impl Violations {
     }
 }
 
-impl Into<Violations> for &str {
-    fn into(self) -> Violations {
-        Violations::new(vec![self.to_string()], None)
+impl From<&str> for Violations {
+    fn from(val: &str) -> Self {
+        Violations::new(vec![val.to_string()], None)
     }
 }
 

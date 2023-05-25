@@ -1,6 +1,6 @@
 use crate::data_type::RequestTrait;
 use crate::service::ValidationErrorTransformer;
-use argentum_standard_business::invariant_violation::Violations;
+use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use std::sync::Arc;
@@ -16,7 +16,7 @@ impl SchemaExtractor {
         }
     }
 
-    pub async fn extract<T>(&self, request: impl RequestTrait) -> Result<T, Violations>
+    pub async fn extract<T>(&self, request: impl RequestTrait) -> InvariantResult<T>
     where
         T: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>,
     {

@@ -1,4 +1,4 @@
-use argentum_standard_business::invariant_violation::Violations;
+use argentum_standard_business::invariant_violation::InvariantResult;
 
 const ERR_NAME_EMPTY: &str = "Should not be empty";
 
@@ -6,7 +6,7 @@ const ERR_NAME_EMPTY: &str = "Should not be empty";
 pub struct NamePart(String);
 
 impl NamePart {
-    pub fn try_new(value: String) -> Result<Self, Violations> {
+    pub fn try_new(value: String) -> InvariantResult<Self> {
         if value.is_empty() {
             return Err(ERR_NAME_EMPTY.into());
         }

@@ -2,7 +2,7 @@ use crate::data_type::error::HttpError::BadRequest;
 use crate::data_type::error::{BadRequestError, HttpError};
 use crate::data_type::{HttpParams, HttpRequest, RequestTrait};
 use crate::service::{PathParamsExtractor, RawPathParams, SchemaExtractor};
-use argentum_standard_business::invariant_violation::Violations;
+use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use std::sync::Arc;
 
 pub struct RequestTransformer {
@@ -30,7 +30,7 @@ impl RequestTransformer {
         R: HttpRequest,
     {
         //TODO: make pretty errors
-        let body_res: Result<R::Body, Violations> = self.schema_extractor.extract(request).await;
+        let body_res: InvariantResult<R::Body> = self.schema_extractor.extract(request).await;
 
         let (body, body_violations) = match body_res {
             Ok(b) => (Some(b), Violations::new(vec![], None)),

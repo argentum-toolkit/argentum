@@ -25,7 +25,7 @@ impl From<&ViolationItem> for ViolationItemDto {
         match item {
             ViolationItem::Object(o) => {
                 let map = o
-                    .into_iter()
+                    .iter()
                     .map(|(k, v)| (k.clone(), ViolationsDto::from(v)))
                     .collect();
                 ViolationItemDto::Object(map)
@@ -41,10 +41,7 @@ impl From<&ViolationItem> for ViolationItemDto {
 
 impl From<&Violations> for ViolationsDto {
     fn from(violations: &Violations) -> Self {
-        let items = match &violations.items {
-            None => None,
-            Some(i) => Some(ViolationItemDto::from(i)),
-        };
+        let items = violations.items.as_ref().map(ViolationItemDto::from);
         ViolationsDto::new(violations.errors.clone(), items)
     }
 }
@@ -80,12 +77,6 @@ impl ViolationsDto {
         };
 
         self.errors.is_empty() && items_empty
-    }
-}
-
-impl Into<ViolationsDto> for &str {
-    fn into(self) -> ViolationsDto {
-        ViolationsDto::new(vec![self.to_string()], None)
     }
 }
 

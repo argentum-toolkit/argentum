@@ -16,7 +16,7 @@ Your learning process will be iterative and easier than without Argentum ToolKit
 ----
 :Run Argentum Demo Application;
 :Read Basic Rust Documentation;
-:Create Your new Argentum component;
+:Create Your new Argentum component or application;
 :Read more Rust Documentation;
 :Now you can quickly create RESTful applications with Argentum;
 

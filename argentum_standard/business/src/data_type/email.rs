@@ -1,4 +1,4 @@
-use crate::invariant_violation::Violations;
+use crate::invariant_violation::InvariantResult;
 use regex::Regex;
 
 const ERR_EMAIL_EMPTY: &str = "Email should not be empty";
@@ -8,7 +8,7 @@ const ERR_WRONG_EMAIL: &str = "Wrong email address";
 pub struct EmailAddress(String);
 
 impl EmailAddress {
-    pub fn try_new(email: String) -> Result<EmailAddress, Violations> {
+    pub fn try_new(email: String) -> InvariantResult<EmailAddress> {
         if email.is_empty() {
             //Constant will be converted into `Violation`
             return Err(ERR_EMAIL_EMPTY.into());

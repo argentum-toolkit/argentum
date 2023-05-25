@@ -1,5 +1,7 @@
 use crate::data_type::{Name, NamePart};
-use argentum_standard_business::invariant_violation::{ViolationItem, ViolationObject, Violations};
+use argentum_standard_business::invariant_violation::{
+    InvariantResult, ViolationItem, ViolationObject, Violations,
+};
 use std::collections::HashMap;
 use std::vec;
 
@@ -64,7 +66,7 @@ impl NameBuilder {
         self
     }
 
-    pub fn try_build(&self) -> Result<Name, Violations> {
+    pub fn try_build(&self) -> InvariantResult<Name> {
         if self.violations.is_empty() {
             Ok(Name::new(
                 self.first.clone().unwrap(),
