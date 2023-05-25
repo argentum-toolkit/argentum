@@ -5,3 +5,4 @@ pub mod actix_web;
 pub mod data_type;
 pub mod db_diesel;
 pub mod error;
+pub mod invariant_violation;

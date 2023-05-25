@@ -1,0 +1,28 @@
+[package]
+name = "argentum_rest_infrastructure"
+description = "The infrastructure layer of REST component"
+version = "0.1.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "BSD-3-Clause"
+edition = "2021"
+homepage = "https://github.com/argentum-toolkit/argentum"
+repository = "https://github.com/argentum-toolkit/argentum"
+documentation = "https://github.com/argentum-toolkit/argentum"
+readme = "readme.adoc"
+
+[dependencies]
+async-trait = "0.1.*"
+
+bytes = "1.4.*"
+erased-serde = "0.3.*"
+http-body-util = "0.1.0-rc.2"
+hyper = { version = "1.0.0-rc.3", features = ["full"] }
+serde = { version = "1.0.*", features = ["derive"] }
+serde_json = "1.0.*"
+serde_valid = "0.16.*"
+tokio = { version = "1.27.0", features = ["full"] }
+thiserror = "1.0.*"
+
+argentum_standard_business = { path = "../../argentum_standard/business", version = "0.1.0-dev" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = "0.1.0-dev" }
+

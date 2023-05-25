@@ -1,7 +1,5 @@
 use crate::data_type::{Name, NamePart};
-use argentum_standard_business::invariant_violation::{
-    ViolationItems, ViolationObject, Violations,
-};
+use argentum_standard_business::invariant_violation::{ViolationItem, ViolationObject, Violations};
 use std::collections::HashMap;
 use std::vec;
 
@@ -76,7 +74,7 @@ impl NameBuilder {
         } else {
             Err(Violations::new(
                 vec![ERR_WRONG_NAME.to_string()],
-                Some(ViolationItems::Object(self.violations.clone())),
+                Some(ViolationItem::Object(self.violations.clone())),
             ))
         }
     }
@@ -86,7 +84,7 @@ impl NameBuilder {
 mod tests {
     use crate::data_type::builder::name::ERR_WRONG_NAME;
     use crate::data_type::builder::NameBuilder;
-    use argentum_standard_business::invariant_violation::ViolationItems;
+    use argentum_standard_business::invariant_violation::ViolationItem;
 
     #[test]
     fn test_new_full() {
@@ -150,7 +148,7 @@ mod tests {
 
             assert!(!items.is_empty());
 
-            if let ViolationItems::Object(v) = items {
+            if let ViolationItem::Object(v) = items {
                 let f_errors = &v.get("first").unwrap().errors;
                 assert_eq!(f_errors.len(), 1);
                 assert_eq!(
