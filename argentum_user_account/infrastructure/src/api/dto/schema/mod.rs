@@ -1,0 +1,3 @@
+mod user_registers_with_password_params;
+
+pub use user_registers_with_password_params::UserRegistersWithPasswordParams;

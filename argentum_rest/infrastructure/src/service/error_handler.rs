@@ -1,18 +1,24 @@
 use crate::data_type::error::HttpError;
 use crate::data_type::{HttpResponse, ProblemDetail};
+use argentum_log_business::LoggerTrait;
 use hyper::StatusCode;
+use std::sync::Arc;
 
-pub struct ErrorHandler {}
+pub struct ErrorHandler {
+    logger: Arc<dyn LoggerTrait>,
+}
 
 impl ErrorHandler {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(logger: Arc<dyn LoggerTrait>) -> Self {
+        Self { logger }
     }
 
     pub fn handle(&self, err: HttpError) -> HttpResponse {
         //TODO: log error and return trace-id
         match err {
-            HttpError::NotImplemented(_) => {
+            HttpError::NotImplemented(e) => {
+                self.logger.info(format!("{:?}", e));
+
                 let code = StatusCode::NOT_IMPLEMENTED;
                 HttpResponse::new(
                     code,
@@ -20,6 +26,8 @@ impl ErrorHandler {
                 )
             }
             HttpError::BadRequest(e) => {
+                self.logger.info(format!("{:?}", e));
+
                 let code = StatusCode::BAD_REQUEST;
                 HttpResponse::new(
                     code,
@@ -33,6 +41,8 @@ impl ErrorHandler {
                 )
             }
             HttpError::NotFound(e) => {
+                self.logger.warning(format!("{:?}", e));
+
                 let code = StatusCode::NOT_FOUND;
                 HttpResponse::new(
                     code,
@@ -40,13 +50,41 @@ impl ErrorHandler {
                 )
             }
             HttpError::MethodNotAllowed(e) => {
+                self.logger.warning(format!("{:?}", e));
+
                 let code = StatusCode::METHOD_NOT_ALLOWED;
                 HttpResponse::new(
                     code,
                     Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
                 )
             }
-            HttpError::InternalServerError(_) => {
+            HttpError::Conflict(e) => {
+                self.logger.info(format!("{:?}", e));
+
+                let code = StatusCode::CONFLICT;
+                HttpResponse::new(
+                    code,
+                    Box::new(ProblemDetail::new(
+                        None,
+                        e.source.to_string(),
+                        code,
+                        None,
+                        None,
+                    )),
+                )
+            }
+            HttpError::UnprocessableEntity(e) => {
+                self.logger.info(format!("{:?}", e));
+
+                let code = StatusCode::UNPROCESSABLE_ENTITY;
+                HttpResponse::new(
+                    code,
+                    Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
+                )
+            }
+            HttpError::InternalServerError(e) => {
+                self.logger.error(format!("Internal server error {:?}", e));
+
                 let code = StatusCode::INTERNAL_SERVER_ERROR;
                 HttpResponse::new(
                     code,

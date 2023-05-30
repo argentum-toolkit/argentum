@@ -23,6 +23,7 @@ serde_valid = "0.16.*"
 tokio = { version = "1.27.0", features = ["full"] }
 thiserror = "1.0.*"
 
+argentum_log_business = { path = "../../argentum_log/business", version = "0.1.0-dev" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = "0.1.0-dev" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = "0.1.0-dev" }
 

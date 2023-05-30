@@ -4,8 +4,9 @@ use crate::models;
 #[cfg(any(feature = "client", feature = "server"))]
 use crate::header;
 
+//argentum-customization
 use argentum_rest_infrastructure::data_type::SerializableBody;
-
+//argentum-customization end
 
 {{! Don't "use" structs here - they can conflict with the names of models, and mean that the code won't compile }}
 {{#models}}
@@ -248,7 +249,8 @@ impl std::str::FromStr for {{{classname}}} {
 {{/arrayModelType}}
 {{^arrayModelType}}
 {{! general struct}}
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 {{#xmlName}}
 #[serde(rename = "{{{.}}}")]
@@ -278,6 +280,7 @@ pub struct {{{classname}}} {
 {{/vars}}
 }
 
+//argentum-customization next line
 impl SerializableBody for {{{classname}}} {}
 
 impl {{{classname}}} {

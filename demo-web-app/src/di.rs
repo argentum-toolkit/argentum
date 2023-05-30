@@ -1,5 +1,6 @@
+use std::net::SocketAddr;
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
-use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
+use argentum_log_business::{DefaultLogger, Level};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
@@ -12,6 +13,7 @@ use argentum_user_account_business::use_case::user_logins_with_password::UserLog
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
 use argentum_user_account_infrastructure::token::StringTokenGenerator;
 use argentum_user_account_business::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
+use argentum_rest_infrastructure::service::Server;
 use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
 use argentum_user_account_infrastructure::db_diesel::repository::password_credential_repository::PasswordCredentialRepository;
 use argentum_user_account_infrastructure::db_diesel::repository::session_repository::SessionRepository;
@@ -20,41 +22,22 @@ use argentum_user_infrastructure::db_diesel::repository::anonymous_binding_repos
 use argentum_user_infrastructure::db_diesel::repository::anonymous_user_repository::AnonymousUserRepository;
 use argentum_user_infrastructure::db_diesel::repository::authenticated_user_repository::AuthenticatedUserRepository;
 
+use argentum_rest_infrastructure::RestDiC;
+use argentum_user_account_infrastructure::api::ApiDiC;
+use argentum_user_account_infrastructure::rest::handler::{
+    AnonymousRegistersHandler, UserRegistersWithPasswordHandler,
+};
+use argentum_user_account_infrastructure::rest::transformer::DtoToUserRegistersWithPasswordParams;
 use std::sync::Arc;
 
 pub struct DiC {
     // Public services
-    pub id_factory: Arc<UniqueIdFactory>,
-    pub logger: Arc<dyn LoggerTrait>,
-    pub anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-    pub user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc>,
-    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc>,
-    pub user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreToken>,
-    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPassword>,
+    pub server: Arc<Server>,
 }
 
 impl DiC {
-    pub fn new(
-        id_factory: Arc<UniqueIdFactory>,
-        logger: Arc<dyn LoggerTrait>,
-        anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-        user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc>,
-        user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc>,
-        user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-        anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreToken>,
-        anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPassword>,
-    ) -> DiC {
-        DiC {
-            id_factory,
-            logger,
-            anonymous_registers_uc,
-            user_registers_with_password_uc,
-            user_logins_with_password_uc,
-            user_authenticates_with_token,
-            anonymous_requests_restore_token_uc,
-            anonymous_with_token_changes_password_uc,
-        }
+    pub fn new(server: Arc<Server>) -> DiC {
+        DiC { server }
     }
 }
 
@@ -164,14 +147,40 @@ pub fn di_factory() -> DiC {
             logger.clone(),
         ));
 
-    DiC::new(
-        unique_id_factory,
-        logger,
-        anonymous_registers_uc,
+    let rest_di = RestDiC::new(logger.clone());
+
+    let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(
+        anonymous_registers_uc.clone(),
+        unique_id_factory.clone(),
+    ));
+
+    let dto_to_user_registers_with_password_params =
+        Arc::new(DtoToUserRegistersWithPasswordParams::new());
+
+    let user_registers_with_password_handler = Arc::new(UserRegistersWithPasswordHandler::new(
         user_registers_with_password_uc,
-        user_logins_with_password_uc,
-        user_authenticates_with_token_uc,
-        anonymous_requests_restore_token_uc,
-        anonymous_with_token_changes_password_uc,
-    )
+        unique_id_factory.clone(),
+        dto_to_user_registers_with_password_params,
+    ));
+
+    let api_di = ApiDiC::new(
+        rest_di.request_transformer,
+        anonymous_registers_handler,
+        user_registers_with_password_handler,
+        rest_di.error_pre_handler,
+    );
+
+    // let listen = "172.18.0.1:8080";
+    // let listen = "127.0.0.1:8080";
+    let listen = "0.0.0.0:8080";
+    let addr: SocketAddr = listen.parse().expect("Unable to parse socket address");
+
+    let server = Arc::new(Server::new(
+        addr,
+        api_di.router,
+        rest_di.response_transformer,
+        rest_di.error_handler,
+    ));
+
+    DiC::new(server)
 }

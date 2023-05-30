@@ -1,0 +1,3 @@
+mod dto_to_user_registers_with_password_params;
+
+pub use dto_to_user_registers_with_password_params::DtoToUserRegistersWithPasswordParams;

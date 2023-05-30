@@ -2,6 +2,7 @@ use crate::service::{
     ErrorHandler, ErrorPreHandler, PathParamsExtractor, RequestTransformer,
     ResponseToJsonTransformer, SchemaExtractor, ValidationErrorTransformer,
 };
+use argentum_log_business::LoggerTrait;
 use std::sync::Arc;
 
 pub struct RestDiC {
@@ -12,7 +13,7 @@ pub struct RestDiC {
 }
 
 impl RestDiC {
-    pub fn new() -> Self {
+    pub fn new(logger: Arc<dyn LoggerTrait>) -> Self {
         let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
         let schema_extractor = Arc::new(SchemaExtractor::new(validation_error_transformer.clone()));
         let path_params_extractor =
@@ -23,7 +24,7 @@ impl RestDiC {
         ));
         let response_transformer = Arc::new(ResponseToJsonTransformer::new());
         let error_pre_handler = Arc::new(ErrorPreHandler::new());
-        let error_handler = Arc::new(ErrorHandler::new());
+        let error_handler = Arc::new(ErrorHandler::new(logger));
 
         RestDiC {
             request_transformer,
