@@ -1,36 +1,21 @@
-use crate::api::dto::request::UserRegistersWithPasswordRequest;
+use crate::api::dto::request::UserLoginsWithPasswordRequest;
 use argentum_rest_infrastructure::data_type::error::{BadRequestError, HttpError};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
-use argentum_user_business::data_type::builder::NameBuilder;
-use argentum_user_business::data_type::Name;
 use std::collections::HashMap;
 
-pub struct DtoToUserRegistersWithPasswordParams {}
+pub struct DtoToUserLoginsWithPasswordParams {}
 
-impl DtoToUserRegistersWithPasswordParams {
+impl DtoToUserLoginsWithPasswordParams {
     pub fn new() -> Self {
         Self {}
     }
 
     pub fn transform(
         &self,
-        req: UserRegistersWithPasswordRequest,
-    ) -> Result<(Name, EmailAddress, String), HttpError> {
+        req: UserLoginsWithPasswordRequest,
+    ) -> Result<(EmailAddress, String), HttpError> {
         let mut vo = HashMap::new();
-
-        let raw_name = req.body.name.clone();
-        let name_result = NameBuilder::new(raw_name.first)
-            .last(raw_name.last)
-            .try_build();
-
-        let name = match name_result {
-            Ok(n) => Some(n),
-            Err(v) => {
-                vo.insert("name".to_string(), v);
-                None
-            }
-        };
 
         let email_result = EmailAddress::try_new(req.body.email);
 
@@ -43,7 +28,7 @@ impl DtoToUserRegistersWithPasswordParams {
         };
 
         if vo.is_empty() {
-            Ok((name.unwrap(), email.unwrap(), req.body.password))
+            Ok((email.unwrap(), req.body.password))
         } else {
             Err(HttpError::BadRequest(BadRequestError::new(
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),
@@ -53,7 +38,8 @@ impl DtoToUserRegistersWithPasswordParams {
         }
     }
 }
-impl Default for DtoToUserRegistersWithPasswordParams {
+
+impl Default for DtoToUserLoginsWithPasswordParams {
     fn default() -> Self {
         Self::new()
     }

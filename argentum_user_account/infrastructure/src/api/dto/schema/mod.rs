@@ -1,3 +1,5 @@
+mod user_logins_with_password_params;
 mod user_registers_with_password_params;
 
+pub use user_logins_with_password_params::UserLoginsWithPasswordParams;
 pub use user_registers_with_password_params::UserRegistersWithPasswordParams;

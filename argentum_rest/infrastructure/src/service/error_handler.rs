@@ -40,6 +40,21 @@ impl ErrorHandler {
                     )),
                 )
             }
+            HttpError::Unauthorized(e) => {
+                self.logger.info(format!("{:?}", e));
+
+                let code = StatusCode::UNAUTHORIZED;
+                HttpResponse::new(
+                    code,
+                    Box::new(ProblemDetail::new(
+                        None,
+                        "Unauthorized".to_string(),
+                        code,
+                        Some(e.msg),
+                        None,
+                    )),
+                )
+            }
             HttpError::NotFound(e) => {
                 self.logger.warning(format!("{:?}", e));
 
@@ -102,13 +117,17 @@ mod tests {
         NotImplementedError,
     };
     use crate::service::ErrorHandler;
+    use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::invariant_violation::Violations;
     use hyper::{Method, StatusCode};
     use serde_json::json;
+    use std::sync::Arc;
 
     #[test]
     fn test_handle_not_implemented() {
-        let handler = ErrorHandler::new();
+        let log_writer = Arc::new(StdoutWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+        let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::NotImplemented(NotImplementedError::new()));
         assert_eq!(response.code, StatusCode::NOT_IMPLEMENTED);
@@ -127,9 +146,12 @@ mod tests {
 
     #[test]
     fn test_handle_bad_request() {
-        let handler = ErrorHandler::new();
+        let log_writer = Arc::new(StdoutWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+        let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::BadRequest(BadRequestError::new(
+            Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),
         )));
@@ -149,7 +171,9 @@ mod tests {
 
     #[test]
     fn test_handle_not_found() {
-        let handler = ErrorHandler::new();
+        let log_writer = Arc::new(StdoutWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+        let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::NotFound(NotFoundError::new(
             "Entity Not Found".to_string(),
@@ -170,7 +194,9 @@ mod tests {
 
     #[test]
     fn test_handle_method_nod_allowed() {
-        let handler = ErrorHandler::new();
+        let log_writer = Arc::new(StdoutWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+        let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::MethodNotAllowed(MethodNotAllowedError::new(
             Method::DELETE,
@@ -191,7 +217,9 @@ mod tests {
 
     #[test]
     fn test_handle_internal_server_error() {
-        let handler = ErrorHandler::new();
+        let log_writer = Arc::new(StdoutWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+        let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::InternalServerError(InternalServerError::new(
             Box::new(ErrorMock {}),

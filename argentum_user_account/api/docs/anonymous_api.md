@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 
 # **anonymousRegisters**
-> models::AnonymousRegistrationResult anonymousRegisters(ctx, optional)
+> models::AnonymousRegistrationResult anonymousRegisters(optional)
 Anonymous registers
 
 Anonymous registers without any data
@@ -17,7 +17,6 @@ Anonymous registers without any data
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context containing the authentication | nil if no authentication
  **optional** | **map[string]interface{}** | optional parameters | nil if no parameters
 
 ### Optional Parameters
@@ -33,7 +32,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearerAuth](../README.md#bearerAuth)
+No authorization required
 
 ### HTTP request headers
 

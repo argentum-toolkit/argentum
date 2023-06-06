@@ -30,8 +30,6 @@ servers:
       - "8080"
     basePath:
       default: api/v1
-security:
-- bearerAuth: []
 tags:
 - description: Managing of the anonymous
   name: anonymous
@@ -91,6 +89,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
           description: Unprocessable Entity
+      security:
+      - bearerAuth: []
       summary: User registers with password
       tags:
       - user-account
@@ -119,6 +119,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
           description: Unauthorized
+      security:
+      - bearerAuth: []
       summary: Login as an user
       tags:
       - user-account
@@ -147,6 +149,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
           description: Unauthorized
+      security:
+      - bearerAuth: []
       summary: Anonymous requests restore password token
       tags:
       - user-account
@@ -175,6 +179,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
           description: Unauthorized
+      security:
+      - bearerAuth: []
       summary: User with token changes his password
       tags:
       - user-account

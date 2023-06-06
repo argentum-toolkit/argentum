@@ -78,6 +78,7 @@ mod tests {
             let ext = Box::new(BadRequestError::new(
                 Violations::new(vec![], None),
                 Violations::new(vec![], None),
+                Violations::new(vec![], None),
             ));
 
             let problem = ProblemDetail::new(

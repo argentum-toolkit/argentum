@@ -1,11 +1,11 @@
 use argentum_rest_infrastructure::data_type::{AuthHeaderParams, EmptyPathParams, HttpParams};
 
-pub struct UserRegistersWithPasswordParams {
+pub struct UserLoginsWithPasswordParams {
     pub path: EmptyPathParams,
     pub headers: AuthHeaderParams,
 }
 
-impl HttpParams for UserRegistersWithPasswordParams {
+impl HttpParams for UserLoginsWithPasswordParams {
     type Path = EmptyPathParams;
     type Headers = AuthHeaderParams;
 

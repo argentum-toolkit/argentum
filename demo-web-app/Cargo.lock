@@ -466,6 +466,8 @@ dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
  "argentum_standard_infrastructure",
+ "argentum_user_account_business",
+ "argentum_user_business",
  "async-trait",
  "bytes 1.4.0",
  "erased-serde",

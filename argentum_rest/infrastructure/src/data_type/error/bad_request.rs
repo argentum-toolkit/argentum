@@ -6,8 +6,9 @@ use serde::{Serialize, Serializer};
 
 #[derive(Debug, Clone)]
 pub struct BadRequestError {
-    pub body: Violations,
-    pub path: Violations,
+    body: Violations,
+    path: Violations,
+    headers: Violations,
 }
 
 impl Serialize for BadRequestError {
@@ -16,19 +17,30 @@ impl Serialize for BadRequestError {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("BadRequestError", 2)?;
+
         if !self.body.is_empty() {
             state.serialize_field("body", &ViolationsDto::from(&self.body))?;
         }
+
         if !self.path.is_empty() {
             state.serialize_field("path", &ViolationsDto::from(&self.path))?;
         }
+
+        if !self.headers.is_empty() {
+            state.serialize_field("headers", &ViolationsDto::from(&self.headers))?;
+        }
+
         state.end()
     }
 }
 
 impl BadRequestError {
-    pub fn new(body: Violations, path: Violations) -> Self {
-        Self { body, path }
+    pub fn new(body: Violations, path: Violations, headers: Violations) -> Self {
+        Self {
+            body,
+            path,
+            headers,
+        }
     }
 }
 
@@ -46,7 +58,11 @@ mod tests {
 
     #[test]
     fn empty_bad_request_serialize() {
-        let br = BadRequestError::new(Violations::new(vec![], None), Violations::new(vec![], None));
+        let br = BadRequestError::new(
+            Violations::new(vec![], None),
+            Violations::new(vec![], None),
+            Violations::new(vec![], None),
+        );
 
         let str = serde_json::to_string(&br).unwrap();
 
@@ -75,6 +91,7 @@ mod tests {
                     None,
                 )])),
             ),
+            Violations::new(vec![], None),
         );
 
         let str = serde_json::to_value(&br).unwrap();

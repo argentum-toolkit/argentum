@@ -8,3 +8,9 @@ impl NotImplementedError {
         Self {}
     }
 }
+
+impl Default for NotImplementedError {
+    fn default() -> Self {
+        Self::new()
+    }
+}

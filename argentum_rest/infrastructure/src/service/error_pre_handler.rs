@@ -2,6 +2,7 @@ use crate::data_type::error::HttpError::{MethodNotAllowed, NotFound};
 use crate::data_type::error::{HttpError, MethodNotAllowedError, NotFoundError};
 use crate::data_type::{HttpResponse, RequestTrait};
 
+#[derive(Default)]
 pub struct ErrorPreHandler {}
 
 impl ErrorPreHandler {
@@ -33,7 +34,7 @@ mod tests {
     use crate::data_type::RequestTrait;
     use crate::service::ErrorPreHandler;
     use async_trait::async_trait;
-    use hyper::{Error, Method};
+    use hyper::{Error, HeaderMap, Method};
 
     struct EmptyRequestMock {
         method: Method,
@@ -46,6 +47,10 @@ mod tests {
 
         fn method(&self) -> &Method {
             &self.method
+        }
+
+        fn get_headers(&self) -> &HeaderMap {
+            todo!()
         }
     }
 

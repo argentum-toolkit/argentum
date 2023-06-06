@@ -1,6 +1,10 @@
-use crate::api::server::handler::{AnonymousRegistersTrait, UserRegistersWithPasswordTrait};
-use crate::api::server::{ToDoRouter, TodoPreHandler};
-use argentum_rest_infrastructure::service::{ErrorPreHandler, RequestTransformer};
+use crate::api::server::handler::{
+    AnonymousRegistersTrait, UserLoginsWithPasswordTrait, UserRegistersWithPasswordTrait,
+};
+use crate::api::server::{ToDoRouter, UserAccountPreHandler};
+use argentum_rest_infrastructure::service::{
+    BearerAuthenticator, ErrorPreHandler, RequestTransformer,
+};
 use std::sync::Arc;
 
 pub struct ApiDiC {
@@ -8,16 +12,19 @@ pub struct ApiDiC {
 }
 
 impl ApiDiC {
-    #![allow(clippy::too_many_arguments)]
     pub fn new(
         request_transformer: Arc<RequestTransformer>,
+        bearer_auth: Arc<BearerAuthenticator>,
         anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait>,
+        user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
         user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
-        let pre_handler = Arc::new(TodoPreHandler::new(
+        let pre_handler = Arc::new(UserAccountPreHandler::new(
             request_transformer,
+            bearer_auth,
             anonymous_registers_handler,
+            user_logins_with_password,
             user_registers_with_password,
         ));
 

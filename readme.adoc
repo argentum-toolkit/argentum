@@ -126,6 +126,7 @@ $ devops/scripts/check-item.sh {{package-name}}
 == TODO
 
 * improve error HTTP responses
+* New type Password
 * add examples to OpenAPI doc
 * validation
 * fix error handling (registration with email)

@@ -1,22 +1,25 @@
 use crate::data_type::error::HttpError::BadRequest;
 use crate::data_type::error::{BadRequestError, HttpError};
 use crate::data_type::{HttpParams, HttpRequest, RequestTrait};
-use crate::service::{PathParamsExtractor, RawPathParams, SchemaExtractor};
+use crate::service::{HeaderParamsExtractor, PathParamsExtractor, RawPathParams, SchemaExtractor};
 use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use std::sync::Arc;
 
 pub struct RequestTransformer {
     schema_extractor: Arc<SchemaExtractor>,
+    header_params_extractor: Arc<HeaderParamsExtractor>,
     path_params_extractor: Arc<PathParamsExtractor>,
 }
 
 impl RequestTransformer {
     pub fn new(
         schema_extractor: Arc<SchemaExtractor>,
+        header_params_extractor: Arc<HeaderParamsExtractor>,
         path_params_extractor: Arc<PathParamsExtractor>,
     ) -> Self {
         Self {
             schema_extractor,
+            header_params_extractor,
             path_params_extractor,
         }
     }
@@ -29,6 +32,17 @@ impl RequestTransformer {
     where
         R: HttpRequest,
     {
+        let header_result = self
+            .header_params_extractor
+            .extract::<<<R as HttpRequest>::Params as HttpParams>::Headers>(
+            request.get_headers().clone(),
+        );
+
+        let (header_params, header_violations) = match header_result {
+            Ok(p) => (Some(p), Violations::new(vec![], None)),
+            Err(e) => (None, e),
+        };
+
         //TODO: make pretty errors
         let body_res: InvariantResult<R::Body> = self.schema_extractor.extract(request).await;
 
@@ -46,12 +60,16 @@ impl RequestTransformer {
             Err(e) => (None, e),
         };
 
-        if body.is_some() && path_params.is_some() {
-            Ok(R::new(body.unwrap(), R::Params::new(path_params.unwrap())))
+        if body.is_some() && path_params.is_some() && header_params.is_some() {
+            Ok(R::new(
+                body.unwrap(),
+                R::Params::new(path_params.unwrap(), header_params.unwrap()),
+            ))
         } else {
             Err(BadRequest(BadRequestError::new(
                 body_violations,
                 path_violations,
+                header_violations,
             )))
         }
     }

@@ -1,5 +1,5 @@
 use crate::service::{
-    ErrorHandler, ErrorPreHandler, PathParamsExtractor, RequestTransformer,
+    ErrorHandler, ErrorPreHandler, HeaderParamsExtractor, PathParamsExtractor, RequestTransformer,
     ResponseToJsonTransformer, SchemaExtractor, ValidationErrorTransformer,
 };
 use argentum_log_business::LoggerTrait;
@@ -16,10 +16,15 @@ impl RestDiC {
     pub fn new(logger: Arc<dyn LoggerTrait>) -> Self {
         let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
         let schema_extractor = Arc::new(SchemaExtractor::new(validation_error_transformer.clone()));
+        let header_params_extractor = Arc::new(HeaderParamsExtractor::new(
+            validation_error_transformer.clone(),
+        ));
+
         let path_params_extractor =
             Arc::new(PathParamsExtractor::new(validation_error_transformer));
         let request_transformer = Arc::new(RequestTransformer::new(
             schema_extractor,
+            header_params_extractor,
             path_params_extractor,
         ));
         let response_transformer = Arc::new(ResponseToJsonTransformer::new());

@@ -2,6 +2,7 @@ use crate::data_type::{HttpResponse, Response};
 use bytes::Bytes;
 use http_body_util::Full;
 
+#[derive(Default)]
 pub struct ResponseToJsonTransformer {}
 
 impl ResponseToJsonTransformer {

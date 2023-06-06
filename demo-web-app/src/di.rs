@@ -13,7 +13,7 @@ use argentum_user_account_business::use_case::user_logins_with_password::UserLog
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
 use argentum_user_account_infrastructure::token::StringTokenGenerator;
 use argentum_user_account_business::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
-use argentum_rest_infrastructure::service::Server;
+use argentum_rest_infrastructure::service::{BearerAuthenticator, Server};
 use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
 use argentum_user_account_infrastructure::db_diesel::repository::password_credential_repository::PasswordCredentialRepository;
 use argentum_user_account_infrastructure::db_diesel::repository::session_repository::SessionRepository;
@@ -25,9 +25,11 @@ use argentum_user_infrastructure::db_diesel::repository::authenticated_user_repo
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_account_infrastructure::api::ApiDiC;
 use argentum_user_account_infrastructure::rest::handler::{
-    AnonymousRegistersHandler, UserRegistersWithPasswordHandler,
+    AnonymousRegistersHandler, UserLoginsWithPasswordHandler, UserRegistersWithPasswordHandler,
 };
-use argentum_user_account_infrastructure::rest::transformer::DtoToUserRegistersWithPasswordParams;
+use argentum_user_account_infrastructure::rest::transformer::{
+    DtoToUserLoginsWithPasswordParams, DtoToUserRegistersWithPasswordParams,
+};
 use std::sync::Arc;
 
 pub struct DiC {
@@ -163,9 +165,24 @@ pub fn di_factory() -> DiC {
         dto_to_user_registers_with_password_params,
     ));
 
+    let dto_to_user_logins_with_password_params =
+        Arc::new(DtoToUserLoginsWithPasswordParams::new());
+
+    let user_logins_with_password_handler = Arc::new(UserLoginsWithPasswordHandler::new(
+        user_logins_with_password_uc,
+        unique_id_factory.clone(),
+        dto_to_user_logins_with_password_params,
+    ));
+
+    let bearer_auth = Arc::new(BearerAuthenticator::new(
+        user_authenticates_with_token_uc.clone(),
+    ));
+
     let api_di = ApiDiC::new(
         rest_di.request_transformer,
+        bearer_auth,
         anonymous_registers_handler,
+        user_logins_with_password_handler,
         user_registers_with_password_handler,
         rest_di.error_pre_handler,
     );

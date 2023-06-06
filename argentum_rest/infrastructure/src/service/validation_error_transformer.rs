@@ -3,6 +3,7 @@ use argentum_standard_business::invariant_violation::Violations;
 use serde_valid::validation::{Errors, VecErrors};
 use std::collections::HashMap;
 
+#[derive(Default)]
 pub struct ValidationErrorTransformer {}
 
 impl ValidationErrorTransformer {
@@ -36,7 +37,7 @@ impl ValidationErrorTransformer {
                     items_vec.push(self.collect_violations(values));
                 }
 
-                let items = if items_vec.len() > 0 {
+                let items = if !items_vec.is_empty() {
                     Some(ViolationItem::Array(items_vec))
                 } else {
                     None
@@ -95,8 +96,8 @@ mod tests {
         let e = serde_valid::Error::DeserializeError(MockError::Deserialization);
         let v = transformer.transform(e);
 
-        assert_eq!(v.is_empty(), false);
-        assert_eq!(v.errors.is_empty(), false);
+        assert!(!v.is_empty());
+        assert!(!v.errors.is_empty());
         assert!(v.items.is_none());
         assert_eq!(v.errors.len(), 1);
         assert_eq!(v.errors.first().unwrap(), "Deserialization error")
@@ -116,8 +117,8 @@ mod tests {
         );
         let v = transformer.transform(e);
 
-        assert_eq!(v.is_empty(), false);
-        assert_eq!(v.errors.is_empty(), false);
+        assert!(!v.is_empty());
+        assert!(!v.errors.is_empty());
         assert_eq!(v.errors.len(), 1);
         assert_eq!(v.errors.first().unwrap(), "Some err");
         assert!(v.items.is_none());
@@ -144,7 +145,7 @@ mod tests {
 
         let v = transformer.transform(e);
 
-        assert_eq!(v.is_empty(), false);
+        assert!(!v.is_empty());
         assert!(v.errors.is_empty());
         assert!(v.items.is_some());
         match v.items.unwrap() {
@@ -173,8 +174,8 @@ mod tests {
         );
         let v = transformer.transform(e);
 
-        assert_eq!(v.is_empty(), false);
-        assert_eq!(v.errors.is_empty(), false);
+        assert!(!v.is_empty());
+        assert!(!v.errors.is_empty());
         assert_eq!(v.errors.len(), 1);
         assert_eq!(v.errors.first().unwrap(), "Some err");
         assert!(v.items.is_none());
@@ -201,7 +202,7 @@ mod tests {
 
         let v = transformer.transform(e);
 
-        assert_eq!(v.is_empty(), false);
+        assert!(!v.is_empty());
         assert!(v.errors.is_empty());
         assert!(v.items.is_some());
         match v.items.unwrap() {
@@ -229,8 +230,8 @@ mod tests {
             ]));
         let v = transformer.transform(e);
 
-        assert_eq!(v.is_empty(), false);
-        assert_eq!(v.errors.is_empty(), false);
+        assert!(!v.is_empty());
+        assert!(!v.errors.is_empty());
         assert_eq!(v.errors.len(), 1);
         assert_eq!(v.errors.first().unwrap(), "Some err");
         assert!(v.items.is_none());

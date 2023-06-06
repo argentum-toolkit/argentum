@@ -16,9 +16,9 @@ impl SchemaExtractor {
         }
     }
 
-    pub async fn extract<T>(&self, request: impl RequestTrait) -> InvariantResult<T>
+    pub async fn extract<B>(&self, request: impl RequestTrait) -> InvariantResult<B>
     where
-        T: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>,
+        B: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>,
     {
         let result = request.fetch_body().await;
 
@@ -36,7 +36,7 @@ impl SchemaExtractor {
             body = Vec::from("{}");
         }
 
-        let deserialized = T::from_json_slice(&body);
+        let deserialized = B::from_json_slice(&body);
 
         match deserialized {
             Ok(value) => Ok(value),
@@ -54,7 +54,7 @@ mod tests {
     use crate::data_type::RequestTrait;
     use crate::service::{SchemaExtractor, ValidationErrorTransformer};
     use async_trait::async_trait;
-    use hyper::{Error, Method};
+    use hyper::{Error, HeaderMap, Method};
     use serde::Deserialize;
     use serde_valid::Validate;
     use std::sync::Arc;
@@ -73,6 +73,10 @@ mod tests {
         fn method(&self) -> &Method {
             &Method::OPTIONS
         }
+
+        fn get_headers(&self) -> &HeaderMap {
+            todo!()
+        }
     }
 
     struct RequestWithBadJsonMock {}
@@ -85,6 +89,10 @@ mod tests {
 
         fn method(&self) -> &Method {
             &Method::OPTIONS
+        }
+
+        fn get_headers(&self) -> &HeaderMap {
+            todo!()
         }
     }
 

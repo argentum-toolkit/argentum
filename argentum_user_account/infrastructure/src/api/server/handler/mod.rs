@@ -1,5 +1,7 @@
 mod anonymous_registers;
+mod user_logins_with_password;
 mod user_registers_with_password;
 
 pub use anonymous_registers::AnonymousRegistersTrait;
+pub use user_logins_with_password::UserLoginsWithPasswordTrait;
 pub use user_registers_with_password::UserRegistersWithPasswordTrait;

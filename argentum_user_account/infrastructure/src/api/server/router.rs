@@ -1,4 +1,4 @@
-use crate::api::server::TodoPreHandler;
+use crate::api::server::UserAccountPreHandler;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, Router};
@@ -7,13 +7,13 @@ use hyper::Method;
 use std::sync::Arc;
 
 pub struct ToDoRouter {
-    pub todo_pre_handler: Arc<TodoPreHandler>,
+    pub todo_pre_handler: Arc<UserAccountPreHandler>,
     pub error_pre_handler: Arc<ErrorPreHandler>,
 }
 
 impl ToDoRouter {
     pub fn new(
-        todo_pre_handler: Arc<TodoPreHandler>,
+        todo_pre_handler: Arc<UserAccountPreHandler>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
         ToDoRouter {
@@ -49,6 +49,18 @@ impl Router for ToDoRouter {
                 Method::POST => {
                     self.todo_pre_handler
                         .handle_user_registers_with_password(request)
+                        .await
+                }
+                _ => {
+                    self.error_pre_handler
+                        .handle_method_not_allowed(request)
+                        .await
+                }
+            },
+            ["api", "v1", "user", "password-login"] => match *request.method() {
+                Method::POST => {
+                    self.todo_pre_handler
+                        .handle_user_logins_with_password(request)
                         .await
                 }
                 _ => {
