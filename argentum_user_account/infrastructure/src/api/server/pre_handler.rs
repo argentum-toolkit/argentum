@@ -1,6 +1,10 @@
-use crate::api::dto::request::{UserLoginsWithPasswordRequest, UserRegistersWithPasswordRequest};
+use crate::api::dto::request::{
+    AnonymousRequestsRestoreTokenRequest, UserLoginsWithPasswordRequest,
+    UserRegistersWithPasswordRequest,
+};
 use crate::api::server::handler::{
-    AnonymousRegistersTrait, UserLoginsWithPasswordTrait, UserRegistersWithPasswordTrait,
+    AnonymousRegistersTrait, AnonymousRequestsRestoreTokenTrait, UserLoginsWithPasswordTrait,
+    UserRegistersWithPasswordTrait,
 };
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
@@ -14,6 +18,7 @@ pub struct UserAccountPreHandler {
     anonymous_registers: Arc<dyn AnonymousRegistersTrait>,
     user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
     user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
+    anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
 }
 
 impl UserAccountPreHandler {
@@ -23,6 +28,7 @@ impl UserAccountPreHandler {
         anonymous_registers: Arc<dyn AnonymousRegistersTrait>,
         user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
         user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
+        anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
     ) -> Self {
         UserAccountPreHandler {
             request_transformer,
@@ -30,14 +36,15 @@ impl UserAccountPreHandler {
             anonymous_registers,
             user_logins_with_password,
             user_registers_with_password,
+            anonymous_requests_restore_token,
         }
     }
 
-    pub async fn handle_anonymous_registers(&self) -> Result<HttpResponse, HttpError> {
+    pub async fn anonymous_registers(&self) -> Result<HttpResponse, HttpError> {
         self.anonymous_registers.handle()
     }
 
-    pub async fn handle_user_registers_with_password(
+    pub async fn user_registers_with_password(
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
@@ -52,7 +59,7 @@ impl UserAccountPreHandler {
         self.user_registers_with_password.handle(req, user)
     }
 
-    pub async fn handle_user_logins_with_password(
+    pub async fn user_logins_with_password(
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
@@ -65,5 +72,27 @@ impl UserAccountPreHandler {
         let user = self.bearer_auth.auth(&req.params.headers)?;
 
         self.user_logins_with_password.handle(req, user)
+    }
+
+    pub async fn anonymous_requests_restore_token(
+        &self,
+        request: impl RequestTrait,
+    ) -> Result<HttpResponse, HttpError> {
+        let raw_params = HashMap::from([]);
+        let req: AnonymousRequestsRestoreTokenRequest = self
+            .request_transformer
+            .transform(request, raw_params)
+            .await?;
+
+        let user = self.bearer_auth.auth(&req.params.headers)?;
+
+        self.anonymous_requests_restore_token.handle(req, user)
+    }
+
+    pub async fn anonymous_change_password_with_token(
+        &self,
+        request: impl RequestTrait,
+    ) -> Result<HttpResponse, HttpError> {
+        todo!()
     }
 }

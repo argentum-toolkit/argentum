@@ -135,7 +135,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/EmptyResponse'
           description: OK
         "400":
           content:
@@ -165,7 +165,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/EmptyResponse'
           description: OK
         "400":
           content:
@@ -262,7 +262,7 @@ components:
       content:
         application/json:
           schema:
-            type: object
+            $ref: '#/components/schemas/EmptyResponse'
       description: OK
   schemas:
     AnonymousRegistrationResult:
@@ -314,6 +314,8 @@ components:
       required:
       - token
       - user_id
+    EmptyResponse:
+      title: Empty response
     RegistrationWithPasswordSchema:
       example:
         password: password
@@ -337,13 +339,15 @@ components:
       - password
     LoginWithPasswordSchema:
       example:
-        password: password
-        email: email
+        password: secure-password
+        email: test-email@test-email.com
       properties:
         email:
+          example: test-email@test-email.com
           format: email
           type: string
         password:
+          example: secure-password
           format: password
           type: string
       required:
@@ -351,9 +355,10 @@ components:
       - password
     RequestRestoreTokenSchema:
       example:
-        email: email
+        email: test-email@test-email.com
       properties:
         email:
+          example: test-email@test-email.com
           format: email
           type: string
       required:

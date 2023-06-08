@@ -10,16 +10,13 @@ impl ErrorPreHandler {
         ErrorPreHandler {}
     }
 
-    pub async fn handle_not_found(
-        &self,
-        _request: impl RequestTrait,
-    ) -> Result<HttpResponse, HttpError> {
+    pub async fn not_found(&self, _request: impl RequestTrait) -> Result<HttpResponse, HttpError> {
         Err(NotFound(NotFoundError::new(
             "Resource not found".to_string(),
         )))
     }
 
-    pub async fn handle_method_not_allowed(
+    pub async fn method_not_allowed(
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
@@ -58,54 +55,42 @@ mod tests {
     async fn test_handle_not_found() {
         let handler = ErrorPreHandler::new();
         let res = handler
-            .handle_not_found(EmptyRequestMock {
+            .not_found(EmptyRequestMock {
                 method: Method::GET,
             })
             .await;
 
-        assert_eq!(res.is_err(), true);
+        assert!(res.is_err());
 
-        assert!(if let Err(HttpError::NotFound(_)) = res {
-            true
-        } else {
-            false
-        });
+        assert!(matches!(res, Err(HttpError::NotFound(_))));
     }
 
     #[tokio::test]
     async fn test_handle_not_allowed() {
         let handler = ErrorPreHandler::new();
         let res = handler
-            .handle_method_not_allowed(EmptyRequestMock {
+            .method_not_allowed(EmptyRequestMock {
                 method: Method::GET,
             })
             .await;
 
-        assert_eq!(res.is_err(), true);
+        assert!(res.is_err());
 
-        assert!(if let Err(HttpError::MethodNotAllowed(_)) = res {
-            true
-        } else {
-            false
-        });
+        assert!(matches!(res, Err(HttpError::MethodNotAllowed(_))));
 
         if let Err(HttpError::MethodNotAllowed(e)) = res {
             assert_eq!(e.method, Method::GET);
         }
 
         let res = handler
-            .handle_method_not_allowed(EmptyRequestMock {
+            .method_not_allowed(EmptyRequestMock {
                 method: Method::OPTIONS,
             })
             .await;
 
-        assert_eq!(res.is_err(), true);
+        assert!(res.is_err());
 
-        assert!(if let Err(HttpError::MethodNotAllowed(_)) = res {
-            true
-        } else {
-            false
-        });
+        assert!(matches!(res, Err(HttpError::MethodNotAllowed(_))));
 
         if let Err(HttpError::MethodNotAllowed(e)) = res {
             assert_eq!(e.method, Method::OPTIONS);

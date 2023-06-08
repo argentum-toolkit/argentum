@@ -66,13 +66,18 @@ impl std::str::FromStr for {{{classname}}} {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 {{/isMap}}
 {{^isMap}}
-#[derive(Debug, Clone, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 {{/isMap}}
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 {{#xmlName}}
 #[serde(rename = "{{{.}}}")]
 {{/xmlName}}
 pub struct {{{classname}}}({{{dataType}}});
+
+
+//argentum-customization next line
+impl SerializableBody for {{{classname}}} {}
 
 
 impl std::convert::From<{{{dataType}}}> for {{{classname}}} {
@@ -162,6 +167,9 @@ pub struct {{{classname}}}(
 {{/vendorExtensions}}
     Vec<{{{arrayModelType}}}>
 );
+
+//argentum-customization next line
+impl SerializableBody for {{{classname}}} {}
 
 impl std::convert::From<Vec<{{{arrayModelType}}}>> for {{{classname}}} {
     fn from(x: Vec<{{{arrayModelType}}}>) -> Self {

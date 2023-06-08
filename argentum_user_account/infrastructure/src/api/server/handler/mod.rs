@@ -1,7 +1,9 @@
 mod anonymous_registers;
+mod anonymous_requests_restore_token;
 mod user_logins_with_password;
 mod user_registers_with_password;
 
 pub use anonymous_registers::AnonymousRegistersTrait;
+pub use anonymous_requests_restore_token::AnonymousRequestsRestoreTokenTrait;
 pub use user_logins_with_password::UserLoginsWithPasswordTrait;
 pub use user_registers_with_password::UserRegistersWithPasswordTrait;

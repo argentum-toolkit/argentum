@@ -3,7 +3,6 @@ use argentum_rest_infrastructure::data_type::HttpRequest;
 use argentum_user_account_api::models::LoginWithPasswordSchema;
 
 pub struct UserLoginsWithPasswordRequest {
-    //TODO: impl request body abstraction // pub body: UserRegistersWithPasswordRequestBody,
     pub body: LoginWithPasswordSchema,
     pub params: UserLoginsWithPasswordParams,
 }

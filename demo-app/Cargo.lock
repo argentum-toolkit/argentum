@@ -564,6 +564,7 @@ dependencies = [
  "hyper 1.0.0-rc.3",
  "rand 0.8.4",
  "serde",
+ "serde_json",
  "uuid",
 ]
 

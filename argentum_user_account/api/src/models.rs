@@ -321,6 +321,39 @@ impl std::convert::TryFrom<hyper::header::HeaderValue>
 }
 
 //argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct EmptyResponse(serde_json::Value);
+
+//argentum-customization next line
+impl SerializableBody for EmptyResponse {}
+
+impl std::convert::From<serde_json::Value> for EmptyResponse {
+    fn from(x: serde_json::Value) -> Self {
+        EmptyResponse(x)
+    }
+}
+
+impl std::convert::From<EmptyResponse> for serde_json::Value {
+    fn from(x: EmptyResponse) -> Self {
+        x.0
+    }
+}
+
+impl std::ops::Deref for EmptyResponse {
+    type Target = serde_json::Value;
+    fn deref(&self) -> &serde_json::Value {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for EmptyResponse {
+    fn deref_mut(&mut self) -> &mut serde_json::Value {
+        &mut self.0
+    }
+}
+
+//argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct LoginResult {

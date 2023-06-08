@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
-#set -ex
-
-CURRENT_DIR=$(pwd)
-
+# run cargo fmt
 for f in ./*/Cargo.toml ./*/*/Cargo.toml; do
   echo $(dirname "$f")
   cargo fmt --all --manifest-path $(dirname "$f")/Cargo.toml -v

@@ -11,7 +11,8 @@ components:
       description: OK
       content:
         application/json:
-            schema: {}
+            schema:
+              $ref: "./type.oas.yaml#/components/schemas/EmptyResponse"
 
     400:
       description: Bad request

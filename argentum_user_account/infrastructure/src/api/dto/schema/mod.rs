@@ -1,5 +1,7 @@
+mod anonymous_requests_restore_token_params;
 mod user_logins_with_password_params;
 mod user_registers_with_password_params;
 
+pub use anonymous_requests_restore_token_params::AnonymousRequestsRestoreTokenParams;
 pub use user_logins_with_password_params::UserLoginsWithPasswordParams;
 pub use user_registers_with_password_params::UserRegistersWithPasswordParams;

@@ -1,14 +1,15 @@
 use crate::api::server::handler::{
-    AnonymousRegistersTrait, UserLoginsWithPasswordTrait, UserRegistersWithPasswordTrait,
+    AnonymousRegistersTrait, AnonymousRequestsRestoreTokenTrait, UserLoginsWithPasswordTrait,
+    UserRegistersWithPasswordTrait,
 };
-use crate::api::server::{ToDoRouter, UserAccountPreHandler};
+use crate::api::server::{UserAccountPreHandler, UserAccountRouter};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
 use std::sync::Arc;
 
 pub struct ApiDiC {
-    pub router: Arc<ToDoRouter>,
+    pub router: Arc<UserAccountRouter>,
 }
 
 impl ApiDiC {
@@ -18,6 +19,7 @@ impl ApiDiC {
         anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait>,
         user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
         user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
+        anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
         let pre_handler = Arc::new(UserAccountPreHandler::new(
@@ -26,9 +28,10 @@ impl ApiDiC {
             anonymous_registers_handler,
             user_logins_with_password,
             user_registers_with_password,
+            anonymous_requests_restore_token,
         ));
 
-        let router = Arc::new(ToDoRouter::new(pre_handler, error_pre_handler));
+        let router = Arc::new(UserAccountRouter::new(pre_handler, error_pre_handler));
 
         ApiDiC { router }
     }

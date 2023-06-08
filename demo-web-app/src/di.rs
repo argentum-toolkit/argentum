@@ -25,10 +25,12 @@ use argentum_user_infrastructure::db_diesel::repository::authenticated_user_repo
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_account_infrastructure::api::ApiDiC;
 use argentum_user_account_infrastructure::rest::handler::{
-    AnonymousRegistersHandler, UserLoginsWithPasswordHandler, UserRegistersWithPasswordHandler,
+    AnonymousRegistersHandler, AnonymousRequestsRestoreTokenHandler, UserLoginsWithPasswordHandler,
+    UserRegistersWithPasswordHandler,
 };
 use argentum_user_account_infrastructure::rest::transformer::{
-    DtoToUserLoginsWithPasswordParams, DtoToUserRegistersWithPasswordParams,
+    DtoToAnonymousRequestsRestoreTokenParams, DtoToUserLoginsWithPasswordParams,
+    DtoToUserRegistersWithPasswordParams,
 };
 use std::sync::Arc;
 
@@ -178,12 +180,22 @@ pub fn di_factory() -> DiC {
         user_authenticates_with_token_uc.clone(),
     ));
 
+    let dto_to_anonymous_requests_restore_token_params =
+        Arc::new(DtoToAnonymousRequestsRestoreTokenParams::new());
+
+    let anonymous_requests_restore_token = Arc::new(AnonymousRequestsRestoreTokenHandler::new(
+        anonymous_requests_restore_token_uc.clone(),
+        logger.clone(),
+        dto_to_anonymous_requests_restore_token_params,
+    ));
+
     let api_di = ApiDiC::new(
         rest_di.request_transformer,
         bearer_auth,
         anonymous_registers_handler,
         user_logins_with_password_handler,
         user_registers_with_password_handler,
+        anonymous_requests_restore_token,
         rest_di.error_pre_handler,
     );
 

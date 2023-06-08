@@ -25,7 +25,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**serde_json::Value**](object.md)
+[**serde_json::Value**](AnyType.md)
 
 ### Authorization
 
@@ -109,7 +109,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**serde_json::Value**](object.md)
+[**serde_json::Value**](AnyType.md)
 
 ### Authorization
 
