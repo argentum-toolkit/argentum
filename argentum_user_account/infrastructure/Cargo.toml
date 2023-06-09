@@ -13,9 +13,6 @@ readme = "readme.adoc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "3.3.3"
-actix-http = "3.0.0-beta.16"
-
 argentum_log_business = { path = "../../argentum_log/business" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure" }
 argentum_standard_business = { path = "../../argentum_standard/business" }

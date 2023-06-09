@@ -56,7 +56,7 @@ impl Router for UserAccountRouter {
             ["api", "v1", "user", "restore-password", "change-password"] => match *req.method() {
                 Method::POST => {
                     self.pre_handler
-                        .anonymous_change_password_with_token(req)
+                        .anonymous_with_token_changes_password(req)
                         .await
                 }
                 _ => self.error_pre_handler.method_not_allowed(req).await,

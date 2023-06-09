@@ -93,7 +93,7 @@ impl UserAccountPreHandler {
         self.anonymous_requests_restore_token.handle(req, user)
     }
 
-    pub async fn anonymous_change_password_with_token(
+    pub async fn anonymous_with_token_changes_password(
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {

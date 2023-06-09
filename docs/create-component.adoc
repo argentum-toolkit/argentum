@@ -8,7 +8,7 @@ You can look at `Argentum User` component. It can be good example of component w
 * HTTP Client and Server generated from API documentation (`api`)
 * Infrastructure code which interacts with "real world" (`infrastructure`)
 ** Database migrations (`migrations`)
-** HTTP layer built on `Actix Web` (`src/actic_web`)
+** HTTP layer built on `Argentum Rest` (`src/rest`)
 ** Data persistence layer built on `Diesel ORM` (`src/db_diesel`)
 
 == Create file structure

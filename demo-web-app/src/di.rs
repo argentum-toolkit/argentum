@@ -155,7 +155,7 @@ pub fn di_factory() -> DiC {
     let rest_di = RestDiC::new(logger.clone());
 
     let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(
-        anonymous_registers_uc.clone(),
+        anonymous_registers_uc,
         unique_id_factory.clone(),
     ));
 
@@ -173,30 +173,27 @@ pub fn di_factory() -> DiC {
 
     let user_logins_with_password_handler = Arc::new(UserLoginsWithPasswordHandler::new(
         user_logins_with_password_uc,
-        unique_id_factory.clone(),
+        unique_id_factory,
         dto_to_user_logins_with_password_params,
     ));
 
-    let bearer_auth = Arc::new(BearerAuthenticator::new(
-        user_authenticates_with_token_uc.clone(),
-    ));
+    let bearer_auth = Arc::new(BearerAuthenticator::new(user_authenticates_with_token_uc));
 
     let dto_to_anonymous_requests_restore_token_params =
         Arc::new(DtoToAnonymousRequestsRestoreTokenParams::new());
 
     let anonymous_requests_restore_token = Arc::new(AnonymousRequestsRestoreTokenHandler::new(
-        anonymous_requests_restore_token_uc.clone(),
-        logger.clone(),
+        anonymous_requests_restore_token_uc,
+        logger,
         dto_to_anonymous_requests_restore_token_params,
     ));
 
     let dto_to_anonymous_with_token_changes_password_params =
         Arc::new(DtoToAnonymousWithTokenChangesPasswordParams::new());
 
-    //todo: rename all to anonymous_with_token_changes_password_***
     let anonymous_with_token_changes_password_token =
         Arc::new(AnonymousWithTokenChangesPasswordHandler::new(
-            anonymous_with_token_changes_password_uc.clone(),
+            anonymous_with_token_changes_password_uc,
             dto_to_anonymous_with_token_changes_password_params,
         ));
 

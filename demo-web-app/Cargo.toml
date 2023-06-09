@@ -11,8 +11,6 @@ documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
-actix-web = "3.3.3"
-
 argentum_encryption_business = { path = "../argentum_encryption/business", version = "0.1.0-dev" }
 argentum_encryption_infrastructure = { path = "../argentum_encryption/infrastructure" }
 argentum_event_business = { path = "../argentum_event/business", version = "0.1.0-dev" }
