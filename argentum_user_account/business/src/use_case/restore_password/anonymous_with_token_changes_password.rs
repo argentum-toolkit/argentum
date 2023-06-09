@@ -111,7 +111,7 @@ mod tests {
     use std::time::Duration;
 
     #[test]
-    fn anonymous_changes_password_with_token() -> Result<(), &'static str> {
+    fn anonymous_with_token_changes_password() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -164,7 +164,7 @@ mod tests {
     }
 
     #[test]
-    fn anonymous_changes_password_with_expired_token() -> Result<(), &'static str> {
+    fn anonymous_with_expired_token_changes_password() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());

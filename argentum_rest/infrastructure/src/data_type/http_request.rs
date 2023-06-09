@@ -30,9 +30,7 @@ pub trait HttpParams {
 
 pub trait HttpPathParams: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a> {}
 
-pub trait HttpHeaderParams: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a> {
-    // fn new() -> Self;
-}
+pub trait HttpHeaderParams: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a> {}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct EmptyPathParams {}
@@ -42,22 +40,7 @@ impl HttpPathParams for EmptyPathParams {}
 #[derive(Debug, Deserialize, Validate)]
 pub struct EmptyHeaderParams {}
 
-//TODO: remove impl
-// impl EmptyHeaderParams {
-//     pub fn new() -> Self {
-//         Self {}
-//     }
-//
-//     pub fn new_tr() -> impl HttpHeaderParams {
-//         Self {}
-//     }
-// }
-
-impl HttpHeaderParams for EmptyHeaderParams {
-    // fn new() -> Self {
-    //     Self {}
-    // }
-}
+impl HttpHeaderParams for EmptyHeaderParams {}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct AuthHeaderParams {
@@ -70,13 +53,7 @@ impl AuthHeaderParams {
     }
 }
 
-impl HttpHeaderParams for AuthHeaderParams {
-    // fn new() -> Self {
-    //     Self {}
-    // }
-}
+impl HttpHeaderParams for AuthHeaderParams {}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct EmptyRequestBody {}
-
-// impl HttpPathParams for EmptyRequestBody {}

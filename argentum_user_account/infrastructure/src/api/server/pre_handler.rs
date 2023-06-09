@@ -1,9 +1,10 @@
 use crate::api::dto::request::{
-    AnonymousRequestsRestoreTokenRequest, UserLoginsWithPasswordRequest,
-    UserRegistersWithPasswordRequest,
+    AnonymousRequestsRestoreTokenRequest, AnonymousWithTokenChangesPasswordRequest,
+    UserLoginsWithPasswordRequest, UserRegistersWithPasswordRequest,
 };
 use crate::api::server::handler::{
-    AnonymousRegistersTrait, AnonymousRequestsRestoreTokenTrait, UserLoginsWithPasswordTrait,
+    AnonymousRegistersTrait, AnonymousRequestsRestoreTokenTrait,
+    AnonymousWithTokenChangesPasswordTrait, UserLoginsWithPasswordTrait,
     UserRegistersWithPasswordTrait,
 };
 use argentum_rest_infrastructure::data_type::error::HttpError;
@@ -19,6 +20,7 @@ pub struct UserAccountPreHandler {
     user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
     user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
     anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
+    anonymous_with_token_changes_password: Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
 }
 
 impl UserAccountPreHandler {
@@ -29,6 +31,7 @@ impl UserAccountPreHandler {
         user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
         user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
         anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
+        anonymous_with_token_changes_password: Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
     ) -> Self {
         UserAccountPreHandler {
             request_transformer,
@@ -37,6 +40,7 @@ impl UserAccountPreHandler {
             user_logins_with_password,
             user_registers_with_password,
             anonymous_requests_restore_token,
+            anonymous_with_token_changes_password,
         }
     }
 
@@ -93,6 +97,14 @@ impl UserAccountPreHandler {
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
-        todo!()
+        let raw_params = HashMap::from([]);
+        let req: AnonymousWithTokenChangesPasswordRequest = self
+            .request_transformer
+            .transform(request, raw_params)
+            .await?;
+
+        let user = self.bearer_auth.auth(&req.params.headers)?;
+
+        self.anonymous_with_token_changes_password.handle(req, user)
     }
 }

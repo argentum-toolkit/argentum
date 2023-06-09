@@ -1,5 +1,6 @@
 use crate::api::server::handler::{
-    AnonymousRegistersTrait, AnonymousRequestsRestoreTokenTrait, UserLoginsWithPasswordTrait,
+    AnonymousRegistersTrait, AnonymousRequestsRestoreTokenTrait,
+    AnonymousWithTokenChangesPasswordTrait, UserLoginsWithPasswordTrait,
     UserRegistersWithPasswordTrait,
 };
 use crate::api::server::{UserAccountPreHandler, UserAccountRouter};
@@ -20,6 +21,7 @@ impl ApiDiC {
         user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
         user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
         anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
+        anonymous_with_token_changes_password: Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
         let pre_handler = Arc::new(UserAccountPreHandler::new(
@@ -29,6 +31,7 @@ impl ApiDiC {
             user_logins_with_password,
             user_registers_with_password,
             anonymous_requests_restore_token,
+            anonymous_with_token_changes_password,
         ));
 
         let router = Arc::new(UserAccountRouter::new(pre_handler, error_pre_handler));

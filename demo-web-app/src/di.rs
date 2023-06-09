@@ -25,12 +25,13 @@ use argentum_user_infrastructure::db_diesel::repository::authenticated_user_repo
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_account_infrastructure::api::ApiDiC;
 use argentum_user_account_infrastructure::rest::handler::{
-    AnonymousRegistersHandler, AnonymousRequestsRestoreTokenHandler, UserLoginsWithPasswordHandler,
+    AnonymousRegistersHandler, AnonymousRequestsRestoreTokenHandler,
+    AnonymousWithTokenChangesPasswordHandler, UserLoginsWithPasswordHandler,
     UserRegistersWithPasswordHandler,
 };
 use argentum_user_account_infrastructure::rest::transformer::{
-    DtoToAnonymousRequestsRestoreTokenParams, DtoToUserLoginsWithPasswordParams,
-    DtoToUserRegistersWithPasswordParams,
+    DtoToAnonymousRequestsRestoreTokenParams, DtoToAnonymousWithTokenChangesPasswordParams,
+    DtoToUserLoginsWithPasswordParams, DtoToUserRegistersWithPasswordParams,
 };
 use std::sync::Arc;
 
@@ -189,6 +190,16 @@ pub fn di_factory() -> DiC {
         dto_to_anonymous_requests_restore_token_params,
     ));
 
+    let dto_to_anonymous_with_token_changes_password_params =
+        Arc::new(DtoToAnonymousWithTokenChangesPasswordParams::new());
+
+    //todo: rename all to anonymous_with_token_changes_password_***
+    let anonymous_with_token_changes_password_token =
+        Arc::new(AnonymousWithTokenChangesPasswordHandler::new(
+            anonymous_with_token_changes_password_uc.clone(),
+            dto_to_anonymous_with_token_changes_password_params,
+        ));
+
     let api_di = ApiDiC::new(
         rest_di.request_transformer,
         bearer_auth,
@@ -196,6 +207,7 @@ pub fn di_factory() -> DiC {
         user_logins_with_password_handler,
         user_registers_with_password_handler,
         anonymous_requests_restore_token,
+        anonymous_with_token_changes_password_token,
         rest_di.error_pre_handler,
     );
 
