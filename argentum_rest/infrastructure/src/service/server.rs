@@ -1,5 +1,6 @@
 use crate::data_type::{Request, Response};
 use crate::service::{ErrorHandler, ResponseToJsonTransformer, Router};
+use argentum_log_business::LoggerTrait;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use std::net::SocketAddr;
@@ -17,6 +18,8 @@ pub struct Server {
     response_transformer: Arc<ResponseToJsonTransformer>,
 
     error_handler: Arc<ErrorHandler>,
+
+    logger: Arc<dyn LoggerTrait>,
 }
 
 impl Server {
@@ -25,12 +28,14 @@ impl Server {
         router: Arc<dyn Router>,
         response_transformer: Arc<ResponseToJsonTransformer>,
         error_handler: Arc<ErrorHandler>,
+        logger: Arc<dyn LoggerTrait>,
     ) -> Self {
         Server {
             addr,
             router,
             response_transformer,
             error_handler,
+            logger,
         }
     }
 
@@ -52,7 +57,6 @@ impl Server {
         }
 
         let listener = TcpListener::bind(self.addr).await?;
-        //TODO: log
         println!("Listening on http://{}", self.addr);
 
         loop {
@@ -60,6 +64,7 @@ impl Server {
             let router = self.router.clone();
             let transformer = self.response_transformer.clone();
             let error_handler = self.error_handler.clone();
+            let logger = self.logger.clone();
 
             tokio::task::spawn(async move {
                 let start = Instant::now();
@@ -77,11 +82,11 @@ impl Server {
                     )
                     .await
                 {
-                    //TODO: log and exit
                     println!("Failed to serve connection: {:?}", err);
                 }
+
                 let elapsed = start.elapsed();
-                println!("Duration: {}μs", elapsed.as_micros());
+                logger.trace(format!("Duration: {}μs", elapsed.as_micros()));
             });
         }
     }

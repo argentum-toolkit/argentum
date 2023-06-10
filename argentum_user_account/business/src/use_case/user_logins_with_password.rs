@@ -34,8 +34,8 @@ impl UserLoginsWithPasswordUc {
         id_factory: Arc<dyn IdFactory>,
         token_generator: Arc<dyn GeneratorTrait>,
         logger: Arc<dyn LoggerTrait>,
-    ) -> UserLoginsWithPasswordUc {
-        UserLoginsWithPasswordUc {
+    ) -> Self {
+        Self {
             user_repository,
             anonymous_binding_repository,
             session_repository,

@@ -21,8 +21,8 @@ impl AnonymousRegistersUc {
         user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
         session_repository: Arc<dyn SessionRepositoryTrait>,
         token_generator: Arc<dyn GeneratorTrait>,
-    ) -> AnonymousRegistersUc {
-        AnonymousRegistersUc {
+    ) -> Self {
+        Self {
             id_factory,
             user_repository,
             session_repository,

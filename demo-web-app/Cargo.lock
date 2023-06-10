@@ -184,7 +184,9 @@ dependencies = [
 name = "argentum_user_account_infrastructure"
 version = "0.1.0-dev"
 dependencies = [
+ "argentum_encryption_business",
  "argentum_log_business",
+ "argentum_notification_business",
  "argentum_rest_infrastructure",
  "argentum_standard_business",
  "argentum_standard_infrastructure",

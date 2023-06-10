@@ -12,17 +12,17 @@ use argentum_user_account_business::use_case::restore_password::error::RestorePa
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
 use std::sync::Arc;
-use argentum_user_account_business::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
+use argentum_user_account_business::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
 
 pub struct AnonymousWithTokenChangesPasswordHandler {
-    uc: Arc<AnonymousWithTokenChangesPassword>,
+    uc: Arc<AnonymousWithTokenChangesPasswordUc>,
     dto_to_anonymous_with_token_changes_password_params:
         Arc<DtoToAnonymousWithTokenChangesPasswordParams>,
 }
 
 impl AnonymousWithTokenChangesPasswordHandler {
     pub fn new(
-        uc: Arc<AnonymousWithTokenChangesPassword>,
+        uc: Arc<AnonymousWithTokenChangesPasswordUc>,
         dto_to_anonymous_with_token_changes_password_params: Arc<
             DtoToAnonymousWithTokenChangesPasswordParams,
         >,
@@ -53,19 +53,10 @@ impl AnonymousWithTokenChangesPasswordTrait for AnonymousWithTokenChangesPasswor
                 Ok(HttpResponse::new(StatusCode::OK, Box::new(dto)))
             }
             Err(e) => match e {
-                RestorePasswordError::TokenExpired => {
+                RestorePasswordError::TokenExpired | RestorePasswordError::TokenNotFoundError => {
                     Err(HttpError::UnprocessableEntity(UnprocessableEntity::new(
                         Box::new(e),
                     )))
-                    //todo: change message to
-                    // build_unprocessable_entity_response("Token is expired".to_string())
-                }
-                RestorePasswordError::TokenNotFoundError => {
-                    Err(HttpError::UnprocessableEntity(UnprocessableEntity::new(
-                        Box::new(e),
-                    )))
-                    //todo: change message to
-                    // build_unprocessable_entity_response("Wrong restore password token".to_string())
                 }
                 _ => Err(HttpError::InternalServerError(InternalServerError::new(
                     Box::new(e),

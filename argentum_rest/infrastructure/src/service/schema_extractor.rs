@@ -23,7 +23,6 @@ impl SchemaExtractor {
         let result = request.fetch_body().await;
 
         if result.is_err() {
-            //TODO: log error
             return Err(Violations::new(
                 vec!["Can't receive request body".to_string()],
                 None,

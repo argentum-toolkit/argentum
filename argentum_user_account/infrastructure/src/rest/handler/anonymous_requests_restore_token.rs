@@ -5,21 +5,21 @@ use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
 use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_user_account_api::models::EmptyResponse;
-use argentum_user_account_business::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreToken;
+use argentum_user_account_business::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
 use std::sync::Arc;
 
 pub struct AnonymousRequestsRestoreTokenHandler {
-    uc: Arc<AnonymousRequestsRestoreToken>,
+    uc: Arc<AnonymousRequestsRestoreTokenUc>,
     logger: Arc<dyn LoggerTrait>,
     dto_to_anonymous_requests_restore_token_params: Arc<DtoToAnonymousRequestsRestoreTokenParams>,
 }
 
 impl AnonymousRequestsRestoreTokenHandler {
     pub fn new(
-        uc: Arc<AnonymousRequestsRestoreToken>,
+        uc: Arc<AnonymousRequestsRestoreTokenUc>,
         logger: Arc<dyn LoggerTrait>,
         dto_to_anonymous_requests_restore_token_params: Arc<
             DtoToAnonymousRequestsRestoreTokenParams,

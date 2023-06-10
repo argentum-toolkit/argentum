@@ -24,8 +24,8 @@ impl UserRegistersWithPasswordUc {
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
         encryptor: Arc<dyn Encryptor>,
-    ) -> UserRegistersWithPasswordUc {
-        UserRegistersWithPasswordUc {
+    ) -> Self {
+        Self {
             user_repository,
             credential_writer,
             encryptor,

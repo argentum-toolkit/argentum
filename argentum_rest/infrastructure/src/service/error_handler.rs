@@ -14,7 +14,6 @@ impl ErrorHandler {
     }
 
     pub fn handle(&self, err: HttpError) -> HttpResponse {
-        //TODO: log error and return trace-id
         match err {
             HttpError::NotImplemented(e) => {
                 self.logger.info(format!("{:?}", e));

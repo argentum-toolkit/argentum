@@ -17,8 +17,8 @@ impl UserAuthenticatesWithTokenUc {
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
         anon_repository: Arc<dyn AnonymousUserRepositoryTrait>,
         session_repository: Arc<dyn SessionRepositoryTrait>,
-    ) -> UserAuthenticatesWithTokenUc {
-        UserAuthenticatesWithTokenUc {
+    ) -> Self {
+        Self {
             user_repository,
             anon_repository,
             session_repository,

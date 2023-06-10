@@ -125,18 +125,17 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 == TODO
 
-* improve error HTTP responses
-* New type Password
+* New type for Password
 * add examples to OpenAPI doc
 * validation
-* fix error handling (registration with email)
 
 * documentation
 ** codegen
 ** other?
+* Custom API generator
+* OpenTelemetry
 * build scripts (behaviour tests, push artifacts)
 * run docker images as a local user
 * https://crates.io/crates/cargo-release
-* improve errors processing
 * notifications
 * macro for creation Id types (for user, for account for event)
