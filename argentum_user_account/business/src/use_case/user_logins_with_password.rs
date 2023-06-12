@@ -3,6 +3,7 @@ use crate::repository::password_credential_checker::{
     PasswordCredentialChecker, PasswordCredentialCheckerError,
 };
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
+use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
@@ -12,7 +13,6 @@ use argentum_user_business::repository::anonymous_binding_repository::AnonymousB
 use argentum_user_business::repository::user_repository::{
     AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
-use argentum_user_business::token::GeneratorTrait;
 use std::sync::Arc;
 
 pub struct UserLoginsWithPasswordUc {

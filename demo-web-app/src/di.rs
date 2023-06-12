@@ -9,8 +9,8 @@ use std::net::SocketAddr;
 
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_account_infrastructure::api::ApiDiC;
-use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiC;
-use argentum_user_infrastructure::di::UserDiC;
+use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiCBuilder;
+use argentum_user_infrastructure::di::UserDiCBuilder;
 use std::sync::Arc;
 
 pub struct DiC {
@@ -32,7 +32,10 @@ pub fn di_factory() -> DiC {
         Arc::new(ConnectionPoolManager::new("AG_USER_DATABASE_URL"));
 
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
-    let u_di = UserDiC::new(user_pg_connection_pool_manager, unique_id_factory.clone());
+
+    let u_di = UserDiCBuilder::new()
+        .defalt_services(user_pg_connection_pool_manager, unique_id_factory.clone())
+        .build();
 
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
@@ -41,20 +44,26 @@ pub fn di_factory() -> DiC {
 
     let notificator = Arc::new(StdoutNotificator::new());
 
-    let ua_di = UserAccountInfrastructureDiC::new(
-        u_di.anonymous_user_repository,
-        u_di.authenticated_user_repository,
-        u_di.anonymous_binding_repository,
-        unique_id_factory,
-        user_account_pg_connection_pool_manager,
+    let ua_di = UserAccountInfrastructureDiCBuilder::new(
+        unique_id_factory.clone(),
         pbkdf2_password_encryptor.clone(),
         pbkdf2_password_encryptor,
         logger.clone(),
         notificator,
-        3600, // TTL 1h
+    )
+    .services(
+        unique_id_factory,
+        user_account_pg_connection_pool_manager,
+        u_di.business_dic.anonymous_user_repository,
+        u_di.business_dic.authenticated_user_repository,
+        u_di.business_dic.anonymous_binding_repository,
+    )
+    .config(
         "Argentum ToolKit demo web application".to_string(),
+        3600, // TTL 1h
         "http://localhost:8082/change-password/".to_string(),
-    );
+    )
+    .build();
 
     let rest_di = RestDiC::new(logger.clone(), ua_di.user_authenticates_with_token_uc);
 
@@ -64,8 +73,8 @@ pub fn di_factory() -> DiC {
         ua_di.anonymous_registers_handler,
         ua_di.user_logins_with_password_handler,
         ua_di.user_registers_with_password_handler,
-        ua_di.anonymous_requests_restore_token,
-        ua_di.anonymous_with_token_changes_password,
+        ua_di.anonymous_requests_restore_token_handler,
+        ua_di.anonymous_with_token_changes_password_handler,
         rest_di.error_pre_handler,
     );
 

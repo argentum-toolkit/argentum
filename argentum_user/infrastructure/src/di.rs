@@ -3,37 +3,49 @@ use crate::db_diesel::repository::anonymous_user_repository::AnonymousUserReposi
 use crate::db_diesel::repository::authenticated_user_repository::AuthenticatedUserRepository;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
-use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
-use argentum_user_business::repository::user_repository::{
-    AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
-};
+use argentum_user_business::di::{UserBusinessDiC, UserBusinessDiCBuilder};
 use std::sync::Arc;
 
-pub struct UserDiC {
-    pub anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
-    pub anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-    pub authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
+pub struct UserInfrastructureDiC {
+    pub business_dic: UserBusinessDiC,
 }
 
-impl UserDiC {
-    pub fn new(connection: Arc<ConnectionPoolManager>, id_factory: Arc<UniqueIdFactory>) -> Self {
-        let anonymous_user_repository = Arc::new(AnonymousUserRepository::new(
-            connection.clone(),
-            id_factory.clone(),
-        ));
+#[derive(Default)]
+pub struct UserDiCBuilder {
+    pub business_dic_builder: UserBusinessDiCBuilder,
+}
 
-        let authenticated_user_repository = Arc::new(AuthenticatedUserRepository::new(
-            connection.clone(),
-            id_factory.clone(),
-        ));
-
-        let anonymous_binding_repository =
-            Arc::new(AnonymousBindingRepository::new(connection, id_factory));
-
+impl UserDiCBuilder {
+    pub fn new() -> Self {
         Self {
-            anonymous_binding_repository,
-            anonymous_user_repository,
-            authenticated_user_repository,
+            business_dic_builder: UserBusinessDiCBuilder::default(),
+        }
+    }
+
+    pub fn defalt_services(
+        &mut self,
+        connection: Arc<ConnectionPoolManager>,
+        id_factory: Arc<UniqueIdFactory>,
+    ) -> &mut Self {
+        self.business_dic_builder
+            .anonymous_binding_repository(Arc::new(AnonymousBindingRepository::new(
+                connection.clone(),
+                id_factory.clone(),
+            )))
+            .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(
+                connection.clone(),
+                id_factory.clone(),
+            )))
+            .authenticated_user_repository(Arc::new(AuthenticatedUserRepository::new(
+                connection, id_factory,
+            )));
+
+        self
+    }
+
+    pub fn build(&self) -> UserInfrastructureDiC {
+        UserInfrastructureDiC {
+            business_dic: self.business_dic_builder.build(),
         }
     }
 }

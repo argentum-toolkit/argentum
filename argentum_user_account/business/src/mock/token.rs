@@ -1,5 +1,5 @@
+use crate::token::GeneratorTrait;
 use argentum_standard_business::data_type::id::Id;
-use argentum_user_business::token::GeneratorTrait;
 
 pub struct TokenGeneratorMock {}
 

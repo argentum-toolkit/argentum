@@ -2,12 +2,12 @@ use crate::entity::restore_password_token::RestorePasswordToken;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
 use crate::use_case::restore_password::error::RestorePasswordError;
 
+use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::{Notification, NotificatorTrait};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
-use argentum_user_business::token::GeneratorTrait;
 use std::sync::Arc;
 
 pub struct AnonymousRequestsRestoreTokenUc {

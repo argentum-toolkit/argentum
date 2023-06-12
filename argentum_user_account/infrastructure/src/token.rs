@@ -1,5 +1,5 @@
 use argentum_standard_business::data_type::id::Id;
-use argentum_user_business::token::GeneratorTrait;
+use argentum_user_account_business::token::GeneratorTrait;
 use rand::Rng;
 
 pub struct StringTokenGenerator {}

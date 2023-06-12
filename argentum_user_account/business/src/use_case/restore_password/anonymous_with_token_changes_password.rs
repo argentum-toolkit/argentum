@@ -96,6 +96,7 @@ mod tests {
     use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
     use crate::use_case::restore_password::error::RestorePasswordError;
 
+    use crate::token::GeneratorTrait;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::email::EmailAddress;
@@ -105,7 +106,6 @@ mod tests {
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
-    use argentum_user_business::token::GeneratorTrait;
     use std::sync::Arc;
     use std::thread;
     use std::time::Duration;

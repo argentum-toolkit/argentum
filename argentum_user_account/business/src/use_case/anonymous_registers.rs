@@ -5,7 +5,8 @@ use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, ExternalUserError,
 };
-use argentum_user_business::token::GeneratorTrait;
+
+use crate::token::GeneratorTrait;
 use std::sync::Arc;
 
 pub struct AnonymousRegistersUc {
