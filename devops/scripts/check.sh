@@ -12,6 +12,7 @@ packages=(
   'argentum_log/infrastructure'
   'argentum_notification/business'
   'argentum_notification/infrastructure'
+  'argentum_rest/infrastructure'
   'argentum_standard/business'
   'argentum_standard/infrastructure'
   'argentum_user/business'

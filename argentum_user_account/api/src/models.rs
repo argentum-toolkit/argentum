@@ -4,7 +4,12 @@
 use crate::header;
 use crate::models;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization
+use argentum_rest_infrastructure::data_type::SerializableBody;
+//argentum-customization end
+
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct AnonymousRegistrationResult {
     #[serde(rename = "aonymous_id")]
@@ -13,6 +18,9 @@ pub struct AnonymousRegistrationResult {
     #[serde(rename = "token")]
     pub token: String,
 }
+
+//argentum-customization next line
+impl SerializableBody for AnonymousRegistrationResult {}
 
 impl AnonymousRegistrationResult {
     #[allow(clippy::new_without_default)]
@@ -156,7 +164,8 @@ impl std::convert::TryFrom<hyper::header::HeaderValue>
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct ChangePasswordSchema {
     #[serde(rename = "token")]
@@ -165,6 +174,9 @@ pub struct ChangePasswordSchema {
     #[serde(rename = "password")]
     pub password: String,
 }
+
+//argentum-customization next line
+impl SerializableBody for ChangePasswordSchema {}
 
 impl ChangePasswordSchema {
     #[allow(clippy::new_without_default)]
@@ -308,7 +320,41 @@ impl std::convert::TryFrom<hyper::header::HeaderValue>
     }
 }
 
+//argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct EmptyResponse(serde_json::Value);
+
+//argentum-customization next line
+impl SerializableBody for EmptyResponse {}
+
+impl std::convert::From<serde_json::Value> for EmptyResponse {
+    fn from(x: serde_json::Value) -> Self {
+        EmptyResponse(x)
+    }
+}
+
+impl std::convert::From<EmptyResponse> for serde_json::Value {
+    fn from(x: EmptyResponse) -> Self {
+        x.0
+    }
+}
+
+impl std::ops::Deref for EmptyResponse {
+    type Target = serde_json::Value;
+    fn deref(&self) -> &serde_json::Value {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for EmptyResponse {
+    fn deref_mut(&mut self) -> &mut serde_json::Value {
+        &mut self.0
+    }
+}
+
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct LoginResult {
     #[serde(rename = "user_id")]
@@ -317,6 +363,9 @@ pub struct LoginResult {
     #[serde(rename = "token")]
     pub token: String,
 }
+
+//argentum-customization next line
+impl SerializableBody for LoginResult {}
 
 impl LoginResult {
     #[allow(clippy::new_without_default)]
@@ -456,7 +505,8 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct LoginWithPasswordSchema {
     #[serde(rename = "email")]
@@ -465,6 +515,9 @@ pub struct LoginWithPasswordSchema {
     #[serde(rename = "password")]
     pub password: String,
 }
+
+//argentum-customization next line
+impl SerializableBody for LoginWithPasswordSchema {}
 
 impl LoginWithPasswordSchema {
     #[allow(clippy::new_without_default)]
@@ -609,7 +662,8 @@ impl std::convert::TryFrom<hyper::header::HeaderValue>
 }
 
 /// RFC 7807 Problem Details for HTTP APIs
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct ProblemDetail {
     #[serde(rename = "code")]
@@ -619,6 +673,9 @@ pub struct ProblemDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
 }
+
+//argentum-customization next line
+impl SerializableBody for ProblemDetail {}
 
 impl ProblemDetail {
     #[allow(clippy::new_without_default)]
@@ -758,12 +815,16 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct RegistrationWithPasswordResult {
     #[serde(rename = "id")]
     pub id: uuid::Uuid,
 }
+
+//argentum-customization next line
+impl SerializableBody for RegistrationWithPasswordResult {}
 
 impl RegistrationWithPasswordResult {
     #[allow(clippy::new_without_default)]
@@ -893,7 +954,8 @@ impl std::convert::TryFrom<hyper::header::HeaderValue>
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct RegistrationWithPasswordSchema {
     #[serde(rename = "email")]
@@ -905,6 +967,9 @@ pub struct RegistrationWithPasswordSchema {
     #[serde(rename = "password")]
     pub password: String,
 }
+
+//argentum-customization next line
+impl SerializableBody for RegistrationWithPasswordSchema {}
 
 impl RegistrationWithPasswordSchema {
     #[allow(clippy::new_without_default)]
@@ -1065,12 +1130,16 @@ impl std::convert::TryFrom<hyper::header::HeaderValue>
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct RequestRestoreTokenSchema {
     #[serde(rename = "email")]
     pub email: String,
 }
+
+//argentum-customization next line
+impl SerializableBody for RequestRestoreTokenSchema {}
 
 impl RequestRestoreTokenSchema {
     #[allow(clippy::new_without_default)]
@@ -1200,7 +1269,8 @@ impl std::convert::TryFrom<hyper::header::HeaderValue>
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+//argentum-customization next line
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct UserName {
     #[serde(rename = "first")]
@@ -1214,6 +1284,9 @@ pub struct UserName {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub patronymic: Option<String>,
 }
+
+//argentum-customization next line
+impl SerializableBody for UserName {}
 
 impl UserName {
     #[allow(clippy::new_without_default)]

@@ -1,11 +1,10 @@
 mod di;
-mod web_app;
 
 use crate::di::di_factory;
-use crate::web_app::start_server;
 
-#[actix_web::main]
-async fn main() -> Result<(), std::io::Error> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let di = di_factory();
-    start_server(di).await
+    di.server.serve().await
+    // start_server(di).await
 }

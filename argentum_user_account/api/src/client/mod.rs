@@ -458,30 +458,6 @@ where
             },
         );
 
-        #[allow(clippy::collapsible_match)]
-        if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
-            // Currently only authentication with Basic and Bearer are supported
-            #[allow(clippy::single_match, clippy::match_single_binding)]
-            match auth_data {
-                &AuthData::Bearer(ref bearer_header) => {
-                    let auth = swagger::auth::Header(bearer_header.clone());
-                    let header = match HeaderValue::from_str(&format!("{}", auth)) {
-                        Ok(h) => h,
-                        Err(e) => {
-                            return Err(ApiError(format!(
-                                "Unable to create Authorization header: {}",
-                                e
-                            )))
-                        }
-                    };
-                    request
-                        .headers_mut()
-                        .insert(hyper::header::AUTHORIZATION, header);
-                }
-                _ => {}
-            }
-        }
-
         let response = client_service
             .call((request, context.clone()))
             .map_err(|e| ApiError(format!("No response received: {}", e)))

@@ -8,7 +8,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use std::sync::Arc;
 
-pub struct AnonymousWithTokenChangesPassword {
+pub struct AnonymousWithTokenChangesPasswordUc {
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
@@ -17,7 +17,7 @@ pub struct AnonymousWithTokenChangesPassword {
     logger: Arc<dyn LoggerTrait>,
 }
 
-impl AnonymousWithTokenChangesPassword {
+impl AnonymousWithTokenChangesPasswordUc {
     pub fn new(
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
@@ -25,8 +25,8 @@ impl AnonymousWithTokenChangesPassword {
         credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
         token_ttl: u32,
         logger: Arc<dyn LoggerTrait>,
-    ) -> AnonymousWithTokenChangesPassword {
-        AnonymousWithTokenChangesPassword {
+    ) -> Self {
+        Self {
             user_repository,
             restore_password_token_repository,
             credential_writer,
@@ -93,9 +93,10 @@ mod tests {
     use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-    use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPassword;
+    use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
     use crate::use_case::restore_password::error::RestorePasswordError;
 
+    use crate::token::GeneratorTrait;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::email::EmailAddress;
@@ -105,13 +106,12 @@ mod tests {
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
-    use argentum_user_business::token::GeneratorTrait;
     use std::sync::Arc;
     use std::thread;
     use std::time::Duration;
 
     #[test]
-    fn anonymous_changes_password_with_token() -> Result<(), &'static str> {
+    fn anonymous_with_token_changes_password() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -123,7 +123,7 @@ mod tests {
 
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
-        let uc = AnonymousWithTokenChangesPassword::new(
+        let uc = AnonymousWithTokenChangesPasswordUc::new(
             user_repository.clone(),
             token_repository.clone(),
             encryptor.clone(),
@@ -164,7 +164,7 @@ mod tests {
     }
 
     #[test]
-    fn anonymous_changes_password_with_expired_token() -> Result<(), &'static str> {
+    fn anonymous_with_expired_token_changes_password() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -177,7 +177,7 @@ mod tests {
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
-        let uc = AnonymousWithTokenChangesPassword::new(
+        let uc = AnonymousWithTokenChangesPasswordUc::new(
             user_repository.clone(),
             token_repository.clone(),
             encryptor.clone(),

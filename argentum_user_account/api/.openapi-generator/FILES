@@ -5,6 +5,7 @@ README.md
 api/openapi.yaml
 docs/AnonymousRegistrationResult.md
 docs/ChangePasswordSchema.md
+docs/EmptyResponse.md
 docs/LoginResult.md
 docs/LoginWithPasswordSchema.md
 docs/ProblemDetail.md

@@ -57,9 +57,11 @@ components:
         email:
           type: string
           format: email
+          example: test-email@test-email.com
         password:
           type: string
           format: password
+          example: secure-password
       required:
         - email
         - password
@@ -69,6 +71,7 @@ components:
         email:
           type: string
           format: email
+          example: test-email@test-email.com
       required:
         - email
 

@@ -5,7 +5,8 @@ use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, ExternalUserError,
 };
-use argentum_user_business::token::GeneratorTrait;
+
+use crate::token::GeneratorTrait;
 use std::sync::Arc;
 
 pub struct AnonymousRegistersUc {
@@ -21,8 +22,8 @@ impl AnonymousRegistersUc {
         user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
         session_repository: Arc<dyn SessionRepositoryTrait>,
         token_generator: Arc<dyn GeneratorTrait>,
-    ) -> AnonymousRegistersUc {
-        AnonymousRegistersUc {
+    ) -> Self {
+        Self {
             id_factory,
             user_repository,
             session_repository,

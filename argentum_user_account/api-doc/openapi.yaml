@@ -61,6 +61,8 @@ paths:
       tags:
         - user-account
       operationId: registerWithPassword
+      security:
+        - bearerAuth: [ ]
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/RegistrationWithPasswordRequestBody"
       responses:
@@ -78,6 +80,8 @@ paths:
       tags:
         - user-account
       operationId: loginWithPassword
+      security:
+        - bearerAuth: [ ]
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/LoginWithPasswordRequestBody"
 
@@ -96,6 +100,8 @@ paths:
       tags:
         - user-account
       operationId: requestRestoreToken
+      security:
+        - bearerAuth: [ ]
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/RequestRestoreTokenRequestBody"
 
@@ -114,6 +120,8 @@ paths:
       tags:
         - user-account
       operationId: changePasswordWithToken
+      security:
+        - bearerAuth: [ ]
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/ChangePasswordRequestBody"
 
@@ -138,5 +146,5 @@ tags:
   - name: user-account
     description: Managing of the user account
 
-security:
-  - bearerAuth: []
+#security:
+#  - bearerAuth: []

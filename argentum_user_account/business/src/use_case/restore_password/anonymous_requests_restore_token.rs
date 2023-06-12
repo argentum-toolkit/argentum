@@ -2,15 +2,15 @@ use crate::entity::restore_password_token::RestorePasswordToken;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
 use crate::use_case::restore_password::error::RestorePasswordError;
 
+use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::{Notification, NotificatorTrait};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
-use argentum_user_business::token::GeneratorTrait;
 use std::sync::Arc;
 
-pub struct AnonymousRequestsRestoreToken {
+pub struct AnonymousRequestsRestoreTokenUc {
     //configurable param
     product_name: String,
     /// First part of url
@@ -23,7 +23,7 @@ pub struct AnonymousRequestsRestoreToken {
     logger: Arc<dyn LoggerTrait>,
 }
 
-impl AnonymousRequestsRestoreToken {
+impl AnonymousRequestsRestoreTokenUc {
     pub fn new(
         product_name: String,
         restore_password_front_url: String,
@@ -33,8 +33,8 @@ impl AnonymousRequestsRestoreToken {
         token_generator: Arc<dyn GeneratorTrait>,
         notificator: Arc<dyn NotificatorTrait>,
         logger: Arc<dyn LoggerTrait>,
-    ) -> AnonymousRequestsRestoreToken {
-        AnonymousRequestsRestoreToken {
+    ) -> Self {
+        Self {
             product_name,
             restore_password_front_url,
             id_factory,
@@ -119,7 +119,7 @@ mod tests {
     use crate::mock::token::TokenGeneratorMock;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
     use crate::use_case::restore_password::anonymous_requests_restore_token::{
-        AnonymousRequestsRestoreToken, RestorePasswordError,
+        AnonymousRequestsRestoreTokenUc, RestorePasswordError,
     };
 
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
@@ -144,7 +144,7 @@ mod tests {
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
-        let uc = AnonymousRequestsRestoreToken::new(
+        let uc = AnonymousRequestsRestoreTokenUc::new(
             "Test company".to_string(),
             "http://localhost/reset-password".to_string(),
             id_factory.clone(),
@@ -199,7 +199,7 @@ mod tests {
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
-        let uc = AnonymousRequestsRestoreToken::new(
+        let uc = AnonymousRequestsRestoreTokenUc::new(
             "Test company".to_string(),
             "http://localhost/reset-password".to_string(),
             id_factory.clone(),

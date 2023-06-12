@@ -158,20 +158,6 @@ where
             match method {
                 // AnonymousRegisters - POST /user/anonymous-register
                 hyper::Method::POST if path.matched(paths::ID_USER_ANONYMOUS_REGISTER) => {
-                    {
-                        let authorization = match *(&context as &dyn Has<Option<Authorization>>)
-                            .get()
-                        {
-                            Some(ref authorization) => authorization,
-                            None => {
-                                return Ok(Response::builder()
-                                    .status(StatusCode::FORBIDDEN)
-                                    .body(Body::from("Unauthenticated"))
-                                    .expect("Unable to create Authentication Forbidden response"))
-                            }
-                        };
-                    }
-
                     // Body parameters (note that non-required body parameters will ignore garbage
                     // values, rather than causing a 400 response). Produce warning header and logs for
                     // any unused fields.

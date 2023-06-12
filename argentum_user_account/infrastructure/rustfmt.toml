@@ -1,4 +1,0 @@
-reorder_imports = true
-ignore = [
-    "api",
-]

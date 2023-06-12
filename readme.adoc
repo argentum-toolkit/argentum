@@ -16,7 +16,7 @@ Your learning process will be iterative and easier than without Argentum ToolKit
 ----
 :Run Argentum Demo Application;
 :Read Basic Rust Documentation;
-:Create Your new Argentum component;
+:Create Your new Argentum component or application;
 :Read more Rust Documentation;
 :Now you can quickly create RESTful applications with Argentum;
 
@@ -125,17 +125,17 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 == TODO
 
-* improve error HTTP responses
+* New type for Password
 * add examples to OpenAPI doc
 * validation
-* fix error handling (registration with email)
 
 * documentation
 ** codegen
 ** other?
+* Custom API generator
+* OpenTelemetry
 * build scripts (behaviour tests, push artifacts)
 * run docker images as a local user
 * https://crates.io/crates/cargo-release
-* improve errors processing
 * notifications
 * macro for creation Id types (for user, for account for event)

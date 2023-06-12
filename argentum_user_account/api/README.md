@@ -14,7 +14,7 @@ To see how to make this your own, look here:
 [README]((https://openapi-generator.tech))
 
 - API version: 0.1.0-dev
-- Build date: 2023-05-08T22:14:00.309301Z[Etc/UTC]
+- Build date: 2023-06-08T00:31:21.547097Z[Etc/UTC]
 
 For more information, please visit [https://gitlab.com/argentum-toolkit/argentum](https://gitlab.com/argentum-toolkit/argentum)
 
@@ -106,6 +106,7 @@ Method | HTTP request | Description
 
  - [AnonymousRegistrationResult](docs/AnonymousRegistrationResult.md)
  - [ChangePasswordSchema](docs/ChangePasswordSchema.md)
+ - [EmptyResponse](docs/EmptyResponse.md)
  - [LoginResult](docs/LoginResult.md)
  - [LoginWithPasswordSchema](docs/LoginWithPasswordSchema.md)
  - [ProblemDetail](docs/ProblemDetail.md)
@@ -117,7 +118,8 @@ Method | HTTP request | Description
 
 ## Documentation For Authorization
 
-## bearerAuth
+Authentication schemes defined for the API:
+### bearerAuth
 - **Type**: Bearer token authentication
 
 Example
