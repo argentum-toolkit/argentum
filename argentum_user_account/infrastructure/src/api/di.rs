@@ -34,7 +34,11 @@ impl ApiDiC {
             anonymous_with_token_changes_password,
         ));
 
-        let router = Arc::new(UserAccountRouter::new(pre_handler, error_pre_handler));
+        let router = Arc::new(UserAccountRouter::new(
+            pre_handler,
+            error_pre_handler,
+            "/api/v1".to_string(),
+        ));
 
         ApiDiC { router }
     }
