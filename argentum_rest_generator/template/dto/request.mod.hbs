@@ -1,0 +1,7 @@
+{{#each requests as |operation|}}
+mod {{snake operation.id}}_request;
+{{/each}}
+
+{{#each requests as |operation|}}
+pub use {{snake operation.id}}_request::{{operation.id}}Request;
+{{/each}}

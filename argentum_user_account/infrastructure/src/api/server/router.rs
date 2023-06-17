@@ -35,10 +35,7 @@ impl Router for UserAccountRouter {
             Some(path) => path,
         };
 
-        let segments = path
-            .split('/')
-            .filter(|s| !s.is_empty())
-            .collect::<Vec<_>>();
+        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
 
         match segments.as_slice() {
             ["user", "anonymous-register"] => match *req.method() {

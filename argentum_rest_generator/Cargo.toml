@@ -1,0 +1,20 @@
+[package]
+name = "argentum_rest_generator"
+description = "Argentum toolkit REST generator"
+version = "0.1.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "BSD-3-Clause"
+edition = "2021"
+homepage = "https://github.com/argentum-toolkit/argentum"
+repository = "https://github.com/argentum-toolkit/argentum"
+documentation = "https://github.com/argentum-toolkit/argentum"
+readme = "readme.adoc"
+
+[dependencies]
+handlebars = "5.0.0-beta.2"
+convert_case = "0.6.*"
+serde = "1.0.*"
+serde_json = "1.0.*"
+
+argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
+argentum_user_account_infrastructure = { path = "../argentum_user_account/infrastructure" }

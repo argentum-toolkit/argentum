@@ -60,7 +60,7 @@ paths:
       description: User registers with email and password
       tags:
         - user-account
-      operationId: registerWithPassword
+      operationId: userRegistersWithPassword
       security:
         - bearerAuth: [ ]
       requestBody:
