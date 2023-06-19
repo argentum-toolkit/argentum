@@ -43,7 +43,7 @@ paths:
       description: Anonymous registers without any data
       tags:
         - anonymous
-      operationId: anonymousRegisters
+      operationId: AnonymousRegisters
       requestBody:
         $ref: "../../argentum_standard/api-doc/request.oas.yaml#/components/requestBodies/Empty"
       responses:
@@ -60,7 +60,7 @@ paths:
       description: User registers with email and password
       tags:
         - user-account
-      operationId: userRegistersWithPassword
+      operationId: UserRegistersWithPassword
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -79,7 +79,7 @@ paths:
       description: Login as an user
       tags:
         - user-account
-      operationId: loginWithPassword
+      operationId: UserLoginsWithPassword
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -99,7 +99,7 @@ paths:
       description: Requested token and link will be sent to email
       tags:
         - user-account
-      operationId: requestRestoreToken
+      operationId: AnonymousRequestsRestoreToken
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -119,7 +119,7 @@ paths:
       description: Final step of restoring password process
       tags:
         - user-account
-      operationId: changePasswordWithToken
+      operationId: AnonymousWithTokenChangesPassword
       security:
         - bearerAuth: [ ]
       requestBody:

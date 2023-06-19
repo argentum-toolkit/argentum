@@ -42,7 +42,9 @@ impl RequestGenerator {
         self.generate_mod(operations)?;
 
         for operation in operations.into_iter() {
-            self.generate_item(operation)?;
+            if operation.request {
+                self.generate_item(operation)?;
+            }
         }
 
         Ok(())

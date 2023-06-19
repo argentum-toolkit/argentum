@@ -1,0 +1,63 @@
+{{#each operations as |operation|}}
+    {{#if operation.request}}
+use crate::api::dto::request::{{operation.id}}Request;
+    {{/if}}
+{{/each}}
+
+{{#each operations as |operation|}}
+use crate::api::server::handler::{{operation.id}}Trait;
+{{/each}}
+use argentum_rest_infrastructure::data_type::error::HttpError;
+use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
+use argentum_rest_infrastructure::service::{BearerAuthenticator, RequestTransformer};
+use std::collections::HashMap;
+use std::sync::Arc;
+
+pub struct UserAccountPreHandler {
+    request_transformer: Arc<RequestTransformer>,
+    bearer_auth: Arc<BearerAuthenticator>,
+    {{#each operations as |operation|}}
+    {{snake operation.id}}: Arc<dyn {{operation.id}}Trait>,
+    {{/each}}
+}
+
+impl UserAccountPreHandler {
+    pub fn new(
+        request_transformer: Arc<RequestTransformer>,
+        bearer_auth: Arc<BearerAuthenticator>,
+        {{#each operations as |operation|}}
+        {{snake operation.id}}: Arc<dyn {{operation.id}}Trait>,
+        {{/each}}
+    ) -> Self {
+        UserAccountPreHandler {
+            request_transformer,
+            bearer_auth,
+            {{#each operations as |operation|}}
+                {{snake operation.id}},
+            {{/each}}
+        }
+    }
+
+    {{#each operations as |operation|}}
+    pub async fn {{snake operation.id}}(
+        &self,
+        {{#if operation.request}}request: impl RequestTrait,{{/if}}
+    ) -> Result<HttpResponse, HttpError> {
+        {{!--TODO: security should depend on response--}}
+        {{#if operation.request}}
+        let raw_params = HashMap::from([]);
+        let req: {{operation.id}}Request = self
+            .request_transformer
+            .transform(request, raw_params)
+            .await?;
+
+        let user = self.bearer_auth.auth(&req.params.headers)?;
+
+        self.{{snake operation.id}}.handle(req, user)
+        {{else}}
+        self.{{snake operation.id}}.handle()
+        {{/if}}
+    }
+
+    {{/each}}
+}

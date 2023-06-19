@@ -39,7 +39,7 @@ paths:
   /user/anonymous-register:
     post:
       description: Anonymous registers without any data
-      operationId: anonymousRegisters
+      operationId: AnonymousRegisters
       requestBody:
         $ref: '#/components/requestBodies/Empty'
       responses:
@@ -67,7 +67,7 @@ paths:
   /user/register:
     post:
       description: User registers with email and password
-      operationId: registerWithPassword
+      operationId: UserRegistersWithPassword
       requestBody:
         $ref: '#/components/requestBodies/RegistrationWithPasswordRequestBody'
       responses:
@@ -97,7 +97,7 @@ paths:
   /user/password-login:
     post:
       description: Login as an user
-      operationId: loginWithPassword
+      operationId: UserLoginsWithPassword
       requestBody:
         $ref: '#/components/requestBodies/LoginWithPasswordRequestBody'
       responses:
@@ -127,7 +127,7 @@ paths:
   /user/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email
-      operationId: requestRestoreToken
+      operationId: AnonymousRequestsRestoreToken
       requestBody:
         $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
       responses:
@@ -157,7 +157,7 @@ paths:
   /user/restore-password/change-password:
     post:
       description: Final step of restoring password process
-      operationId: changePasswordWithToken
+      operationId: AnonymousWithTokenChangesPassword
       requestBody:
         $ref: '#/components/requestBodies/ChangePasswordRequestBody'
       responses:

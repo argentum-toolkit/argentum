@@ -57,6 +57,7 @@ dependencies = [
  "argentum_user_account_infrastructure",
  "convert_case 0.6.0",
  "handlebars",
+ "hyper 1.0.0-rc.3",
  "serde",
  "serde_json",
 ]
