@@ -1,11 +1,11 @@
 {{#each operations as |operation|}}
     {{#if operation.request}}
-use crate::api::dto::request::{{operation.id}}Request;
+use crate::dto::request::{{operation.id}}Request;
     {{/if}}
 {{/each}}
 
 {{#each operations as |operation|}}
-use crate::api::server::handler::{{operation.id}}Trait;
+use crate::server::handler::{{operation.id}}Trait;
 {{/each}}
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};

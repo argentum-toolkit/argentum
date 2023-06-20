@@ -3,5 +3,5 @@ mod {{snake operation.id}}_handler;
 {{/each}}
 
 {{#each operations as |operation|}}
-pub use {{snake operation.id}}::{{operation.id}}Trait;
+pub use {{snake operation.id}}_handler::{{operation.id}}Trait;
 {{/each}}

@@ -8,8 +8,8 @@ use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolM
 use std::net::SocketAddr;
 
 use argentum_rest_infrastructure::RestDiC;
-use argentum_user_account_infrastructure::api::ApiDiC;
 use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiCBuilder;
+use argentum_user_account_rest::ApiDiC;
 use argentum_user_infrastructure::di::UserDiCBuilder;
 use std::sync::Arc;
 
@@ -68,13 +68,14 @@ pub fn di_factory() -> DiC {
     let rest_di = RestDiC::new(logger.clone(), ua_di.user_authenticates_with_token_uc);
 
     let api_di = ApiDiC::new(
+        "/api/v1".to_string(),
         rest_di.request_transformer,
         rest_di.bearer_authenticator,
         ua_di.anonymous_registers_handler,
-        ua_di.user_logins_with_password_handler,
-        ua_di.user_registers_with_password_handler,
         ua_di.anonymous_requests_restore_token_handler,
         ua_di.anonymous_with_token_changes_password_handler,
+        ua_di.user_logins_with_password_handler,
+        ua_di.user_registers_with_password_handler,
         rest_di.error_pre_handler,
     );
 

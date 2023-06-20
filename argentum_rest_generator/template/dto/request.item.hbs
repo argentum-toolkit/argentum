@@ -1,23 +1,25 @@
-use argentum_rest_infrastructure::data_type::{AuthHeaderParams, EmptyPathParams, HttpParams};
+use argentum_rest_infrastructure::data_type::HttpRequest;
+use crate::dto::schema::{{ operation.id }}Params;
+use {{operation.request.body_schema}};
 
-pub struct {{ operation.id }}Params {
-    pub path: EmptyPathParams,
-    pub headers: AuthHeaderParams,
+pub struct {{ operation.id }}Request {
+    pub body: {{trim_mod operation.request.body_schema}},
+    pub params: {{ operation.id }}Params,
 }
 
-impl HttpParams for {{ operation.id }}Params {
-    type Path = EmptyPathParams;
-    type Headers = AuthHeaderParams;
+impl HttpRequest for {{ operation.id }}Request {
+    type Body = {{trim_mod operation.request.body_schema}};
+    type Params = {{ operation.id }}Params;
 
-    fn new(path: Self::Path, headers: Self::Headers) -> Self {
-        Self { path, headers }
+    fn new(body: {{trim_mod operation.request.body_schema}}, params: {{ operation.id }}Params) -> Self {
+        Self { body, params }
     }
 
-    fn path(&self) -> &Self::Path {
-        &self.path
+    fn body(&self) -> &Self::Body {
+        &self.body
     }
 
-    fn headers(&self) -> &Self::Headers {
-        &self.headers
+    fn params(&self) -> &Self::Params {
+        &self.params
     }
 }

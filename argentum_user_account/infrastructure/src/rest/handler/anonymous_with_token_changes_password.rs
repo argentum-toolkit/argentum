@@ -1,7 +1,7 @@
-use crate::api::dto::request::{
+use argentum_user_account_rest::dto::request::{
     AnonymousWithTokenChangesPasswordRequest,
 };
-use crate::api::server::handler::{
+use argentum_user_account_rest::server::handler::{
     AnonymousWithTokenChangesPasswordTrait,
 };
 use crate::rest::transformer::{ DtoToAnonymousWithTokenChangesPasswordParams};

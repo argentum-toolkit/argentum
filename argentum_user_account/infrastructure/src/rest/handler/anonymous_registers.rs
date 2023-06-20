@@ -1,10 +1,10 @@
-use crate::api::server::handler::AnonymousRegistersTrait;
 use argentum_rest_infrastructure::data_type::error::{HttpError, InternalServerError};
 use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_api::models::AnonymousRegistrationResult;
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
+use argentum_user_account_rest::server::handler::AnonymousRegistersTrait;
 use hyper::StatusCode;
 use std::sync::Arc;
 

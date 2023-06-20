@@ -1,4 +1,9 @@
-use argentum_rest_infrastructure::data_type::{AuthHeaderParams, EmptyPathParams, HttpParams};
+{{~#if operation.request.security ~}}
+    use argentum_rest_infrastructure::data_type::AuthHeaderParams;
+{{/if}}
+{{~#if operation.request ~}}
+    use argentum_rest_infrastructure::data_type::{EmptyPathParams, HttpParams};
+{{/if}}
 
 pub struct {{ operation.id }}Params {
     pub path: EmptyPathParams,

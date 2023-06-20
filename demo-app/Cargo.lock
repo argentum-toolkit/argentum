@@ -191,6 +191,7 @@ dependencies = [
  "argentum_standard_infrastructure",
  "argentum_user_account_api",
  "argentum_user_account_business",
+ "argentum_user_account_rest",
  "argentum_user_business",
  "async-trait",
  "chrono",
@@ -203,6 +204,17 @@ dependencies = [
  "serde",
  "serde_json",
  "uuid",
+]
+
+[[package]]
+name = "argentum_user_account_rest"
+version = "0.1.0-dev"
+dependencies = [
+ "argentum_rest_infrastructure",
+ "argentum_user_account_api",
+ "argentum_user_business",
+ "async-trait",
+ "hyper 1.0.0-rc.3",
 ]
 
 [[package]]

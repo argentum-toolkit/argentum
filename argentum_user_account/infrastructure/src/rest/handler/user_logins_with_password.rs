@@ -1,5 +1,3 @@
-use crate::api::dto::request::UserLoginsWithPasswordRequest;
-use crate::api::server::handler::UserLoginsWithPasswordTrait;
 use crate::rest::transformer::DtoToUserLoginsWithPasswordParams;
 use argentum_rest_infrastructure::data_type::error::{
     HttpError, InternalServerError, Unauthorized,
@@ -10,6 +8,8 @@ use argentum_user_account_api::models::LoginResult;
 use argentum_user_account_business::use_case::user_logins_with_password::{
     LoginError, UserLoginsWithPasswordUc,
 };
+use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
+use argentum_user_account_rest::server::handler::UserLoginsWithPasswordTrait;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
 use std::sync::Arc;

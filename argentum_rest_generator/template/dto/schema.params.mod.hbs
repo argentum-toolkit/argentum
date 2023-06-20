@@ -1,7 +1,11 @@
 {{#each operations as |operation|}}
+{{~#if operation.request}}
 mod {{snake operation.id}}_params;
+{{~/if}}
 {{/each}}
 
 {{#each operations as |operation|}}
+{{~#if operation.request}}
 pub use {{snake operation.id}}_params::{{operation.id}}Params;
+{{~/if}}
 {{/each}}

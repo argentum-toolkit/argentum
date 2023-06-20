@@ -1,4 +1,4 @@
-use crate::api::server::UserAccountPreHandler;
+use crate::server::UserAccountPreHandler;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, Router};
@@ -45,7 +45,7 @@ impl Router for UserAccountRouter {
                 {{~/each~}}
             ] => match *req.method() {
                 {{#each path.operations }}
-                    {{@key}} => self.{{snake this.id}}().await,
+                    {{@key}} => self.pre_handler.{{snake this.id}}({{#if this.request}}req{{/if}}).await,
                 {{/each}}
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },

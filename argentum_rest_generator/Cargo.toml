@@ -18,4 +18,3 @@ serde = "1.0.*"
 serde_json = "1.0.*"
 
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
-argentum_user_account_infrastructure = { path = "../argentum_user_account/infrastructure" }

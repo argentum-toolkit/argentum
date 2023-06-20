@@ -21,6 +21,7 @@ argentum_standard_business = { path = "../../argentum_standard/business" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }
 argentum_user_account_api = { path = "../api" }
 argentum_user_account_business = { path = "../business" }
+argentum_user_account_rest = { path = "../rest" }
 argentum_user_business = { path = "../../argentum_user/business" }
 
 chrono = { version = "0.4.19", features = ["serde"] }

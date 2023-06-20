@@ -1,6 +1,9 @@
-use crate::description::{Operation, Path};
-use crate::generator::server::{HandlerGenerator, PreHandlerGenerator, RouterGenerator};
-use crate::generator::{DtoGenerator, RequestGenerator, SchemaParamsGenerator};
+use crate::description::{Operation, Path, Request};
+use crate::generator::dto::{DtoGenerator, RequestGenerator, SchemaParamsGenerator};
+use crate::generator::server::{
+    HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
+};
+use crate::generator::{CargoTomlGenerator, DiGenerator, LibGenerator};
 use crate::template::Renderer;
 use convert_case::{Case, Casing};
 use handlebars::{handlebars_helper, Handlebars};
@@ -14,6 +17,9 @@ pub(crate) mod generator;
 pub(crate) mod template;
 
 handlebars_helper!(snake_helper: |s: String| s.to_case(Case::Snake));
+handlebars_helper!(trim_mod_name: |s: String| {
+    s.split("::").last()
+});
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut reg = Handlebars::new();
@@ -49,11 +55,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     reg.register_template_file("server/router", "template/server/router.hbs")
         .unwrap();
 
+    reg.register_template_file("server/mod", "template/server/mod.hbs")
+        .unwrap();
+
+    reg.register_template_file("di", "template/di.hbs").unwrap();
+    reg.register_template_file("lib", "template/lib.hbs")
+        .unwrap();
+    reg.register_template_file("cargo.toml", "template/cargo.toml.hbs")
+        .unwrap();
+
     reg.register_helper("snake", Box::new(snake_helper));
+    reg.register_helper("trim_mod", Box::new(trim_mod_name));
 
     //services
     let renderer = Arc::new(Renderer::new(
-        "../argentum_user_account/api-gen",
+        "../argentum_user_account/rest",
         Arc::new(reg),
     ));
 
@@ -62,15 +78,43 @@ fn main() -> Result<(), Box<dyn Error>> {
     let request_generator = RequestGenerator::new(renderer.clone());
     let handler_generator = HandlerGenerator::new(renderer.clone());
     let pre_handler_generator = PreHandlerGenerator::new(renderer.clone());
-    let router_generator = RouterGenerator::new(renderer);
+    let router_generator = RouterGenerator::new(renderer.clone());
+    let server_generator = ServerGenerator::new(renderer.clone());
+    let di_generator = DiGenerator::new(renderer.clone());
+    let lib_generator = LibGenerator::new(renderer.clone());
+    let cargo_toml_generator = CargoTomlGenerator::new(renderer);
 
     //data
     let operations = [
-        Operation::new("AnonymousRegisters".to_string(), false, false),
-        Operation::new("AnonymousRequestsRestoreToken".to_string(), true, true),
-        Operation::new("AnonymousWithTokenChangesPassword".to_string(), true, true),
-        Operation::new("UserLoginsWithPassword".to_string(), true, true),
-        Operation::new("UserRegistersWithPassword".to_string(), true, true),
+        Operation::new("AnonymousRegisters".to_string(), None),
+        Operation::new(
+            "AnonymousRequestsRestoreToken".to_string(),
+            Some(Request::new(
+                "argentum_user_account_api::models::RequestRestoreTokenSchema".to_string(),
+                true,
+            )),
+        ),
+        Operation::new(
+            "AnonymousWithTokenChangesPassword".to_string(),
+            Some(Request::new(
+                "argentum_user_account_api::models::ChangePasswordSchema".to_string(),
+                true,
+            )),
+        ),
+        Operation::new(
+            "UserLoginsWithPassword".to_string(),
+            Some(Request::new(
+                "argentum_user_account_api::models::LoginWithPasswordSchema".to_string(),
+                true,
+            )),
+        ),
+        Operation::new(
+            "UserRegistersWithPassword".to_string(),
+            Some(Request::new(
+                "argentum_user_account_api::models::RegistrationWithPasswordSchema".to_string(),
+                true,
+            )),
+        ),
     ];
 
     let paths = [
@@ -78,35 +122,60 @@ fn main() -> Result<(), Box<dyn Error>> {
             "/user/anonymous-register".to_string(),
             HashMap::from([(
                 Method::POST,
-                Operation::new("AnonymousRegisters".to_string(), false, false),
+                Operation::new("AnonymousRegisters".to_string(), None),
             )]),
         ),
         Path::new(
             "/user/restore-password/token-request".to_string(),
             HashMap::from([(
                 Method::POST,
-                Operation::new("AnonymousRequestsRestoreToken".to_string(), true, true),
+                Operation::new(
+                    "AnonymousRequestsRestoreToken".to_string(),
+                    Some(Request::new(
+                        "argentum_user_account_api::models::RequestRestoreTokenSchema".to_string(),
+                        true,
+                    )),
+                ),
             )]),
         ),
         Path::new(
             "/user/restore-password/change-password".to_string(),
             HashMap::from([(
                 Method::POST,
-                Operation::new("AnonymousWithTokenChangesPassword".to_string(), true, true),
+                Operation::new(
+                    "AnonymousWithTokenChangesPassword".to_string(),
+                    Some(Request::new(
+                        "argentum_user_account_api::models::ChangePasswordSchema".to_string(),
+                        true,
+                    )),
+                ),
             )]),
         ),
         Path::new(
             "/user/password-login".to_string(),
             HashMap::from([(
                 Method::POST,
-                Operation::new("UserLoginsWithPassword".to_string(), true, true),
+                Operation::new(
+                    "UserLoginsWithPassword".to_string(),
+                    Some(Request::new(
+                        "argentum_user_account_api::models::LoginWithPasswordSchema".to_string(),
+                        true,
+                    )),
+                ),
             )]),
         ),
         Path::new(
-            "/user/password-login".to_string(),
+            "/user/register".to_string(),
             HashMap::from([(
                 Method::POST,
-                Operation::new("UserRegistersWithPassword".to_string(), true, true),
+                Operation::new(
+                    "UserRegistersWithPassword".to_string(),
+                    Some(Request::new(
+                        "argentum_user_account_api::models::RegistrationWithPasswordSchema"
+                            .to_string(),
+                        true,
+                    )),
+                ),
             )]),
         ),
     ];
@@ -118,6 +187,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     handler_generator.generate(&operations)?;
     pre_handler_generator.generate(&operations)?;
     router_generator.generate(&paths)?;
+    server_generator.generate()?;
+    di_generator.generate(&operations)?;
+    lib_generator.generate()?;
+    cargo_toml_generator.generate()?;
 
     Ok(())
 }

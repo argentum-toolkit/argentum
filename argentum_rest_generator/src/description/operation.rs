@@ -1,17 +1,13 @@
+use crate::description::Request;
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub(crate) struct Operation {
     pub id: String,
-    pub request: bool,
-    //TODO: security should depend on response
-    pub security: bool,
+    pub request: Option<Request>,
 }
 
 impl Operation {
-    pub fn new(id: String, request: bool, security: bool) -> Self {
-        Self {
-            id,
-            request,
-            security,
-        }
+    pub fn new(id: String, request: Option<Request>) -> Self {
+        Self { id, request }
     }
 }

@@ -1,5 +1,3 @@
-use crate::api::dto::request::UserRegistersWithPasswordRequest;
-use crate::api::server::handler::UserRegistersWithPasswordTrait;
 use crate::rest::transformer::DtoToUserRegistersWithPasswordParams;
 use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
 use argentum_rest_infrastructure::data_type::HttpResponse;
@@ -9,6 +7,8 @@ use argentum_user_account_api::models::RegistrationWithPasswordResult;
 use argentum_user_account_business::use_case::user_registers_with_password::{
     RegistrationError, UserRegistersWithPasswordUc,
 };
+use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
+use argentum_user_account_rest::server::handler::UserRegistersWithPasswordTrait;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
 use std::sync::Arc;

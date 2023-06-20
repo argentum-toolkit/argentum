@@ -1,5 +1,3 @@
-use crate::api::dto::request::AnonymousRequestsRestoreTokenRequest;
-use crate::api::server::handler::AnonymousRequestsRestoreTokenTrait;
 use crate::rest::transformer::DtoToAnonymousRequestsRestoreTokenParams;
 use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
@@ -7,6 +5,8 @@ use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_user_account_api::models::EmptyResponse;
 use argentum_user_account_business::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
+use argentum_user_account_rest::dto::request::AnonymousRequestsRestoreTokenRequest;
+use argentum_user_account_rest::server::handler::AnonymousRequestsRestoreTokenTrait;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
 use std::sync::Arc;

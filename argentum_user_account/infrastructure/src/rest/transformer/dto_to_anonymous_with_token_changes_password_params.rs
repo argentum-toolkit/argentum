@@ -1,5 +1,5 @@
-use crate::api::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use argentum_rest_infrastructure::data_type::error::HttpError;
+use argentum_user_account_rest::dto::request::AnonymousWithTokenChangesPasswordRequest;
 
 pub struct DtoToAnonymousWithTokenChangesPasswordParams {}
 

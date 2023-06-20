@@ -1,7 +1,7 @@
-use crate::api::dto::request::AnonymousRequestsRestoreTokenRequest;
 use argentum_rest_infrastructure::data_type::error::{BadRequestError, HttpError};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
+use argentum_user_account_rest::dto::request::AnonymousRequestsRestoreTokenRequest;
 use std::collections::HashMap;
 
 pub struct DtoToAnonymousRequestsRestoreTokenParams {}

@@ -1,7 +1,3 @@
-use crate::api::server::handler::{
-    AnonymousRegistersTrait, AnonymousWithTokenChangesPasswordTrait, UserLoginsWithPasswordTrait,
-    UserRegistersWithPasswordTrait,
-};
 use crate::db_diesel::repository::password_credential_repository::PasswordCredentialRepository;
 use crate::db_diesel::repository::restore_password_token_repository::RestorePasswordTokenRepository;
 use crate::db_diesel::repository::session_repository::SessionRepository;
@@ -22,6 +18,10 @@ use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
 use argentum_user_account_business::di::UserAccountBusinessDiCBuilder;
 use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use argentum_user_account_rest::server::handler::{
+    AnonymousRegistersTrait, AnonymousWithTokenChangesPasswordTrait, UserLoginsWithPasswordTrait,
+    UserRegistersWithPasswordTrait,
+};
 use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,

@@ -23,6 +23,7 @@ argentum_user_business = { path = "../argentum_user/business" }
 argentum_user_infrastructure = { path = "../argentum_user/infrastructure" }
 argentum_user_account_business = { path = "../argentum_user_account/business" }
 argentum_user_account_infrastructure = { path = "../argentum_user_account/infrastructure" }
+argentum_user_account_rest = { path = "../argentum_user_account/rest" }
 argentum_log_business = { path = "../argentum_log/business" }
 argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
 
