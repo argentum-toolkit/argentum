@@ -1,0 +1,11 @@
+mod anonymous_registers_handler;
+mod anonymous_requests_restore_token_handler;
+mod anonymous_with_token_changes_password_handler;
+mod user_logins_with_password_handler;
+mod user_registers_with_password_handler;
+
+pub use anonymous_registers_handler::AnonymousRegistersTrait;
+pub use anonymous_requests_restore_token_handler::AnonymousRequestsRestoreTokenTrait;
+pub use anonymous_with_token_changes_password_handler::AnonymousWithTokenChangesPasswordTrait;
+pub use user_logins_with_password_handler::UserLoginsWithPasswordTrait;
+pub use user_registers_with_password_handler::UserRegistersWithPasswordTrait;

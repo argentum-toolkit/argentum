@@ -5,12 +5,12 @@ use std::fs::File;
 use std::sync::Arc;
 
 pub(crate) struct Renderer {
-    base_output_path: &'static str,
+    base_output_path: String,
     handlebars: Arc<Handlebars<'static>>,
 }
 
 impl Renderer {
-    pub fn new(base_output_path: &'static str, handlebars: Arc<Handlebars<'static>>) -> Self {
+    pub fn new(base_output_path: String, handlebars: Arc<Handlebars<'static>>) -> Self {
         Self {
             base_output_path,
             handlebars,

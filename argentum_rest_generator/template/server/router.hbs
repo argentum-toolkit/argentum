@@ -45,7 +45,7 @@ impl Router for UserAccountRouter {
                 {{~/each~}}
             ] => match *req.method() {
                 {{#each path.operations }}
-                    {{@key}} => self.pre_handler.{{snake this.id}}({{#if this.request}}req{{/if}}).await,
+                    {{@key}} => self.pre_handler.{{snake this.operationId}}({{#if this.requestBody}}req{{/if}}).await,
                 {{/each}}
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },

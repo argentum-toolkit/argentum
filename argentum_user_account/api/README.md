@@ -1,6 +1,6 @@
 # Rust API for argentum_user_account_api
 
-This is demo app
+User Account API
 
 ## Overview
 
@@ -14,7 +14,7 @@ To see how to make this your own, look here:
 [README]((https://openapi-generator.tech))
 
 - API version: 0.1.0-dev
-- Build date: 2023-06-08T00:31:21.547097Z[Etc/UTC]
+- Build date: 2023-07-05T01:42:58.147208Z[Etc/UTC]
 
 For more information, please visit [https://gitlab.com/argentum-toolkit/argentum](https://gitlab.com/argentum-toolkit/argentum)
 
@@ -95,11 +95,11 @@ All URIs are relative to *http://localhost:8082/api/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**anonymousRegisters**](docs/anonymous_api.md#anonymousRegisters) | **POST** /user/anonymous-register | Anonymous registers
-[**changePasswordWithToken**](docs/user_account_api.md#changePasswordWithToken) | **POST** /user/restore-password/change-password | User with token changes his password
-[**loginWithPassword**](docs/user_account_api.md#loginWithPassword) | **POST** /user/password-login | Login as an user
-[**registerWithPassword**](docs/user_account_api.md#registerWithPassword) | **POST** /user/register | User registers with password
-[**requestRestoreToken**](docs/user_account_api.md#requestRestoreToken) | **POST** /user/restore-password/token-request | Anonymous requests restore password token
+[**AnonymousRegisters**](docs/anonymous_api.md#AnonymousRegisters) | **POST** /user/anonymous-register | Anonymous registers
+[**AnonymousRequestsRestoreToken**](docs/user_account_api.md#AnonymousRequestsRestoreToken) | **POST** /user/restore-password/token-request | Anonymous requests restore password token
+[**AnonymousWithTokenChangesPassword**](docs/user_account_api.md#AnonymousWithTokenChangesPassword) | **POST** /user/restore-password/change-password | User with token changes his password
+[**UserLoginsWithPassword**](docs/user_account_api.md#UserLoginsWithPassword) | **POST** /user/password-login | Login as an user
+[**UserRegistersWithPassword**](docs/user_account_api.md#UserRegistersWithPassword) | **POST** /user/register | User registers with password
 
 
 ## Documentation For Models

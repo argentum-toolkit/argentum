@@ -1,0 +1,3 @@
+= Argentum ToolKit OpenAPI. Infrastructure layer.
+
+This package contains structs with OpenAPI YAML mapping.

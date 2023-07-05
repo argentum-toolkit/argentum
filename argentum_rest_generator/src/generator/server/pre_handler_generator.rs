@@ -1,5 +1,5 @@
-use crate::description::Operation;
 use crate::template::Renderer;
+use argentum_openapi_infrastructure::data_type::SpecificationRoot;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
@@ -16,10 +16,11 @@ impl PreHandlerGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self, operations: &[Operation]) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+        let operations = spec.operations();
         let data = HashMap::from([("operations", operations)]);
 
-        self.renderer.render(TEMPLATE, &data, PATH)?;
+        self.renderer.render(TEMPLATE, data, PATH)?;
 
         Ok(())
     }

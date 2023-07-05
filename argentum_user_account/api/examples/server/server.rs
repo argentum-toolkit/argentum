@@ -100,8 +100,9 @@ impl<C> Server<C> {
 
 use argentum_user_account_api::server::MakeService;
 use argentum_user_account_api::{
-    AnonymousRegistersResponse, Api, ChangePasswordWithTokenResponse, LoginWithPasswordResponse,
-    RegisterWithPasswordResponse, RequestRestoreTokenResponse,
+    AnonymousRegistersResponse, AnonymousRequestsRestoreTokenResponse,
+    AnonymousWithTokenChangesPasswordResponse, Api, UserLoginsWithPasswordResponse,
+    UserRegistersWithPasswordResponse,
 };
 use std::error::Error;
 use swagger::ApiError;
@@ -114,27 +115,40 @@ where
     /// Anonymous registers
     async fn anonymous_registers(
         &self,
-        body: Option<serde_json::Value>,
         context: &C,
     ) -> Result<AnonymousRegistersResponse, ApiError> {
         let context = context.clone();
         info!(
-            "anonymous_registers({:?}) - X-Span-ID: {:?}",
-            body,
+            "anonymous_registers() - X-Span-ID: {:?}",
+            context.get().0.clone()
+        );
+        Err(ApiError("Generic failure".into()))
+    }
+
+    /// Anonymous requests restore password token
+    async fn anonymous_requests_restore_token(
+        &self,
+        request_restore_token_schema: models::RequestRestoreTokenSchema,
+        context: &C,
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError> {
+        let context = context.clone();
+        info!(
+            "anonymous_requests_restore_token({:?}) - X-Span-ID: {:?}",
+            request_restore_token_schema,
             context.get().0.clone()
         );
         Err(ApiError("Generic failure".into()))
     }
 
     /// User with token changes his password
-    async fn change_password_with_token(
+    async fn anonymous_with_token_changes_password(
         &self,
         change_password_schema: models::ChangePasswordSchema,
         context: &C,
-    ) -> Result<ChangePasswordWithTokenResponse, ApiError> {
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError> {
         let context = context.clone();
         info!(
-            "change_password_with_token({:?}) - X-Span-ID: {:?}",
+            "anonymous_with_token_changes_password({:?}) - X-Span-ID: {:?}",
             change_password_schema,
             context.get().0.clone()
         );
@@ -142,14 +156,14 @@ where
     }
 
     /// Login as an user
-    async fn login_with_password(
+    async fn user_logins_with_password(
         &self,
         login_with_password_schema: models::LoginWithPasswordSchema,
         context: &C,
-    ) -> Result<LoginWithPasswordResponse, ApiError> {
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError> {
         let context = context.clone();
         info!(
-            "login_with_password({:?}) - X-Span-ID: {:?}",
+            "user_logins_with_password({:?}) - X-Span-ID: {:?}",
             login_with_password_schema,
             context.get().0.clone()
         );
@@ -157,30 +171,15 @@ where
     }
 
     /// User registers with password
-    async fn register_with_password(
+    async fn user_registers_with_password(
         &self,
         registration_with_password_schema: models::RegistrationWithPasswordSchema,
         context: &C,
-    ) -> Result<RegisterWithPasswordResponse, ApiError> {
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError> {
         let context = context.clone();
         info!(
-            "register_with_password({:?}) - X-Span-ID: {:?}",
+            "user_registers_with_password({:?}) - X-Span-ID: {:?}",
             registration_with_password_schema,
-            context.get().0.clone()
-        );
-        Err(ApiError("Generic failure".into()))
-    }
-
-    /// Anonymous requests restore password token
-    async fn request_restore_token(
-        &self,
-        request_restore_token_schema: models::RequestRestoreTokenSchema,
-        context: &C,
-    ) -> Result<RequestRestoreTokenResponse, ApiError> {
-        let context = context.clone();
-        info!(
-            "request_restore_token({:?}) - X-Span-ID: {:?}",
-            request_restore_token_schema,
             context.get().0.clone()
         );
         Err(ApiError("Generic failure".into()))

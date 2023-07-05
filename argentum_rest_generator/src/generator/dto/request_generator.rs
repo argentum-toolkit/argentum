@@ -1,9 +1,19 @@
-use crate::description::Operation;
 use crate::template::Renderer;
+use argentum_openapi_infrastructure::data_type::{
+    Operation, RefOrObject, RequestBody, SpecificationRoot,
+};
 use convert_case::{Case, Casing};
+use serde::Serialize;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Data<'a> {
+    operation: &'a Operation,
+    body_schema: String,
+}
 
 pub(crate) struct RequestGenerator {
     renderer: Arc<Renderer>,
@@ -18,13 +28,51 @@ impl RequestGenerator {
         Self { renderer }
     }
 
-    fn generate_item(&self, operation: &Operation) -> Result<(), Box<dyn Error>> {
+    fn generate_item(
+        &self,
+        operation: &Operation,
+        request_body: RequestBody,
+    ) -> Result<(), Box<dyn Error>> {
         let file_path = format!(
             "/src/dto/request/{}_request.rs",
-            operation.id.to_case(Case::Snake)
+            operation.operation_id.to_case(Case::Snake)
         );
 
-        let data = HashMap::from([("operation", operation)]);
+        // let mut data = BTreeMap::new();
+        // data.insert("operation", operation);
+        // data.insert("request_body", request_body);
+
+        //TODO: support other mime types
+        let body = request_body
+            .content
+            .get("application/json")
+            .expect("Request body should contain `application/json` mime type");
+
+        let schema = match &body.schema {
+            RefOrObject::Ref(r) => r
+                .reference
+                .clone()
+                .split('/')
+                .last()
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                        r.reference
+                    )
+                })
+                .to_string(),
+            RefOrObject::Object(o) => o.obj_type.clone(),
+        };
+
+        //TODO: user real path. Don't use hardcoded argentum_user_account_api
+        let body_schema = format!("argentum_user_account_api::models::{}", schema);
+
+        let data = Data {
+            operation,
+            body_schema,
+        };
+
+        // let data = HashMap::from([("operation", operation), ("request_body", request_body)]);
 
         self.renderer
             .render(ITEM_TEMPLATE, &data, file_path.as_str())?;
@@ -32,18 +80,58 @@ impl RequestGenerator {
         Ok(())
     }
 
-    fn generate_mod(&self, operations: &[Operation]) -> Result<(), Box<dyn Error>> {
+    fn generate_mod(&self, operations: Vec<Operation>) -> Result<(), Box<dyn Error>> {
         let data = HashMap::from([("operations", operations)]);
 
-        self.renderer.render(MOD_TEMPLATE, &data, MOD_PATH)
+        self.renderer.render(MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(&self, operations: &[Operation]) -> Result<(), Box<dyn Error>> {
-        self.generate_mod(operations)?;
+    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+        let operations = spec.operations();
+
+        self.generate_mod(operations.clone())?;
 
         for operation in operations.into_iter() {
-            if operation.request.is_some() {
-                self.generate_item(operation)?;
+            if operation.request_body.is_some() {
+                let request_body = match operation.clone().request_body.unwrap() {
+                    RefOrObject::Ref(r) => {
+                        let parts = r.reference.split("#/").collect::<Vec<_>>();
+
+                        if parts.clone().len() != 2 {
+                            panic!("Wrong format of reference {}", r.reference)
+                        }
+
+                        let file_path = parts.first().unwrap_or_else(|| {
+                            panic!("Wrong file path of reference {}", r.reference)
+                        });
+
+                        let component_path = parts.last().unwrap_or_else(|| {
+                            panic!("Wrong component path of reference {}", r.reference)
+                        });
+
+                        let component_parts = component_path.split('/').collect::<Vec<_>>();
+
+                        if component_parts.clone().len() != 3
+                            || component_parts[0] != "components"
+                            || component_parts[1] != "requestBodies"
+                        {
+                            panic!(
+                                "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
+                                component_path
+                            )
+                        }
+
+                        let component_name = component_parts.last().unwrap_or_else(|| panic!(
+                            "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
+                            component_path
+                        ));
+
+                        spec.components.request_bodies[&component_name.to_string()].clone()
+                    }
+                    RefOrObject::Object(request_body) => request_body,
+                };
+
+                self.generate_item(&operation, request_body)?;
             }
         }
 

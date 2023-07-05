@@ -42,8 +42,9 @@ const FRAGMENT_ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
 const ID_ENCODE_SET: &AsciiSet = &FRAGMENT_ENCODE_SET.add(b'|');
 
 use crate::{
-    AnonymousRegistersResponse, Api, ChangePasswordWithTokenResponse, LoginWithPasswordResponse,
-    RegisterWithPasswordResponse, RequestRestoreTokenResponse,
+    AnonymousRegistersResponse, AnonymousRequestsRestoreTokenResponse,
+    AnonymousWithTokenChangesPasswordResponse, Api, UserLoginsWithPasswordResponse,
+    UserRegistersWithPasswordResponse,
 };
 
 /// Convert input into a base path, e.g. "http://example:123". Also checks the scheme as it goes.
@@ -392,7 +393,6 @@ where
 
     async fn anonymous_registers(
         &self,
-        param_body: Option<serde_json::Value>,
         context: &C,
     ) -> Result<AnonymousRegistersResponse, ApiError> {
         let mut client_service = self.client_service.clone();
@@ -421,28 +421,6 @@ where
             Ok(req) => req,
             Err(e) => return Err(ApiError(format!("Unable to create request: {}", e))),
         };
-
-        // Body parameter
-        let body = param_body
-            .map(|ref body| serde_json::to_string(body).expect("impossible to fail to serialize"));
-
-        if let Some(body) = body {
-            *request.body_mut() = Body::from(body);
-        }
-
-        let header = "application/json";
-        request.headers_mut().insert(
-            CONTENT_TYPE,
-            match HeaderValue::from_str(header) {
-                Ok(h) => h,
-                Err(e) => {
-                    return Err(ApiError(format!(
-                        "Unable to create header: {} - {}",
-                        header, e
-                    )))
-                }
-            },
-        );
 
         let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
         request.headers_mut().insert(
@@ -523,11 +501,166 @@ where
         }
     }
 
-    async fn change_password_with_token(
+    async fn anonymous_requests_restore_token(
+        &self,
+        param_request_restore_token_schema: models::RequestRestoreTokenSchema,
+        context: &C,
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError> {
+        let mut client_service = self.client_service.clone();
+        let mut uri = format!(
+            "{}/api/v1/user/restore-password/token-request",
+            self.base_path
+        );
+
+        // Query parameters
+        let query_string = {
+            let mut query_string = form_urlencoded::Serializer::new("".to_owned());
+            query_string.finish()
+        };
+        if !query_string.is_empty() {
+            uri += "?";
+            uri += &query_string;
+        }
+
+        let uri = match Uri::from_str(&uri) {
+            Ok(uri) => uri,
+            Err(err) => return Err(ApiError(format!("Unable to build URI: {}", err))),
+        };
+
+        let mut request = match Request::builder()
+            .method("POST")
+            .uri(uri)
+            .body(Body::empty())
+        {
+            Ok(req) => req,
+            Err(e) => return Err(ApiError(format!("Unable to create request: {}", e))),
+        };
+
+        // Body parameter
+        let body = serde_json::to_string(&param_request_restore_token_schema)
+            .expect("impossible to fail to serialize");
+        *request.body_mut() = Body::from(body);
+
+        let header = "application/json";
+        request.headers_mut().insert(
+            CONTENT_TYPE,
+            match HeaderValue::from_str(header) {
+                Ok(h) => h,
+                Err(e) => {
+                    return Err(ApiError(format!(
+                        "Unable to create header: {} - {}",
+                        header, e
+                    )))
+                }
+            },
+        );
+        let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
+        request.headers_mut().insert(
+            HeaderName::from_static("x-span-id"),
+            match header {
+                Ok(h) => h,
+                Err(e) => {
+                    return Err(ApiError(format!(
+                        "Unable to create X-Span ID header value: {}",
+                        e
+                    )))
+                }
+            },
+        );
+
+        #[allow(clippy::collapsible_match)]
+        if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
+            // Currently only authentication with Basic and Bearer are supported
+            #[allow(clippy::single_match, clippy::match_single_binding)]
+            match auth_data {
+                &AuthData::Bearer(ref bearer_header) => {
+                    let auth = swagger::auth::Header(bearer_header.clone());
+                    let header = match HeaderValue::from_str(&format!("{}", auth)) {
+                        Ok(h) => h,
+                        Err(e) => {
+                            return Err(ApiError(format!(
+                                "Unable to create Authorization header: {}",
+                                e
+                            )))
+                        }
+                    };
+                    request
+                        .headers_mut()
+                        .insert(hyper::header::AUTHORIZATION, header);
+                }
+                _ => {}
+            }
+        }
+
+        let response = client_service
+            .call((request, context.clone()))
+            .map_err(|e| ApiError(format!("No response received: {}", e)))
+            .await?;
+
+        match response.status().as_u16() {
+            200 => {
+                let body = response.into_body();
+                let body = body
+                    .into_raw()
+                    .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
+                    .await?;
+                let body = str::from_utf8(&body)
+                    .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
+                let body = serde_json::from_str::<serde_json::Value>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
+                Ok(AnonymousRequestsRestoreTokenResponse::OK(body))
+            }
+            400 => {
+                let body = response.into_body();
+                let body = body
+                    .into_raw()
+                    .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
+                    .await?;
+                let body = str::from_utf8(&body)
+                    .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
+                Ok(AnonymousRequestsRestoreTokenResponse::BadRequest(body))
+            }
+            401 => {
+                let body = response.into_body();
+                let body = body
+                    .into_raw()
+                    .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
+                    .await?;
+                let body = str::from_utf8(&body)
+                    .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
+                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
+                    ApiError(format!("Response body did not match the schema: {}", e))
+                })?;
+                Ok(AnonymousRequestsRestoreTokenResponse::Unauthorized(body))
+            }
+            code => {
+                let headers = response.headers().clone();
+                let body = response.into_body().take(100).into_raw().await;
+                Err(ApiError(format!(
+                    "Unexpected response code {}:\n{:?}\n\n{}",
+                    code,
+                    headers,
+                    match body {
+                        Ok(body) => match String::from_utf8(body) {
+                            Ok(body) => body,
+                            Err(e) => format!("<Body was not UTF8: {:?}>", e),
+                        },
+                        Err(e) => format!("<Failed to read body: {}>", e),
+                    }
+                )))
+            }
+        }
+    }
+
+    async fn anonymous_with_token_changes_password(
         &self,
         param_change_password_schema: models::ChangePasswordSchema,
         context: &C,
-    ) -> Result<ChangePasswordWithTokenResponse, ApiError> {
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError> {
         let mut client_service = self.client_service.clone();
         let mut uri = format!(
             "{}/api/v1/user/restore-password/change-password",
@@ -558,7 +691,6 @@ where
             Err(e) => return Err(ApiError(format!("Unable to create request: {}", e))),
         };
 
-        // Body parameter
         let body = serde_json::to_string(&param_change_password_schema)
             .expect("impossible to fail to serialize");
         *request.body_mut() = Body::from(body);
@@ -631,7 +763,7 @@ where
                 let body = serde_json::from_str::<serde_json::Value>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(ChangePasswordWithTokenResponse::OK(body))
+                Ok(AnonymousWithTokenChangesPasswordResponse::OK(body))
             }
             400 => {
                 let body = response.into_body();
@@ -644,7 +776,7 @@ where
                 let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(ChangePasswordWithTokenResponse::BadRequest(body))
+                Ok(AnonymousWithTokenChangesPasswordResponse::BadRequest(body))
             }
             401 => {
                 let body = response.into_body();
@@ -657,7 +789,9 @@ where
                 let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(ChangePasswordWithTokenResponse::Unauthorized(body))
+                Ok(AnonymousWithTokenChangesPasswordResponse::Unauthorized(
+                    body,
+                ))
             }
             code => {
                 let headers = response.headers().clone();
@@ -678,11 +812,11 @@ where
         }
     }
 
-    async fn login_with_password(
+    async fn user_logins_with_password(
         &self,
         param_login_with_password_schema: models::LoginWithPasswordSchema,
         context: &C,
-    ) -> Result<LoginWithPasswordResponse, ApiError> {
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError> {
         let mut client_service = self.client_service.clone();
         let mut uri = format!("{}/api/v1/user/password-login", self.base_path);
 
@@ -782,7 +916,7 @@ where
                 let body = serde_json::from_str::<models::LoginResult>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(LoginWithPasswordResponse::OK(body))
+                Ok(UserLoginsWithPasswordResponse::OK(body))
             }
             400 => {
                 let body = response.into_body();
@@ -795,7 +929,7 @@ where
                 let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(LoginWithPasswordResponse::BadRequest(body))
+                Ok(UserLoginsWithPasswordResponse::BadRequest(body))
             }
             401 => {
                 let body = response.into_body();
@@ -808,7 +942,7 @@ where
                 let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(LoginWithPasswordResponse::Unauthorized(body))
+                Ok(UserLoginsWithPasswordResponse::Unauthorized(body))
             }
             code => {
                 let headers = response.headers().clone();
@@ -829,11 +963,11 @@ where
         }
     }
 
-    async fn register_with_password(
+    async fn user_registers_with_password(
         &self,
         param_registration_with_password_schema: models::RegistrationWithPasswordSchema,
         context: &C,
-    ) -> Result<RegisterWithPasswordResponse, ApiError> {
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError> {
         let mut client_service = self.client_service.clone();
         let mut uri = format!("{}/api/v1/user/register", self.base_path);
 
@@ -863,6 +997,7 @@ where
 
         let body = serde_json::to_string(&param_registration_with_password_schema)
             .expect("impossible to fail to serialize");
+
         *request.body_mut() = Body::from(body);
 
         let header = "application/json";
@@ -878,6 +1013,7 @@ where
                 }
             },
         );
+
         let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
         request.headers_mut().insert(
             HeaderName::from_static("x-span-id"),
@@ -934,7 +1070,7 @@ where
                     .map_err(|e| {
                         ApiError(format!("Response body did not match the schema: {}", e))
                     })?;
-                Ok(RegisterWithPasswordResponse::Created(body))
+                Ok(UserRegistersWithPasswordResponse::Created(body))
             }
             400 => {
                 let body = response.into_body();
@@ -947,7 +1083,7 @@ where
                 let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(RegisterWithPasswordResponse::BadRequest(body))
+                Ok(UserRegistersWithPasswordResponse::BadRequest(body))
             }
             422 => {
                 let body = response.into_body();
@@ -960,163 +1096,7 @@ where
                 let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
                     ApiError(format!("Response body did not match the schema: {}", e))
                 })?;
-                Ok(RegisterWithPasswordResponse::UnprocessableEntity(body))
-            }
-            code => {
-                let headers = response.headers().clone();
-                let body = response.into_body().take(100).into_raw().await;
-                Err(ApiError(format!(
-                    "Unexpected response code {}:\n{:?}\n\n{}",
-                    code,
-                    headers,
-                    match body {
-                        Ok(body) => match String::from_utf8(body) {
-                            Ok(body) => body,
-                            Err(e) => format!("<Body was not UTF8: {:?}>", e),
-                        },
-                        Err(e) => format!("<Failed to read body: {}>", e),
-                    }
-                )))
-            }
-        }
-    }
-
-    async fn request_restore_token(
-        &self,
-        param_request_restore_token_schema: models::RequestRestoreTokenSchema,
-        context: &C,
-    ) -> Result<RequestRestoreTokenResponse, ApiError> {
-        let mut client_service = self.client_service.clone();
-        let mut uri = format!(
-            "{}/api/v1/user/restore-password/token-request",
-            self.base_path
-        );
-
-        // Query parameters
-        let query_string = {
-            let mut query_string = form_urlencoded::Serializer::new("".to_owned());
-            query_string.finish()
-        };
-        if !query_string.is_empty() {
-            uri += "?";
-            uri += &query_string;
-        }
-
-        let uri = match Uri::from_str(&uri) {
-            Ok(uri) => uri,
-            Err(err) => return Err(ApiError(format!("Unable to build URI: {}", err))),
-        };
-
-        let mut request = match Request::builder()
-            .method("POST")
-            .uri(uri)
-            .body(Body::empty())
-        {
-            Ok(req) => req,
-            Err(e) => return Err(ApiError(format!("Unable to create request: {}", e))),
-        };
-
-        let body = serde_json::to_string(&param_request_restore_token_schema)
-            .expect("impossible to fail to serialize");
-
-        *request.body_mut() = Body::from(body);
-
-        let header = "application/json";
-        request.headers_mut().insert(
-            CONTENT_TYPE,
-            match HeaderValue::from_str(header) {
-                Ok(h) => h,
-                Err(e) => {
-                    return Err(ApiError(format!(
-                        "Unable to create header: {} - {}",
-                        header, e
-                    )))
-                }
-            },
-        );
-
-        let header = HeaderValue::from_str(Has::<XSpanIdString>::get(context).0.as_str());
-        request.headers_mut().insert(
-            HeaderName::from_static("x-span-id"),
-            match header {
-                Ok(h) => h,
-                Err(e) => {
-                    return Err(ApiError(format!(
-                        "Unable to create X-Span ID header value: {}",
-                        e
-                    )))
-                }
-            },
-        );
-
-        #[allow(clippy::collapsible_match)]
-        if let Some(auth_data) = Has::<Option<AuthData>>::get(context).as_ref() {
-            // Currently only authentication with Basic and Bearer are supported
-            #[allow(clippy::single_match, clippy::match_single_binding)]
-            match auth_data {
-                &AuthData::Bearer(ref bearer_header) => {
-                    let auth = swagger::auth::Header(bearer_header.clone());
-                    let header = match HeaderValue::from_str(&format!("{}", auth)) {
-                        Ok(h) => h,
-                        Err(e) => {
-                            return Err(ApiError(format!(
-                                "Unable to create Authorization header: {}",
-                                e
-                            )))
-                        }
-                    };
-                    request
-                        .headers_mut()
-                        .insert(hyper::header::AUTHORIZATION, header);
-                }
-                _ => {}
-            }
-        }
-
-        let response = client_service
-            .call((request, context.clone()))
-            .map_err(|e| ApiError(format!("No response received: {}", e)))
-            .await?;
-
-        match response.status().as_u16() {
-            200 => {
-                let body = response.into_body();
-                let body = body
-                    .into_raw()
-                    .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
-                    .await?;
-                let body = str::from_utf8(&body)
-                    .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<serde_json::Value>(body).map_err(|e| {
-                    ApiError(format!("Response body did not match the schema: {}", e))
-                })?;
-                Ok(RequestRestoreTokenResponse::OK(body))
-            }
-            400 => {
-                let body = response.into_body();
-                let body = body
-                    .into_raw()
-                    .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
-                    .await?;
-                let body = str::from_utf8(&body)
-                    .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
-                    ApiError(format!("Response body did not match the schema: {}", e))
-                })?;
-                Ok(RequestRestoreTokenResponse::BadRequest(body))
-            }
-            401 => {
-                let body = response.into_body();
-                let body = body
-                    .into_raw()
-                    .map_err(|e| ApiError(format!("Failed to read response: {}", e)))
-                    .await?;
-                let body = str::from_utf8(&body)
-                    .map_err(|e| ApiError(format!("Response was not valid UTF8: {}", e)))?;
-                let body = serde_json::from_str::<models::ProblemDetail>(body).map_err(|e| {
-                    ApiError(format!("Response body did not match the schema: {}", e))
-                })?;
-                Ok(RequestRestoreTokenResponse::Unauthorized(body))
+                Ok(UserRegistersWithPasswordResponse::UnprocessableEntity(body))
             }
             code => {
                 let headers = response.headers().clone();

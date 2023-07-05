@@ -17,7 +17,7 @@ impl CargoTomlGenerator {
     pub fn generate(&self) -> Result<(), Box<dyn Error>> {
         let data = "";
 
-        self.renderer.render(TEMPLATE, &data, PATH)?;
+        self.renderer.render(TEMPLATE, data, PATH)?;
 
         Ok(())
     }

@@ -1,11 +1,11 @@
 {{#each operations as |operation|}}
-{{~#if operation.request~}}
-mod {{snake operation.id}}_request;
+{{~#if operation.requestBody~}}
+mod {{snake operation.operationId}}_request;
 {{/if}}
 {{/each}}
 
 {{#each operations as |operation|}}
-{{~#if operation.request~}}
-pub use {{snake operation.id}}_request::{{operation.id}}Request;
+{{~#if operation.requestBody~}}
+pub use {{snake operation.operationId}}_request::{{operation.operationId}}Request;
 {{/if}}
 {{/each}}

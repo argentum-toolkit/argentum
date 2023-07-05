@@ -44,8 +44,6 @@ paths:
       tags:
         - anonymous
       operationId: AnonymousRegisters
-      requestBody:
-        $ref: "../../argentum_standard/api-doc/request.oas.yaml#/components/requestBodies/Empty"
       responses:
         '201':
           $ref: "./response.oas.yaml#/components/responses/AnonymousRegisteredSuccessfully"

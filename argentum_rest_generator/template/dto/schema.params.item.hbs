@@ -1,18 +1,18 @@
-{{~#if operation.request.security ~}}
+{{~#if operation.security ~}}
     use argentum_rest_infrastructure::data_type::AuthHeaderParams;
+{{else}}
+    use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
 {{/if}}
-{{~#if operation.request ~}}
-    use argentum_rest_infrastructure::data_type::{EmptyPathParams, HttpParams};
-{{/if}}
+use argentum_rest_infrastructure::data_type::{EmptyPathParams, HttpParams};
 
-pub struct {{ operation.id }}Params {
+pub struct {{ operation.operationId }}Params {
     pub path: EmptyPathParams,
-    pub headers: AuthHeaderParams,
+pub headers: {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}},
 }
 
-impl HttpParams for {{ operation.id }}Params {
+impl HttpParams for {{ operation.operationId }}Params {
     type Path = EmptyPathParams;
-    type Headers = AuthHeaderParams;
+    type Headers = {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}};
 
     fn new(path: Self::Path, headers: Self::Headers) -> Self {
         Self { path, headers }

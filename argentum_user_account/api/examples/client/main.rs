@@ -2,9 +2,9 @@
 
 #[allow(unused_imports)]
 use argentum_user_account_api::{
-    models, AnonymousRegistersResponse, Api, ApiNoContext, ChangePasswordWithTokenResponse, Client,
-    ContextWrapperExt, LoginWithPasswordResponse, RegisterWithPasswordResponse,
-    RequestRestoreTokenResponse,
+    models, AnonymousRegistersResponse, AnonymousRequestsRestoreTokenResponse,
+    AnonymousWithTokenChangesPasswordResponse, Api, ApiNoContext, Client, ContextWrapperExt,
+    UserLoginsWithPasswordResponse, UserRegistersWithPasswordResponse,
 };
 use clap::{App, Arg};
 #[allow(unused_imports)]
@@ -89,7 +89,7 @@ fn main() {
 
     match matches.value_of("operation") {
         Some("AnonymousRegisters") => {
-            let result = rt.block_on(client.anonymous_registers(None));
+            let result = rt.block_on(client.anonymous_registers());
             info!(
                 "{:?} (X-Span-ID: {:?})",
                 result,
@@ -97,32 +97,32 @@ fn main() {
             );
         }
         /* Disabled because there's no example.
-        Some("ChangePasswordWithToken") => {
-            let result = rt.block_on(client.change_password_with_token(
+        Some("AnonymousRequestsRestoreToken") => {
+            let result = rt.block_on(client.anonymous_requests_restore_token(
                   ???
             ));
             info!("{:?} (X-Span-ID: {:?})", result, (client.context() as &dyn Has<XSpanIdString>).get().clone());
         },
         */
         /* Disabled because there's no example.
-        Some("LoginWithPassword") => {
-            let result = rt.block_on(client.login_with_password(
+        Some("AnonymousWithTokenChangesPassword") => {
+            let result = rt.block_on(client.anonymous_with_token_changes_password(
                   ???
             ));
             info!("{:?} (X-Span-ID: {:?})", result, (client.context() as &dyn Has<XSpanIdString>).get().clone());
         },
         */
         /* Disabled because there's no example.
-        Some("RegisterWithPassword") => {
-            let result = rt.block_on(client.register_with_password(
+        Some("UserLoginsWithPassword") => {
+            let result = rt.block_on(client.user_logins_with_password(
                   ???
             ));
             info!("{:?} (X-Span-ID: {:?})", result, (client.context() as &dyn Has<XSpanIdString>).get().clone());
         },
         */
         /* Disabled because there's no example.
-        Some("RequestRestoreToken") => {
-            let result = rt.block_on(client.request_restore_token(
+        Some("UserRegistersWithPassword") => {
+            let result = rt.block_on(client.user_registers_with_password(
                   ???
             ));
             info!("{:?} (X-Span-ID: {:?})", result, (client.context() as &dyn Has<XSpanIdString>).get().clone());

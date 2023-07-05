@@ -2,7 +2,7 @@
 name = "argentum_user_account_api"
 version = "0.1.0-dev"
 authors = ["OpenAPI Generator team and contributors"]
-description = "This is demo app"
+description = "User Account API"
 license = "BSD-3"
 edition = "2018"
 

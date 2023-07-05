@@ -1,5 +1,5 @@
-use crate::description::{Operation, Path};
 use crate::template::Renderer;
+use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
@@ -22,12 +22,11 @@ impl RouterGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self, paths: &[Path]) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
         let mut paths_data: Vec<PathData> = vec![];
 
-        for path in paths {
-            let segments: Vec<_> = path
-                .path
+        for (url, path) in spec.clone().paths {
+            let segments: Vec<_> = url
                 .split('/')
                 .filter(|s| !s.is_empty())
                 .map(|s| s.to_string())
@@ -37,7 +36,7 @@ impl RouterGenerator {
 
             for (method, operation) in path.operations.clone() {
                 operations.insert(
-                    ("Method::".to_owned() + method.as_str()).to_string(),
+                    ("Method::".to_owned() + method.to_string().as_str()).to_string(),
                     operation,
                 );
             }
@@ -50,7 +49,7 @@ impl RouterGenerator {
         }
 
         let data = HashMap::from([("paths", paths_data)]);
-        self.renderer.render(TEMPLATE, &data, PATH)?;
+        self.renderer.render(TEMPLATE, data, PATH)?;
 
         Ok(())
     }

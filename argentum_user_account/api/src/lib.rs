@@ -35,7 +35,7 @@ pub enum AnonymousRegistersResponse {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
-pub enum ChangePasswordWithTokenResponse {
+pub enum AnonymousRequestsRestoreTokenResponse {
     /// OK
     OK(serde_json::Value),
     /// Bad request
@@ -46,7 +46,18 @@ pub enum ChangePasswordWithTokenResponse {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
-pub enum LoginWithPasswordResponse {
+pub enum AnonymousWithTokenChangesPasswordResponse {
+    /// OK
+    OK(serde_json::Value),
+    /// Bad request
+    BadRequest(models::ProblemDetail),
+    /// Unauthorized
+    Unauthorized(models::ProblemDetail),
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[must_use]
+pub enum UserLoginsWithPasswordResponse {
     /// OK
     OK(models::LoginResult),
     /// Bad request
@@ -57,24 +68,13 @@ pub enum LoginWithPasswordResponse {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
-pub enum RegisterWithPasswordResponse {
+pub enum UserRegistersWithPasswordResponse {
     /// Created
     Created(models::RegistrationWithPasswordResult),
     /// Bad request
     BadRequest(models::ProblemDetail),
     /// Unprocessable Entity
     UnprocessableEntity(models::ProblemDetail),
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[must_use]
-pub enum RequestRestoreTokenResponse {
-    /// OK
-    OK(serde_json::Value),
-    /// Bad request
-    BadRequest(models::ProblemDetail),
-    /// Unauthorized
-    Unauthorized(models::ProblemDetail),
 }
 
 /// API
@@ -91,37 +91,36 @@ pub trait Api<C: Send + Sync> {
     /// Anonymous registers
     async fn anonymous_registers(
         &self,
-        body: Option<serde_json::Value>,
         context: &C,
     ) -> Result<AnonymousRegistersResponse, ApiError>;
 
-    /// User with token changes his password
-    async fn change_password_with_token(
-        &self,
-        change_password_schema: models::ChangePasswordSchema,
-        context: &C,
-    ) -> Result<ChangePasswordWithTokenResponse, ApiError>;
-
-    /// Login as an user
-    async fn login_with_password(
-        &self,
-        login_with_password_schema: models::LoginWithPasswordSchema,
-        context: &C,
-    ) -> Result<LoginWithPasswordResponse, ApiError>;
-
-    /// User registers with password
-    async fn register_with_password(
-        &self,
-        registration_with_password_schema: models::RegistrationWithPasswordSchema,
-        context: &C,
-    ) -> Result<RegisterWithPasswordResponse, ApiError>;
-
     /// Anonymous requests restore password token
-    async fn request_restore_token(
+    async fn anonymous_requests_restore_token(
         &self,
         request_restore_token_schema: models::RequestRestoreTokenSchema,
         context: &C,
-    ) -> Result<RequestRestoreTokenResponse, ApiError>;
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError>;
+
+    /// User with token changes his password
+    async fn anonymous_with_token_changes_password(
+        &self,
+        change_password_schema: models::ChangePasswordSchema,
+        context: &C,
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError>;
+
+    /// Login as an user
+    async fn user_logins_with_password(
+        &self,
+        login_with_password_schema: models::LoginWithPasswordSchema,
+        context: &C,
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError>;
+
+    /// User registers with password
+    async fn user_registers_with_password(
+        &self,
+        registration_with_password_schema: models::RegistrationWithPasswordSchema,
+        context: &C,
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError>;
 }
 
 /// API where `Context` isn't passed on every API call
@@ -136,34 +135,31 @@ pub trait ApiNoContext<C: Send + Sync> {
     fn context(&self) -> &C;
 
     /// Anonymous registers
-    async fn anonymous_registers(
-        &self,
-        body: Option<serde_json::Value>,
-    ) -> Result<AnonymousRegistersResponse, ApiError>;
-
-    /// User with token changes his password
-    async fn change_password_with_token(
-        &self,
-        change_password_schema: models::ChangePasswordSchema,
-    ) -> Result<ChangePasswordWithTokenResponse, ApiError>;
-
-    /// Login as an user
-    async fn login_with_password(
-        &self,
-        login_with_password_schema: models::LoginWithPasswordSchema,
-    ) -> Result<LoginWithPasswordResponse, ApiError>;
-
-    /// User registers with password
-    async fn register_with_password(
-        &self,
-        registration_with_password_schema: models::RegistrationWithPasswordSchema,
-    ) -> Result<RegisterWithPasswordResponse, ApiError>;
+    async fn anonymous_registers(&self) -> Result<AnonymousRegistersResponse, ApiError>;
 
     /// Anonymous requests restore password token
-    async fn request_restore_token(
+    async fn anonymous_requests_restore_token(
         &self,
         request_restore_token_schema: models::RequestRestoreTokenSchema,
-    ) -> Result<RequestRestoreTokenResponse, ApiError>;
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError>;
+
+    /// User with token changes his password
+    async fn anonymous_with_token_changes_password(
+        &self,
+        change_password_schema: models::ChangePasswordSchema,
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError>;
+
+    /// Login as an user
+    async fn user_logins_with_password(
+        &self,
+        login_with_password_schema: models::LoginWithPasswordSchema,
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError>;
+
+    /// User registers with password
+    async fn user_registers_with_password(
+        &self,
+        registration_with_password_schema: models::RegistrationWithPasswordSchema,
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError>;
 }
 
 /// Trait to extend an API to make it easy to bind it to a context.
@@ -192,55 +188,52 @@ impl<T: Api<C> + Send + Sync, C: Clone + Send + Sync> ApiNoContext<C> for Contex
     }
 
     /// Anonymous registers
-    async fn anonymous_registers(
-        &self,
-        body: Option<serde_json::Value>,
-    ) -> Result<AnonymousRegistersResponse, ApiError> {
+    async fn anonymous_registers(&self) -> Result<AnonymousRegistersResponse, ApiError> {
         let context = self.context().clone();
-        self.api().anonymous_registers(body, &context).await
+        self.api().anonymous_registers(&context).await
+    }
+
+    /// Anonymous requests restore password token
+    async fn anonymous_requests_restore_token(
+        &self,
+        request_restore_token_schema: models::RequestRestoreTokenSchema,
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError> {
+        let context = self.context().clone();
+        self.api()
+            .anonymous_requests_restore_token(request_restore_token_schema, &context)
+            .await
     }
 
     /// User with token changes his password
-    async fn change_password_with_token(
+    async fn anonymous_with_token_changes_password(
         &self,
         change_password_schema: models::ChangePasswordSchema,
-    ) -> Result<ChangePasswordWithTokenResponse, ApiError> {
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError> {
         let context = self.context().clone();
         self.api()
-            .change_password_with_token(change_password_schema, &context)
+            .anonymous_with_token_changes_password(change_password_schema, &context)
             .await
     }
 
     /// Login as an user
-    async fn login_with_password(
+    async fn user_logins_with_password(
         &self,
         login_with_password_schema: models::LoginWithPasswordSchema,
-    ) -> Result<LoginWithPasswordResponse, ApiError> {
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError> {
         let context = self.context().clone();
         self.api()
-            .login_with_password(login_with_password_schema, &context)
+            .user_logins_with_password(login_with_password_schema, &context)
             .await
     }
 
     /// User registers with password
-    async fn register_with_password(
+    async fn user_registers_with_password(
         &self,
         registration_with_password_schema: models::RegistrationWithPasswordSchema,
-    ) -> Result<RegisterWithPasswordResponse, ApiError> {
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError> {
         let context = self.context().clone();
         self.api()
-            .register_with_password(registration_with_password_schema, &context)
-            .await
-    }
-
-    /// Anonymous requests restore password token
-    async fn request_restore_token(
-        &self,
-        request_restore_token_schema: models::RequestRestoreTokenSchema,
-    ) -> Result<RequestRestoreTokenResponse, ApiError> {
-        let context = self.context().clone();
-        self.api()
-            .request_restore_token(request_restore_token_schema, &context)
+            .user_registers_with_password(registration_with_password_schema, &context)
             .await
     }
 }

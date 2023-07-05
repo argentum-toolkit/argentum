@@ -1,11 +1,11 @@
 {{#each operations as |operation|}}
-    {{#if operation.request}}
-use crate::dto::request::{{operation.id}}Request;
+    {{#if operation.requestBody}}
+use crate::dto::request::{{operation.operationId}}Request;
     {{/if}}
 {{/each}}
 
 {{#each operations as |operation|}}
-use crate::server::handler::{{operation.id}}Trait;
+use crate::server::handler::{{operation.operationId}}Trait;
 {{/each}}
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
@@ -17,7 +17,7 @@ pub struct UserAccountPreHandler {
     request_transformer: Arc<RequestTransformer>,
     bearer_auth: Arc<BearerAuthenticator>,
     {{#each operations as |operation|}}
-    {{snake operation.id}}: Arc<dyn {{operation.id}}Trait>,
+    {{snake operation.operationId}}: Arc<dyn {{operation.operationId}}Trait>,
     {{/each}}
 }
 
@@ -26,36 +26,36 @@ impl UserAccountPreHandler {
         request_transformer: Arc<RequestTransformer>,
         bearer_auth: Arc<BearerAuthenticator>,
         {{#each operations as |operation|}}
-        {{snake operation.id}}: Arc<dyn {{operation.id}}Trait>,
+        {{snake operation.operationId}}: Arc<dyn {{operation.operationId}}Trait>,
         {{/each}}
     ) -> Self {
         UserAccountPreHandler {
             request_transformer,
             bearer_auth,
             {{#each operations as |operation|}}
-                {{snake operation.id}},
+                {{snake operation.operationId}},
             {{/each}}
         }
     }
 
     {{#each operations as |operation|}}
-    pub async fn {{snake operation.id}}(
+    pub async fn {{snake operation.operationId}}(
         &self,
-        {{#if operation.request}}request: impl RequestTrait,{{/if}}
+        {{#if operation.requestBody}}request: impl RequestTrait,{{/if}}
     ) -> Result<HttpResponse, HttpError> {
         {{!--TODO: security should depend on response--}}
-        {{#if operation.request}}
+        {{#if operation.requestBody}}
         let raw_params = HashMap::from([]);
-        let req: {{operation.id}}Request = self
+        let req: {{operation.operationId}}Request = self
             .request_transformer
             .transform(request, raw_params)
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
 
-        self.{{snake operation.id}}.handle(req, user)
+        self.{{snake operation.operationId}}.handle(req, user)
         {{else}}
-        self.{{snake operation.id}}.handle()
+        self.{{snake operation.operationId}}.handle()
         {{/if}}
     }
 

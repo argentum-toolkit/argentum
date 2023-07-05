@@ -1,7 +1,7 @@
 {{#each operations as |operation|}}
-mod {{snake operation.id}}_handler;
+mod {{snake operation.operationId}}_handler;
 {{/each}}
 
 {{#each operations as |operation|}}
-pub use {{snake operation.id}}_handler::{{operation.id}}Trait;
+pub use {{snake operation.operationId}}_handler::{{operation.operationId}}Trait;
 {{/each}}

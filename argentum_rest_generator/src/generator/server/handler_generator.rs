@@ -1,5 +1,5 @@
-use crate::description::Operation;
 use crate::template::Renderer;
+use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
 use convert_case::{Case, Casing};
 use std::collections::HashMap;
 use std::error::Error;
@@ -21,7 +21,7 @@ impl HandlerGenerator {
     fn generate_item(&self, operation: &Operation) -> Result<(), Box<dyn Error>> {
         let file_path = format!(
             "/src/server/handler/{}_handler.rs",
-            operation.id.to_case(Case::Snake)
+            operation.operation_id.to_case(Case::Snake)
         );
 
         let data = HashMap::from([("operation", operation)]);
@@ -32,17 +32,18 @@ impl HandlerGenerator {
         Ok(())
     }
 
-    fn generate_mod(&self, operations: &[Operation]) -> Result<(), Box<dyn Error>> {
+    fn generate_mod(&self, operations: Vec<Operation>) -> Result<(), Box<dyn Error>> {
         let data = HashMap::from([("operations", operations)]);
 
-        self.renderer.render(MOD_TEMPLATE, &data, MOD_PATH)
+        self.renderer.render(MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(&self, operations: &[Operation]) -> Result<(), Box<dyn Error>> {
-        self.generate_mod(operations)?;
+    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+        let operations = spec.operations();
+        self.generate_mod(operations.clone())?;
 
         for operation in operations.into_iter() {
-            self.generate_item(operation)?;
+            self.generate_item(&operation)?;
         }
 
         Ok(())

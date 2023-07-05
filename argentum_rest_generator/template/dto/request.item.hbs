@@ -1,17 +1,17 @@
 use argentum_rest_infrastructure::data_type::HttpRequest;
-use crate::dto::schema::{{ operation.id }}Params;
-use {{operation.request.body_schema}};
+use crate::dto::schema::{{ operation.operationId }}Params;
+use {{bodySchema}};
 
-pub struct {{ operation.id }}Request {
-    pub body: {{trim_mod operation.request.body_schema}},
-    pub params: {{ operation.id }}Params,
+pub struct {{ operation.operationId }}Request {
+    pub body: {{trim_mod bodySchema}},
+    pub params: {{ operation.operationId }}Params,
 }
 
-impl HttpRequest for {{ operation.id }}Request {
-    type Body = {{trim_mod operation.request.body_schema}};
-    type Params = {{ operation.id }}Params;
+impl HttpRequest for {{ operation.operationId }}Request {
+    type Body = {{trim_mod bodySchema}};
+    type Params = {{ operation.operationId }}Params;
 
-    fn new(body: {{trim_mod operation.request.body_schema}}, params: {{ operation.id }}Params) -> Self {
+    fn new(body: {{trim_mod bodySchema}}, params: {{ operation.operationId }}Params) -> Self {
         Self { body, params }
     }
 

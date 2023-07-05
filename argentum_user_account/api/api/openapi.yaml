@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum
-  description: This is demo app
+  description: User Account API
   license:
     name: BSD-3
   title: Demo app
@@ -40,8 +40,6 @@ paths:
     post:
       description: Anonymous registers without any data
       operationId: AnonymousRegisters
-      requestBody:
-        $ref: '#/components/requestBodies/Empty'
       responses:
         "201":
           content:
@@ -186,13 +184,6 @@ paths:
       - user-account
 components:
   requestBodies:
-    Empty:
-      content:
-        application/json:
-          schema:
-            type: object
-      description: Empty request body
-      required: false
     RegistrationWithPasswordRequestBody:
       content:
         application/json:

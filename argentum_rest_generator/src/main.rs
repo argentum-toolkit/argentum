@@ -1,27 +1,38 @@
-use crate::description::{Operation, Path, Request};
 use crate::generator::dto::{DtoGenerator, RequestGenerator, SchemaParamsGenerator};
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
 use crate::generator::{CargoTomlGenerator, DiGenerator, LibGenerator};
 use crate::template::Renderer;
+use argentum_openapi_infrastructure::data_type::SpecificationRoot;
 use convert_case::{Case, Casing};
 use handlebars::{handlebars_helper, Handlebars};
-use hyper::Method;
-use std::collections::HashMap;
 use std::error::Error;
+use std::fs;
 use std::sync::Arc;
 
-pub(crate) mod description;
 pub(crate) mod generator;
 pub(crate) mod template;
 
 handlebars_helper!(snake_helper: |s: String| s.to_case(Case::Snake));
-handlebars_helper!(trim_mod_name: |s: String| {
+handlebars_helper!(trim_mod_helper: |s: String| {
     s.split("::").last()
 });
 
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+pub struct Cli {
+    #[arg(short, long)]
+    input: String,
+
+    #[arg(short, long)]
+    output: String,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
+    let cli: Cli = Cli::parse();
+
     let mut reg = Handlebars::new();
     reg.register_template_file("dto/request.item", "template/dto/request.item.hbs")
         .unwrap();
@@ -65,13 +76,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap();
 
     reg.register_helper("snake", Box::new(snake_helper));
-    reg.register_helper("trim_mod", Box::new(trim_mod_name));
+    reg.register_helper("trim_mod", Box::new(trim_mod_helper));
 
     //services
-    let renderer = Arc::new(Renderer::new(
-        "../argentum_user_account/rest",
-        Arc::new(reg),
-    ));
+    let renderer = Arc::new(Renderer::new(cli.output, Arc::new(reg)));
 
     let dto_generator = DtoGenerator::new(renderer.clone());
     let schema_param_generator = SchemaParamsGenerator::new(renderer.clone());
@@ -84,111 +92,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     let lib_generator = LibGenerator::new(renderer.clone());
     let cargo_toml_generator = CargoTomlGenerator::new(renderer);
 
-    //data
-    let operations = [
-        Operation::new("AnonymousRegisters".to_string(), None),
-        Operation::new(
-            "AnonymousRequestsRestoreToken".to_string(),
-            Some(Request::new(
-                "argentum_user_account_api::models::RequestRestoreTokenSchema".to_string(),
-                true,
-            )),
-        ),
-        Operation::new(
-            "AnonymousWithTokenChangesPassword".to_string(),
-            Some(Request::new(
-                "argentum_user_account_api::models::ChangePasswordSchema".to_string(),
-                true,
-            )),
-        ),
-        Operation::new(
-            "UserLoginsWithPassword".to_string(),
-            Some(Request::new(
-                "argentum_user_account_api::models::LoginWithPasswordSchema".to_string(),
-                true,
-            )),
-        ),
-        Operation::new(
-            "UserRegistersWithPassword".to_string(),
-            Some(Request::new(
-                "argentum_user_account_api::models::RegistrationWithPasswordSchema".to_string(),
-                true,
-            )),
-        ),
-    ];
+    let f = fs::File::open(cli.input).expect("LogRocket: Should have been able to read the file");
 
-    let paths = [
-        Path::new(
-            "/user/anonymous-register".to_string(),
-            HashMap::from([(
-                Method::POST,
-                Operation::new("AnonymousRegisters".to_string(), None),
-            )]),
-        ),
-        Path::new(
-            "/user/restore-password/token-request".to_string(),
-            HashMap::from([(
-                Method::POST,
-                Operation::new(
-                    "AnonymousRequestsRestoreToken".to_string(),
-                    Some(Request::new(
-                        "argentum_user_account_api::models::RequestRestoreTokenSchema".to_string(),
-                        true,
-                    )),
-                ),
-            )]),
-        ),
-        Path::new(
-            "/user/restore-password/change-password".to_string(),
-            HashMap::from([(
-                Method::POST,
-                Operation::new(
-                    "AnonymousWithTokenChangesPassword".to_string(),
-                    Some(Request::new(
-                        "argentum_user_account_api::models::ChangePasswordSchema".to_string(),
-                        true,
-                    )),
-                ),
-            )]),
-        ),
-        Path::new(
-            "/user/password-login".to_string(),
-            HashMap::from([(
-                Method::POST,
-                Operation::new(
-                    "UserLoginsWithPassword".to_string(),
-                    Some(Request::new(
-                        "argentum_user_account_api::models::LoginWithPasswordSchema".to_string(),
-                        true,
-                    )),
-                ),
-            )]),
-        ),
-        Path::new(
-            "/user/register".to_string(),
-            HashMap::from([(
-                Method::POST,
-                Operation::new(
-                    "UserRegistersWithPassword".to_string(),
-                    Some(Request::new(
-                        "argentum_user_account_api::models::RegistrationWithPasswordSchema"
-                            .to_string(),
-                        true,
-                    )),
-                ),
-            )]),
-        ),
-    ];
+    let spec: SpecificationRoot = serde_yaml::from_reader(f).expect("Could not read values.");
+
+    println!("{:#?}", spec);
 
     //generation
     dto_generator.generate()?;
-    schema_param_generator.generate(&operations)?;
-    request_generator.generate(&operations)?;
-    handler_generator.generate(&operations)?;
-    pre_handler_generator.generate(&operations)?;
-    router_generator.generate(&paths)?;
+    schema_param_generator.generate(&spec)?;
+    request_generator.generate(&spec)?;
+    handler_generator.generate(&spec)?;
+    pre_handler_generator.generate(&spec)?;
+    router_generator.generate(&spec)?;
     server_generator.generate()?;
-    di_generator.generate(&operations)?;
+    di_generator.generate(&spec)?;
     lib_generator.generate()?;
     cargo_toml_generator.generate()?;
 

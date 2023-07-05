@@ -4,14 +4,42 @@ All URIs are relative to *http://localhost:8082/api/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-**changePasswordWithToken**](user_account_api.md#changePasswordWithToken) | **POST** /user/restore-password/change-password | User with token changes his password
-**loginWithPassword**](user_account_api.md#loginWithPassword) | **POST** /user/password-login | Login as an user
-**registerWithPassword**](user_account_api.md#registerWithPassword) | **POST** /user/register | User registers with password
-**requestRestoreToken**](user_account_api.md#requestRestoreToken) | **POST** /user/restore-password/token-request | Anonymous requests restore password token
+**AnonymousRequestsRestoreToken**](user_account_api.md#AnonymousRequestsRestoreToken) | **POST** /user/restore-password/token-request | Anonymous requests restore password token
+**AnonymousWithTokenChangesPassword**](user_account_api.md#AnonymousWithTokenChangesPassword) | **POST** /user/restore-password/change-password | User with token changes his password
+**UserLoginsWithPassword**](user_account_api.md#UserLoginsWithPassword) | **POST** /user/password-login | Login as an user
+**UserRegistersWithPassword**](user_account_api.md#UserRegistersWithPassword) | **POST** /user/register | User registers with password
 
 
-# **changePasswordWithToken**
-> serde_json::Value changePasswordWithToken(ctx, change_password_schema)
+# **AnonymousRequestsRestoreToken**
+> serde_json::Value AnonymousRequestsRestoreToken(ctx, request_restore_token_schema)
+Anonymous requests restore password token
+
+Requested token and link will be sent to email
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context containing the authentication | nil if no authentication
+  **request_restore_token_schema** | [**RequestRestoreTokenSchema**](RequestRestoreTokenSchema.md)| Required data to get restore password token | 
+
+### Return type
+
+[**serde_json::Value**](AnyType.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **AnonymousWithTokenChangesPassword**
+> serde_json::Value AnonymousWithTokenChangesPassword(ctx, change_password_schema)
 User with token changes his password
 
 Final step of restoring password process
@@ -38,8 +66,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **loginWithPassword**
-> models::LoginResult loginWithPassword(ctx, login_with_password_schema)
+# **UserLoginsWithPassword**
+> models::LoginResult UserLoginsWithPassword(ctx, login_with_password_schema)
 Login as an user
 
 Login as an user
@@ -66,8 +94,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **registerWithPassword**
-> models::RegistrationWithPasswordResult registerWithPassword(ctx, registration_with_password_schema)
+# **UserRegistersWithPassword**
+> models::RegistrationWithPasswordResult UserRegistersWithPassword(ctx, registration_with_password_schema)
 User registers with password
 
 User registers with email and password
@@ -82,34 +110,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**models::RegistrationWithPasswordResult**](RegistrationWithPasswordResult.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **requestRestoreToken**
-> serde_json::Value requestRestoreToken(ctx, request_restore_token_schema)
-Anonymous requests restore password token
-
-Requested token and link will be sent to email
-
-### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context containing the authentication | nil if no authentication
-  **request_restore_token_schema** | [**RequestRestoreTokenSchema**](RequestRestoreTokenSchema.md)| Required data to get restore password token | 
-
-### Return type
-
-[**serde_json::Value**](AnyType.md)
 
 ### Authorization
 

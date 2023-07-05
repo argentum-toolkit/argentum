@@ -1,13 +1,13 @@
-{{#if operation.request}}use crate::dto::request::{{ operation.id }}Request;{{/if}}
+{{#if operation.requestBody}}use crate::dto::request::{{ operation.operationId }}Request;{{/if}}
 use argentum_rest_infrastructure::data_type::error::{HttpError, NotImplementedError};
 use argentum_rest_infrastructure::data_type::HttpResponse;
-{{#if operation.request.security}}use argentum_user_business::entity::user::User;{{/if}}
+{{#if operation.security}}use argentum_user_business::entity::user::User;{{/if}}
 
-pub trait {{ operation.id }}Trait: Send + Sync {
+pub trait {{ operation.operationId }}Trait: Send + Sync {
     fn handle(
         &self,
-        {{#if operation.request}}_req: {{ operation.id }}Request,{{/if}}
-        {{#if operation.request.security}}_user: User,{{/if}}
+        {{#if operation.requestBody}}_req: {{ operation.operationId }}Request,{{/if}}
+        {{#if operation.security}}_user: User,{{/if}}
     ) -> Result<HttpResponse, HttpError> {
         Err(HttpError::NotImplemented(NotImplementedError::new()))
     }
