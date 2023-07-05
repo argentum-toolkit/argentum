@@ -2,7 +2,7 @@ use crate::generator::dto::{DtoGenerator, RequestGenerator, SchemaParamsGenerato
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
-use crate::generator::{CargoTomlGenerator, DiGenerator, LibGenerator};
+use crate::generator::{CargoTomlGenerator, DiGenerator, GitIgnoreGenerator, LibGenerator};
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::SpecificationRoot;
 use convert_case::{Case, Casing};
@@ -74,6 +74,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap();
     reg.register_template_file("cargo.toml", "template/cargo.toml.hbs")
         .unwrap();
+    reg.register_template_file(".gitignore", "template/.gitignore.hbs")
+        .unwrap();
 
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
@@ -90,7 +92,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let server_generator = ServerGenerator::new(renderer.clone());
     let di_generator = DiGenerator::new(renderer.clone());
     let lib_generator = LibGenerator::new(renderer.clone());
-    let cargo_toml_generator = CargoTomlGenerator::new(renderer);
+    let cargo_toml_generator = CargoTomlGenerator::new(renderer.clone());
+    let gitignore_generator = GitIgnoreGenerator::new(renderer);
 
     let f = fs::File::open(cli.input).expect("LogRocket: Should have been able to read the file");
 
@@ -109,6 +112,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     di_generator.generate(&spec)?;
     lib_generator.generate()?;
     cargo_toml_generator.generate()?;
+    gitignore_generator.generate()?;
 
     Ok(())
 }

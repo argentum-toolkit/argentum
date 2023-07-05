@@ -50,12 +50,12 @@ impl Router for UserAccountRouter {
                 Method::POST => self.pre_handler.anonymous_requests_restore_token(req).await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
-            ["user", "anonymous-register"] => match *req.method() {
-                Method::POST => self.pre_handler.anonymous_registers().await,
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            },
             ["user", "register"] => match *req.method() {
                 Method::POST => self.pre_handler.user_registers_with_password(req).await,
+                _ => self.error_pre_handler.method_not_allowed(req).await,
+            },
+            ["user", "anonymous-register"] => match *req.method() {
+                Method::POST => self.pre_handler.anonymous_registers().await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
             ["user", "password-login"] => match *req.method() {
