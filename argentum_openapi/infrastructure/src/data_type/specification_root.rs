@@ -1,12 +1,12 @@
 use crate::data_type::path::Path;
 use crate::data_type::{Components, Operation};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SpecificationRoot {
     pub openapi: String,
-    pub paths: HashMap<String, Path>,
+    pub paths: BTreeMap<String, Path>,
     pub components: Components,
 }
 

@@ -1,4 +1,4 @@
-use crate::data_type::RequestBody;
+use crate::data_type::{RequestBody, Schema};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -6,5 +6,5 @@ use std::collections::BTreeMap;
 #[serde(rename_all = "camelCase")]
 pub struct Components {
     pub request_bodies: BTreeMap<String, RequestBody>,
-    // pub schemas: BTreeMap<String, String>,
+    pub schemas: BTreeMap<String, Schema>,
 }

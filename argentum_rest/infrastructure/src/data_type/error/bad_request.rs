@@ -54,7 +54,7 @@ mod tests {
     use argentum_standard_business::invariant_violation::ViolationItem;
     use argentum_standard_business::invariant_violation::Violations;
     use serde_json::json;
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     #[test]
     fn empty_bad_request_serialize() {
@@ -78,7 +78,7 @@ mod tests {
                 vec!["error1.1".to_string(), "error1.2".to_string()],
                 Some(ViolationItem::Array(vec![Violations::new(
                     vec![],
-                    Some(ViolationItem::Object(HashMap::from([(
+                    Some(ViolationItem::Object(BTreeMap::from([(
                         "str".to_string(),
                         Violations::new(vec!["error1.3".to_string()], None),
                     )]))),
@@ -109,8 +109,7 @@ mod tests {
                             "str": {
                                 "errors": [
                                     "error1.3"
-                                ],
-                                "items": null
+                                ]
                             }
                         }
                     }
@@ -125,15 +124,14 @@ mod tests {
                     {
                         "errors": [
                             "error2.3"
-                        ],
-                        "items": null
+                        ]
                     }
                 ]
             }
         });
 
-        assert_eq!(false, br.body.is_empty());
-        assert_eq!(false, br.path.is_empty());
+        assert!(!br.body.is_empty());
+        assert!(!br.path.is_empty());
         assert_eq!(str, expected);
     }
 }

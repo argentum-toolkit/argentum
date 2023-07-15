@@ -8,3 +8,4 @@
 == Features
 
 - Generated code compatible with Argentum REST
+- Schemas supports only Object type (Array, AnyOf, AllOf are not implemented yet)

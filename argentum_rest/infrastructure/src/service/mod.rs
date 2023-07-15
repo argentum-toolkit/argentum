@@ -18,6 +18,7 @@ pub use path_params_extractor::PathParamsExtractor;
 pub use request_transformer::RequestTransformer;
 pub use response_transformer::ResponseToJsonTransformer;
 pub use router::Router;
+pub use schema_extractor::DeserializableSchemaRaw;
 pub use schema_extractor::SchemaExtractor;
 pub use server::Server;
 use std::collections::HashMap;

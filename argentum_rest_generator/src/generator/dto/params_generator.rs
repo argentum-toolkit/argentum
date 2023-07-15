@@ -5,22 +5,22 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 
-pub(crate) struct SchemaParamsGenerator {
+pub(crate) struct ParamsGenerator {
     renderer: Arc<Renderer>,
 }
 
-const MOD_PATH: &str = "/src/dto/schema/mod.rs";
-const MOD_TEMPLATE: &str = "dto/schema.params.mod";
-const ITEM_TEMPLATE: &str = "dto/schema.params.item";
+const MOD_PATH: &str = "/src/dto/params/mod.rs";
+const MOD_TEMPLATE: &str = "dto/params.mod";
+const ITEM_TEMPLATE: &str = "dto/params.item";
 
-impl SchemaParamsGenerator {
+impl ParamsGenerator {
     pub fn new(renderer: Arc<Renderer>) -> Self {
         Self { renderer }
     }
 
     fn generate_item(&self, operation: &Operation) -> Result<(), Box<dyn Error>> {
         let file_path = format!(
-            "/src/dto/schema/{}_params.rs",
+            "/src/dto/params/{}_params.rs",
             operation.operation_id.to_case(Case::Snake)
         );
 

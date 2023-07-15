@@ -2,7 +2,7 @@ use argentum_rest_infrastructure::data_type::error::{BadRequestError, HttpError}
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
 use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 pub struct DtoToUserLoginsWithPasswordParams {}
 
@@ -15,7 +15,7 @@ impl DtoToUserLoginsWithPasswordParams {
         &self,
         req: UserLoginsWithPasswordRequest,
     ) -> Result<(EmailAddress, String), HttpError> {
-        let mut vo = HashMap::new();
+        let mut vo = BTreeMap::new();
 
         let email_result = EmailAddress::try_new(req.body.email);
 

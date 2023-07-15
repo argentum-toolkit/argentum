@@ -1,4 +1,4 @@
-use crate::generator::dto::{DtoGenerator, RequestGenerator, SchemaParamsGenerator};
+use crate::generator::dto::{DtoGenerator, ParamsGenerator, RequestGenerator, SchemaGenerator};
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
@@ -15,6 +15,9 @@ pub(crate) mod generator;
 pub(crate) mod template;
 
 handlebars_helper!(snake_helper: |s: String| s.to_case(Case::Snake));
+handlebars_helper!(upper_camel_helper: |s: String| s.to_case(Case::UpperCamel));
+handlebars_helper!(camel_helper: |s: String| s.to_case(Case::Camel));
+
 handlebars_helper!(trim_mod_helper: |s: String| {
     s.split("::").last()
 });
@@ -40,17 +43,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     reg.register_template_file("dto/request.mod", "template/dto/request.mod.hbs")
         .unwrap();
 
-    reg.register_template_file(
-        "dto/schema.params.item",
-        "template/dto/schema.params.item.hbs",
-    )
-    .unwrap();
+    reg.register_template_file("dto/params.item", "template/dto/params.item.hbs")
+        .unwrap();
 
-    reg.register_template_file(
-        "dto/schema.params.mod",
-        "template/dto/schema.params.mod.hbs",
-    )
-    .unwrap();
+    reg.register_template_file("dto/params.mod", "template/dto/params.mod.hbs")
+        .unwrap();
+
+    reg.register_template_file("dto/schema.item", "template/dto/schema.item.hbs")
+        .unwrap();
+
+    reg.register_template_file("dto/schema.mod", "template/dto/schema.mod.hbs")
+        .unwrap();
 
     reg.register_template_file("dto/mod", "template/dto/mod.hbs")
         .unwrap();
@@ -78,13 +81,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap();
 
     reg.register_helper("snake", Box::new(snake_helper));
+    reg.register_helper("camel", Box::new(camel_helper));
+    reg.register_helper("upper_camel", Box::new(upper_camel_helper));
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
 
     //services
     let renderer = Arc::new(Renderer::new(cli.output, Arc::new(reg)));
 
     let dto_generator = DtoGenerator::new(renderer.clone());
-    let schema_param_generator = SchemaParamsGenerator::new(renderer.clone());
+    let schema_param_generator = ParamsGenerator::new(renderer.clone());
     let request_generator = RequestGenerator::new(renderer.clone());
     let handler_generator = HandlerGenerator::new(renderer.clone());
     let pre_handler_generator = PreHandlerGenerator::new(renderer.clone());
@@ -93,7 +98,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let di_generator = DiGenerator::new(renderer.clone());
     let lib_generator = LibGenerator::new(renderer.clone());
     let cargo_toml_generator = CargoTomlGenerator::new(renderer.clone());
-    let gitignore_generator = GitIgnoreGenerator::new(renderer);
+    let gitignore_generator = GitIgnoreGenerator::new(renderer.clone());
+    let schema_generator = SchemaGenerator::new(renderer);
 
     let f = fs::File::open(cli.input).expect("LogRocket: Should have been able to read the file");
 
@@ -113,6 +119,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     lib_generator.generate()?;
     cargo_toml_generator.generate()?;
     gitignore_generator.generate()?;
+    schema_generator.generate(&spec)?;
 
     Ok(())
 }

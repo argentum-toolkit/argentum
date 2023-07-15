@@ -1,9 +1,10 @@
+use crate::service::DeserializableSchemaRaw;
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use serde_valid::Validate;
 
 pub trait HttpRequest {
-    type Body: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>;
+    type Body: for<'a> DeserializableSchemaRaw<'a>;
     type Params: HttpParams;
 
     fn new(body: Self::Body, params: Self::Params) -> Self;

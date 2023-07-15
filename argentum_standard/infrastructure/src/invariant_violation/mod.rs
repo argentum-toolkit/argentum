@@ -1,11 +1,11 @@
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
-use serde::{Serialize, Serializer};
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize, Serializer};
+use std::collections::BTreeMap;
 
-pub type ViolationObjectDto = HashMap<String, ViolationsDto>;
+pub type ViolationObjectDto = BTreeMap<String, ViolationsDto>;
 pub type ViolationArrayDto = Vec<ViolationsDto>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub enum ViolationItemDto {
     Object(ViolationObjectDto),
     Array(ViolationArrayDto),
@@ -46,6 +46,33 @@ impl From<&Violations> for ViolationsDto {
     }
 }
 
+impl Into<ViolationItem> for ViolationItemDto {
+    fn into(self) -> ViolationItem {
+        match self {
+            ViolationItemDto::Object(o) => {
+                let map = o
+                    .iter()
+                    .map(|(k, v)| (k.clone(), (*v).clone().into()))
+                    .collect();
+                ViolationItem::Object(map)
+            }
+            ViolationItemDto::Array(a) => {
+                let arr = a.iter().map(|v| (*v).clone().into()).collect();
+
+                ViolationItem::Array(arr)
+            }
+        }
+    }
+}
+
+impl Into<Violations> for ViolationsDto {
+    fn into(self) -> Violations {
+        // self.items.unwrap()
+        let items = self.items.as_ref().map(|v| (*v).clone().into());
+        Violations::new(self.errors.clone(), items)
+    }
+}
+
 impl Serialize for ViolationItemDto {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -58,10 +85,11 @@ impl Serialize for ViolationItemDto {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ViolationsDto {
     pub errors: Vec<String>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Option<ViolationItemDto>,
 }
 
@@ -83,7 +111,7 @@ impl ViolationsDto {
 #[cfg(test)]
 mod tests {
     use crate::invariant_violation::{ViolationItemDto, ViolationsDto};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     const TEST_ERROR: &str = "Test error";
     const ANOTHER_ERROR: &str = "Another error";
@@ -127,7 +155,7 @@ mod tests {
             assert!(b.is_empty())
         }
         {
-            let b = ViolationItemDto::Object(HashMap::from([]));
+            let b = ViolationItemDto::Object(BTreeMap::from([]));
             assert!(b.is_empty())
         }
     }
@@ -141,7 +169,7 @@ mod tests {
         }
 
         {
-            let b = ViolationItemDto::Object(HashMap::from([(
+            let b = ViolationItemDto::Object(BTreeMap::from([(
                 "some-field-name".to_string(),
                 ViolationsDto::new(vec![], None),
             )]));

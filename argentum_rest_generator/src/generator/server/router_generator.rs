@@ -1,6 +1,6 @@
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::sync::Arc;
 
@@ -14,7 +14,7 @@ const TEMPLATE: &str = "server/router";
 #[derive(Debug, Clone, serde::Serialize)]
 struct PathData {
     pub segments: Vec<String>,
-    pub operations: HashMap<String, Operation>,
+    pub operations: BTreeMap<String, Operation>,
 }
 
 impl RouterGenerator {
@@ -32,7 +32,7 @@ impl RouterGenerator {
                 .map(|s| s.to_string())
                 .collect();
 
-            let mut operations: HashMap<String, Operation> = HashMap::new();
+            let mut operations: BTreeMap<String, Operation> = BTreeMap::new();
 
             for (method, operation) in path.operations.clone() {
                 operations.insert(

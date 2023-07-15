@@ -38,10 +38,6 @@ impl RequestGenerator {
             operation.operation_id.to_case(Case::Snake)
         );
 
-        // let mut data = BTreeMap::new();
-        // data.insert("operation", operation);
-        // data.insert("request_body", request_body);
-
         //TODO: support other mime types
         let body = request_body
             .content
@@ -61,18 +57,20 @@ impl RequestGenerator {
                     )
                 })
                 .to_string(),
-            RefOrObject::Object(o) => o.obj_type.clone(),
+            RefOrObject::Object(_o) => {
+                todo!("generate onborded objects")
+                // o.schema_type.clone()
+            }
         };
 
         //TODO: user real path. Don't use hardcoded argentum_user_account_api
-        let body_schema = format!("argentum_user_account_api::models::{}", schema);
+        // let body_schema = format!("argentum_user_account_api::models::{}", schema);
+        let body_schema = format!("crate::dto::schema::{}", schema);
 
         let data = Data {
             operation,
             body_schema,
         };
-
-        // let data = HashMap::from([("operation", operation), ("request_body", request_body)]);
 
         self.renderer
             .render(ITEM_TEMPLATE, &data, file_path.as_str())?;

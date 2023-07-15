@@ -20,7 +20,7 @@ impl RestDiC {
         user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
     ) -> Self {
         let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
-        let schema_extractor = Arc::new(SchemaExtractor::new(validation_error_transformer.clone()));
+        let schema_extractor = Arc::new(SchemaExtractor::new());
         let header_params_extractor = Arc::new(HeaderParamsExtractor::new(
             validation_error_transformer.clone(),
         ));

@@ -1,0 +1,8 @@
+{{#each components.schemas}}
+mod {{snake @key}};
+{{/each}}
+
+{{#each components.schemas}}
+pub use {{snake @key}}::{{@key}};
+pub use {{snake @key}}::{{@key}}Raw;
+{{/each}}

@@ -1,3 +1,4 @@
+use crate::data_type::Schema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -16,7 +17,7 @@ pub struct Obj {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MediaTypeObject {
-    pub schema: RefOrObject<Obj>,
+    pub schema: RefOrObject<Schema>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq)]
