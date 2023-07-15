@@ -35,4 +35,4 @@ rand = "0.8.4"
 uuid = { version = "0.8", features = ["serde", "v4"] }
 
 async-trait = "0.1.*"
-hyper = { version = "1.0.0-rc.3", features = ["full"] }
+hyper = { version = "1.0.0-rc.3, <1.0.0-rc.4", features = ["full"] }

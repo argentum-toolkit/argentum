@@ -27,5 +27,5 @@ argentum_user_account_rest = { path = "../argentum_user_account/rest" }
 argentum_log_business = { path = "../argentum_log/business" }
 argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
 
-tokio = "1.28.*"
+tokio = { version = "1.28.*", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
