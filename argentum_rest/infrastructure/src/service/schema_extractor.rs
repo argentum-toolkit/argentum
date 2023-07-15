@@ -1,16 +1,8 @@
-use crate::data_type::RequestTrait;
+use crate::data_type::{DeserializableSchemaRaw, RequestTrait};
 use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
-use serde::Deserialize;
 
 #[derive(Default)]
 pub struct SchemaExtractor {}
-
-//TODO: move to separated file
-pub trait DeserializableSchemaRaw<'a>: Sized {
-    type Raw: Deserialize<'a>;
-
-    fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self>;
-}
 
 impl SchemaExtractor {
     pub fn new() -> Self {
@@ -48,8 +40,8 @@ impl SchemaExtractor {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::RequestTrait;
-    use crate::service::{DeserializableSchemaRaw, SchemaExtractor};
+    use crate::data_type::{DeserializableSchemaRaw, RequestTrait};
+    use crate::service::SchemaExtractor;
     use argentum_standard_business::invariant_violation::InvariantResult;
     use async_trait::async_trait;
     use hyper::{Error, HeaderMap, Method};

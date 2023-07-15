@@ -11,7 +11,7 @@ pub struct Schema {
 
     pub required: Option<Vec<String>>,
 
-    pub properties: Option<BTreeMap<String, RefOrObject<Self>>>, //todo RefOrObject<Object>
+    pub properties: Option<BTreeMap<String, RefOrObject<Self>>>,
 
     #[serde(rename = "type")]
     pub schema_type: Option<SchemaType>,

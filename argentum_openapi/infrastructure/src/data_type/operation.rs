@@ -6,8 +6,9 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct Operation {
     pub operation_id: String,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub security: Option<Vec<Security>>,
-    // pub request_body: Option<Reference>,
+
     pub request_body: Option<RefOrObject<RequestBody>>,
 }

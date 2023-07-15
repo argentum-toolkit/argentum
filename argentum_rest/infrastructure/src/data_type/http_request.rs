@@ -1,4 +1,4 @@
-use crate::service::DeserializableSchemaRaw;
+use crate::data_type::DeserializableSchemaRaw;
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use serde_valid::Validate;
