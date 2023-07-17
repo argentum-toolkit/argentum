@@ -31,17 +31,19 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
     fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
         use crate::db_diesel::schema::ag_user_anonymous;
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(ExternalUserError::Anonymous(Some(Box::new(e)))),
         };
 
         let uid = self.id_factory.id_to_uuid(id);
         let results: Result<AnonymousUserModel, diesel::result::Error> =
-            ag_user_anonymous::table.find(uid).first(&conn);
+            ag_user_anonymous::table.find(uid).first(&mut conn);
 
         match results {
-            Ok(u) => Ok(Some(AnonymousUser::new(&self.id_factory.uuid_to_id(u.id)))),
+            Ok(u) => Ok(Some(AnonymousUser::new(
+                &self.id_factory.uuid_to_id(u.id.into()),
+            ))),
 
             Err(DieselError::NotFound) => Ok(None),
             Err(e) => Err(ExternalUserError::Anonymous(Some(Box::new(e)))),
@@ -53,18 +55,18 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
 
         let id = self.id_factory.id_to_uuid(&user.id);
         let new_user = AnonymousUserModel {
-            id,
+            id: id.into(),
             created_at: user.created_at,
         };
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(ExternalUserError::Anonymous(Some(Box::new(e)))),
         };
 
         let result = diesel::insert_into(ag_user_anonymous::table)
             .values(&new_user)
-            .execute(&conn);
+            .execute(&mut conn);
 
         match result {
             Ok(_) => Ok(()),

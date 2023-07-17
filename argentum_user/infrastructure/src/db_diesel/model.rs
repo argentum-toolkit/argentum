@@ -2,12 +2,12 @@ use super::schema::ag_user_anonymous;
 use super::schema::ag_user_anonymous_binding;
 use super::schema::ag_user_authenticated;
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
+use diesel_ulid::DieselUlid as Ulid;
 
 #[derive(Queryable, Insertable)]
-#[table_name = "ag_user_authenticated"]
+#[diesel(table_name = ag_user_authenticated)]
 pub struct AuthenticatedUserModel {
-    pub id: Uuid,
+    pub id: Ulid,
     pub created_at: DateTime<Utc>,
     pub first_name: String,
     //TODO: optional???
@@ -16,16 +16,16 @@ pub struct AuthenticatedUserModel {
 }
 
 #[derive(Queryable, Insertable)]
-#[table_name = "ag_user_anonymous"]
+#[diesel(table_name = ag_user_anonymous)]
 pub struct AnonymousUserModel {
-    pub id: Uuid,
+    pub id: Ulid,
     pub created_at: DateTime<Utc>,
 }
 
 #[derive(Queryable, Insertable)]
-#[table_name = "ag_user_anonymous_binding"]
+#[diesel(table_name = ag_user_anonymous_binding)]
 pub struct AnonymousBindingModel {
-    pub user_id: Uuid,
-    pub anonymous_id: Uuid,
+    pub user_id: Ulid,
+    pub anonymous_id: Ulid,
     pub created_at: DateTime<Utc>,
 }

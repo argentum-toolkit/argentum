@@ -3,11 +3,11 @@ use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, Intern
 use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_user_account_api::models::RegistrationWithPasswordResult;
 use argentum_user_account_business::use_case::user_registers_with_password::{
     RegistrationError, UserRegistersWithPasswordUc,
 };
 use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
+use argentum_user_account_rest::dto::schema::RegistrationWithPasswordResult;
 use argentum_user_account_rest::server::handler::UserRegistersWithPasswordTrait;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;

@@ -9,11 +9,11 @@ use std::collections::BTreeMap;
 pub struct LoginResult {
     pub token: String,
 
-    pub user_id: String,
+    pub user_id: uuid::Uuid,
 }
 
 impl LoginResult {
-    pub fn new(token: String, user_id: String) -> Self {
+    pub fn new(token: String, user_id: uuid::Uuid) -> Self {
         Self { token, user_id }
     }
 }
@@ -57,5 +57,5 @@ pub struct LoginResultRaw {
     #[serde(rename = "token")]
     pub token: Option<String>,
     #[serde(rename = "user_id")]
-    pub user_id: Option<String>,
+    pub user_id: Option<uuid::Uuid>,
 }

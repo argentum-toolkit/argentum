@@ -19,20 +19,20 @@ argentum_log_business = { path = "../../argentum_log/business" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure" }
 argentum_standard_business = { path = "../../argentum_standard/business" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }
-argentum_user_account_api = { path = "../api" }
 argentum_user_account_business = { path = "../business" }
 argentum_user_account_rest = { path = "../rest" }
 argentum_user_business = { path = "../../argentum_user/business" }
 
-chrono = { version = "0.4.19", features = ["serde"] }
+chrono = { version = "0.4.*", features = ["serde"] }
 derive_more = "0.99.17"
-diesel = { version = "1.4.8", features = ["postgres", "r2d2", "uuidv07", "chrono"] }
+diesel = { version = "2.1.*", features = ["postgres", "r2d2", "uuid", "chrono"] }
 dotenv = "0.15.0"
-futures-util = "0.3.19"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-rand = "0.8.4"
-uuid = { version = "0.8", features = ["serde", "v4"] }
+futures-util = "0.3.*"
+serde = { version = "1.0.*", features = ["derive"] }
+serde_json = "1.0.*"
+rand = "0.8.*"
+uuid = { version = "1.4.*", features = ["serde", "v4"] }
 
 async-trait = "0.1.*"
 hyper = { version = "1.0.0-rc.3, <1.0.0-rc.4", features = ["full"] }
+diesel-ulid = "0.2.*"

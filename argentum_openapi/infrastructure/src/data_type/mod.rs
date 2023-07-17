@@ -12,5 +12,8 @@ pub use path::Path;
 pub use request_body::RefOrObject;
 pub use request_body::RequestBody;
 pub use schema::Schema;
+pub use schema::SchemaFormat;
+pub use schema::SchemaType;
+pub use schema::StandardFormat;
 pub use security::Security;
 pub use specification_root::SpecificationRoot;

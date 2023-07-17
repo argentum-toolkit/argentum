@@ -34,19 +34,19 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
     ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
         use crate::db_diesel::schema::ag_user_anonymous_binding;
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(AnonymousBindingRepositoryError::Find(Some(Box::new(e)))),
         };
 
         let uid = self.id_factory.id_to_uuid(id);
         let results: Result<AnonymousBindingModel, diesel::result::Error> =
-            ag_user_anonymous_binding::table.find(uid).first(&conn);
+            ag_user_anonymous_binding::table.find(uid).first(&mut conn);
 
         match results {
             Ok(b) => Ok(Some(AnonymousBinding::new(
-                self.id_factory.uuid_to_id(b.user_id),
-                self.id_factory.uuid_to_id(b.anonymous_id),
+                self.id_factory.uuid_to_id(b.user_id.into()),
+                self.id_factory.uuid_to_id(b.anonymous_id.into()),
             ))),
 
             Err(DieselError::NotFound) => Ok(None),
@@ -60,19 +60,19 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
         let user_id = self.id_factory.id_to_uuid(&binding.user_id);
         let anonymous_id = self.id_factory.id_to_uuid(&binding.anonymous_id);
         let new_binding = AnonymousBindingModel {
-            user_id,
-            anonymous_id,
+            user_id: user_id.into(),
+            anonymous_id: anonymous_id.into(),
             created_at: binding.created_at,
         };
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(AnonymousBindingRepositoryError::Save(Some(Box::new(e)))),
         };
 
         let result = diesel::insert_into(ag_user_anonymous_binding::table)
             .values(&new_binding)
-            .execute(&conn);
+            .execute(&mut conn);
 
         match result {
             Ok(_) => Ok(()),

@@ -33,14 +33,14 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
     fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         use crate::db_diesel::schema::ag_user_authenticated;
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
         };
 
         let uid = self.id_factory.id_to_uuid(id);
         let results: Result<AuthenticatedUserModel, diesel::result::Error> =
-            ag_user_authenticated::table.find(uid).first(&conn);
+            ag_user_authenticated::table.find(uid).first(&mut conn);
 
         match results {
             Ok(u) => {
@@ -69,7 +69,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
                 };
 
                 Ok(Some(AuthenticatedUser::new(
-                    &self.id_factory.uuid_to_id(u.id),
+                    &self.id_factory.uuid_to_id(u.id.into()),
                     name,
                     email,
                 )))
@@ -87,7 +87,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
         use crate::db_diesel::schema::ag_user_authenticated;
         use crate::db_diesel::schema::ag_user_authenticated::dsl;
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
         };
@@ -95,7 +95,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
         let results = ag_user_authenticated::table
             .filter(dsl::email.eq(email.as_string()))
             .limit(1)
-            .load::<AuthenticatedUserModel>(&conn);
+            .load::<AuthenticatedUserModel>(&mut conn);
 
         match results {
             Ok(items) => match items.first() {
@@ -125,7 +125,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
                     };
 
                     Ok(Some(AuthenticatedUser {
-                        id: self.id_factory.uuid_to_id(item.id),
+                        id: self.id_factory.uuid_to_id(item.id.into()),
                         created_at: item.created_at,
                         name,
                         email,
@@ -147,21 +147,21 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
 
         let id = self.id_factory.id_to_uuid(&user.id);
         let new_user = AuthenticatedUserModel {
-            id,
+            id: id.into(),
             created_at: user.created_at,
             first_name: user.name.first.to_string(),
             last_name: last,
             email: user.email.as_string(),
         };
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
         };
 
         let result = diesel::insert_into(ag_user_authenticated::table)
             .values(&new_user)
-            .execute(&conn);
+            .execute(&mut conn);
 
         match result {
             Ok(_) => Ok(()),

@@ -7,13 +7,13 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct AnonymousRegistrationResult {
-    pub aonymous_id: String,
+    pub aonymous_id: uuid::Uuid,
 
     pub token: String,
 }
 
 impl AnonymousRegistrationResult {
-    pub fn new(aonymous_id: String, token: String) -> Self {
+    pub fn new(aonymous_id: uuid::Uuid, token: String) -> Self {
         Self { aonymous_id, token }
     }
 }
@@ -55,7 +55,7 @@ impl DeserializableSchemaRaw<'_> for AnonymousRegistrationResult {
 #[derive(serde::Deserialize)]
 pub struct AnonymousRegistrationResultRaw {
     #[serde(rename = "aonymous_id")]
-    pub aonymous_id: Option<String>,
+    pub aonymous_id: Option<uuid::Uuid>,
     #[serde(rename = "token")]
     pub token: Option<String>,
 }

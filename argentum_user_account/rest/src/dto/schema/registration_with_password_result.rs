@@ -7,11 +7,11 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct RegistrationWithPasswordResult {
-    pub id: String,
+    pub id: uuid::Uuid,
 }
 
 impl RegistrationWithPasswordResult {
-    pub fn new(id: String) -> Self {
+    pub fn new(id: uuid::Uuid) -> Self {
         Self { id }
     }
 }
@@ -46,5 +46,5 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordResult {
 #[derive(serde::Deserialize)]
 pub struct RegistrationWithPasswordResultRaw {
     #[serde(rename = "id")]
-    pub id: Option<String>,
+    pub id: Option<uuid::Uuid>,
 }

@@ -4,11 +4,11 @@ use argentum_rest_infrastructure::data_type::error::{
 };
 use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_user_account_api::models::LoginResult;
 use argentum_user_account_business::use_case::user_logins_with_password::{
     LoginError, UserLoginsWithPasswordUc,
 };
 use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
+use argentum_user_account_rest::dto::schema::LoginResult;
 use argentum_user_account_rest::server::handler::UserLoginsWithPasswordTrait;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
@@ -59,7 +59,7 @@ impl UserLoginsWithPasswordTrait for UserLoginsWithPasswordHandler {
             Ok(session) => {
                 let id = self.id_factory.id_to_uuid(&session.user_id);
 
-                let dto = LoginResult::new(id, session.token);
+                let dto = LoginResult::new(session.token, id);
 
                 Ok(HttpResponse::new(StatusCode::OK, Box::new(dto)))
             }

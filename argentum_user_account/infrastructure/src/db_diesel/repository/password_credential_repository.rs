@@ -11,6 +11,7 @@ use std::sync::Arc;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
 use diesel::{QueryDsl, RunQueryDsl};
+use diesel_ulid::DieselUlid;
 
 pub struct PasswordCredentialRepository {
     connection: Arc<ConnectionPoolManager>,
@@ -32,19 +33,19 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
 
         let user_id = self.id_factory.id_to_uuid(&cred.user_id);
         let new_cred = PasswordCredentialModel {
-            user_id,
+            user_id: user_id.into(),
             password: cred.password.clone(),
             salt: cred.salt.clone(),
         };
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(PasswordCredentialRepositoryError::Other(Some(Box::new(e)))),
         };
 
         let result = diesel::insert_into(ag_user_account_password_credential::table)
             .values(&new_cred)
-            .execute(&conn);
+            .execute(&mut conn);
 
         match result {
             Ok(_) => Ok(()),
@@ -58,7 +59,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
     ) -> Result<Option<PasswordCredential>, PasswordCredentialRepositoryError> {
         use crate::db_diesel::schema::ag_user_account_password_credential;
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(PasswordCredentialRepositoryError::Other(Some(Box::new(e)))),
         };
@@ -67,12 +68,12 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
 
         let results: Result<PasswordCredentialModel, diesel::result::Error> =
             ag_user_account_password_credential::table
-                .find(uuid)
-                .first(&conn);
+                .find(Into::<DieselUlid>::into(uuid))
+                .first(&mut conn);
 
         match results {
             Ok(c) => Ok(Some(PasswordCredential {
-                user_id: self.id_factory.uuid_to_id(c.user_id),
+                user_id: self.id_factory.uuid_to_id(c.user_id.into()),
                 password: c.password.clone(),
                 salt: c.salt,
             })),
@@ -84,16 +85,17 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
     fn delete(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         use crate::db_diesel::schema::ag_user_account_password_credential::dsl;
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => return Err(PasswordCredentialRepositoryError::Other(Some(Box::new(e)))),
         };
 
-        let result = diesel::delete(
-            dsl::ag_user_account_password_credential
-                .filter(dsl::user_id.eq(self.id_factory.id_to_uuid(&cred.user_id))),
-        )
-        .execute(&conn);
+        let result = diesel::delete(dsl::ag_user_account_password_credential.filter(
+            dsl::user_id.eq(Into::<DieselUlid>::into(
+                self.id_factory.id_to_uuid(&cred.user_id.clone()),
+            )),
+        ))
+        .execute(&mut conn);
 
         match result {
             Ok(_) => Ok(()),

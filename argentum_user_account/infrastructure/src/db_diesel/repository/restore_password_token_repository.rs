@@ -11,6 +11,7 @@ use std::sync::Arc;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
 use diesel::{QueryDsl, RunQueryDsl};
+use diesel_ulid::DieselUlid;
 
 pub struct RestorePasswordTokenRepository {
     connection: Arc<ConnectionPoolManager>,
@@ -36,18 +37,18 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
         use crate::db_diesel::schema::ag_user_account_restore_password_token;
 
-        let conn = self.connection.get_pooled_connection().unwrap();
+        let mut conn = self.connection.get_pooled_connection().unwrap();
         let uuid = self.id_factory.id_to_uuid(token_id);
 
         let results: Result<RestorePasswordTokenModel, diesel::result::Error> =
             ag_user_account_restore_password_token::table
-                .find(uuid)
-                .first(&conn);
+                .find(Into::<DieselUlid>::into(uuid))
+                .first(&mut conn);
 
         match results {
             Ok(t) => Ok(Some(RestorePasswordToken {
-                id: self.id_factory.uuid_to_id(t.id),
-                user_id: self.id_factory.uuid_to_id(t.user_id),
+                id: self.id_factory.uuid_to_id(t.id.into()),
+                user_id: self.id_factory.uuid_to_id(t.user_id.into()),
                 token: t.token,
                 created_at: t.created_at,
             })),
@@ -65,18 +66,18 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
         use crate::db_diesel::schema::ag_user_account_restore_password_token;
         use crate::db_diesel::schema::ag_user_account_restore_password_token::dsl;
 
-        let conn = self.connection.get_pooled_connection().unwrap();
+        let mut conn = self.connection.get_pooled_connection().unwrap();
 
         let results = ag_user_account_restore_password_token::table
             .filter(dsl::token.eq(token_str))
             .limit(1)
-            .load::<RestorePasswordTokenModel>(&conn);
+            .load::<RestorePasswordTokenModel>(&mut conn);
 
         match results {
             Ok(items) => match items.first() {
                 Some(item) => Ok(Some(RestorePasswordToken {
-                    id: self.id_factory.uuid_to_id(item.id),
-                    user_id: self.id_factory.uuid_to_id(item.user_id),
+                    id: self.id_factory.uuid_to_id(item.id.into()),
+                    user_id: self.id_factory.uuid_to_id(item.user_id.into()),
                     token: item.token.clone(),
                     created_at: item.created_at,
                 })),
@@ -97,13 +98,13 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
         let id = self.id_factory.id_to_uuid(&token.id);
         let user_id = self.id_factory.id_to_uuid(&token.user_id);
         let new_token = RestorePasswordTokenModel {
-            id,
-            user_id,
+            id: id.into(),
+            user_id: user_id.into(),
             token: token.token.clone(),
             created_at: token.created_at,
         };
 
-        let conn = match self.connection.get_pooled_connection() {
+        let mut conn = match self.connection.get_pooled_connection() {
             Ok(c) => c,
             Err(e) => {
                 return Err(RestorePasswordTokenRepositoryError::Other(Some(Box::new(
@@ -114,7 +115,7 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
 
         match diesel::insert_into(ag_user_account_restore_password_token::table)
             .values(&new_token)
-            .execute(&conn)
+            .execute(&mut conn)
         {
             Ok(_) => Ok(()),
             Err(e) => Err(RestorePasswordTokenRepositoryError::Save(Some(Box::new(e)))),
@@ -124,13 +125,14 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
     fn delete_users_tokens(&self, user_id: &Id) -> Result<(), RestorePasswordTokenRepositoryError> {
         use crate::db_diesel::schema::ag_user_account_restore_password_token::dsl;
 
-        let conn = self.connection.get_pooled_connection().unwrap();
+        let mut conn = self.connection.get_pooled_connection().unwrap();
 
-        let result = diesel::delete(
-            dsl::ag_user_account_restore_password_token
-                .filter(dsl::user_id.eq(self.id_factory.id_to_uuid(user_id))),
-        )
-        .execute(&conn);
+        let result = diesel::delete(dsl::ag_user_account_restore_password_token.filter(
+            dsl::user_id.eq(Into::<DieselUlid>::into(
+                self.id_factory.id_to_uuid(user_id),
+            )),
+        ))
+        .execute(&mut conn);
 
         match result {
             Ok(_) => Ok(()),

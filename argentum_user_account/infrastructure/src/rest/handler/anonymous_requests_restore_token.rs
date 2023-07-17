@@ -2,10 +2,10 @@ use crate::rest::transformer::DtoToAnonymousRequestsRestoreTokenParams;
 use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
 use argentum_rest_infrastructure::data_type::HttpResponse;
-use argentum_user_account_api::models::EmptyResponse;
 use argentum_user_account_business::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
 use argentum_user_account_rest::dto::request::AnonymousRequestsRestoreTokenRequest;
+use argentum_user_account_rest::dto::schema::EmptyResponse;
 use argentum_user_account_rest::server::handler::AnonymousRequestsRestoreTokenTrait;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
@@ -47,7 +47,7 @@ impl AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler
 
         match result {
             Ok(_) => {
-                let dto = EmptyResponse::from(serde_json::Value::Null);
+                let dto = EmptyResponse::new();
 
                 Ok(HttpResponse::new(StatusCode::OK, Box::new(dto)))
             }

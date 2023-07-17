@@ -1,5 +1,7 @@
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::{RefOrObject, Schema, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::{
+    RefOrObject, Schema, SchemaFormat, SchemaType, SpecificationRoot, StandardFormat,
+};
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::error::Error;
@@ -49,6 +51,15 @@ impl SchemaGenerator {
                 let (mut data_type, raw_type, is_ref) = match property {
                     RefOrObject::Object(schema) => match schema.schema_type {
                         None => ("()".to_string(), "Option<()>".to_string(), false),
+                        Some(SchemaType::String) => match schema.format {
+                            None => ("String".to_string(), "Option<String>".to_string(), false),
+                            Some(SchemaFormat::Standard(StandardFormat::Uuid)) => (
+                                "uuid::Uuid".to_string(),
+                                "Option<uuid::Uuid>".to_string(),
+                                false,
+                            ),
+                            Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
+                        },
                         Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
                     },
                     RefOrObject::Ref(r) => {

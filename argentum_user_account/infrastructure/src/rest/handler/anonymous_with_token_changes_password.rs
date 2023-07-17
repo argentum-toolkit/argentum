@@ -7,7 +7,7 @@ use argentum_user_account_rest::server::handler::{
 use crate::rest::transformer::{ DtoToAnonymousWithTokenChangesPasswordParams};
 use argentum_rest_infrastructure::data_type::error::{ HttpError, InternalServerError, UnprocessableEntity};
 use argentum_rest_infrastructure::data_type::HttpResponse;
-use argentum_user_account_api::models::EmptyResponse;
+use argentum_user_account_rest::dto::schema::EmptyResponse;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
 use argentum_user_business::entity::user::User;
 use hyper::StatusCode;
@@ -48,7 +48,7 @@ impl AnonymousWithTokenChangesPasswordTrait for AnonymousWithTokenChangesPasswor
 
         match result {
             Ok(_) => {
-                let dto = EmptyResponse::from(serde_json::Value::Null);
+                let dto = EmptyResponse::new();
 
                 Ok(HttpResponse::new(StatusCode::OK, Box::new(dto)))
             }
