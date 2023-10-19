@@ -99,7 +99,7 @@ impl RequestGenerator {
                             panic!("Wrong format of reference {}", r.reference)
                         }
 
-                        let file_path = parts.first().unwrap_or_else(|| {
+                        let _file_path = parts.first().unwrap_or_else(|| {
                             panic!("Wrong file path of reference {}", r.reference)
                         });
 

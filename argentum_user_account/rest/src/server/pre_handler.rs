@@ -37,15 +37,18 @@ impl UserAccountPreHandler {
         UserAccountPreHandler {
             request_transformer,
             bearer_auth,
-            anonymous_registers,
-            anonymous_requests_restore_token,
-            anonymous_with_token_changes_password,
-            user_logins_with_password,
-            user_registers_with_password,
+                anonymous_registers,
+                anonymous_requests_restore_token,
+                anonymous_with_token_changes_password,
+                user_logins_with_password,
+                user_registers_with_password,
         }
     }
 
-    pub async fn anonymous_registers(&self) -> Result<HttpResponse, HttpError> {
+    pub async fn anonymous_registers(
+        &self,
+        
+    ) -> Result<HttpResponse, HttpError> {
         self.anonymous_registers.handle()
     }
 
@@ -108,4 +111,5 @@ impl UserAccountPreHandler {
 
         self.user_registers_with_password.handle(req, user)
     }
+
 }

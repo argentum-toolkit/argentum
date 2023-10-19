@@ -38,28 +38,24 @@ impl Router for UserAccountRouter {
         let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
 
         match segments.as_slice() {
-            ["user", "anonymous-register"] => match *req.method() {
-                Method::POST => self.pre_handler.anonymous_registers().await,
+            ["user","anonymous-register",] => match *req.method() {
+                    Method::POST => self.pre_handler.anonymous_registers().await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
-            ["user", "password-login"] => match *req.method() {
-                Method::POST => self.pre_handler.user_logins_with_password(req).await,
+            ["user","password-login",] => match *req.method() {
+                    Method::POST => self.pre_handler.user_logins_with_password(req).await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
-            ["user", "register"] => match *req.method() {
-                Method::POST => self.pre_handler.user_registers_with_password(req).await,
+            ["user","register",] => match *req.method() {
+                    Method::POST => self.pre_handler.user_registers_with_password(req).await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
-            ["user", "restore-password", "change-password"] => match *req.method() {
-                Method::POST => {
-                    self.pre_handler
-                        .anonymous_with_token_changes_password(req)
-                        .await
-                }
+            ["user","restore-password","change-password",] => match *req.method() {
+                    Method::POST => self.pre_handler.anonymous_with_token_changes_password(req).await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
-            ["user", "restore-password", "token-request"] => match *req.method() {
-                Method::POST => self.pre_handler.anonymous_requests_restore_token(req).await,
+            ["user","restore-password","token-request",] => match *req.method() {
+                    Method::POST => self.pre_handler.anonymous_requests_restore_token(req).await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
             _ => self.error_pre_handler.not_found(req).await,

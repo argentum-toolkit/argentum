@@ -5,16 +5,24 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct ProblemDetail {
     pub code: String,
 
     pub message: Option<String>,
+
 }
 
 impl ProblemDetail {
-    pub fn new(code: String, message: Option<String>) -> Self {
-        Self { code, message }
+    pub fn new(
+        code: String,
+        message: Option<String>,
+    ) -> Self {
+        Self {
+            code,
+            message,
+        }
     }
 }
 
@@ -26,17 +34,20 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let code = raw.code;
-        if code.is_none() {
-            argentum_violations.insert(
-                "code".into(),
-                Violations::new(vec!["field is required".to_string()], None),
-            );
-        }
-        let message = raw.message;
+                let code = raw.code;
+                    if code.is_none() {
+                        argentum_violations.insert(
+                            "code".into(),
+                            Violations::new(vec!["field is required".to_string()], None),
+                        );
+                    }
+                let message = raw.message;
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(code.unwrap(), message))
+            Ok(Self::new(
+                code.unwrap(),
+                message,
+            ))
         } else {
             Err(Violations::new(
                 vec!["wrong data for ProblemDetail".to_string()],
@@ -44,6 +55,7 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
             ))
         }
     }
+
 }
 
 #[derive(serde::Deserialize)]

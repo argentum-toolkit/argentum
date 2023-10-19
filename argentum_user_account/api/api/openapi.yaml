@@ -258,17 +258,18 @@ components:
   schemas:
     AnonymousRegistrationResult:
       example:
-        aonymous_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        anonymous_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
         token: token
       properties:
-        aonymous_id:
+        anonymous_id:
           format: uuid
           type: string
         token:
           type: string
       required:
-      - aonymous_id
+      - anonymous_id
       - token
+      type: object
     ProblemDetail:
       description: RFC 7807 Problem Details for HTTP APIs
       properties:
@@ -292,6 +293,7 @@ components:
           type: string
       required:
       - id
+      type: object
     LoginResult:
       example:
         user_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
@@ -305,15 +307,19 @@ components:
       required:
       - token
       - user_id
+      type: object
     EmptyResponse:
       title: Empty response
     RegistrationWithPasswordSchema:
       example:
         password: password
         name:
-          patronymic: patronymic
-          last: Marko
-          first: Winston
+          tst:
+            tst1_1: Winston
+            tst1_2: Marko
+            tst1_3:
+              tst1: Winston
+              tst2: Marko
         email: email
       properties:
         email:
@@ -328,6 +334,7 @@ components:
       - email
       - name
       - password
+      type: object
     LoginWithPasswordSchema:
       example:
         password: secure-password
@@ -344,6 +351,7 @@ components:
       required:
       - email
       - password
+      type: object
     RequestRestoreTokenSchema:
       example:
         email: test-email@test-email.com
@@ -354,6 +362,7 @@ components:
           type: string
       required:
       - email
+      type: object
     ChangePasswordSchema:
       example:
         password: password
@@ -367,28 +376,57 @@ components:
       required:
       - password
       - token
+      type: object
     UserName:
       example:
-        patronymic: patronymic
-        last: Marko
-        first: Winston
+        tst:
+          tst1_1: Winston
+          tst1_2: Marko
+          tst1_3:
+            tst1: Winston
+            tst2: Marko
       properties:
-        first:
+        tst:
+          $ref: '#/components/schemas/TestTestTest'
+      required:
+      - tst
+      type: object
+    TestTestTest:
+      example:
+        tst1_1: Winston
+        tst1_2: Marko
+        tst1_3:
+          tst1: Winston
+          tst2: Marko
+      properties:
+        tst1_1:
           example: Winston
           maxLength: 255
           minLength: 1
           type: string
-        last:
+        tst1_2:
           example: Marko
           maxLength: 255
           minLength: 1
           type: string
-        patronymic:
+        tst1_3:
+          $ref: '#/components/schemas/TestTestTest2'
+      type: object
+    TestTestTest2:
+      example:
+        tst1: Winston
+        tst2: Marko
+      properties:
+        tst1:
+          example: Winston
           maxLength: 255
           minLength: 1
           type: string
-      required:
-      - first
+        tst2:
+          example: Marko
+          maxLength: 255
+          minLength: 1
+          type: string
   securitySchemes:
     bearerAuth:
       scheme: bearer

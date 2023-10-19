@@ -5,26 +5,38 @@ use std::collections::BTreeMap;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Schema {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub example: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub required: Option<Vec<String>>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub properties: Option<BTreeMap<String, RefOrObject<Self>>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maximum: Option<f64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimum: Option<f64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_length: Option<u32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_length: Option<u32>,
 
     #[serde(rename = "type")]
     pub schema_type: Option<SchemaType>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub format: Option<SchemaFormat>,
-
-    pub maximum: Option<f64>,
-
-    pub minimum: Option<f64>,
-
-    pub max_length: Option<u32>,
-
-    pub min_length: Option<u32>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

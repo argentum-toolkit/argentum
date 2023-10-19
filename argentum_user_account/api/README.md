@@ -14,7 +14,7 @@ To see how to make this your own, look here:
 [README]((https://openapi-generator.tech))
 
 - API version: 0.1.0-dev
-- Build date: 2023-07-05T01:42:58.147208Z[Etc/UTC]
+- Build date: 2023-10-22T20:17:58.576330Z[Etc/UTC]
 
 For more information, please visit [https://gitlab.com/argentum-toolkit/argentum](https://gitlab.com/argentum-toolkit/argentum)
 
@@ -113,6 +113,8 @@ Method | HTTP request | Description
  - [RegistrationWithPasswordResult](docs/RegistrationWithPasswordResult.md)
  - [RegistrationWithPasswordSchema](docs/RegistrationWithPasswordSchema.md)
  - [RequestRestoreTokenSchema](docs/RequestRestoreTokenSchema.md)
+ - [TestTestTest](docs/TestTestTest.md)
+ - [TestTestTest2](docs/TestTestTest2.md)
  - [UserName](docs/UserName.md)
 
 

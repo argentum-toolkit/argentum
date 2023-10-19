@@ -1,0 +1,24 @@
+openapi: 3.0.3
+
+info:
+  title: Test
+  version: 0.1.0-dev
+paths: {}
+
+components:
+  schemas:
+    TestTestTest:
+      type: object
+      properties:
+        tst1_1:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Winston
+        tst1_2:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Marko
+        tst1_3:
+          $ref: '../test2.oas.yaml#/components/schemas/TestTestTest2'

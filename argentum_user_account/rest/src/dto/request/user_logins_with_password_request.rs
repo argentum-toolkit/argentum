@@ -1,6 +1,6 @@
+use argentum_rest_infrastructure::data_type::HttpRequest;
 use crate::dto::params::UserLoginsWithPasswordParams;
 use crate::dto::schema::LoginWithPasswordSchema;
-use argentum_rest_infrastructure::data_type::HttpRequest;
 
 pub struct UserLoginsWithPasswordRequest {
     pub body: LoginWithPasswordSchema,

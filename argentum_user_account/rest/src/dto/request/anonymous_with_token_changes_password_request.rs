@@ -1,6 +1,6 @@
+use argentum_rest_infrastructure::data_type::HttpRequest;
 use crate::dto::params::AnonymousWithTokenChangesPasswordParams;
 use crate::dto::schema::ChangePasswordSchema;
-use argentum_rest_infrastructure::data_type::HttpRequest;
 
 pub struct AnonymousWithTokenChangesPasswordRequest {
     pub body: ChangePasswordSchema,

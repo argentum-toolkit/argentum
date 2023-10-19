@@ -8,6 +8,7 @@ paths: {}
 components:
   schemas:
     RegistrationWithPasswordSchema:
+      type: object
       properties:
         email:
           type: string
@@ -23,17 +24,19 @@ components:
         - password
 
     AnonymousRegistrationResult:
+      type: object
       properties:
-        aonymous_id:
+        anonymous_id:
           type: string
           format: uuid
         token:
           type: string
       required:
-        - aonymous_id
+        - anonymous_id
         - token
 
     RegistrationWithPasswordResult:
+      type: object
       properties:
         id:
           type: string
@@ -42,6 +45,7 @@ components:
         - id
 
     LoginResult:
+      type: object
       properties:
         user_id:
           type: string
@@ -53,6 +57,7 @@ components:
         - token
 
     LoginWithPasswordSchema:
+      type: object
       properties:
         email:
           type: string
@@ -67,6 +72,7 @@ components:
         - password
 
     RequestRestoreTokenSchema:
+      type: object
       properties:
         email:
           type: string
@@ -76,6 +82,7 @@ components:
         - email
 
     ChangePasswordSchema:
+      type: object
       properties:
         token:
           type: string

@@ -11,6 +11,18 @@ pub struct SpecificationRoot {
 }
 
 impl SpecificationRoot {
+    pub fn new_empty() -> Self {
+        Self {
+            openapi: "".to_string(),
+            paths: Default::default(),
+            components: Components {
+                request_bodies: Default::default(),
+                schemas: Default::default(),
+                responses: Default::default(),
+            },
+        }
+    }
+
     pub fn operations(&self) -> Vec<Operation> {
         let mut operations: Vec<Operation> = vec![];
 

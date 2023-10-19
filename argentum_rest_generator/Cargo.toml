@@ -21,3 +21,12 @@ serde_yaml="0.9.*"
 
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
 argentum_openapi_infrastructure = { path = "../argentum_openapi/infrastructure" }
+
+
+[[bin]]
+name = "merge"
+path = "src/merge.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"

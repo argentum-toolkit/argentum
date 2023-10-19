@@ -125,13 +125,16 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 == TODO
 
+* openapi merge tool
+** repsonses
+** paths
 * rest-generator
 ** generate by openapi spec
 ** replace package name in generated code (find user_account in templates)
 ** generate models and responses and remove package api
 ** generate `path params`
 ** fix code duplication
-** adoc documentation for argentum_res
+** adoc documentation for argentum_rest
 ** generate readme.adoc
 * New type for Password
 * add examples to OpenAPI doc

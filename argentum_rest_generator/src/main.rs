@@ -1,14 +1,16 @@
+use std::collections::BTreeMap;
 use crate::generator::dto::{DtoGenerator, ParamsGenerator, RequestGenerator, SchemaGenerator};
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
 use crate::generator::{CargoTomlGenerator, DiGenerator, GitIgnoreGenerator, LibGenerator};
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::SpecificationRoot;
+use argentum_openapi_infrastructure::data_type::{Components, RefOrObject, Schema, SchemaType, SpecificationRoot};
 use convert_case::{Case, Casing};
 use handlebars::{handlebars_helper, Handlebars};
 use std::error::Error;
 use std::fs;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 pub(crate) mod generator;
@@ -101,11 +103,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let gitignore_generator = GitIgnoreGenerator::new(renderer.clone());
     let schema_generator = SchemaGenerator::new(renderer);
 
-    let f = fs::File::open(cli.input).expect("LogRocket: Should have been able to read the file");
 
-    let spec: SpecificationRoot = serde_yaml::from_reader(f).expect("Could not read values.");
 
-    println!("{:#?}", spec);
+    let (mut spec, full_path) = load(cli.input);
+
+    //todo: combine
+
+    println!("{:#?}", res_spec);
 
     //generation
     dto_generator.generate()?;
@@ -122,4 +126,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     schema_generator.generate(&spec)?;
 
     Ok(())
+}
+
+/// String: full path of current file with OpenAPI specification
+fn load(file_path: String) -> (SpecificationRoot, PathBuf) {
+
+    let path = PathBuf::from(file_path);
+
+    let f = fs::File::open(path.clone()).expect("LogRocket: Should have been able to read the file");
+
+    let spec: SpecificationRoot = serde_yaml::from_reader(f).expect("Could not read values.");
+
+    (spec, path)
 }
