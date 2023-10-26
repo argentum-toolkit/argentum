@@ -1,5 +1,6 @@
-use crate::data_type::{Reference, RefOrObject, RequestBody, Security};
+use crate::data_type::{RefOrObject, Reference, RequestBody, Response, Security};
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -18,13 +19,12 @@ pub struct Operation {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub summary: Option<String>,
 
-
-    //todo:tags
-    // pub responses: Option<RefOrObject<RequestBody>>,
+    #[serde(default)]
+    pub responses: BTreeMap<String, RefOrObject<Response>>,
 }
 
 impl Operation {
     pub fn set_request_body_as_ref(&mut self, reference: String) {
-        self.request_body = Some(RefOrObject::Ref(Reference{reference}))
+        self.request_body = Some(RefOrObject::Ref(Reference { reference }))
     }
 }

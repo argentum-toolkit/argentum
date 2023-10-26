@@ -1,13 +1,21 @@
-#![allow(missing_docs, trivial_casts, unused_variables, unused_mut, unused_imports, unused_extern_crates, non_camel_case_types)]
+#![allow(
+    missing_docs,
+    trivial_casts,
+    unused_variables,
+    unused_mut,
+    unused_imports,
+    unused_extern_crates,
+    non_camel_case_types
+)]
 #![allow(unused_imports, unused_attributes)]
 #![allow(clippy::derive_partial_eq_without_eq, clippy::disallowed_names)]
 
 use async_trait::async_trait;
 use futures::Stream;
+use serde::{Deserialize, Serialize};
 use std::error::Error;
-use std::task::{Poll, Context};
+use std::task::{Context, Poll};
 use swagger::{ApiError, ContextWrapper};
-use serde::{Serialize, Deserialize};
 
 type ServiceError = Box<dyn Error + Send + Sync + 'static>;
 
@@ -18,163 +26,146 @@ pub const API_VERSION: &str = "0.1.0-dev";
 #[must_use]
 pub enum AnonymousRegistersResponse {
     /// Created
-    Created
-    (models::AnonymousRegistrationResult)
-    ,
+    Created(models::AnonymousRegistrationResult),
     /// Bad request
-    BadRequest
-    (models::ProblemDetail)
-    ,
+    BadRequest(models::ProblemDetail),
     /// Unprocessable Entity
-    UnprocessableEntity
-    (models::ProblemDetail)
+    UnprocessableEntity(models::ProblemDetail),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 pub enum AnonymousRequestsRestoreTokenResponse {
     /// OK
-    OK
-    (serde_json::Value)
-    ,
+    OK(serde_json::Value),
     /// Bad request
-    BadRequest
-    (models::ProblemDetail)
-    ,
+    BadRequest(models::ProblemDetail),
     /// Unauthorized
-    Unauthorized
-    (models::ProblemDetail)
+    Unauthorized(models::ProblemDetail),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 pub enum AnonymousWithTokenChangesPasswordResponse {
     /// OK
-    OK
-    (serde_json::Value)
-    ,
+    OK(serde_json::Value),
     /// Bad request
-    BadRequest
-    (models::ProblemDetail)
-    ,
+    BadRequest(models::ProblemDetail),
     /// Unauthorized
-    Unauthorized
-    (models::ProblemDetail)
+    Unauthorized(models::ProblemDetail),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 pub enum UserLoginsWithPasswordResponse {
     /// OK
-    OK
-    (models::LoginResult)
-    ,
+    OK(models::LoginResult),
     /// Bad request
-    BadRequest
-    (models::ProblemDetail)
-    ,
+    BadRequest(models::ProblemDetail),
     /// Unauthorized
-    Unauthorized
-    (models::ProblemDetail)
+    Unauthorized(models::ProblemDetail),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 pub enum UserRegistersWithPasswordResponse {
     /// Created
-    Created
-    (models::RegistrationWithPasswordResult)
-    ,
+    Created(models::RegistrationWithPasswordResult),
     /// Bad request
-    BadRequest
-    (models::ProblemDetail)
-    ,
+    BadRequest(models::ProblemDetail),
     /// Unprocessable Entity
-    UnprocessableEntity
-    (models::ProblemDetail)
+    UnprocessableEntity(models::ProblemDetail),
 }
 
 /// API
 #[async_trait]
 #[allow(clippy::too_many_arguments, clippy::ptr_arg)]
 pub trait Api<C: Send + Sync> {
-    fn poll_ready(&self, _cx: &mut Context) -> Poll<Result<(), Box<dyn Error + Send + Sync + 'static>>> {
+    fn poll_ready(
+        &self,
+        _cx: &mut Context,
+    ) -> Poll<Result<(), Box<dyn Error + Send + Sync + 'static>>> {
         Poll::Ready(Ok(()))
     }
 
     /// Anonymous registers
     async fn anonymous_registers(
         &self,
-        context: &C) -> Result<AnonymousRegistersResponse, ApiError>;
+        context: &C,
+    ) -> Result<AnonymousRegistersResponse, ApiError>;
 
     /// Anonymous requests restore password token
     async fn anonymous_requests_restore_token(
         &self,
         request_restore_token_schema: models::RequestRestoreTokenSchema,
-        context: &C) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError>;
+        context: &C,
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError>;
 
     /// User with token changes his password
     async fn anonymous_with_token_changes_password(
         &self,
         change_password_schema: models::ChangePasswordSchema,
-        context: &C) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError>;
+        context: &C,
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError>;
 
     /// Login as an user
     async fn user_logins_with_password(
         &self,
         login_with_password_schema: models::LoginWithPasswordSchema,
-        context: &C) -> Result<UserLoginsWithPasswordResponse, ApiError>;
+        context: &C,
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError>;
 
     /// User registers with password
     async fn user_registers_with_password(
         &self,
         registration_with_password_schema: models::RegistrationWithPasswordSchema,
-        context: &C) -> Result<UserRegistersWithPasswordResponse, ApiError>;
-
+        context: &C,
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError>;
 }
 
 /// API where `Context` isn't passed on every API call
 #[async_trait]
 #[allow(clippy::too_many_arguments, clippy::ptr_arg)]
 pub trait ApiNoContext<C: Send + Sync> {
-
-    fn poll_ready(&self, _cx: &mut Context) -> Poll<Result<(), Box<dyn Error + Send + Sync + 'static>>>;
+    fn poll_ready(
+        &self,
+        _cx: &mut Context,
+    ) -> Poll<Result<(), Box<dyn Error + Send + Sync + 'static>>>;
 
     fn context(&self) -> &C;
 
     /// Anonymous registers
-    async fn anonymous_registers(
-        &self,
-        ) -> Result<AnonymousRegistersResponse, ApiError>;
+    async fn anonymous_registers(&self) -> Result<AnonymousRegistersResponse, ApiError>;
 
     /// Anonymous requests restore password token
     async fn anonymous_requests_restore_token(
         &self,
         request_restore_token_schema: models::RequestRestoreTokenSchema,
-        ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError>;
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError>;
 
     /// User with token changes his password
     async fn anonymous_with_token_changes_password(
         &self,
         change_password_schema: models::ChangePasswordSchema,
-        ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError>;
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError>;
 
     /// Login as an user
     async fn user_logins_with_password(
         &self,
         login_with_password_schema: models::LoginWithPasswordSchema,
-        ) -> Result<UserLoginsWithPasswordResponse, ApiError>;
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError>;
 
     /// User registers with password
     async fn user_registers_with_password(
         &self,
         registration_with_password_schema: models::RegistrationWithPasswordSchema,
-        ) -> Result<UserRegistersWithPasswordResponse, ApiError>;
-
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError>;
 }
 
 /// Trait to extend an API to make it easy to bind it to a context.
-pub trait ContextWrapperExt<C: Send + Sync> where Self: Sized
+pub trait ContextWrapperExt<C: Send + Sync>
+where
+    Self: Sized,
 {
     /// Binds this API to a context.
     fn with_context(self, context: C) -> ContextWrapper<Self, C>;
@@ -182,7 +173,7 @@ pub trait ContextWrapperExt<C: Send + Sync> where Self: Sized
 
 impl<T: Api<C> + Send + Sync, C: Clone + Send + Sync> ContextWrapperExt<C> for T {
     fn with_context(self: T, context: C) -> ContextWrapper<T, C> {
-         ContextWrapper::<T, C>::new(self, context)
+        ContextWrapper::<T, C>::new(self, context)
     }
 }
 
@@ -197,10 +188,7 @@ impl<T: Api<C> + Send + Sync, C: Clone + Send + Sync> ApiNoContext<C> for Contex
     }
 
     /// Anonymous registers
-    async fn anonymous_registers(
-        &self,
-        ) -> Result<AnonymousRegistersResponse, ApiError>
-    {
+    async fn anonymous_registers(&self) -> Result<AnonymousRegistersResponse, ApiError> {
         let context = self.context().clone();
         self.api().anonymous_registers(&context).await
     }
@@ -209,44 +197,46 @@ impl<T: Api<C> + Send + Sync, C: Clone + Send + Sync> ApiNoContext<C> for Contex
     async fn anonymous_requests_restore_token(
         &self,
         request_restore_token_schema: models::RequestRestoreTokenSchema,
-        ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError>
-    {
+    ) -> Result<AnonymousRequestsRestoreTokenResponse, ApiError> {
         let context = self.context().clone();
-        self.api().anonymous_requests_restore_token(request_restore_token_schema, &context).await
+        self.api()
+            .anonymous_requests_restore_token(request_restore_token_schema, &context)
+            .await
     }
 
     /// User with token changes his password
     async fn anonymous_with_token_changes_password(
         &self,
         change_password_schema: models::ChangePasswordSchema,
-        ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError>
-    {
+    ) -> Result<AnonymousWithTokenChangesPasswordResponse, ApiError> {
         let context = self.context().clone();
-        self.api().anonymous_with_token_changes_password(change_password_schema, &context).await
+        self.api()
+            .anonymous_with_token_changes_password(change_password_schema, &context)
+            .await
     }
 
     /// Login as an user
     async fn user_logins_with_password(
         &self,
         login_with_password_schema: models::LoginWithPasswordSchema,
-        ) -> Result<UserLoginsWithPasswordResponse, ApiError>
-    {
+    ) -> Result<UserLoginsWithPasswordResponse, ApiError> {
         let context = self.context().clone();
-        self.api().user_logins_with_password(login_with_password_schema, &context).await
+        self.api()
+            .user_logins_with_password(login_with_password_schema, &context)
+            .await
     }
 
     /// User registers with password
     async fn user_registers_with_password(
         &self,
         registration_with_password_schema: models::RegistrationWithPasswordSchema,
-        ) -> Result<UserRegistersWithPasswordResponse, ApiError>
-    {
+    ) -> Result<UserRegistersWithPasswordResponse, ApiError> {
         let context = self.context().clone();
-        self.api().user_registers_with_password(registration_with_password_schema, &context).await
+        self.api()
+            .user_registers_with_password(registration_with_password_schema, &context)
+            .await
     }
-
 }
-
 
 #[cfg(feature = "client")]
 pub mod client;

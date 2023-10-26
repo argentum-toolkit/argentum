@@ -1,4 +1,4 @@
-use crate::data_type::{MediaTypeObject, Schema};
+use crate::data_type::MediaTypeObject;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 

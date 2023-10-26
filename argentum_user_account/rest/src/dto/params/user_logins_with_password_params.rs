@@ -3,7 +3,7 @@ use argentum_rest_infrastructure::data_type::{EmptyPathParams, HttpParams};
 
 pub struct UserLoginsWithPasswordParams {
     pub path: EmptyPathParams,
-pub headers: AuthHeaderParams,
+    pub headers: AuthHeaderParams,
 }
 
 impl HttpParams for UserLoginsWithPasswordParams {

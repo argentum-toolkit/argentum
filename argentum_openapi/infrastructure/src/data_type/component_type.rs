@@ -17,7 +17,8 @@ impl From<&str> for ComponentType {
         match value {
             "schemas" => Self::Schema,
             "requestBodies" => Self::RequestBody,
-            _ => panic!("wrong schema type")
+            "responses" => Self::Response,
+            _ => panic!("wrong schema type"),
         }
     }
 }

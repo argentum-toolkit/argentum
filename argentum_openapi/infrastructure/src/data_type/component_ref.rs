@@ -14,6 +14,10 @@ impl ComponentRef {
     pub fn is_request_body(&self) -> bool {
         self.component_type == ComponentType::RequestBody
     }
+
+    pub fn is_response(&self) -> bool {
+        self.component_type == ComponentType::Response
+    }
 }
 
 impl From<String> for ComponentRef {
@@ -24,17 +28,20 @@ impl From<String> for ComponentRef {
             panic!("Wrong format of reference {}", value)
         }
 
-        let file_path = if "" == parts[0] { None } else { Some(parts[0].to_string())};
+        let file_path = if "" == parts[0] {
+            None
+        } else {
+            Some(parts[0].to_string())
+        };
 
-        let component_path = parts.last().unwrap_or_else(|| {
-            panic!("Wrong component path of reference {}", value)
-        });
+        let component_path = parts
+            .last()
+            .unwrap_or_else(|| panic!("Wrong component path of reference {}", value));
 
         let component_parts = component_path.split('/').collect::<Vec<_>>();
 
         let component_type = ComponentType::from(component_parts[1]);
-        if component_parts.clone().len() != 3
-            || component_parts[0] != "components"
+        if component_parts.clone().len() != 3 || component_parts[0] != "components"
         // || component_parts[1] != "requestBodies"
         {
             panic!(

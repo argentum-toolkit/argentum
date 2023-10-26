@@ -12,4 +12,3 @@ pub struct Reference {
     #[serde(rename = "$ref")]
     pub reference: String,
 }
-

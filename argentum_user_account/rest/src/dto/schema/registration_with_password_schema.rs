@@ -15,15 +15,10 @@ pub struct RegistrationWithPasswordSchema {
     pub name: UserName,
 
     pub password: String,
-
 }
 
 impl RegistrationWithPasswordSchema {
-    pub fn new(
-        email: String,
-        name: UserName,
-        password: String,
-    ) -> Self {
+    pub fn new(email: String, name: UserName, password: String) -> Self {
         Self {
             email,
             name,
@@ -40,43 +35,39 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-                let email = raw.email;
-                    if email.is_none() {
-                        argentum_violations.insert(
-                            "email".into(),
-                            Violations::new(vec!["field is required".to_string()], None),
-                        );
-                    }
-                    let name = if raw.name.is_none() {
-                    argentum_violations.insert(
-                            "name".into(),
-                            Violations::new(vec!["required field".to_string()], None),
-                        );
-                        None
-                    } else {
-                        match UserName::try_from_raw(raw.name.unwrap()) {
-                            Ok(value) => Some(value),
-                            Err(v) => {
-                                argentum_violations.insert("name".into(), v);
+        let email = raw.email;
+        if email.is_none() {
+            argentum_violations.insert(
+                "email".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
+        let name = if raw.name.is_none() {
+            argentum_violations.insert(
+                "name".into(),
+                Violations::new(vec!["required field".to_string()], None),
+            );
+            None
+        } else {
+            match UserName::try_from_raw(raw.name.unwrap()) {
+                Ok(value) => Some(value),
+                Err(v) => {
+                    argentum_violations.insert("name".into(), v);
 
-                                None
-                            }
-                        }
-                    };
-                let password = raw.password;
-                    if password.is_none() {
-                        argentum_violations.insert(
-                            "password".into(),
-                            Violations::new(vec!["field is required".to_string()], None),
-                        );
-                    }
+                    None
+                }
+            }
+        };
+        let password = raw.password;
+        if password.is_none() {
+            argentum_violations.insert(
+                "password".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(
-                email.unwrap(),
-                name.unwrap(),
-                password.unwrap(),
-            ))
+            Ok(Self::new(email.unwrap(), name.unwrap(), password.unwrap()))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordSchema".to_string()],
@@ -84,7 +75,6 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
             ))
         }
     }
-
 }
 
 #[derive(serde::Deserialize)]

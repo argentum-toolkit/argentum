@@ -5,20 +5,14 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
-
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct RegistrationWithPasswordResult {
     pub id: uuid::Uuid,
-
 }
 
 impl RegistrationWithPasswordResult {
-    pub fn new(
-        id: uuid::Uuid,
-    ) -> Self {
-        Self {
-            id,
-        }
+    pub fn new(id: uuid::Uuid) -> Self {
+        Self { id }
     }
 }
 
@@ -30,18 +24,16 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordResult {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-                let id = raw.id;
-                    if id.is_none() {
-                        argentum_violations.insert(
-                            "id".into(),
-                            Violations::new(vec!["field is required".to_string()], None),
-                        );
-                    }
+        let id = raw.id;
+        if id.is_none() {
+            argentum_violations.insert(
+                "id".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(
-                id.unwrap(),
-            ))
+            Ok(Self::new(id.unwrap()))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordResult".to_string()],
@@ -49,7 +41,6 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordResult {
             ))
         }
     }
-
 }
 
 #[derive(serde::Deserialize)]

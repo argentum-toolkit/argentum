@@ -1,6 +1,6 @@
-use argentum_rest_infrastructure::data_type::HttpRequest;
 use crate::dto::params::AnonymousRequestsRestoreTokenParams;
 use crate::dto::schema::RequestRestoreTokenSchema;
+use argentum_rest_infrastructure::data_type::HttpRequest;
 
 pub struct AnonymousRequestsRestoreTokenRequest {
     pub body: RequestRestoreTokenSchema,

@@ -5,7 +5,6 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
-
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct UserName {
     pub first: String,
@@ -13,15 +12,10 @@ pub struct UserName {
     pub last: Option<String>,
 
     pub patronymic: Option<String>,
-
 }
 
 impl UserName {
-    pub fn new(
-        first: String,
-        last: Option<String>,
-        patronymic: Option<String>,
-    ) -> Self {
+    pub fn new(first: String, last: Option<String>, patronymic: Option<String>) -> Self {
         Self {
             first,
             last,
@@ -38,22 +32,18 @@ impl DeserializableSchemaRaw<'_> for UserName {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-                let first = raw.first;
-                    if first.is_none() {
-                        argentum_violations.insert(
-                            "first".into(),
-                            Violations::new(vec!["field is required".to_string()], None),
-                        );
-                    }
-                let last = raw.last;
-                let patronymic = raw.patronymic;
+        let first = raw.first;
+        if first.is_none() {
+            argentum_violations.insert(
+                "first".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
+        let last = raw.last;
+        let patronymic = raw.patronymic;
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(
-                first.unwrap(),
-                last,
-                patronymic,
-            ))
+            Ok(Self::new(first.unwrap(), last, patronymic))
         } else {
             Err(Violations::new(
                 vec!["wrong data for UserName".to_string()],
@@ -61,7 +51,6 @@ impl DeserializableSchemaRaw<'_> for UserName {
             ))
         }
     }
-
 }
 
 #[derive(serde::Deserialize)]

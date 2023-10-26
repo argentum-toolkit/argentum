@@ -5,20 +5,14 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
-
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct RequestRestoreTokenSchema {
     pub email: String,
-
 }
 
 impl RequestRestoreTokenSchema {
-    pub fn new(
-        email: String,
-    ) -> Self {
-        Self {
-            email,
-        }
+    pub fn new(email: String) -> Self {
+        Self { email }
     }
 }
 
@@ -30,18 +24,16 @@ impl DeserializableSchemaRaw<'_> for RequestRestoreTokenSchema {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-                let email = raw.email;
-                    if email.is_none() {
-                        argentum_violations.insert(
-                            "email".into(),
-                            Violations::new(vec!["field is required".to_string()], None),
-                        );
-                    }
+        let email = raw.email;
+        if email.is_none() {
+            argentum_violations.insert(
+                "email".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(
-                email.unwrap(),
-            ))
+            Ok(Self::new(email.unwrap()))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RequestRestoreTokenSchema".to_string()],
@@ -49,7 +41,6 @@ impl DeserializableSchemaRaw<'_> for RequestRestoreTokenSchema {
             ))
         }
     }
-
 }
 
 #[derive(serde::Deserialize)]

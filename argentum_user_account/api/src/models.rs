@@ -1,13 +1,12 @@
 #![allow(unused_qualifications)]
 
-use crate::models;
 #[cfg(any(feature = "client", feature = "server"))]
 use crate::header;
+use crate::models;
 
 //argentum-customization
 use argentum_rest_infrastructure::data_type::SerializableBody;
 //argentum-customization end
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
@@ -18,7 +17,6 @@ pub struct AnonymousRegistrationResult {
 
     #[serde(rename = "token")]
     pub token: String,
-
 }
 
 //argentum-customization next line
@@ -26,7 +24,7 @@ impl SerializableBody for AnonymousRegistrationResult {}
 
 impl AnonymousRegistrationResult {
     #[allow(clippy::new_without_default)]
-    pub fn new(anonymous_id: uuid::Uuid, token: String, ) -> AnonymousRegistrationResult {
+    pub fn new(anonymous_id: uuid::Uuid, token: String) -> AnonymousRegistrationResult {
         AnonymousRegistrationResult {
             anonymous_id,
             token,
@@ -41,11 +39,8 @@ impl std::string::ToString for AnonymousRegistrationResult {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
             // Skipping anonymous_id in query parameter serialization
-
-
             Some("token".to_string()),
             Some(self.token.to_string()),
-
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -76,17 +71,30 @@ impl std::str::FromStr for AnonymousRegistrationResult {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing AnonymousRegistrationResult".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing AnonymousRegistrationResult".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "anonymous_id" => intermediate_rep.anonymous_id.push(<uuid::Uuid as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "anonymous_id" => intermediate_rep.anonymous_id.push(
+                        <uuid::Uuid as std::str::FromStr>::from_str(val)
+                            .map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "token" => intermediate_rep.token.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing AnonymousRegistrationResult".to_string())
+                    "token" => intermediate_rep.token.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing AnonymousRegistrationResult".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -96,8 +104,16 @@ impl std::str::FromStr for AnonymousRegistrationResult {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(AnonymousRegistrationResult {
-            anonymous_id: intermediate_rep.anonymous_id.into_iter().next().ok_or_else(|| "anonymous_id missing in AnonymousRegistrationResult".to_string())?,
-            token: intermediate_rep.token.into_iter().next().ok_or_else(|| "token missing in AnonymousRegistrationResult".to_string())?,
+            anonymous_id: intermediate_rep
+                .anonymous_id
+                .into_iter()
+                .next()
+                .ok_or_else(|| "anonymous_id missing in AnonymousRegistrationResult".to_string())?,
+            token: intermediate_rep
+                .token
+                .into_iter()
+                .next()
+                .ok_or_else(|| "token missing in AnonymousRegistrationResult".to_string())?,
         })
     }
 }
@@ -105,41 +121,51 @@ impl std::str::FromStr for AnonymousRegistrationResult {
 // Methods for converting between header::IntoHeaderValue<AnonymousRegistrationResult> and hyper::header::HeaderValue
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<header::IntoHeaderValue<AnonymousRegistrationResult>> for hyper::header::HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<AnonymousRegistrationResult>>
+    for hyper::header::HeaderValue
+{
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<AnonymousRegistrationResult>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<AnonymousRegistrationResult>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for AnonymousRegistrationResult - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for AnonymousRegistrationResult - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderValue<AnonymousRegistrationResult> {
+impl std::convert::TryFrom<hyper::header::HeaderValue>
+    for header::IntoHeaderValue<AnonymousRegistrationResult>
+{
     type Error = String;
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <AnonymousRegistrationResult as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into AnonymousRegistrationResult - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <AnonymousRegistrationResult as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into AnonymousRegistrationResult - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
@@ -150,7 +176,6 @@ pub struct ChangePasswordSchema {
 
     #[serde(rename = "password")]
     pub password: String,
-
 }
 
 //argentum-customization next line
@@ -158,11 +183,8 @@ impl SerializableBody for ChangePasswordSchema {}
 
 impl ChangePasswordSchema {
     #[allow(clippy::new_without_default)]
-    pub fn new(token: String, password: String, ) -> ChangePasswordSchema {
-        ChangePasswordSchema {
-            token,
-            password,
-        }
+    pub fn new(token: String, password: String) -> ChangePasswordSchema {
+        ChangePasswordSchema { token, password }
     }
 }
 
@@ -172,14 +194,10 @@ impl ChangePasswordSchema {
 impl std::string::ToString for ChangePasswordSchema {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
-
             Some("token".to_string()),
             Some(self.token.to_string()),
-
-
             Some("password".to_string()),
             Some(self.password.to_string()),
-
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -210,17 +228,29 @@ impl std::str::FromStr for ChangePasswordSchema {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing ChangePasswordSchema".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing ChangePasswordSchema".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "token" => intermediate_rep.token.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "token" => intermediate_rep.token.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "password" => intermediate_rep.password.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing ChangePasswordSchema".to_string())
+                    "password" => intermediate_rep.password.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing ChangePasswordSchema".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -230,8 +260,16 @@ impl std::str::FromStr for ChangePasswordSchema {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(ChangePasswordSchema {
-            token: intermediate_rep.token.into_iter().next().ok_or_else(|| "token missing in ChangePasswordSchema".to_string())?,
-            password: intermediate_rep.password.into_iter().next().ok_or_else(|| "password missing in ChangePasswordSchema".to_string())?,
+            token: intermediate_rep
+                .token
+                .into_iter()
+                .next()
+                .ok_or_else(|| "token missing in ChangePasswordSchema".to_string())?,
+            password: intermediate_rep
+                .password
+                .into_iter()
+                .next()
+                .ok_or_else(|| "password missing in ChangePasswordSchema".to_string())?,
         })
     }
 }
@@ -239,51 +277,59 @@ impl std::str::FromStr for ChangePasswordSchema {
 // Methods for converting between header::IntoHeaderValue<ChangePasswordSchema> and hyper::header::HeaderValue
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<header::IntoHeaderValue<ChangePasswordSchema>> for hyper::header::HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<ChangePasswordSchema>>
+    for hyper::header::HeaderValue
+{
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<ChangePasswordSchema>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<ChangePasswordSchema>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for ChangePasswordSchema - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for ChangePasswordSchema - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderValue<ChangePasswordSchema> {
+impl std::convert::TryFrom<hyper::header::HeaderValue>
+    for header::IntoHeaderValue<ChangePasswordSchema>
+{
     type Error = String;
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <ChangePasswordSchema as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into ChangePasswordSchema - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <ChangePasswordSchema as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into ChangePasswordSchema - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct EmptyResponse(serde_json::Value);
 
-
 //argentum-customization next line
 impl SerializableBody for EmptyResponse {}
-
 
 impl std::convert::From<serde_json::Value> for EmptyResponse {
     fn from(x: serde_json::Value) -> Self {
@@ -310,7 +356,6 @@ impl std::ops::DerefMut for EmptyResponse {
     }
 }
 
-
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
@@ -320,7 +365,6 @@ pub struct LoginResult {
 
     #[serde(rename = "token")]
     pub token: String,
-
 }
 
 //argentum-customization next line
@@ -328,11 +372,8 @@ impl SerializableBody for LoginResult {}
 
 impl LoginResult {
     #[allow(clippy::new_without_default)]
-    pub fn new(user_id: uuid::Uuid, token: String, ) -> LoginResult {
-        LoginResult {
-            user_id,
-            token,
-        }
+    pub fn new(user_id: uuid::Uuid, token: String) -> LoginResult {
+        LoginResult { user_id, token }
     }
 }
 
@@ -343,11 +384,8 @@ impl std::string::ToString for LoginResult {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
             // Skipping user_id in query parameter serialization
-
-
             Some("token".to_string()),
             Some(self.token.to_string()),
-
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -378,17 +416,30 @@ impl std::str::FromStr for LoginResult {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing LoginResult".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing LoginResult".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "user_id" => intermediate_rep.user_id.push(<uuid::Uuid as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "user_id" => intermediate_rep.user_id.push(
+                        <uuid::Uuid as std::str::FromStr>::from_str(val)
+                            .map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "token" => intermediate_rep.token.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing LoginResult".to_string())
+                    "token" => intermediate_rep.token.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing LoginResult".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -398,8 +449,16 @@ impl std::str::FromStr for LoginResult {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(LoginResult {
-            user_id: intermediate_rep.user_id.into_iter().next().ok_or_else(|| "user_id missing in LoginResult".to_string())?,
-            token: intermediate_rep.token.into_iter().next().ok_or_else(|| "token missing in LoginResult".to_string())?,
+            user_id: intermediate_rep
+                .user_id
+                .into_iter()
+                .next()
+                .ok_or_else(|| "user_id missing in LoginResult".to_string())?,
+            token: intermediate_rep
+                .token
+                .into_iter()
+                .next()
+                .ok_or_else(|| "token missing in LoginResult".to_string())?,
         })
     }
 }
@@ -410,13 +469,16 @@ impl std::str::FromStr for LoginResult {
 impl std::convert::TryFrom<header::IntoHeaderValue<LoginResult>> for hyper::header::HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<LoginResult>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<LoginResult>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for LoginResult - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for LoginResult - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
@@ -427,21 +489,24 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <LoginResult as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into LoginResult - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <LoginResult as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into LoginResult - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
@@ -452,7 +517,6 @@ pub struct LoginWithPasswordSchema {
 
     #[serde(rename = "password")]
     pub password: String,
-
 }
 
 //argentum-customization next line
@@ -460,11 +524,8 @@ impl SerializableBody for LoginWithPasswordSchema {}
 
 impl LoginWithPasswordSchema {
     #[allow(clippy::new_without_default)]
-    pub fn new(email: String, password: String, ) -> LoginWithPasswordSchema {
-        LoginWithPasswordSchema {
-            email,
-            password,
-        }
+    pub fn new(email: String, password: String) -> LoginWithPasswordSchema {
+        LoginWithPasswordSchema { email, password }
     }
 }
 
@@ -474,14 +535,10 @@ impl LoginWithPasswordSchema {
 impl std::string::ToString for LoginWithPasswordSchema {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
-
             Some("email".to_string()),
             Some(self.email.to_string()),
-
-
             Some("password".to_string()),
             Some(self.password.to_string()),
-
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -512,17 +569,29 @@ impl std::str::FromStr for LoginWithPasswordSchema {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing LoginWithPasswordSchema".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing LoginWithPasswordSchema".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "email" => intermediate_rep.email.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "email" => intermediate_rep.email.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "password" => intermediate_rep.password.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing LoginWithPasswordSchema".to_string())
+                    "password" => intermediate_rep.password.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing LoginWithPasswordSchema".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -532,8 +601,16 @@ impl std::str::FromStr for LoginWithPasswordSchema {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(LoginWithPasswordSchema {
-            email: intermediate_rep.email.into_iter().next().ok_or_else(|| "email missing in LoginWithPasswordSchema".to_string())?,
-            password: intermediate_rep.password.into_iter().next().ok_or_else(|| "password missing in LoginWithPasswordSchema".to_string())?,
+            email: intermediate_rep
+                .email
+                .into_iter()
+                .next()
+                .ok_or_else(|| "email missing in LoginWithPasswordSchema".to_string())?,
+            password: intermediate_rep
+                .password
+                .into_iter()
+                .next()
+                .ok_or_else(|| "password missing in LoginWithPasswordSchema".to_string())?,
         })
     }
 }
@@ -541,41 +618,51 @@ impl std::str::FromStr for LoginWithPasswordSchema {
 // Methods for converting between header::IntoHeaderValue<LoginWithPasswordSchema> and hyper::header::HeaderValue
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<header::IntoHeaderValue<LoginWithPasswordSchema>> for hyper::header::HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<LoginWithPasswordSchema>>
+    for hyper::header::HeaderValue
+{
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<LoginWithPasswordSchema>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<LoginWithPasswordSchema>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for LoginWithPasswordSchema - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for LoginWithPasswordSchema - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderValue<LoginWithPasswordSchema> {
+impl std::convert::TryFrom<hyper::header::HeaderValue>
+    for header::IntoHeaderValue<LoginWithPasswordSchema>
+{
     type Error = String;
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <LoginWithPasswordSchema as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into LoginWithPasswordSchema - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <LoginWithPasswordSchema as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into LoginWithPasswordSchema - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 /// RFC 7807 Problem Details for HTTP APIs
 //argentum-customization next line
@@ -586,9 +673,8 @@ pub struct ProblemDetail {
     pub code: u32,
 
     #[serde(rename = "message")]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
-
 }
 
 //argentum-customization next line
@@ -596,7 +682,7 @@ impl SerializableBody for ProblemDetail {}
 
 impl ProblemDetail {
     #[allow(clippy::new_without_default)]
-    pub fn new(code: u32, ) -> ProblemDetail {
+    pub fn new(code: u32) -> ProblemDetail {
         ProblemDetail {
             code,
             message: None,
@@ -610,18 +696,11 @@ impl ProblemDetail {
 impl std::string::ToString for ProblemDetail {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
-
             Some("code".to_string()),
             Some(self.code.to_string()),
-
-
-            self.message.as_ref().map(|message| {
-                vec![
-                    "message".to_string(),
-                    message.to_string(),
-                ].join(",")
-            }),
-
+            self.message
+                .as_ref()
+                .map(|message| vec!["message".to_string(), message.to_string()].join(",")),
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -652,17 +731,29 @@ impl std::str::FromStr for ProblemDetail {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing ProblemDetail".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing ProblemDetail".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "code" => intermediate_rep.code.push(<u32 as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "code" => intermediate_rep.code.push(
+                        <u32 as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "message" => intermediate_rep.message.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing ProblemDetail".to_string())
+                    "message" => intermediate_rep.message.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing ProblemDetail".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -672,7 +763,11 @@ impl std::str::FromStr for ProblemDetail {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(ProblemDetail {
-            code: intermediate_rep.code.into_iter().next().ok_or_else(|| "code missing in ProblemDetail".to_string())?,
+            code: intermediate_rep
+                .code
+                .into_iter()
+                .next()
+                .ok_or_else(|| "code missing in ProblemDetail".to_string())?,
             message: intermediate_rep.message.into_iter().next(),
         })
     }
@@ -684,13 +779,16 @@ impl std::str::FromStr for ProblemDetail {
 impl std::convert::TryFrom<header::IntoHeaderValue<ProblemDetail>> for hyper::header::HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<ProblemDetail>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<ProblemDetail>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for ProblemDetail - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for ProblemDetail - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
@@ -701,21 +799,24 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <ProblemDetail as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into ProblemDetail - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <ProblemDetail as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into ProblemDetail - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
@@ -723,7 +824,6 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
 pub struct RegistrationWithPasswordResult {
     #[serde(rename = "id")]
     pub id: uuid::Uuid,
-
 }
 
 //argentum-customization next line
@@ -731,10 +831,8 @@ impl SerializableBody for RegistrationWithPasswordResult {}
 
 impl RegistrationWithPasswordResult {
     #[allow(clippy::new_without_default)]
-    pub fn new(id: uuid::Uuid, ) -> RegistrationWithPasswordResult {
-        RegistrationWithPasswordResult {
-            id,
-        }
+    pub fn new(id: uuid::Uuid) -> RegistrationWithPasswordResult {
+        RegistrationWithPasswordResult { id }
     }
 }
 
@@ -775,15 +873,27 @@ impl std::str::FromStr for RegistrationWithPasswordResult {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing RegistrationWithPasswordResult".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing RegistrationWithPasswordResult".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "id" => intermediate_rep.id.push(<uuid::Uuid as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing RegistrationWithPasswordResult".to_string())
+                    "id" => intermediate_rep.id.push(
+                        <uuid::Uuid as std::str::FromStr>::from_str(val)
+                            .map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing RegistrationWithPasswordResult"
+                                .to_string(),
+                        )
+                    }
                 }
             }
 
@@ -793,7 +903,11 @@ impl std::str::FromStr for RegistrationWithPasswordResult {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(RegistrationWithPasswordResult {
-            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in RegistrationWithPasswordResult".to_string())?,
+            id: intermediate_rep
+                .id
+                .into_iter()
+                .next()
+                .ok_or_else(|| "id missing in RegistrationWithPasswordResult".to_string())?,
         })
     }
 }
@@ -801,22 +915,29 @@ impl std::str::FromStr for RegistrationWithPasswordResult {
 // Methods for converting between header::IntoHeaderValue<RegistrationWithPasswordResult> and hyper::header::HeaderValue
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<header::IntoHeaderValue<RegistrationWithPasswordResult>> for hyper::header::HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<RegistrationWithPasswordResult>>
+    for hyper::header::HeaderValue
+{
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<RegistrationWithPasswordResult>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<RegistrationWithPasswordResult>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for RegistrationWithPasswordResult - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for RegistrationWithPasswordResult - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderValue<RegistrationWithPasswordResult> {
+impl std::convert::TryFrom<hyper::header::HeaderValue>
+    for header::IntoHeaderValue<RegistrationWithPasswordResult>
+{
     type Error = String;
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
@@ -836,7 +957,6 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
     }
 }
 
-
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
@@ -849,7 +969,6 @@ pub struct RegistrationWithPasswordSchema {
 
     #[serde(rename = "password")]
     pub password: String,
-
 }
 
 //argentum-customization next line
@@ -857,7 +976,11 @@ impl SerializableBody for RegistrationWithPasswordSchema {}
 
 impl RegistrationWithPasswordSchema {
     #[allow(clippy::new_without_default)]
-    pub fn new(email: String, name: models::UserName, password: String, ) -> RegistrationWithPasswordSchema {
+    pub fn new(
+        email: String,
+        name: models::UserName,
+        password: String,
+    ) -> RegistrationWithPasswordSchema {
         RegistrationWithPasswordSchema {
             email,
             name,
@@ -872,16 +995,11 @@ impl RegistrationWithPasswordSchema {
 impl std::string::ToString for RegistrationWithPasswordSchema {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
-
             Some("email".to_string()),
             Some(self.email.to_string()),
-
             // Skipping name in query parameter serialization
-
-
             Some("password".to_string()),
             Some(self.password.to_string()),
-
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -913,19 +1031,35 @@ impl std::str::FromStr for RegistrationWithPasswordSchema {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing RegistrationWithPasswordSchema".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing RegistrationWithPasswordSchema".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "email" => intermediate_rep.email.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "email" => intermediate_rep.email.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "name" => intermediate_rep.name.push(<models::UserName as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "name" => intermediate_rep.name.push(
+                        <models::UserName as std::str::FromStr>::from_str(val)
+                            .map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "password" => intermediate_rep.password.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing RegistrationWithPasswordSchema".to_string())
+                    "password" => intermediate_rep.password.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing RegistrationWithPasswordSchema"
+                                .to_string(),
+                        )
+                    }
                 }
             }
 
@@ -935,9 +1069,21 @@ impl std::str::FromStr for RegistrationWithPasswordSchema {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(RegistrationWithPasswordSchema {
-            email: intermediate_rep.email.into_iter().next().ok_or_else(|| "email missing in RegistrationWithPasswordSchema".to_string())?,
-            name: intermediate_rep.name.into_iter().next().ok_or_else(|| "name missing in RegistrationWithPasswordSchema".to_string())?,
-            password: intermediate_rep.password.into_iter().next().ok_or_else(|| "password missing in RegistrationWithPasswordSchema".to_string())?,
+            email: intermediate_rep
+                .email
+                .into_iter()
+                .next()
+                .ok_or_else(|| "email missing in RegistrationWithPasswordSchema".to_string())?,
+            name: intermediate_rep
+                .name
+                .into_iter()
+                .next()
+                .ok_or_else(|| "name missing in RegistrationWithPasswordSchema".to_string())?,
+            password: intermediate_rep
+                .password
+                .into_iter()
+                .next()
+                .ok_or_else(|| "password missing in RegistrationWithPasswordSchema".to_string())?,
         })
     }
 }
@@ -945,22 +1091,29 @@ impl std::str::FromStr for RegistrationWithPasswordSchema {
 // Methods for converting between header::IntoHeaderValue<RegistrationWithPasswordSchema> and hyper::header::HeaderValue
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<header::IntoHeaderValue<RegistrationWithPasswordSchema>> for hyper::header::HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<RegistrationWithPasswordSchema>>
+    for hyper::header::HeaderValue
+{
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<RegistrationWithPasswordSchema>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<RegistrationWithPasswordSchema>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for RegistrationWithPasswordSchema - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for RegistrationWithPasswordSchema - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderValue<RegistrationWithPasswordSchema> {
+impl std::convert::TryFrom<hyper::header::HeaderValue>
+    for header::IntoHeaderValue<RegistrationWithPasswordSchema>
+{
     type Error = String;
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
@@ -980,14 +1133,12 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
     }
 }
 
-
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct RequestRestoreTokenSchema {
     #[serde(rename = "email")]
     pub email: String,
-
 }
 
 //argentum-customization next line
@@ -995,10 +1146,8 @@ impl SerializableBody for RequestRestoreTokenSchema {}
 
 impl RequestRestoreTokenSchema {
     #[allow(clippy::new_without_default)]
-    pub fn new(email: String, ) -> RequestRestoreTokenSchema {
-        RequestRestoreTokenSchema {
-            email,
-        }
+    pub fn new(email: String) -> RequestRestoreTokenSchema {
+        RequestRestoreTokenSchema { email }
     }
 }
 
@@ -1007,12 +1156,8 @@ impl RequestRestoreTokenSchema {
 /// Should be implemented in a serde serializer
 impl std::string::ToString for RequestRestoreTokenSchema {
     fn to_string(&self) -> String {
-        let params: Vec<Option<String>> = vec![
-
-            Some("email".to_string()),
-            Some(self.email.to_string()),
-
-        ];
+        let params: Vec<Option<String>> =
+            vec![Some("email".to_string()), Some(self.email.to_string())];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
     }
@@ -1041,15 +1186,25 @@ impl std::str::FromStr for RequestRestoreTokenSchema {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing RequestRestoreTokenSchema".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing RequestRestoreTokenSchema".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "email" => intermediate_rep.email.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing RequestRestoreTokenSchema".to_string())
+                    "email" => intermediate_rep.email.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing RequestRestoreTokenSchema".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -1059,7 +1214,11 @@ impl std::str::FromStr for RequestRestoreTokenSchema {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(RequestRestoreTokenSchema {
-            email: intermediate_rep.email.into_iter().next().ok_or_else(|| "email missing in RequestRestoreTokenSchema".to_string())?,
+            email: intermediate_rep
+                .email
+                .into_iter()
+                .next()
+                .ok_or_else(|| "email missing in RequestRestoreTokenSchema".to_string())?,
         })
     }
 }
@@ -1067,58 +1226,67 @@ impl std::str::FromStr for RequestRestoreTokenSchema {
 // Methods for converting between header::IntoHeaderValue<RequestRestoreTokenSchema> and hyper::header::HeaderValue
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<header::IntoHeaderValue<RequestRestoreTokenSchema>> for hyper::header::HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<RequestRestoreTokenSchema>>
+    for hyper::header::HeaderValue
+{
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<RequestRestoreTokenSchema>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<RequestRestoreTokenSchema>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for RequestRestoreTokenSchema - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for RequestRestoreTokenSchema - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
 
 #[cfg(any(feature = "client", feature = "server"))]
-impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderValue<RequestRestoreTokenSchema> {
+impl std::convert::TryFrom<hyper::header::HeaderValue>
+    for header::IntoHeaderValue<RequestRestoreTokenSchema>
+{
     type Error = String;
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <RequestRestoreTokenSchema as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into RequestRestoreTokenSchema - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <RequestRestoreTokenSchema as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into RequestRestoreTokenSchema - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct TestTestTest {
     #[serde(rename = "tst1_1")]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tst1_1: Option<String>,
 
     #[serde(rename = "tst1_2")]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tst1_2: Option<String>,
 
     #[serde(rename = "tst1_3")]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tst1_3: Option<models::TestTestTest2>,
-
 }
 
 //argentum-customization next line
@@ -1141,24 +1309,13 @@ impl TestTestTest {
 impl std::string::ToString for TestTestTest {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
-
-            self.tst1_1.as_ref().map(|tst1_1| {
-                vec![
-                    "tst1_1".to_string(),
-                    tst1_1.to_string(),
-                ].join(",")
-            }),
-
-
-            self.tst1_2.as_ref().map(|tst1_2| {
-                vec![
-                    "tst1_2".to_string(),
-                    tst1_2.to_string(),
-                ].join(",")
-            }),
-
+            self.tst1_1
+                .as_ref()
+                .map(|tst1_1| vec!["tst1_1".to_string(), tst1_1.to_string()].join(",")),
+            self.tst1_2
+                .as_ref()
+                .map(|tst1_2| vec!["tst1_2".to_string(), tst1_2.to_string()].join(",")),
             // Skipping tst1_3 in query parameter serialization
-
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -1190,19 +1347,34 @@ impl std::str::FromStr for TestTestTest {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing TestTestTest".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing TestTestTest".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "tst1_1" => intermediate_rep.tst1_1.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "tst1_1" => intermediate_rep.tst1_1.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "tst1_2" => intermediate_rep.tst1_2.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "tst1_2" => intermediate_rep.tst1_2.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "tst1_3" => intermediate_rep.tst1_3.push(<models::TestTestTest2 as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing TestTestTest".to_string())
+                    "tst1_3" => intermediate_rep.tst1_3.push(
+                        <models::TestTestTest2 as std::str::FromStr>::from_str(val)
+                            .map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing TestTestTest".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -1225,13 +1397,16 @@ impl std::str::FromStr for TestTestTest {
 impl std::convert::TryFrom<header::IntoHeaderValue<TestTestTest>> for hyper::header::HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<TestTestTest>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<TestTestTest>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for TestTestTest - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for TestTestTest - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
@@ -1242,34 +1417,36 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <TestTestTest as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into TestTestTest - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <TestTestTest as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into TestTestTest - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct TestTestTest2 {
     #[serde(rename = "tst1")]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tst1: Option<String>,
 
     #[serde(rename = "tst2")]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tst2: Option<String>,
-
 }
 
 //argentum-customization next line
@@ -1291,22 +1468,12 @@ impl TestTestTest2 {
 impl std::string::ToString for TestTestTest2 {
     fn to_string(&self) -> String {
         let params: Vec<Option<String>> = vec![
-
-            self.tst1.as_ref().map(|tst1| {
-                vec![
-                    "tst1".to_string(),
-                    tst1.to_string(),
-                ].join(",")
-            }),
-
-
-            self.tst2.as_ref().map(|tst2| {
-                vec![
-                    "tst2".to_string(),
-                    tst2.to_string(),
-                ].join(",")
-            }),
-
+            self.tst1
+                .as_ref()
+                .map(|tst1| vec!["tst1".to_string(), tst1.to_string()].join(",")),
+            self.tst2
+                .as_ref()
+                .map(|tst2| vec!["tst2".to_string(), tst2.to_string()].join(",")),
         ];
 
         params.into_iter().flatten().collect::<Vec<_>>().join(",")
@@ -1337,17 +1504,29 @@ impl std::str::FromStr for TestTestTest2 {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing TestTestTest2".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing TestTestTest2".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "tst1" => intermediate_rep.tst1.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "tst1" => intermediate_rep.tst1.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
                     #[allow(clippy::redundant_clone)]
-                    "tst2" => intermediate_rep.tst2.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing TestTestTest2".to_string())
+                    "tst2" => intermediate_rep.tst2.push(
+                        <String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing TestTestTest2".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -1369,13 +1548,16 @@ impl std::str::FromStr for TestTestTest2 {
 impl std::convert::TryFrom<header::IntoHeaderValue<TestTestTest2>> for hyper::header::HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<TestTestTest2>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<TestTestTest2>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for TestTestTest2 - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for TestTestTest2 - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
@@ -1386,21 +1568,24 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <TestTestTest2 as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into TestTestTest2 - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <TestTestTest2 as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into TestTestTest2 - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-
 
 //argentum-customization next line
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, serde_valid::Validate)]
@@ -1408,7 +1593,6 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
 pub struct UserName {
     #[serde(rename = "tst")]
     pub tst: models::TestTestTest,
-
 }
 
 //argentum-customization next line
@@ -1416,10 +1600,8 @@ impl SerializableBody for UserName {}
 
 impl UserName {
     #[allow(clippy::new_without_default)]
-    pub fn new(tst: models::TestTestTest, ) -> UserName {
-        UserName {
-            tst,
-        }
+    pub fn new(tst: models::TestTestTest) -> UserName {
+        UserName { tst }
     }
 }
 
@@ -1460,15 +1642,26 @@ impl std::str::FromStr for UserName {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing UserName".to_string())
+                None => {
+                    return std::result::Result::Err(
+                        "Missing value while parsing UserName".to_string(),
+                    )
+                }
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "tst" => intermediate_rep.tst.push(<models::TestTestTest as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing UserName".to_string())
+                    "tst" => intermediate_rep.tst.push(
+                        <models::TestTestTest as std::str::FromStr>::from_str(val)
+                            .map_err(|x| x.to_string())?,
+                    ),
+                    _ => {
+                        return std::result::Result::Err(
+                            "Unexpected key while parsing UserName".to_string(),
+                        )
+                    }
                 }
             }
 
@@ -1478,7 +1671,11 @@ impl std::str::FromStr for UserName {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(UserName {
-            tst: intermediate_rep.tst.into_iter().next().ok_or_else(|| "tst missing in UserName".to_string())?,
+            tst: intermediate_rep
+                .tst
+                .into_iter()
+                .next()
+                .ok_or_else(|| "tst missing in UserName".to_string())?,
         })
     }
 }
@@ -1489,13 +1686,16 @@ impl std::str::FromStr for UserName {
 impl std::convert::TryFrom<header::IntoHeaderValue<UserName>> for hyper::header::HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<UserName>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(
+        hdr_value: header::IntoHeaderValue<UserName>,
+    ) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match hyper::header::HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Invalid header value for UserName - value: {} is invalid {}",
-                     hdr_value, e))
+            std::result::Result::Ok(value) => std::result::Result::Ok(value),
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Invalid header value for UserName - value: {} is invalid {}",
+                hdr_value, e
+            )),
         }
     }
 }
@@ -1506,18 +1706,21 @@ impl std::convert::TryFrom<hyper::header::HeaderValue> for header::IntoHeaderVal
 
     fn try_from(hdr_value: hyper::header::HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <UserName as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(
-                            format!("Unable to convert header value '{}' into UserName - {}",
-                                value, err))
+            std::result::Result::Ok(value) => {
+                match <UserName as std::str::FromStr>::from_str(value) {
+                    std::result::Result::Ok(value) => {
+                        std::result::Result::Ok(header::IntoHeaderValue(value))
                     }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(
-                 format!("Unable to convert header: {:?} to string: {}",
-                     hdr_value, e))
+                    std::result::Result::Err(err) => std::result::Result::Err(format!(
+                        "Unable to convert header value '{}' into UserName - {}",
+                        value, err
+                    )),
+                }
+            }
+            std::result::Result::Err(e) => std::result::Result::Err(format!(
+                "Unable to convert header: {:?} to string: {}",
+                hdr_value, e
+            )),
         }
     }
 }
-

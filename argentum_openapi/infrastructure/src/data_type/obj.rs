@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::data_type::{RefOrObject, Schema};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Obj {
