@@ -57,6 +57,7 @@ fn combine(spec: &mut SpecificationRoot, current_file_path: PathBuf) -> Specific
     res_spec.info = spec.info.clone();
     res_spec.security = spec.security.clone();
     res_spec.tags = spec.tags.clone();
+    res_spec.servers = spec.servers.clone();
 
     for (body_name, mut body) in &mut spec.components.request_bodies {
         let (body_spec, updated_body) = collect_request_boby(body, current_file_path.clone());

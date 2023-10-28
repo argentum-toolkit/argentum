@@ -21,8 +21,7 @@ pub struct SecuritySchemeObject {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub before_format: Option<String>,
 
-    //TODO: flows
-
+    //TODO: add field flows
     #[serde(default)]
     pub open_id_connect_url: String,
 }

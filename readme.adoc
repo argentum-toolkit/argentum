@@ -126,8 +126,8 @@ $ devops/scripts/check-item.sh {{package-name}}
 == TODO
 
 * openapi merge tool
-** repsonses
-** paths
+* implement as a struct
+* error handling
 * rest-generator
 ** generate by openapi spec
 ** replace package name in generated code (find user_account in templates)

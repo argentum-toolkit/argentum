@@ -15,5 +15,5 @@ pub struct Components {
     pub responses: BTreeMap<String, Response>,
 
     #[serde(default)]
-    pub security_schemes:BTreeMap<String, SecuritySchemeObject>,
+    pub security_schemes: BTreeMap<String, SecuritySchemeObject>,
 }

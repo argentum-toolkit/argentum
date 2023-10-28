@@ -14,6 +14,7 @@ mod response;
 mod schema;
 mod security_requirement;
 mod security_schema;
+mod server;
 mod specification_root;
 mod tag;
 
@@ -38,5 +39,6 @@ pub use schema::SchemaType;
 pub use schema::StandardFormat;
 pub use security_requirement::SecurityRequirementObject;
 pub use security_schema::SecuritySchemeObject;
+pub use server::Server;
 pub use specification_root::SpecificationRoot;
 pub use tag::Tag;
