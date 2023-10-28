@@ -136,6 +136,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+      in: header
 
 tags:
   - name: anonymous

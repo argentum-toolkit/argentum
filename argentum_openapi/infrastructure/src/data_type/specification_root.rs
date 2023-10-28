@@ -1,5 +1,5 @@
 use crate::data_type::path::Path;
-use crate::data_type::{Components, ExternalDocs, Info, Operation};
+use crate::data_type::{Components, ExternalDocs, Info, Operation, SecurityRequirementObject, Tag};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -16,9 +16,14 @@ pub struct SpecificationRoot {
     pub paths: BTreeMap<String, Path>,
 
     pub components: Components,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<Tag>>,
+
     //TODO: servers https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#licenseObject
-    //TODO: security
-    //TODO: tags
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security: Option<Vec<SecurityRequirementObject>>,
 }
 
 impl SpecificationRoot {
@@ -30,6 +35,7 @@ impl SpecificationRoot {
                 request_bodies: Default::default(),
                 schemas: Default::default(),
                 responses: Default::default(),
+                security_schemes: Default::default(),
             },
             info: Info {
                 title: Default::default(),
@@ -40,6 +46,8 @@ impl SpecificationRoot {
                 licence: None,
             },
             external_docs: None,
+            security: None,
+            tags: None,
         }
     }
 

@@ -55,6 +55,8 @@ fn combine(spec: &mut SpecificationRoot, current_file_path: PathBuf) -> Specific
     res_spec.openapi = spec.openapi.clone();
     res_spec.external_docs = spec.external_docs.clone();
     res_spec.info = spec.info.clone();
+    res_spec.security = spec.security.clone();
+    res_spec.tags = spec.tags.clone();
 
     for (body_name, mut body) in &mut spec.components.request_bodies {
         let (body_spec, updated_body) = collect_request_boby(body, current_file_path.clone());
@@ -108,12 +110,12 @@ fn combine(spec: &mut SpecificationRoot, current_file_path: PathBuf) -> Specific
             for (_response_code, mut ref_or_response) in &mut operation.responses {
                 collect_ref_to_response(ref_or_response, &mut res_spec, current_file_path.clone());
             }
-
-            //TODO: collect responses
         }
 
         res_spec.paths.insert(uri.clone(), path.clone());
     }
+
+    res_spec.components.security_schemes = spec.components.security_schemes.clone();
 
     return res_spec;
 }

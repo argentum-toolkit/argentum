@@ -1,4 +1,4 @@
-use crate::data_type::{RefOrObject, Reference, RequestBody, Response, Security};
+use crate::data_type::{RefOrObject, Reference, RequestBody, Response, SecurityRequirementObject};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -11,7 +11,10 @@ pub struct Operation {
     pub operation_id: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub security: Option<Vec<Security>>,
+    pub tags: Option<Vec<String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security: Option<Vec<SecurityRequirementObject>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_body: Option<RefOrObject<RequestBody>>,

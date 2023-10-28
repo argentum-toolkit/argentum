@@ -1,4 +1,4 @@
-use crate::data_type::{RequestBody, Response, Schema};
+use crate::data_type::{RequestBody, Response, Schema, SecuritySchemeObject};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -13,4 +13,7 @@ pub struct Components {
 
     #[serde(default)]
     pub responses: BTreeMap<String, Response>,
+
+    #[serde(default)]
+    pub security_schemes:BTreeMap<String, SecuritySchemeObject>,
 }
