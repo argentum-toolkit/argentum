@@ -15,10 +15,10 @@ pub struct ServerVariableObject {
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Server {
-    url: String,
-
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
+
+    url: String,
 
     variables: BTreeMap<String, ServerVariableObject>,
 }

@@ -10,24 +10,21 @@ components:
     UserName:
       type: object
       properties:
-#        first:
-#          type: string
-#          minLength: 1
-#          maxLength: 255
-#          example: Winston
-#        last:
-#          type: string
-#          minLength: 1
-#          maxLength: 255
-#          example: Marko
-#        patronymic:
-#          type: string
-#          minLength: 1
-#          maxLength: 255
-
-        tst:
-          $ref: './t/test.oas.yaml#/components/schemas/TestTestTest'
+        first:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Winston
+        last:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Marko
+        patronymic:
+          type: string
+          minLength: 1
+          maxLength: 255
 
       required:
         - tst
-#        - first
+        - first

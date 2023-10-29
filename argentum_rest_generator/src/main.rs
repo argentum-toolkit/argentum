@@ -2,14 +2,13 @@ use crate::generator::dto::{DtoGenerator, ParamsGenerator, RequestGenerator, Sch
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
-use crate::generator::{CargoTomlGenerator, DiGenerator, GitIgnoreGenerator, LibGenerator};
+use crate::generator::{
+    CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
+};
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::SpecificationRoot;
 use convert_case::{Case, Casing};
 use handlebars::{handlebars_helper, Handlebars};
 use std::error::Error;
-use std::fs;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 pub(crate) mod generator;
@@ -101,10 +100,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cargo_toml_generator = CargoTomlGenerator::new(renderer.clone());
     let gitignore_generator = GitIgnoreGenerator::new(renderer.clone());
     let schema_generator = SchemaGenerator::new(renderer);
+    let loader = Arc::new(OasLoader::new());
+    let combiner = Combiner::new(loader);
 
-    let (mut spec, full_path) = load(cli.input);
+    let spec = combiner.combine(cli.input);
 
-    //todo: combine
+    let f = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .open("test_main.yml")
+        .expect("Couldn't open file");
+    serde_yaml::to_writer(f, &spec).unwrap();
 
     //generation
     dto_generator.generate()?;
@@ -121,16 +127,4 @@ fn main() -> Result<(), Box<dyn Error>> {
     schema_generator.generate(&spec)?;
 
     Ok(())
-}
-
-/// String: full path of current file with OpenAPI specification
-fn load(file_path: String) -> (SpecificationRoot, PathBuf) {
-    let path = PathBuf::from(file_path);
-
-    let f =
-        fs::File::open(path.clone()).expect("LogRocket: Should have been able to read the file");
-
-    let spec: SpecificationRoot = serde_yaml::from_reader(f).expect("Could not read values.");
-
-    (spec, path)
 }

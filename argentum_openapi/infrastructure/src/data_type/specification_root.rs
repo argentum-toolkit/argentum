@@ -10,23 +10,23 @@ use std::collections::BTreeMap;
 pub struct SpecificationRoot {
     pub openapi: String,
 
+    pub info: Info,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub external_docs: Option<ExternalDocs>,
-
-    pub info: Info,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub servers: Option<Vec<Server>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub security: Option<Vec<SecurityRequirementObject>>,
+    pub tags: Option<Vec<Tag>>,
 
     pub paths: BTreeMap<String, Path>,
 
     pub components: Components,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<Vec<Tag>>,
+    pub security: Option<Vec<SecurityRequirementObject>>,
 }
 
 impl SpecificationRoot {
@@ -47,7 +47,7 @@ impl SpecificationRoot {
                 description: None,
                 terms_of_service: None,
                 contact: None,
-                licence: None,
+                license: None,
             },
             external_docs: None,
             security: None,
