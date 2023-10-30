@@ -4,6 +4,7 @@ use crate::generator::server::{
 };
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
+    OasYamlGenerator,
 };
 use crate::template::Renderer;
 use convert_case::{Case, Casing};
@@ -86,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
 
     //services
-    let renderer = Arc::new(Renderer::new(cli.output, Arc::new(reg)));
+    let renderer = Arc::new(Renderer::new(cli.output.clone(), Arc::new(reg)));
 
     let dto_generator = DtoGenerator::new(renderer.clone());
     let schema_param_generator = ParamsGenerator::new(renderer.clone());
@@ -102,17 +103,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let schema_generator = SchemaGenerator::new(renderer);
     let loader = Arc::new(OasLoader::new());
     let combiner = Combiner::new(loader);
+    let oas_yaml_generator = OasYamlGenerator::new(cli.output);
 
     let spec = combiner.combine(cli.input);
 
-    let f = std::fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .open("test_main.yml")
-        .expect("Couldn't open file");
-    serde_yaml::to_writer(f, &spec).unwrap();
-
     //generation
+    oas_yaml_generator.generate(&spec)?;
     dto_generator.generate()?;
     schema_param_generator.generate(&spec)?;
     request_generator.generate(&spec)?;

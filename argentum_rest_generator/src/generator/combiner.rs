@@ -22,7 +22,7 @@ impl Combiner {
     ) -> (SpecificationRoot, RequestBody) {
         let mut to_spec = SpecificationRoot::new_empty();
 
-        for (_content_type, mut media_type) in &mut body.content {
+        for (_content_type, media_type) in &mut body.content {
             let ref_or_schema = &mut media_type.schema;
 
             self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path.clone());
@@ -38,7 +38,7 @@ impl Combiner {
     ) -> (SpecificationRoot, Response) {
         let mut to_spec = SpecificationRoot::new_empty();
 
-        for (_content_type, mut media_type) in &mut response.content {
+        for (_content_type, media_type) in &mut response.content {
             let ref_or_schema = &mut media_type.schema;
 
             self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path.clone());
@@ -104,7 +104,7 @@ impl Combiner {
                 let (include_spec, _include_spec_file_path) =
                     self.loader.load(inner_file_path.clone());
 
-                let mut component: Option<&Schema> = include_spec
+                let component: Option<&Schema> = include_spec
                     .components
                     .schemas
                     .get(component_ref.component_name.as_str());
@@ -155,14 +155,14 @@ impl Combiner {
                 let (include_spec, _include_spec_file_path) =
                     self.loader.load(inner_file_path.clone());
 
-                let mut component: Option<&RequestBody> = include_spec
+                let component: Option<&RequestBody> = include_spec
                     .components
                     .request_bodies
                     .get(component_ref.component_name.as_str());
                 match component {
                     None => {
                         panic!(
-                            "Schema #/components/requestBodies/{} is not found",
+                            "Request body #/components/requestBodies/{} is not found",
                             component_ref.component_name.clone()
                         )
                     }
@@ -174,7 +174,7 @@ impl Combiner {
 
                         let b: &mut RequestBody = &mut s.clone();
 
-                        let (mut res_spec, res_body) =
+                        let (res_spec, res_body) =
                             self.collect_request_boby(b, inner_file_path.into());
 
                         // collect_schema_properties(ss, inner_file_path.into(), to_spec);
@@ -214,14 +214,14 @@ impl Combiner {
                 let (include_spec, _include_spec_file_path) =
                     self.loader.load(inner_file_path.clone());
 
-                let mut component: Option<&Response> = include_spec
+                let component: Option<&Response> = include_spec
                     .components
                     .responses
                     .get(component_ref.component_name.as_str());
                 match component {
                     None => {
                         panic!(
-                            "Schema #/components/responses/{} is not found",
+                            "Response #/components/responses/{} is not found",
                             component_ref.component_name.clone()
                         )
                     }
@@ -233,7 +233,7 @@ impl Combiner {
 
                         let resp: &mut Response = &mut s.clone();
 
-                        let (mut res_spec, res_resp) =
+                        let (res_spec, res_resp) =
                             self.collect_response(resp, inner_file_path.into());
 
                         for (n, s) in res_spec.components.schemas {
@@ -312,7 +312,7 @@ impl Combiner {
         }
 
         for (uri, path) in &mut spec.paths {
-            for (method_name, operation) in &mut path.operations {
+            for (_method_name, operation) in &mut path.operations {
                 if let Some(ref_or_schema) = &mut operation.request_body {
                     self.collect_ref_to_request_body(
                         ref_or_schema,
