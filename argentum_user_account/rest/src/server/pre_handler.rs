@@ -46,7 +46,12 @@ impl UserAccountPreHandler {
     }
 
     pub async fn anonymous_registers(&self) -> Result<HttpResponse, HttpError> {
-        self.anonymous_registers.handle()
+        let r = self.anonymous_registers.handle()?;
+
+        Ok(HttpResponse::new(
+            r.to_status_code(),
+            r.to_response().body(),
+        ))
     }
 
     pub async fn anonymous_requests_restore_token(
@@ -61,7 +66,12 @@ impl UserAccountPreHandler {
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
 
-        self.anonymous_requests_restore_token.handle(req, user)
+        let r = self.anonymous_requests_restore_token.handle(req, user)?;
+
+        Ok(HttpResponse::new(
+            r.to_status_code(),
+            r.to_response().body(),
+        ))
     }
 
     pub async fn anonymous_with_token_changes_password(
@@ -76,7 +86,14 @@ impl UserAccountPreHandler {
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
 
-        self.anonymous_with_token_changes_password.handle(req, user)
+        let r = self
+            .anonymous_with_token_changes_password
+            .handle(req, user)?;
+
+        Ok(HttpResponse::new(
+            r.to_status_code(),
+            r.to_response().body(),
+        ))
     }
 
     pub async fn user_logins_with_password(
@@ -91,7 +108,12 @@ impl UserAccountPreHandler {
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
 
-        self.user_logins_with_password.handle(req, user)
+        let r = self.user_logins_with_password.handle(req, user)?;
+
+        Ok(HttpResponse::new(
+            r.to_status_code(),
+            r.to_response().body(),
+        ))
     }
 
     pub async fn user_registers_with_password(
@@ -106,6 +128,11 @@ impl UserAccountPreHandler {
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
 
-        self.user_registers_with_password.handle(req, user)
+        let r = self.user_registers_with_password.handle(req, user)?;
+
+        Ok(HttpResponse::new(
+            r.to_status_code(),
+            r.to_response().body(),
+        ))
     }
 }

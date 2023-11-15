@@ -2,16 +2,16 @@ use crate::rest::transformer::DtoToUserLoginsWithPasswordParams;
 use argentum_rest_infrastructure::data_type::error::{
     HttpError, InternalServerError, Unauthorized,
 };
-use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_business::use_case::user_logins_with_password::{
     LoginError, UserLoginsWithPasswordUc,
 };
+use argentum_user_account_rest::dto::operation_response_enum::UserLoginsWithPasswordOperationResponseEnum;
 use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
+use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::LoginResult;
 use argentum_user_account_rest::server::handler::UserLoginsWithPasswordTrait;
 use argentum_user_business::entity::user::User;
-use hyper::StatusCode;
 use std::sync::Arc;
 
 pub struct UserLoginsWithPasswordHandler {
@@ -39,7 +39,7 @@ impl UserLoginsWithPasswordTrait for UserLoginsWithPasswordHandler {
         &self,
         req: UserLoginsWithPasswordRequest,
         user: User,
-    ) -> Result<HttpResponse, HttpError> {
+    ) -> Result<UserLoginsWithPasswordOperationResponseEnum, HttpError> {
         let anonymous = match user {
             User::Anonymous(a) => a,
             User::Authenticated(_) => {
@@ -61,7 +61,9 @@ impl UserLoginsWithPasswordTrait for UserLoginsWithPasswordHandler {
 
                 let dto = LoginResult::new(session.token, id);
 
-                Ok(HttpResponse::new(StatusCode::OK, Box::new(dto)))
+                Ok(UserLoginsWithPasswordOperationResponseEnum::Status200(
+                    UserLoggedInSuccessfullyResponse::new_application_json(dto),
+                ))
             }
             Err(LoginError::WrongEmailOrPassword) => Err(HttpError::Unauthorized(
                 Unauthorized::new(format!("{}", LoginError::WrongEmailOrPassword)),

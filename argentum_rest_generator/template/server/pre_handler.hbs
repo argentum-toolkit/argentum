@@ -53,10 +53,12 @@ impl UserAccountPreHandler {
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
 
-        self.{{snake operation.operationId}}.handle(req, user)
+        let r = self.{{snake operation.operationId}}.handle(req, user)?;
         {{else}}
-        self.{{snake operation.operationId}}.handle()
+        let r = self.{{snake operation.operationId}}.handle()?;
         {{/if}}
+
+        Ok(HttpResponse::new(r.to_status_code(), r.to_response().body()))
     }
 
     {{/each}}

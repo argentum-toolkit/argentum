@@ -58,13 +58,10 @@ impl RequestGenerator {
                 })
                 .to_string(),
             RefOrObject::Object(_o) => {
-                todo!("generate onborded objects")
-                // o.schema_type.clone()
+                todo!("generate onboarded objects")
             }
         };
 
-        //TODO: user real path. Don't use hardcoded argentum_user_account_api
-        // let body_schema = format!("argentum_user_account_api::models::{}", schema);
         let body_schema = format!("crate::dto::schema::{}", schema);
 
         let data = Data {

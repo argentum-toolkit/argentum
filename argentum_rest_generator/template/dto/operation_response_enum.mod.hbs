@@ -1,0 +1,11 @@
+{{#each operations as |operation|}}
+{{~#if operation.operationId~}}
+mod {{snake operation.operationId}}_operation_response_enum;
+{{/if}}
+{{/each}}
+
+{{#each operations as |operation|}}
+{{~#if operation.operationId~}}
+pub use {{snake operation.operationId}}_operation_response_enum::{{operation.operationId}}OperationResponseEnum;
+{{/if}}
+{{/each}}

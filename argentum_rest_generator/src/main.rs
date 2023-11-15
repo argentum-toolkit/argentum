@@ -1,4 +1,7 @@
-use crate::generator::dto::{DtoGenerator, ParamsGenerator, RequestGenerator, SchemaGenerator};
+use crate::generator::dto::{
+    DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, RequestGenerator,
+    ResponseGenerator, SchemaGenerator,
+};
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
@@ -18,9 +21,10 @@ pub(crate) mod template;
 handlebars_helper!(snake_helper: |s: String| s.to_case(Case::Snake));
 handlebars_helper!(upper_camel_helper: |s: String| s.to_case(Case::UpperCamel));
 handlebars_helper!(camel_helper: |s: String| s.to_case(Case::Camel));
+handlebars_helper!(content_type_to_type_helper: |s: String| s.replace("/", "_").replace("-", "_").replace("+", "_").to_case(Case::UpperCamel));
 
 handlebars_helper!(trim_mod_helper: |s: String| {
-    s.split("::").last()
+    s.split("::").last().unwrap_or("")
 });
 
 use clap::Parser;
@@ -38,6 +42,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cli: Cli = Cli::parse();
 
     let mut reg = Handlebars::new();
+    reg.register_template_file(
+        "dto/operation_response_enum.item",
+        "template/dto/operation_response_enum.item.hbs",
+    )
+    .unwrap();
+
+    reg.register_template_file(
+        "dto/operation_response_enum.mod",
+        "template/dto/operation_response_enum.mod.hbs",
+    )
+    .unwrap();
+
+    reg.register_template_file("dto/response.item", "template/dto/response.item.hbs")
+        .unwrap();
+
+    reg.register_template_file("dto/response.mod", "template/dto/response.mod.hbs")
+        .unwrap();
+
     reg.register_template_file("dto/request.item", "template/dto/request.item.hbs")
         .unwrap();
 
@@ -84,6 +106,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
+    reg.register_helper(
+        "content_type_to_type",
+        Box::new(content_type_to_type_helper),
+    );
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
 
     //services
@@ -91,6 +117,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let dto_generator = DtoGenerator::new(renderer.clone());
     let schema_param_generator = ParamsGenerator::new(renderer.clone());
+    let operation_response_enum_generator = OperationResponseEnumGenerator::new(renderer.clone());
+    let response_generator = ResponseGenerator::new(renderer.clone());
     let request_generator = RequestGenerator::new(renderer.clone());
     let handler_generator = HandlerGenerator::new(renderer.clone());
     let pre_handler_generator = PreHandlerGenerator::new(renderer.clone());
@@ -111,6 +139,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     oas_yaml_generator.generate(&spec)?;
     dto_generator.generate()?;
     schema_param_generator.generate(&spec)?;
+    operation_response_enum_generator.generate(&spec)?;
+    response_generator.generate(&spec)?;
     request_generator.generate(&spec)?;
     handler_generator.generate(&spec)?;
     pre_handler_generator.generate(&spec)?;

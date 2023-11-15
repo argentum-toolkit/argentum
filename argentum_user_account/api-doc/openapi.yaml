@@ -47,10 +47,6 @@ paths:
       responses:
         '201':
           $ref: "./response.oas.yaml#/components/responses/AnonymousRegisteredSuccessfully"
-        '400':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '422':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
 
   /user/register:
     post:

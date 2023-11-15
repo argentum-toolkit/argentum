@@ -135,9 +135,10 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** fix code duplication
 ** adoc documentation for argentum_rest
 ** generate readme.adoc
+* ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
 * New type for Password
 * add examples to OpenAPI doc
-* validation
+* parsing instead of validation
 
 * documentation
 ** codegen

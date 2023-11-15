@@ -46,10 +46,6 @@ paths:
       responses:
         '201':
           $ref: '#/components/responses/AnonymousRegisteredSuccessfully'
-        '400':
-          $ref: '#/components/responses/400'
-        '422':
-          $ref: '#/components/responses/422'
   /user/password-login:
     post:
       description: Login as an user

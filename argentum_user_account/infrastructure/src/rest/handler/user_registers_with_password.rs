@@ -1,16 +1,16 @@
 use crate::rest::transformer::DtoToUserRegistersWithPasswordParams;
 use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
-use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_business::use_case::user_registers_with_password::{
     RegistrationError, UserRegistersWithPasswordUc,
 };
+use argentum_user_account_rest::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
 use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
+use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::RegistrationWithPasswordResult;
 use argentum_user_account_rest::server::handler::UserRegistersWithPasswordTrait;
 use argentum_user_business::entity::user::User;
-use hyper::StatusCode;
 use std::sync::Arc;
 
 pub struct UserRegistersWithPasswordHandler {
@@ -38,7 +38,7 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
         &self,
         req: UserRegistersWithPasswordRequest,
         _user: User,
-    ) -> Result<HttpResponse, HttpError> {
+    ) -> Result<UserRegistersWithPasswordOperationResponseEnum, HttpError> {
         let user_id = self.id_factory.create();
 
         let (name, email, password) = self
@@ -52,7 +52,9 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
                 let id = self.id_factory.id_to_uuid(&user.id);
                 let dto = RegistrationWithPasswordResult::new(id);
 
-                Ok(HttpResponse::new(StatusCode::CREATED, Box::new(dto)))
+                Ok(UserRegistersWithPasswordOperationResponseEnum::Status201(
+                    UserRegisteredSuccessfullyResponse::new_application_json(dto),
+                ))
             }
 
             Err(e) => match e {

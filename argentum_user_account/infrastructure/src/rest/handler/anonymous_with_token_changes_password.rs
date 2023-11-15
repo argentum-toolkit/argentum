@@ -6,13 +6,13 @@ use argentum_user_account_rest::server::handler::{
 };
 use crate::rest::transformer::{ DtoToAnonymousWithTokenChangesPasswordParams};
 use argentum_rest_infrastructure::data_type::error::{ HttpError, InternalServerError, UnprocessableEntity};
-use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_user_account_rest::dto::schema::EmptyResponse;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
 use argentum_user_business::entity::user::User;
-use hyper::StatusCode;
 use std::sync::Arc;
 use argentum_user_account_business::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
+use argentum_user_account_rest::dto::operation_response_enum::AnonymousWithTokenChangesPasswordOperationResponseEnum;
+use argentum_user_account_rest::dto::response::EmptyOkResponse;
 
 pub struct AnonymousWithTokenChangesPasswordHandler {
     uc: Arc<AnonymousWithTokenChangesPasswordUc>,
@@ -39,7 +39,7 @@ impl AnonymousWithTokenChangesPasswordTrait for AnonymousWithTokenChangesPasswor
         &self,
         req: AnonymousWithTokenChangesPasswordRequest,
         _user: User,
-    ) -> Result<HttpResponse, HttpError> {
+    ) -> Result<AnonymousWithTokenChangesPasswordOperationResponseEnum, HttpError> {
         let (token, pw) = self
             .dto_to_anonymous_with_token_changes_password_params
             .transform(req)?;
@@ -47,11 +47,11 @@ impl AnonymousWithTokenChangesPasswordTrait for AnonymousWithTokenChangesPasswor
         let result = self.uc.execute(token, pw);
 
         match result {
-            Ok(_) => {
-                let dto = EmptyResponse::new();
-
-                Ok(HttpResponse::new(StatusCode::OK, Box::new(dto)))
-            }
+            Ok(_) => Ok(
+                AnonymousWithTokenChangesPasswordOperationResponseEnum::Status200(
+                    EmptyOkResponse::new_application_json(EmptyResponse::new()),
+                ),
+            ),
             Err(e) => match e {
                 RestorePasswordError::TokenExpired | RestorePasswordError::TokenNotFoundError => {
                     Err(HttpError::UnprocessableEntity(UnprocessableEntity::new(

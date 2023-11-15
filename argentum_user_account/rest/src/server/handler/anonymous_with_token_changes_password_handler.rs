@@ -1,6 +1,6 @@
+use crate::dto::operation_response_enum::AnonymousWithTokenChangesPasswordOperationResponseEnum;
 use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use argentum_rest_infrastructure::data_type::error::{HttpError, NotImplementedError};
-use argentum_rest_infrastructure::data_type::HttpResponse;
 use argentum_user_business::entity::user::User;
 
 pub trait AnonymousWithTokenChangesPasswordTrait: Send + Sync {
@@ -8,7 +8,7 @@ pub trait AnonymousWithTokenChangesPasswordTrait: Send + Sync {
         &self,
         _req: AnonymousWithTokenChangesPasswordRequest,
         _user: User,
-    ) -> Result<HttpResponse, HttpError> {
+    ) -> Result<AnonymousWithTokenChangesPasswordOperationResponseEnum, HttpError> {
         Err(HttpError::NotImplemented(NotImplementedError::new()))
     }
 }
