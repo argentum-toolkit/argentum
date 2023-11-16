@@ -1,6 +1,6 @@
 :source-highlighter: rouge
 
-= Invariant Violation
+= 001 Invariant Violation
 
 == Context and Problem Statement
 Requests validation, error handling and model integrity are important parts of robust application. User-friendly error messages are necessary to achieve good user experience. This document describes the way how to write robust code with pretty error messages.

@@ -36,6 +36,18 @@ pub struct Cli {
 
     #[arg(short, long)]
     output: String,
+
+    #[arg(short, long)]
+    package_name: String,
+
+    #[arg(long)]
+    homepage: Option<String>,
+
+    #[arg(short, long)]
+    repository: Option<String>,
+
+    #[arg(short, long)]
+    documentation: Option<String>,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -148,7 +160,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     server_generator.generate()?;
     di_generator.generate(&spec)?;
     lib_generator.generate()?;
-    cargo_toml_generator.generate()?;
+    cargo_toml_generator.generate(
+        &spec,
+        cli.package_name,
+        cli.homepage,
+        cli.repository,
+        cli.documentation,
+    )?;
     gitignore_generator.generate()?;
     schema_generator.generate(&spec)?;
 

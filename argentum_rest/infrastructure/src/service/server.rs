@@ -61,6 +61,8 @@ impl Server {
 
         loop {
             let (stream, _) = listener.accept().await?;
+            let io = TokioIo::new(stream);
+
             let router = self.router.clone();
             let transformer = self.response_transformer.clone();
             let error_handler = self.error_handler.clone();
@@ -70,7 +72,7 @@ impl Server {
                 let start = Instant::now();
                 if let Err(err) = http1::Builder::new()
                     .serve_connection(
-                        stream,
+                        io,
                         service_fn(move |request| {
                             handle(
                                 request,
@@ -89,5 +91,92 @@ impl Server {
                 logger.trace(format!("Duration: {}μs", elapsed.as_micros()));
             });
         }
+    }
+}
+
+//ORIGINAL INTEGRATION https://github.com/hyperium/hyper-util/blob/master/src/rt/tokio_io.rs
+//TODO: implement in differrent file or wait til hyper-util will be published into crates.io
+/// Tokio IO integration for hyper
+use std::{
+    pin::Pin,
+    task::{Context, Poll},
+};
+
+use pin_project_lite::pin_project;
+
+pin_project! {
+    /// A wrapping implementing hyper IO traits for a type that
+    /// implements Tokio's IO traits.
+    #[derive(Debug)]
+    pub struct TokioIo<T> {
+        #[pin]
+        inner: T,
+    }
+}
+
+impl<T> TokioIo<T> {
+    /// Wrap a type implementing Tokio's IO traits.
+    pub fn new(inner: T) -> Self {
+        Self { inner }
+    }
+}
+
+impl<T> hyper::rt::Read for TokioIo<T>
+where
+    T: tokio::io::AsyncRead,
+{
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        mut buf: hyper::rt::ReadBufCursor<'_>,
+    ) -> Poll<Result<(), std::io::Error>> {
+        let n = unsafe {
+            let mut tbuf = tokio::io::ReadBuf::uninit(buf.as_mut());
+            match tokio::io::AsyncRead::poll_read(self.project().inner, cx, &mut tbuf) {
+                Poll::Ready(Ok(())) => tbuf.filled().len(),
+                other => return other,
+            }
+        };
+
+        unsafe {
+            buf.advance(n);
+        }
+        Poll::Ready(Ok(()))
+    }
+}
+
+impl<T> hyper::rt::Write for TokioIo<T>
+where
+    T: tokio::io::AsyncWrite,
+{
+    fn poll_write(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<Result<usize, std::io::Error>> {
+        tokio::io::AsyncWrite::poll_write(self.project().inner, cx, buf)
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
+        tokio::io::AsyncWrite::poll_flush(self.project().inner, cx)
+    }
+
+    fn poll_shutdown(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Result<(), std::io::Error>> {
+        tokio::io::AsyncWrite::poll_shutdown(self.project().inner, cx)
+    }
+
+    fn is_write_vectored(&self) -> bool {
+        tokio::io::AsyncWrite::is_write_vectored(&self.inner)
+    }
+
+    fn poll_write_vectored(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        bufs: &[std::io::IoSlice<'_>],
+    ) -> Poll<Result<usize, std::io::Error>> {
+        tokio::io::AsyncWrite::poll_write_vectored(self.project().inner, cx, bufs)
     }
 }

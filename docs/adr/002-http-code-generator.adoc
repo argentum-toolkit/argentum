@@ -1,0 +1,19 @@
+:source-highlighter: rouge
+
+= 002 Http code generator
+
+== Context and Problem Statement
+
+
+== Decision
+
+
+== Consequences +/-
+<TBD>
+-
+
+== How to check (Validation)
+<TBD>
+
+== Links
+<TBD>

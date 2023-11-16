@@ -1,8 +1,8 @@
 openapi: 3.0.3
 
 info:
-  title: Demo app
-  version: 0.1.0-dev
+  title: Argentum User Account component API
+  version: 0.2.0-dev
 
   description: User Account API
   license:

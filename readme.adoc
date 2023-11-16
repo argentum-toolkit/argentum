@@ -128,19 +128,24 @@ $ devops/scripts/check-item.sh {{package-name}}
 * openapi merge tool
 ** error handling
 * rest-generator
-** generate by openapi spec
-** replace package name in generated code (find user_account in templates)
-** generate responses and remove package api
 ** generate `path params`
 ** fix code duplication
-** adoc documentation for argentum_rest
+** adoc documentation for `argentum_rest`
 ** generate readme.adoc
-* ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
+** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
+** publish generator to hub.docker.com
+** refactor `main.rs`
+** tests
+
 * New type for Password
 * add examples to OpenAPI doc
 * parsing instead of validation
 
+* DB
+** update diesel-ulid 0.2.x up to latest
+
 * documentation
+** ADR
 ** codegen
 ** other?
 * Custom API generator

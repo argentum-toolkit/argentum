@@ -63,6 +63,34 @@ equal to the name of the component. E.g. for component with name `User` we will 
 
 == How we work with OpenAPI
 
+=== Run generator from sources
+
+[source, bash]
+....
+cargo run -- \
+  --input {{path/to/openapi.yaml} \
+  --output {{path/to/output/dir}} \
+  --package-name {{my_package_name}} \
+  [ADDITIONAL-PARAMS]
+....
+
+.Example
+[source, bash]
+....
+cargo run -- \
+  --input ../argentum_user_account/api-doc/openapi.yaml \
+  --output ../argentum_user_account/rest/ \
+  --package-name argentum_user_account_rest \
+  --homepage https://github.com/argentum-toolkit/argentum \
+  --repository https://github.com/argentum-toolkit/argentum \
+  --documentation https://github.com/argentum-toolkit/argentum
+....
+
+=== Run generator on Docker
+
+=== Deprecated
+//TODO: generate with rest generator
+
 Pull new version of OpenAPI generators image
 [source, bash]
 ....

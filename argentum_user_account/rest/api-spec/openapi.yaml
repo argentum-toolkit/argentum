@@ -5,8 +5,8 @@ info:
   description: User Account API
   license:
     name: BSD-3
-  title: Demo app
-  version: 0.1.0-dev
+  title: Argentum User Account component API
+  version: 0.2.0-dev
 externalDocs:
   description: Find more info here
   url: https://gitlab.com/argentum-toolkit/argentum

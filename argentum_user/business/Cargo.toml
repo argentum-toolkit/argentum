@@ -1,7 +1,7 @@
 [package]
 name = "argentum_user_business"
 description = "Business layer of user component"
-version = "0.1.0-dev"
+version = "0.2.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
@@ -12,7 +12,7 @@ readme = "readme.adoc"
 
 [dependencies]
 #argentum_encryption_business = "0.1.0"
-argentum_encryption_business = { path = "../../argentum_encryption/business", version = "0.1.0-dev" }
-argentum_standard_business = { path = "../../argentum_standard/business", version = "0.1.0-dev" }
-chrono = "0.4"
-thiserror = "1.0"
+argentum_encryption_business = { path = "../../argentum_encryption/business", version = "0.2.0-dev" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = "0.2.0-dev" }
+chrono = "0.4.*"
+thiserror = "1.0.*"
