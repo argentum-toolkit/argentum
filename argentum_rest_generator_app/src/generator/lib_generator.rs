@@ -14,10 +14,11 @@ impl LibGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str) -> Result<(), Box<dyn Error>> {
         let data = "";
 
-        self.renderer.render(TEMPLATE, data, PATH)?;
+        self.renderer
+            .render(base_output_path, TEMPLATE, data, PATH)?;
 
         Ok(())
     }

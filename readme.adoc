@@ -134,7 +134,6 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** generate readme.adoc
 ** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
 ** publish generator to hub.docker.com
-** refactor `main.rs`
 ** tests
 
 * New type for Password

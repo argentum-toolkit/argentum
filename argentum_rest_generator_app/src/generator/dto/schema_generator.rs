@@ -39,7 +39,12 @@ impl SchemaGenerator {
         Self { renderer }
     }
 
-    fn generate_item(&self, name: &String, schema: &Schema) -> Result<(), Box<dyn Error>> {
+    fn generate_item(
+        &self,
+        base_output_path: &str,
+        name: &String,
+        schema: &Schema,
+    ) -> Result<(), Box<dyn Error>> {
         let file_path = format!("/src/dto/schema/{}.rs", name.to_case(Case::Snake));
 
         let mut properties: Vec<Prop> = vec![];
@@ -112,16 +117,21 @@ impl SchemaGenerator {
         };
 
         self.renderer
-            .render(ITEM_TEMPLATE, &data, file_path.as_str())?;
+            .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
 
         Ok(())
     }
 
-    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
-        self.renderer.render(MOD_TEMPLATE, spec, MOD_PATH)?;
+    pub fn generate(
+        &self,
+        base_output_path: &str,
+        spec: &SpecificationRoot,
+    ) -> Result<(), Box<dyn Error>> {
+        self.renderer
+            .render(base_output_path, MOD_TEMPLATE, spec, MOD_PATH)?;
 
         for (name, schema) in &spec.components.schemas {
-            self.generate_item(name, schema)?;
+            self.generate_item(base_output_path, name, schema)?;
         }
 
         Ok(())

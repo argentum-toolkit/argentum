@@ -15,7 +15,7 @@ impl Combiner {
         Self { loader }
     }
 
-    fn collect_request_boby(
+    fn collect_request_body(
         &self,
         body: &mut RequestBody,
         current_file_path: PathBuf,
@@ -175,7 +175,7 @@ impl Combiner {
                         let b: &mut RequestBody = &mut s.clone();
 
                         let (res_spec, res_body) =
-                            self.collect_request_boby(b, inner_file_path.into());
+                            self.collect_request_body(b, inner_file_path.into());
 
                         // collect_schema_properties(ss, inner_file_path.into(), to_spec);
 
@@ -271,7 +271,7 @@ impl Combiner {
 
         for (body_name, body) in &mut spec.components.request_bodies {
             let (body_spec, updated_body) =
-                self.collect_request_boby(body, current_file_path.clone());
+                self.collect_request_body(body, current_file_path.clone());
 
             for (n, s) in body_spec.components.schemas {
                 res_spec.components.schemas.insert(n, s.clone());

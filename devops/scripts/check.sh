@@ -14,7 +14,7 @@ packages=(
   'argentum_notification/infrastructure'
   'argentum_openapi/infrastructure'
   'argentum_rest/infrastructure'
-  'argentum_rest_generator'
+  'argentum_rest_generator_app'
   'argentum_standard/business'
   'argentum_standard/infrastructure'
   'argentum_user/business'

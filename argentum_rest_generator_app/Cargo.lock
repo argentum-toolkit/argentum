@@ -122,7 +122,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "argentum_rest_generator"
+name = "argentum_rest_generator_app"
 version = "0.2.0-dev"
 dependencies = [
  "argentum_openapi_infrastructure",

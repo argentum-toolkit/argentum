@@ -16,11 +16,16 @@ impl DiGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+    pub fn generate(
+        &self,
+        base_output_path: &str,
+        spec: &SpecificationRoot,
+    ) -> Result<(), Box<dyn Error>> {
         let operations = spec.operations();
         let data = HashMap::from([("operations", operations)]);
 
-        self.renderer.render(TEMPLATE, data, PATH)?;
+        self.renderer
+            .render(base_output_path, TEMPLATE, data, PATH)?;
 
         Ok(())
     }

@@ -22,7 +22,11 @@ impl RouterGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+    pub fn generate(
+        &self,
+        base_output_path: &str,
+        spec: &SpecificationRoot,
+    ) -> Result<(), Box<dyn Error>> {
         let mut paths_data: Vec<PathData> = vec![];
 
         for (url, path) in spec.clone().paths {
@@ -49,7 +53,8 @@ impl RouterGenerator {
         }
 
         let data = HashMap::from([("paths", paths_data)]);
-        self.renderer.render(TEMPLATE, data, PATH)?;
+        self.renderer
+            .render(base_output_path, TEMPLATE, data, PATH)?;
 
         Ok(())
     }

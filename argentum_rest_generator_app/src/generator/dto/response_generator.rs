@@ -29,9 +29,9 @@ impl ResponseGenerator {
 
     fn generate_item(
         &self,
+        base_output_path: &str,
         response_name: String,
         response: &Response,
-        // request_body: RequestBody,
     ) -> Result<(), Box<dyn Error>> {
         let file_path = format!(
             "/src/dto/response/{}_response.rs",
@@ -53,7 +53,7 @@ impl ResponseGenerator {
         };
 
         self.renderer
-            .render(ITEM_TEMPLATE, &data, file_path.as_str())?;
+            .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
 
         Ok(())
     }
@@ -80,7 +80,11 @@ impl ResponseGenerator {
         format!("crate::dto::schema::{}", schema)
     }
 
-    fn generate_mod(&self, responses: BTreeMap<String, Response>) -> Result<(), Box<dyn Error>> {
+    fn generate_mod(
+        &self,
+        base_output_path: &str,
+        responses: BTreeMap<String, Response>,
+    ) -> Result<(), Box<dyn Error>> {
         let mut response_names: Vec<String> = Vec::new();
 
         for (name, _) in responses {
@@ -89,7 +93,8 @@ impl ResponseGenerator {
 
         let data = HashMap::from([("responseNames", response_names)]);
 
-        self.renderer.render(MOD_TEMPLATE, data, MOD_PATH)
+        self.renderer
+            .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
     fn escape_response_name(&self, name: String) -> String {
@@ -104,13 +109,17 @@ impl ResponseGenerator {
         response_name
     }
 
-    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+    pub fn generate(
+        &self,
+        base_output_path: &str,
+        spec: &SpecificationRoot,
+    ) -> Result<(), Box<dyn Error>> {
         let responses = spec.clone().components.responses;
 
-        self.generate_mod(responses.clone())?;
+        self.generate_mod(base_output_path, responses.clone())?;
 
         for (name, response) in responses.into_iter() {
-            self.generate_item(self.escape_response_name(name), &response)?;
+            self.generate_item(base_output_path, self.escape_response_name(name), &response)?;
         }
 
         Ok(())

@@ -18,7 +18,11 @@ impl HandlerGenerator {
         Self { renderer }
     }
 
-    fn generate_item(&self, operation: &Operation) -> Result<(), Box<dyn Error>> {
+    fn generate_item(
+        &self,
+        base_output_path: &str,
+        operation: &Operation,
+    ) -> Result<(), Box<dyn Error>> {
         let file_path = format!(
             "/src/server/handler/{}_handler.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -27,23 +31,32 @@ impl HandlerGenerator {
         let data = HashMap::from([("operation", operation)]);
 
         self.renderer
-            .render(ITEM_TEMPLATE, &data, file_path.as_str())?;
+            .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
 
         Ok(())
     }
 
-    fn generate_mod(&self, operations: Vec<Operation>) -> Result<(), Box<dyn Error>> {
+    fn generate_mod(
+        &self,
+        base_output_path: &str,
+        operations: Vec<Operation>,
+    ) -> Result<(), Box<dyn Error>> {
         let data = HashMap::from([("operations", operations)]);
 
-        self.renderer.render(MOD_TEMPLATE, data, MOD_PATH)
+        self.renderer
+            .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+    pub fn generate(
+        &self,
+        base_output_path: &str,
+        spec: &SpecificationRoot,
+    ) -> Result<(), Box<dyn Error>> {
         let operations = spec.operations();
-        self.generate_mod(operations.clone())?;
+        self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            self.generate_item(&operation)?;
+            self.generate_item(base_output_path, &operation)?;
         }
 
         Ok(())

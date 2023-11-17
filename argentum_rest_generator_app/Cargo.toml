@@ -1,5 +1,5 @@
 [package]
-name = "argentum_rest_generator"
+name = "argentum_rest_generator_app"
 description = "Argentum toolkit REST generator"
 version = "0.2.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]

@@ -14,8 +14,9 @@ impl DtoGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self) -> Result<(), Box<dyn Error>> {
-        self.renderer.render(MOD_TEMPLATE, "", MOD_PATH)?;
+    pub fn generate(&self, base_output_path: &str) -> Result<(), Box<dyn Error>> {
+        self.renderer
+            .render(base_output_path, MOD_TEMPLATE, "", MOD_PATH)?;
         Ok(())
     }
 }

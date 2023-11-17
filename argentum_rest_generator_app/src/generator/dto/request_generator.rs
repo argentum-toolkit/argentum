@@ -30,6 +30,7 @@ impl RequestGenerator {
 
     fn generate_item(
         &self,
+        base_output_path: &str,
         operation: &Operation,
         request_body: RequestBody,
     ) -> Result<(), Box<dyn Error>> {
@@ -70,21 +71,30 @@ impl RequestGenerator {
         };
 
         self.renderer
-            .render(ITEM_TEMPLATE, &data, file_path.as_str())?;
+            .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
 
         Ok(())
     }
 
-    fn generate_mod(&self, operations: Vec<Operation>) -> Result<(), Box<dyn Error>> {
+    fn generate_mod(
+        &self,
+        base_output_path: &str,
+        operations: Vec<Operation>,
+    ) -> Result<(), Box<dyn Error>> {
         let data = HashMap::from([("operations", operations)]);
 
-        self.renderer.render(MOD_TEMPLATE, data, MOD_PATH)
+        self.renderer
+            .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(&self, spec: &SpecificationRoot) -> Result<(), Box<dyn Error>> {
+    pub fn generate(
+        &self,
+        base_output_path: &str,
+        spec: &SpecificationRoot,
+    ) -> Result<(), Box<dyn Error>> {
         let operations = spec.operations();
 
-        self.generate_mod(operations.clone())?;
+        self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
             if operation.request_body.is_some() {
@@ -126,7 +136,7 @@ impl RequestGenerator {
                     RefOrObject::Object(request_body) => request_body,
                 };
 
-                self.generate_item(&operation, request_body)?;
+                self.generate_item(base_output_path, &operation, request_body)?;
             }
         }
 

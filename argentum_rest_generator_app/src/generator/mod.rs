@@ -6,6 +6,7 @@ mod gitignore_generator;
 mod lib_generator;
 mod loader;
 mod oas_yaml_generator;
+mod openapi_generator;
 pub(crate) mod server;
 
 pub(crate) use cargo_toml_generator::CargoTomlGenerator;
@@ -15,3 +16,4 @@ pub(crate) use gitignore_generator::GitIgnoreGenerator;
 pub(crate) use lib_generator::LibGenerator;
 pub(crate) use loader::OasLoader;
 pub(crate) use oas_yaml_generator::OasYamlGenerator;
+pub(crate) use openapi_generator::OpenApiGenerator;
