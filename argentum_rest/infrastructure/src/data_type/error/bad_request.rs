@@ -8,6 +8,7 @@ use serde::{Serialize, Serializer};
 pub struct BadRequestError {
     body: Violations,
     path: Violations,
+    query: Violations,
     headers: Violations,
 }
 
@@ -26,6 +27,10 @@ impl Serialize for BadRequestError {
             state.serialize_field("path", &ViolationsDto::from(&self.path))?;
         }
 
+        if !self.query.is_empty() {
+            state.serialize_field("query", &ViolationsDto::from(&self.path))?;
+        }
+
         if !self.headers.is_empty() {
             state.serialize_field("headers", &ViolationsDto::from(&self.headers))?;
         }
@@ -35,10 +40,11 @@ impl Serialize for BadRequestError {
 }
 
 impl BadRequestError {
-    pub fn new(body: Violations, path: Violations, headers: Violations) -> Self {
+    pub fn new(body: Violations, path: Violations, query: Violations, headers: Violations) -> Self {
         Self {
             body,
             path,
+            query,
             headers,
         }
     }
@@ -59,6 +65,7 @@ mod tests {
     #[test]
     fn empty_bad_request_serialize() {
         let br = BadRequestError::new(
+            Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),
@@ -91,6 +98,7 @@ mod tests {
                     None,
                 )])),
             ),
+            Violations::new(vec![], None),
             Violations::new(vec![], None),
         );
 

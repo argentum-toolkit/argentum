@@ -58,10 +58,11 @@ impl UserAccountPreHandler {
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_params = HashMap::from([]);
+        let raw_path_params = HashMap::from([]);
+        let raw_query_params = HashMap::from([]);
         let req: AnonymousRequestsRestoreTokenRequest = self
             .request_transformer
-            .transform(request, raw_params)
+            .transform(request, raw_path_params, raw_query_params)
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
@@ -78,10 +79,11 @@ impl UserAccountPreHandler {
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_params = HashMap::from([]);
+        let raw_path_params = HashMap::from([]);
+        let raw_query_params = HashMap::from([]);
         let req: AnonymousWithTokenChangesPasswordRequest = self
             .request_transformer
-            .transform(request, raw_params)
+            .transform(request, raw_path_params, raw_query_params)
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
@@ -100,10 +102,11 @@ impl UserAccountPreHandler {
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_params = HashMap::from([]);
+        let raw_path_params = HashMap::from([]);
+        let raw_query_params = HashMap::from([]);
         let req: UserLoginsWithPasswordRequest = self
             .request_transformer
-            .transform(request, raw_params)
+            .transform(request, raw_path_params, raw_query_params)
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
@@ -120,10 +123,11 @@ impl UserAccountPreHandler {
         &self,
         request: impl RequestTrait,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_params = HashMap::from([]);
+        let raw_path_params = HashMap::from([]);
+        let raw_query_params = HashMap::from([]);
         let req: UserRegistersWithPasswordRequest = self
             .request_transformer
-            .transform(request, raw_params)
+            .transform(request, raw_path_params, raw_query_params)
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;

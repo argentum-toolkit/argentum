@@ -45,10 +45,11 @@ impl UserAccountPreHandler {
     ) -> Result<HttpResponse, HttpError> {
         {{!--TODO: security should depend on response--}}
         {{#if operation.requestBody}}
-        let raw_params = HashMap::from([]);
+        let raw_path_params = HashMap::from([]);
+        let raw_query_params = HashMap::from([]);
         let req: {{operation.operationId}}Request = self
             .request_transformer
-            .transform(request, raw_params)
+            .transform(request, raw_path_params, raw_query_params)
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;

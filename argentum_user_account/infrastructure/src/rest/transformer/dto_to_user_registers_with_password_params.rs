@@ -49,6 +49,7 @@ impl DtoToUserRegistersWithPasswordParams {
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),
                 Violations::new(vec![], None),
                 Violations::new(vec![], None),
+                Violations::new(vec![], None),
             )))
         }
     }

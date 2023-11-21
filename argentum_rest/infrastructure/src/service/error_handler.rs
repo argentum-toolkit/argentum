@@ -153,6 +153,7 @@ mod tests {
             Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),
+            Violations::new(vec![], None),
         )));
         assert_eq!(response.code, StatusCode::BAD_REQUEST);
 

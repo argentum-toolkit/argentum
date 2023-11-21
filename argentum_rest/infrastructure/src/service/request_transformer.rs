@@ -1,7 +1,10 @@
 use crate::data_type::error::HttpError::BadRequest;
 use crate::data_type::error::{BadRequestError, HttpError};
 use crate::data_type::{HttpParams, HttpRequest, RequestTrait};
-use crate::service::{HeaderParamsExtractor, PathParamsExtractor, RawPathParams, SchemaExtractor};
+use crate::service::{
+    HeaderParamsExtractor, PathParamsExtractor, QueryParamsExtractor, RawPathParams,
+    RawQueryParams, SchemaExtractor,
+};
 use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use std::sync::Arc;
 
@@ -9,6 +12,7 @@ pub struct RequestTransformer {
     schema_extractor: Arc<SchemaExtractor>,
     header_params_extractor: Arc<HeaderParamsExtractor>,
     path_params_extractor: Arc<PathParamsExtractor>,
+    query_params_extractor: Arc<QueryParamsExtractor>,
 }
 
 impl RequestTransformer {
@@ -16,11 +20,13 @@ impl RequestTransformer {
         schema_extractor: Arc<SchemaExtractor>,
         header_params_extractor: Arc<HeaderParamsExtractor>,
         path_params_extractor: Arc<PathParamsExtractor>,
+        query_params_extractor: Arc<QueryParamsExtractor>,
     ) -> Self {
         Self {
             schema_extractor,
             header_params_extractor,
             path_params_extractor,
+            query_params_extractor,
         }
     }
 
@@ -28,6 +34,7 @@ impl RequestTransformer {
         &self,
         request: impl RequestTrait,
         raw_path_params: RawPathParams,
+        raw_query_params: RawQueryParams,
     ) -> Result<R, HttpError>
     where
         R: HttpRequest,
@@ -60,15 +67,33 @@ impl RequestTransformer {
             Err(e) => (None, e),
         };
 
-        if body.is_some() && path_params.is_some() && header_params.is_some() {
+        let query_result =
+            self.query_params_extractor
+                .extract::<<<R as HttpRequest>::Params as HttpParams>::Query>(raw_query_params);
+
+        let (query_params, query_violations) = match query_result {
+            Ok(p) => (Some(p), Violations::new(vec![], None)),
+            Err(e) => (None, e),
+        };
+
+        if body.is_some()
+            && path_params.is_some()
+            && header_params.is_some()
+            && query_params.is_some()
+        {
             Ok(R::new(
                 body.unwrap(),
-                R::Params::new(path_params.unwrap(), header_params.unwrap()),
+                R::Params::new(
+                    path_params.unwrap(),
+                    query_params.unwrap(),
+                    header_params.unwrap(),
+                ),
             ))
         } else {
             Err(BadRequest(BadRequestError::new(
                 body_violations,
                 path_violations,
+                query_violations,
                 header_violations,
             )))
         }

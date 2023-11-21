@@ -3,23 +3,31 @@
 {{else}}
     use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
 {{/if}}
-use argentum_rest_infrastructure::data_type::{EmptyPathParams, HttpParams};
+use argentum_rest_infrastructure::data_type::{EmptyPathParams, EmptyQueryParams, HttpParams};
 
 pub struct {{ operation.operationId }}Params {
     pub path: EmptyPathParams,
-pub headers: {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}},
+    pub query: EmptyQueryParams,
+    pub headers: {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}},
 }
 
 impl HttpParams for {{ operation.operationId }}Params {
     type Path = EmptyPathParams;
+
+    type Query = EmptyQueryParams;
+
     type Headers = {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}};
 
-    fn new(path: Self::Path, headers: Self::Headers) -> Self {
-        Self { path, headers }
+    fn new(path: Self::Path, query: Self::Query, headers: Self::Headers) -> Self {
+        Self { path, query, headers }
     }
 
     fn path(&self) -> &Self::Path {
         &self.path
+    }
+
+    fn query(&self) -> &Self::Query {
+        &self.query
     }
 
     fn headers(&self) -> &Self::Headers {

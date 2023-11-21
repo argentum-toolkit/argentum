@@ -129,12 +129,14 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** error handling
 * rest-generator
 ** generate `path params`
+** generate `query params`
 ** fix code duplication
 ** adoc documentation for `argentum_rest`
 ** generate readme.adoc
 ** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
 ** publish generator to hub.docker.com
 ** tests
+** generate onboarded objects
 
 * New type for Password
 * add examples to OpenAPI doc

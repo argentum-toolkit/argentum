@@ -45,10 +45,12 @@ impl RequestTrait for Request {
 pub use http_request::AuthHeaderParams;
 pub use http_request::EmptyHeaderParams;
 pub use http_request::EmptyPathParams;
+pub use http_request::EmptyQueryParams;
 pub use http_request::EmptyRequestBody;
 pub use http_request::HttpHeaderParams;
 pub use http_request::HttpParams;
 pub use http_request::HttpPathParams;
+pub use http_request::HttpQueryParams;
 pub use http_request::HttpRequest;
 pub use problem_detail::ProblemDetail;
 pub use problem_detail::ProblemDetailExtension;

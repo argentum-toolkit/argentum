@@ -79,6 +79,7 @@ mod tests {
                 Violations::new(vec![], None),
                 Violations::new(vec![], None),
                 Violations::new(vec![], None),
+                Violations::new(vec![], None),
             ));
 
             let problem = ProblemDetail::new(
