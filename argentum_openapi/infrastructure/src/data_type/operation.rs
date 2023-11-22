@@ -23,7 +23,23 @@ pub struct Operation {
     pub summary: Option<String>,
 
     #[serde(default)]
-    pub responses: BTreeMap<String, RefOrObject<Response>>,
+    pub responses: BTreeMap<StatusCode, RefOrObject<Response>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
+#[serde(untagged)]
+pub enum StatusCode {
+    Uint(u16),
+    String(String),
+}
+
+impl ToString for StatusCode {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Uint(u) => u.to_string(),
+            Self::String(s) => s.clone(),
+        }
+    }
 }
 
 impl Operation {

@@ -20,5 +20,6 @@ pub struct Server {
 
     url: String,
 
+    #[serde(default)]
     variables: BTreeMap<String, ServerVariableObject>,
 }

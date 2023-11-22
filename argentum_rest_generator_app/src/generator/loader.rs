@@ -12,8 +12,7 @@ impl OasLoader {
     pub fn load(&self, file_path: String) -> (SpecificationRoot, PathBuf) {
         let path = PathBuf::from(file_path);
 
-        let f = fs::File::open(path.clone())
-            .expect("LogRocket: Should have been able to read the file");
+        let f = fs::File::open(path.clone()).expect("Should have been able to read the file");
 
         let spec: SpecificationRoot = serde_yaml::from_reader(f).expect("Could not read values.");
 

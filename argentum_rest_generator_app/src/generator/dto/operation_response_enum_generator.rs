@@ -69,7 +69,7 @@ impl OperationResponseEnumGenerator {
                 }
             };
 
-            response_names.insert(code.clone(), self.escape_response_name(response_name));
+            response_names.insert(code.to_string(), self.escape_response_name(response_name));
         }
 
         let data = Data {
