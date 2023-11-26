@@ -59,7 +59,7 @@ impl RequestGenerator {
                 })
                 .to_string(),
             RefOrObject::Object(_o) => {
-                todo!("generate onboarded objects")
+                todo!("Only reference is supported currently. Embedded objects in request are not supported yet.")
             }
         };
 

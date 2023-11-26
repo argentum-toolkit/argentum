@@ -66,7 +66,6 @@ impl UserAccountPreHandler {
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
-
         let r = self.anonymous_requests_restore_token.handle(req, user)?;
 
         Ok(HttpResponse::new(
@@ -87,7 +86,6 @@ impl UserAccountPreHandler {
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
-
         let r = self
             .anonymous_with_token_changes_password
             .handle(req, user)?;
@@ -110,7 +108,6 @@ impl UserAccountPreHandler {
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
-
         let r = self.user_logins_with_password.handle(req, user)?;
 
         Ok(HttpResponse::new(
@@ -131,7 +128,6 @@ impl UserAccountPreHandler {
             .await?;
 
         let user = self.bearer_auth.auth(&req.params.headers)?;
-
         let r = self.user_registers_with_password.handle(req, user)?;
 
         Ok(HttpResponse::new(

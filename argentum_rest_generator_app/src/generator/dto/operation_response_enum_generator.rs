@@ -65,7 +65,7 @@ impl OperationResponseEnumGenerator {
                     })
                     .to_string(),
                 RefOrObject::Object(_) => {
-                    todo!("Only reference is supported currently. Onboarded objects are not supported yet.")
+                    todo!("Only reference is supported currently. Embedded objects in response enum are not supported yet.")
                 }
             };
 

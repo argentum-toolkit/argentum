@@ -6,6 +6,6 @@ mod {{snake operation.operationId}}_operation_response_enum;
 
 {{#each operations as |operation|}}
 {{~#if operation.operationId~}}
-pub use {{snake operation.operationId}}_operation_response_enum::{{operation.operationId}}OperationResponseEnum;
+pub use {{snake operation.operationId}}_operation_response_enum::{{upper_camel operation.operationId}}OperationResponseEnum;
 {{/if}}
 {{/each}}

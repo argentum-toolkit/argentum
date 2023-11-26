@@ -1,0 +1,66 @@
+= REST library for Argentum User Account component API
+
+User Account API
+
+
+== Overview
+
+This server was generated from OpenAPI specification by the link:https://gitlab.com/argentum-toolkit/argentum(argentum-rest-generator).
+
+- API version: 0.2.0-dev
+- Package Name: argentum_user_account_rest
+- Home page: https://github.com/argentum-toolkit/argentum
+- Repository: https://github.com/argentum-toolkit/argentum
+- Home page: https://github.com/argentum-toolkit/argentum
+- License: `BSD-3`
+
+
+== How to use
+
+=== Create server application
+
+==== Clone this repository or publish it as a crate
+
+[source,bash]
+....
+$ git clone https://github.com/argentum-toolkit/argentum rest
+....
+
+link:https://doc.rust-lang.org/cargo/commands/cargo-publish.html[How to publish]
+
+==== Create application
+
+[source,bash]
+....
+$ cargo new app --name argentum_user_account_rest_app
+$ cd app
+....
+
+==== Add dependencies
+
+.Cargo.toml example
+[source,toml]
+....
+[package]
+name = "argentum_user_account_rest_app"
+description = "Argentum User Account component API"
+version = "0.2.0-dev"
+edition = "2021"
+
+[dependencies]
+argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
+argentum_user_account_rest = { path = "../rest" }
+....
+
+.main.rs
+[source,rust]
+....
+
+....
+
+.di.rs
+[source,rust]
+....
+$ devops/scripts/check.sh
+....
+<TBD>

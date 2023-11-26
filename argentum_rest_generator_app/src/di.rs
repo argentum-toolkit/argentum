@@ -7,10 +7,11 @@ use crate::generator::server::{
 };
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
-    OasYamlGenerator, OpenApiGenerator,
+    OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
 };
 use crate::template::helper::{
-    camel_helper, content_type_to_type_helper, snake_helper, trim_mod_helper, upper_camel_helper,
+    camel_helper, content_type_to_type_helper, eq_helper, snake_helper, trim_mod_helper,
+    upper_camel_helper,
 };
 use crate::template::Renderer;
 use handlebars::Handlebars;
@@ -87,12 +88,15 @@ pub fn di_factory() -> DiC {
         .unwrap();
     reg.register_template_file("cargo.toml", "template/cargo.toml.hbs")
         .unwrap();
+    reg.register_template_file("readme.adoc", "template/readme.adoc.hbs")
+        .unwrap();
     reg.register_template_file(".gitignore", "template/.gitignore.hbs")
         .unwrap();
 
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
+    reg.register_helper("eq", Box::new(eq_helper));
     reg.register_helper(
         "content_type_to_type",
         Box::new(content_type_to_type_helper),
@@ -115,6 +119,7 @@ pub fn di_factory() -> DiC {
     let di_generator = Arc::new(DiGenerator::new(renderer.clone()));
     let lib_generator = Arc::new(LibGenerator::new(renderer.clone()));
     let cargo_toml_generator = Arc::new(CargoTomlGenerator::new(renderer.clone()));
+    let readme_adoc_generator = Arc::new(ReadmeAdocGenerator::new(renderer.clone()));
     let gitignore_generator = Arc::new(GitIgnoreGenerator::new(renderer.clone()));
     let schema_generator = Arc::new(SchemaGenerator::new(renderer));
     let loader = Arc::new(OasLoader::new());
@@ -135,6 +140,7 @@ pub fn di_factory() -> DiC {
         di_generator,
         lib_generator,
         cargo_toml_generator,
+        readme_adoc_generator,
         gitignore_generator,
         schema_generator,
     ));

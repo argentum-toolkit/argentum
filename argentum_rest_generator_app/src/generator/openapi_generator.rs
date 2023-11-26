@@ -8,6 +8,7 @@ use crate::generator::server::{
 };
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasYamlGenerator,
+    ReadmeAdocGenerator,
 };
 use std::error::Error;
 use std::sync::Arc;
@@ -27,6 +28,7 @@ pub struct OpenApiGenerator {
     di_generator: Arc<DiGenerator>,
     lib_generator: Arc<LibGenerator>,
     cargo_toml_generator: Arc<CargoTomlGenerator>,
+    readme_adoc_generator: Arc<ReadmeAdocGenerator>,
     gitignore_generator: Arc<GitIgnoreGenerator>,
     schema_generator: Arc<SchemaGenerator>,
 }
@@ -47,6 +49,7 @@ impl OpenApiGenerator {
         di_generator: Arc<DiGenerator>,
         lib_generator: Arc<LibGenerator>,
         cargo_toml_generator: Arc<CargoTomlGenerator>,
+        readme_adoc_generator: Arc<ReadmeAdocGenerator>,
         gitignore_generator: Arc<GitIgnoreGenerator>,
         schema_generator: Arc<SchemaGenerator>,
     ) -> Self {
@@ -65,6 +68,7 @@ impl OpenApiGenerator {
             di_generator,
             lib_generator,
             cargo_toml_generator,
+            readme_adoc_generator,
             gitignore_generator,
             schema_generator,
         }
@@ -90,6 +94,15 @@ impl OpenApiGenerator {
         self.di_generator.generate(output, &spec)?;
         self.lib_generator.generate(output)?;
         self.cargo_toml_generator.generate(
+            output,
+            &spec,
+            cli.package_name.clone(),
+            cli.homepage.clone(),
+            cli.repository.clone(),
+            cli.documentation.clone(),
+        )?;
+
+        self.readme_adoc_generator.generate(
             output,
             &spec,
             cli.package_name,

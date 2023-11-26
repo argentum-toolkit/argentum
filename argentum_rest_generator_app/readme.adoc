@@ -2,7 +2,7 @@
 
 == Restrictions
 
-- supports only `$ref` params in case if OpenAPI objects supports `$ref`. (Doesn't support onboarded objects in this case)
+- supports only `$ref` params in case if OpenAPI objects supports `$ref`. (Doesn't support embedded objects in this case)
 - we don't use OpenAPI tags. If you need similar functionality, we would like to recommend split your API to packages
 
 == Features

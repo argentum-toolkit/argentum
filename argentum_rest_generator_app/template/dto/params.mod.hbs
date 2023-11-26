@@ -6,6 +6,6 @@ mod {{snake operation.operationId}}_params;
 
 {{#each operations as |operation|}}
 {{~#if operation.requestBody}}
-pub use {{snake operation.operationId}}_params::{{operation.operationId}}Params;
+pub use {{snake operation.operationId}}_params::{{upper_camel operation.operationId}}Params;
 {{/if}}
 {{/each}}

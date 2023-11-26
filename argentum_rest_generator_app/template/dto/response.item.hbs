@@ -1,5 +1,9 @@
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
+{{#if content}}
 use argentum_rest_infrastructure::data_type::SerializableBody;
+{{else}}
+use argentum_rest_infrastructure::data_type::http_response::NoContent;
+{{/if}}
 
 {{#each content as |schemaName|}}
 use {{schemaName}};
@@ -12,8 +16,8 @@ pub struct {{content_type_to_type @key}}({{trim_mod schemaName}});
 
 {{#each content as |schemaName|}}
 impl ContentTypeResponseTrait for {{content_type_to_type @key}} {
-    fn content_type(&self) -> String {
-        "{{@key}}".to_string()
+    fn content_type(&self) -> Option<String> {
+        Some("{{@key}}".to_string())
     }
 
     fn body(&self) -> Box<dyn SerializableBody> {
@@ -36,10 +40,14 @@ impl {{ upper_camel responseName }}Response {
 {{/each}}
 
     pub fn to_content_type_response_trait(&self) -> Box<dyn ContentTypeResponseTrait> {
+    {{#if content}}
         match self {
             {{#each content as |schemaName|}}
             Self::{{upper_camel (content_type_to_type @key)}}(r) => Box::new(r.clone()),
             {{/each}}
         }
+    {{else}}
+        NoContent::new_boxed()
+    {{/if}}
     }
 }

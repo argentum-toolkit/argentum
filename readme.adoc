@@ -136,7 +136,7 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
 ** publish generator to hub.docker.com
 ** tests
-** generate onboarded objects
+** generate embedded objects
 
 * New type for Password
 * add examples to OpenAPI doc

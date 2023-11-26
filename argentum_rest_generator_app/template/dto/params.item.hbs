@@ -5,18 +5,16 @@
 {{/if}}
 use argentum_rest_infrastructure::data_type::{EmptyPathParams, EmptyQueryParams, HttpParams};
 
-pub struct {{ operation.operationId }}Params {
+pub struct {{upper_camel  operation.operationId }}Params {
+    pub headers: {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}},
     pub path: EmptyPathParams,
     pub query: EmptyQueryParams,
-    pub headers: {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}},
 }
 
-impl HttpParams for {{ operation.operationId }}Params {
-    type Path = EmptyPathParams;
-
-    type Query = EmptyQueryParams;
-
+impl HttpParams for {{upper_camel  operation.operationId }}Params {
     type Headers = {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}};
+    type Path = EmptyPathParams;
+    type Query = EmptyQueryParams;
 
     fn new(path: Self::Path, query: Self::Query, headers: Self::Headers) -> Self {
         Self { path, query, headers }

@@ -7,8 +7,8 @@ use crate::dto::schema::EmptyResponse;
 pub struct ApplicationJson(EmptyResponse);
 
 impl ContentTypeResponseTrait for ApplicationJson {
-    fn content_type(&self) -> String {
-        "application/json".to_string()
+    fn content_type(&self) -> Option<String> {
+        Some("application/json".to_string())
     }
 
     fn body(&self) -> Box<dyn SerializableBody> {

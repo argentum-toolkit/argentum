@@ -2,20 +2,24 @@ use hyper::StatusCode;
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
 
 {{#each responseNames as |name|}}
-use crate::dto::response::{{name}}Response;
+use crate::dto::response::{{upper_camel name}}Response;
 {{/each}}
 
-pub enum {{ operation.operationId }}OperationResponseEnum {
+pub enum {{ upper_camel operation.operationId }}OperationResponseEnum {
 {{#each responseNames as |name|}}
-    Status{{@key}}({{name}}Response),
+    Status{{upper_camel @key}}({{upper_camel name}}Response),
 {{/each}}
 }
 
-impl {{ operation.operationId }}OperationResponseEnum {
+impl {{ upper_camel operation.operationId }}OperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
         {{#each responseNames as |name|}}
-            Self::Status{{@key}}(_) => StatusCode::from_u16({{@key}}).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            {{#if (eq @key "default") }}
+                Self::Status{{upper_camel @key}}(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            {{else}}
+                Self::Status{{upper_camel @key}}(_) => StatusCode::from_u16({{upper_camel @key}}).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            {{/if}}
         {{/each}}
         }
     }
@@ -23,7 +27,7 @@ impl {{ operation.operationId }}OperationResponseEnum {
     pub fn to_response(&self) -> Box<dyn ContentTypeResponseTrait> {
         match self {
         {{#each responseNames as |name|}}
-            Self::Status{{@key}}(r) => r.to_content_type_response_trait(),
+            Self::Status{{upper_camel @key}}(r) => r.to_content_type_response_trait(),
         {{/each}}
         }
     }

@@ -1,11 +1,11 @@
 {{#each operations as |operation|}}
     {{#if operation.requestBody}}
-use crate::dto::request::{{operation.operationId}}Request;
+use crate::dto::request::{{upper_camel operation.operationId}}Request;
     {{/if}}
 {{/each}}
 
 {{#each operations as |operation|}}
-use crate::server::handler::{{operation.operationId}}Trait;
+use crate::server::handler::{{upper_camel operation.operationId}}Trait;
 {{/each}}
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
@@ -17,7 +17,7 @@ pub struct UserAccountPreHandler {
     request_transformer: Arc<RequestTransformer>,
     bearer_auth: Arc<BearerAuthenticator>,
     {{#each operations as |operation|}}
-    {{snake operation.operationId}}: Arc<dyn {{operation.operationId}}Trait>,
+    {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait>,
     {{/each}}
 }
 
@@ -26,7 +26,7 @@ impl UserAccountPreHandler {
         request_transformer: Arc<RequestTransformer>,
         bearer_auth: Arc<BearerAuthenticator>,
         {{#each operations as |operation|}}
-        {{snake operation.operationId}}: Arc<dyn {{operation.operationId}}Trait>,
+        {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait>,
         {{/each}}
     ) -> Self {
         UserAccountPreHandler {
@@ -43,20 +43,27 @@ impl UserAccountPreHandler {
         &self,
         {{#if operation.requestBody}}request: impl RequestTrait,{{/if}}
     ) -> Result<HttpResponse, HttpError> {
-        {{!--TODO: security should depend on response--}}
         {{#if operation.requestBody}}
-        let raw_path_params = HashMap::from([]);
-        let raw_query_params = HashMap::from([]);
-        let req: {{operation.operationId}}Request = self
-            .request_transformer
-            .transform(request, raw_path_params, raw_query_params)
-            .await?;
+            let raw_path_params = HashMap::from([]);
+            let raw_query_params = HashMap::from([]);
+            let req: {{upper_camel operation.operationId}}Request = self
+                .request_transformer
+                .transform(request, raw_path_params, raw_query_params)
+                .await?;
 
-        let user = self.bearer_auth.auth(&req.params.headers)?;
-
-        let r = self.{{snake operation.operationId}}.handle(req, user)?;
+            {{#if operation.security}}
+                let user = self.bearer_auth.auth(&req.params.headers)?;
+                let r = self.{{snake operation.operationId}}.handle(req, user)?;
+            {{else}}
+                let r = self.{{snake operation.operationId}}.handle(req)?;
+            {{/if}}
         {{else}}
-        let r = self.{{snake operation.operationId}}.handle()?;
+            {{#if operation.security}}
+                let user = self.bearer_auth.auth(&req.params.headers)?;
+                let r = self.{{snake operation.operationId}}.handle(user)?;
+            {{else}}
+                let r = self.{{snake operation.operationId}}.handle()?;
+            {{/if}}
         {{/if}}
 
         Ok(HttpResponse::new(r.to_status_code(), r.to_response().body()))

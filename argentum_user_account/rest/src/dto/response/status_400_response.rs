@@ -7,8 +7,8 @@ use crate::dto::schema::ProblemDetail;
 pub struct ApplicationProblemJson(ProblemDetail);
 
 impl ContentTypeResponseTrait for ApplicationProblemJson {
-    fn content_type(&self) -> String {
-        "application/problem+json".to_string()
+    fn content_type(&self) -> Option<String> {
+        Some("application/problem+json".to_string())
     }
 
     fn body(&self) -> Box<dyn SerializableBody> {

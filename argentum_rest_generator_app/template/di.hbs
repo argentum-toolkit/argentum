@@ -1,5 +1,5 @@
 {{~#each operations as |operation|~}}
-    use crate::server::handler::{{operation.operationId}}Trait;
+    use crate::server::handler::{{upper_camel operation.operationId}}Trait;
 {{~/each~}}
 
 use crate::server::{UserAccountPreHandler, UserAccountRouter};
@@ -20,7 +20,7 @@ impl ApiDiC {
         request_transformer: Arc<RequestTransformer>,
         bearer_auth: Arc<BearerAuthenticator>,
         {{#each operations as |operation|}}
-            {{snake operation.operationId}}_handler: Arc<dyn {{operation.operationId}}Trait>,
+            {{snake operation.operationId}}_handler: Arc<dyn {{upper_camel operation.operationId}}Trait>,
         {{/each}}
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {

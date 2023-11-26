@@ -73,7 +73,7 @@ impl ResponseGenerator {
                 })
                 .to_string(),
             RefOrObject::Object(_o) => {
-                todo!("Only reference is supported currently. Onboarded objects are not supported yet.")
+                todo!("Only reference is supported currently. Embedded objects in response are not supported yet.")
             }
         };
 

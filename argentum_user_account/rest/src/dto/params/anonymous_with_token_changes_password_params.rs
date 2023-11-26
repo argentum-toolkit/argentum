@@ -2,17 +2,15 @@ use argentum_rest_infrastructure::data_type::AuthHeaderParams;
 use argentum_rest_infrastructure::data_type::{EmptyPathParams, EmptyQueryParams, HttpParams};
 
 pub struct AnonymousWithTokenChangesPasswordParams {
+    pub headers: AuthHeaderParams,
     pub path: EmptyPathParams,
     pub query: EmptyQueryParams,
-    pub headers: AuthHeaderParams,
 }
 
 impl HttpParams for AnonymousWithTokenChangesPasswordParams {
-    type Path = EmptyPathParams;
-
-    type Query = EmptyQueryParams;
-
     type Headers = AuthHeaderParams;
+    type Path = EmptyPathParams;
+    type Query = EmptyQueryParams;
 
     fn new(path: Self::Path, query: Self::Query, headers: Self::Headers) -> Self {
         Self {

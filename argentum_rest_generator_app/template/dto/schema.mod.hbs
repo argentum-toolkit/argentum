@@ -3,6 +3,6 @@ mod {{snake @key}};
 {{/each}}
 
 {{#each components.schemas}}
-pub use {{snake @key}}::{{@key}};
-pub use {{snake @key}}::{{@key}}Raw;
+pub use {{snake @key}}::{{upper_camel @key}};
+pub use {{snake @key}}::{{upper_camel @key}}Raw;
 {{/each}}

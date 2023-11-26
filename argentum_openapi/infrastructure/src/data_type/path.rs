@@ -27,5 +27,6 @@ pub struct Path {
     #[serde(flatten)]
     pub operations: HashMap<Method, Operation>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameters: Option<Vec<Parameter>>,
 }

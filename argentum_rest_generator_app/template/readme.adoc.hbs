@@ -1,0 +1,80 @@
+= REST library for {{ title }}
+
+{{description}}
+
+
+== Overview
+
+This server was generated from OpenAPI specification by the link:https://gitlab.com/argentum-toolkit/argentum(argentum-rest-generator).
+
+- API version: {{ version }}
+- Package Name: {{ packageName }}
+{{#if homepage}}
+- Home page: {{ homepage }}
+{{/if}}
+{{#if repository}}
+- Repository: {{ repository }}
+{{/if}}
+{{#if documentation}}
+- Home page: {{ documentation }}
+{{/if}}
+{{#if license}}
+- License: `{{ license.name }}`{{#if license.url}} link:{{ license.url }}[]{{/if}}
+{{/if}}
+
+
+== How to use
+
+=== Create server application
+
+==== Clone this repository or publish it as a crate
+
+{{#if repository}}
+[source,bash]
+....
+$ git clone {{ repository }} rest
+....
+{{/if}}
+
+link:https://doc.rust-lang.org/cargo/commands/cargo-publish.html[How to publish]
+
+==== Create application
+
+[source,bash]
+....
+$ cargo new app --name {{ packageName }}_app
+$ cd app
+....
+
+==== Add dependencies
+
+.Cargo.toml example
+[source,toml]
+....
+[package]
+name = "{{ packageName }}_app"
+description = "{{ title }}"
+version = "{{ version }}"
+edition = "2021"
+
+[dependencies]
+argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
+{{#if packageName }}
+{{ packageName }} = { path = "../rest" }
+{{ else }}
+{{ packageName }} = "*"
+{{/if}}
+....
+
+.main.rs
+[source,rust]
+....
+
+....
+
+.di.rs
+[source,rust]
+....
+$ devops/scripts/check.sh
+....
+<TBD>

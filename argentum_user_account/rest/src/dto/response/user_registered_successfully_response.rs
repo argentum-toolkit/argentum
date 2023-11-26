@@ -7,8 +7,8 @@ use crate::dto::schema::RegistrationWithPasswordResult;
 pub struct ApplicationJson(RegistrationWithPasswordResult);
 
 impl ContentTypeResponseTrait for ApplicationJson {
-    fn content_type(&self) -> String {
-        "application/json".to_string()
+    fn content_type(&self) -> Option<String> {
+        Some("application/json".to_string())
     }
 
     fn body(&self) -> Box<dyn SerializableBody> {
