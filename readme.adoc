@@ -124,7 +124,8 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 
 == TODO
-
+* Diesel migrations; foreign key for session
+* DI builders: make it similar
 * openapi merge tool
 ** error handling
 * rest-generator

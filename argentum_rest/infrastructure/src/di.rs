@@ -4,7 +4,7 @@ use crate::service::{
     ValidationErrorTransformer,
 };
 use argentum_log_business::LoggerTrait;
-use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct RestDiC {

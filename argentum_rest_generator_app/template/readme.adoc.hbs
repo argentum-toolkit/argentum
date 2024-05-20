@@ -58,12 +58,15 @@ version = "{{ version }}"
 edition = "2021"
 
 [dependencies]
+argentum_log_business = { path = "../argentum_log/business" }
+argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
 {{#if packageName }}
 {{ packageName }} = { path = "../rest" }
 {{ else }}
 {{ packageName }} = "*"
 {{/if}}
+tokio = { version = "1.34.*", features = ["full"] }
 ....
 
 .main.rs

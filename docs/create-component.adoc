@@ -78,15 +78,12 @@ cargo run -- \
 [source, bash]
 ....
 cargo run -- \
-  --input ../argentum_user_account/api-doc/openapi.yaml \
-  --output ../argentum_user_account/rest/ \
-  --package-name argentum_user_account_rest \
-  --homepage https://github.com/argentum-toolkit/argentum \
-  --repository https://github.com/argentum-toolkit/argentum \
-  --documentation https://github.com/argentum-toolkit/argentum
+  --input ../../todo-argentum/api-doc/openapi.yaml \
+  --output ../../todo-argentum/rest/ \
+  --package-name todo_rest
 ....
 
-=== Run generator on Docker
+=== Run generator on Docker../../todo-on-rust-and-hyper/api-doc/openapi.yaml
 
 === Deprecated
 //TODO: generate with rest generator
