@@ -6,9 +6,9 @@ use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_business::di::UserAccountBusinessDiCBuilder;
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
-use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
+use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct DiC {

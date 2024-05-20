@@ -1,6 +1,5 @@
-use crate::db_diesel::repository::password_credential_repository::PasswordCredentialRepository;
-use crate::db_diesel::repository::restore_password_token_repository::RestorePasswordTokenRepository;
-use crate::db_diesel::repository::session_repository::SessionRepository;
+use crate::db::repository::PasswordCredentialRepository;
+use crate::db::repository::RestorePasswordTokenRepository;
 use crate::rest::handler::{
     AnonymousRegistersHandler, AnonymousRequestsRestoreTokenHandler,
     AnonymousWithTokenChangesPasswordHandler, UserLoginsWithPasswordHandler,
@@ -15,18 +14,16 @@ use argentum_encryption_business::password::{Encryptor, Validator};
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotificatorTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
 use argentum_user_account_business::di::UserAccountBusinessDiCBuilder;
-use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use argentum_user_account_rest::server::handler::{
     AnonymousRegistersTrait, AnonymousWithTokenChangesPasswordTrait, UserLoginsWithPasswordTrait,
     UserRegistersWithPasswordTrait,
 };
-use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
-use argentum_user_business::repository::user_repository::{
-    AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
-};
+use argentum_user_infrastructure::di::UserInfrastructureDiC;
+use std::rc::Rc;
 
+use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
+use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
 pub struct UserAccountInfrastructureDiC {
@@ -37,10 +34,10 @@ pub struct UserAccountInfrastructureDiC {
         Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
     pub user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait>,
     pub user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait>,
-    pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
 }
 
 pub struct UserAccountInfrastructureDiCBuilder {
+    user_infrastructure_di: Rc<UserInfrastructureDiC>,
     business_builder: UserAccountBusinessDiCBuilder,
     id_factory: Arc<UniqueIdFactory>,
     logger: Arc<dyn LoggerTrait>,
@@ -48,6 +45,7 @@ pub struct UserAccountInfrastructureDiCBuilder {
 
 impl UserAccountInfrastructureDiCBuilder {
     pub fn new(
+        user_infrastructure_di: Rc<UserInfrastructureDiC>,
         id_factory: Arc<UniqueIdFactory>,
 
         encryptor: Arc<dyn Encryptor>,
@@ -56,6 +54,7 @@ impl UserAccountInfrastructureDiCBuilder {
         notificator: Arc<dyn NotificatorTrait>,
     ) -> Self {
         Self {
+            user_infrastructure_di,
             business_builder: UserAccountBusinessDiCBuilder::new(
                 id_factory.clone(),
                 encryptor,
@@ -83,34 +82,39 @@ impl UserAccountInfrastructureDiCBuilder {
         self
     }
 
-    pub fn services(
+    pub async fn services(
         &mut self,
         id_factory: Arc<UniqueIdFactory>,
-        connection: Arc<ConnectionPoolManager>,
-        anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-        anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
+        connection_url: &str,
+        max_db_connections: u32,
     ) -> &mut Self {
-        let session_repository = Arc::new(SessionRepository::new(
-            connection.clone(),
-            id_factory.clone(),
-        ));
+        let pool = Arc::new(
+            PgPoolOptions::new()
+                .max_connections(max_db_connections)
+                .connect(connection_url)
+                .await
+                .unwrap(),
+        );
+
+        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool).await);
 
         let password_credential_repository = Arc::new(PasswordCredentialRepository::new(
-            connection.clone(),
+            pg_adapter.clone(),
             id_factory.clone(),
         ));
 
         let restore_password_token_repository =
-            Arc::new(RestorePasswordTokenRepository::new(connection, id_factory));
+            Arc::new(RestorePasswordTokenRepository::new(pg_adapter, id_factory));
 
         let token_generator = Arc::new(StringTokenGenerator::new());
 
+        let u_bdi = &self.user_infrastructure_di.business_dic;
+
         self.business_builder.services(
-            anonymous_binding_repository.clone(),
-            anonymous_user_repository.clone(),
-            authenticated_user_repository.clone(),
-            session_repository,
+            u_bdi.anonymous_binding_repository.clone(),
+            u_bdi.anonymous_user_repository.clone(),
+            u_bdi.authenticated_user_repository.clone(),
+            u_bdi.session_repository.clone(),
             password_credential_repository,
             restore_password_token_repository,
             token_generator,
@@ -173,7 +177,6 @@ impl UserAccountInfrastructureDiCBuilder {
             anonymous_registers_handler,
             user_registers_with_password_handler,
             user_logins_with_password_handler,
-            user_authenticates_with_token_uc: bdi.user_authenticates_with_token_uc,
             anonymous_with_token_changes_password_handler: anonymous_with_token_changes_password,
             anonymous_requests_restore_token_handler: anonymous_requests_restore_token,
         }

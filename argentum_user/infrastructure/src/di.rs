@@ -1,6 +1,7 @@
 use crate::db_diesel::repository::anonymous_binding_repository::AnonymousBindingRepository;
 use crate::db_diesel::repository::anonymous_user_repository::AnonymousUserRepository;
 use crate::db_diesel::repository::authenticated_user_repository::AuthenticatedUserRepository;
+use crate::db_diesel::repository::session_repository::SessionRepository;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
 use argentum_user_business::di::{UserBusinessDiC, UserBusinessDiCBuilder};
@@ -37,8 +38,10 @@ impl UserDiCBuilder {
                 id_factory.clone(),
             )))
             .authenticated_user_repository(Arc::new(AuthenticatedUserRepository::new(
-                connection, id_factory,
-            )));
+                connection.clone(),
+                id_factory.clone(),
+            )))
+            .session_repository(Arc::new(SessionRepository::new(connection, id_factory)));
 
         self
     }

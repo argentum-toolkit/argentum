@@ -1,15 +1,17 @@
-use crate::entity::session::Session;
 use crate::repository::password_credential_checker::{
     PasswordCredentialChecker, PasswordCredentialCheckerError,
 };
-use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
+use argentum_user_business::entity::session::Session;
 use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+use argentum_user_business::repository::session_repository::{
+    SessionRepositoryError, SessionRepositoryTrait,
+};
 use argentum_user_business::repository::user_repository::{
     AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
@@ -126,7 +128,6 @@ pub enum LoginError {
 mod test {
     use crate::entity::credential::PasswordCredential;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
-    use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
     use crate::repository::credential_writer::CredentialWriterTrait;
     use crate::repository::password_credential_checker::PasswordCredentialChecker;
@@ -142,6 +143,7 @@ mod test {
     use argentum_user_business::entity::user::{AnonymousUser, AuthenticatedUser};
     use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+    use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
     use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use std::sync::Arc;

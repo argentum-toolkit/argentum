@@ -11,6 +11,9 @@ documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
+async-trait = "0.1.*"
+futures = "0.3.*"
+
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = "0.2.0-dev" }
 argentum_log_business = { path = "../../argentum_log/business" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = "0.2.0-dev" }

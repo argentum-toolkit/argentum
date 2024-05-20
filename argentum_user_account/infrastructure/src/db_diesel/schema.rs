@@ -17,16 +17,7 @@ diesel::table! {
     }
 }
 
-diesel::table! {
-    ag_user_account_session (id) {
-        id -> Uuid,
-        user_id -> Uuid,
-        token -> Text,
-    }
-}
-
 diesel::allow_tables_to_appear_in_same_query!(
     ag_user_account_password_credential,
     ag_user_account_restore_password_token,
-    ag_user_account_session,
 );

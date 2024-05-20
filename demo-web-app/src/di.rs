@@ -5,12 +5,15 @@ use argentum_notification_business::mock::StdoutNotificator;
 use argentum_rest_infrastructure::service::Server;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
+use std::env;
 use std::net::SocketAddr;
+use std::rc::Rc;
 
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiCBuilder;
 use argentum_user_account_rest::ApiDiC;
 use argentum_user_infrastructure::di::UserDiCBuilder;
+use dotenv::dotenv;
 use std::sync::Arc;
 
 pub struct DiC {
@@ -24,18 +27,17 @@ impl DiC {
     }
 }
 
-pub fn di_factory() -> DiC {
-    let user_account_pg_connection_pool_manager =
-        Arc::new(ConnectionPoolManager::new("AG_USER_ACCOUNT_DATABASE_URL"));
-
+pub async fn di_factory() -> DiC {
     let user_pg_connection_pool_manager =
         Arc::new(ConnectionPoolManager::new("AG_USER_DATABASE_URL"));
 
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
-    let u_di = UserDiCBuilder::new()
-        .defalt_services(user_pg_connection_pool_manager, unique_id_factory.clone())
-        .build();
+    let u_di = Rc::new(
+        UserDiCBuilder::new()
+            .defalt_services(user_pg_connection_pool_manager, unique_id_factory.clone())
+            .build(),
+    );
 
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
@@ -44,20 +46,22 @@ pub fn di_factory() -> DiC {
 
     let notificator = Arc::new(StdoutNotificator::new());
 
+    dotenv().ok();
+    const CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
+
+    let database_url = env::var(CONNECTION_URL_ENV_NAME)
+        .unwrap_or_else(|_| panic!("{} must be set", CONNECTION_URL_ENV_NAME));
+
     let ua_di = UserAccountInfrastructureDiCBuilder::new(
+        u_di.clone(),
         unique_id_factory.clone(),
         pbkdf2_password_encryptor.clone(),
         pbkdf2_password_encryptor,
         logger.clone(),
         notificator,
     )
-    .services(
-        unique_id_factory,
-        user_account_pg_connection_pool_manager,
-        u_di.business_dic.anonymous_user_repository,
-        u_di.business_dic.authenticated_user_repository,
-        u_di.business_dic.anonymous_binding_repository,
-    )
+    .services(unique_id_factory, &database_url, 5)
+    .await
     .config(
         "Argentum ToolKit demo web application".to_string(),
         3600, // TTL 1h
@@ -65,7 +69,10 @@ pub fn di_factory() -> DiC {
     )
     .build();
 
-    let rest_di = RestDiC::new(logger.clone(), ua_di.user_authenticates_with_token_uc);
+    let rest_di = RestDiC::new(
+        logger.clone(),
+        u_di.business_dic.user_authenticates_with_token_uc.clone(),
+    );
 
     let api_di = ApiDiC::new(
         "/api/v1".to_string(),

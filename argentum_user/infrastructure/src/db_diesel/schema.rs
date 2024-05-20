@@ -28,6 +28,14 @@ diesel::table! {
 diesel::joinable!(ag_user_anonymous_binding -> ag_user_anonymous (anonymous_id));
 diesel::joinable!(ag_user_anonymous_binding -> ag_user_authenticated (user_id));
 
+diesel::table! {
+    ag_user_session (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        token -> Text,
+    }
+}
+
 diesel::allow_tables_to_appear_in_same_query!(
     ag_user_anonymous,
     ag_user_anonymous_binding,

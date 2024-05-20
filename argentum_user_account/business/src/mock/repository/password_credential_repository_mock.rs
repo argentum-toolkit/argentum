@@ -16,6 +16,12 @@ impl PasswordCredentialRepositoryMock {
             credentials: RwLock::new(HashMap::new()),
         }
     }
+
+    // pub fn new<PasswordR: PasswordCredentialRepositoryTrait>() -> PasswordR {
+    //     PasswordCredentialRepositoryMock {
+    //         credentials: RwLock::new(HashMap::new()),
+    //     }
+    // }
 }
 
 impl Default for PasswordCredentialRepositoryMock {

@@ -1,5 +1,7 @@
 use crate::entity::credential::{Credential, PasswordCredential};
-use crate::repository::credential_writer::{CredentialWriterError, CredentialWriterTrait};
+use crate::repository::credential_writer::{
+    CredentialWriterError, CredentialWriterResult, CredentialWriterTrait,
+};
 use crate::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,
 };
@@ -19,7 +21,7 @@ pub trait PasswordCredentialWriterTrait: CredentialWriterTrait + Send + Sync {
 }
 
 impl<T: PasswordCredentialWriterTrait> CredentialWriterTrait for T {
-    fn write(&self, cred: Box<dyn Credential>) -> Result<(), CredentialWriterError> {
+    fn write(&self, cred: Box<dyn Credential>) -> CredentialWriterResult {
         let pass_cred = match cred.as_any().downcast_ref::<PasswordCredential>() {
             Some(b) => b,
             None => panic!("Accepted only PasswordCredential type"),
@@ -29,7 +31,7 @@ impl<T: PasswordCredentialWriterTrait> CredentialWriterTrait for T {
             .map_err(|e| CredentialWriterError::Credential(Box::new(e)))
     }
 
-    fn delete_for_user(&self, user_id: &Id) -> Result<(), CredentialWriterError> {
+    fn delete_for_user(&self, user_id: &Id) -> CredentialWriterResult {
         self.delete_password_credentials_for_user(user_id)
             .map_err(|e| CredentialWriterError::Credential(Box::new(e)))
     }
