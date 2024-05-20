@@ -3,9 +3,9 @@ use sqlx::postgres::PgPool;
 use std::collections::BTreeMap;
 use std::future::Future;
 
-use sqlx::query::Query;
-use sqlx::{Column, Error, Executor, Postgres, Row, Transaction};
-use sqlx_postgres::PgArguments;
+use sqlx::query::{Query, QueryAs};
+use sqlx::{Error, Executor, FromRow, Postgres, Transaction};
+use sqlx_postgres::{PgArguments, PgRow};
 use std::sync::Arc;
 
 pub struct DbRow<'r> {
@@ -17,7 +17,7 @@ pub trait FromDbRow: Sized {
 }
 
 pub struct SqlxPostgresAdapter {
-    pool: Arc<PgPool>,
+    pub pool: Arc<PgPool>,
 }
 
 impl SqlxPostgresAdapter {
@@ -31,23 +31,6 @@ impl SqlxPostgresAdapter {
     ) -> impl Future<Output = Result<u64, DbAdapterError>> + Send + 'q {
         self.exec_with_executor(query, &*self.pool)
     }
-
-    // pub fn exec_with_transaction<'q>(
-    //     &'q self,
-    //     query: Query<'q, Postgres, PgArguments>,
-    //     mut tx: Transaction<'q, Postgres>,
-    // ) -> impl Future<Output = Result<u64, DbAdapterError>> + Send + 'q {
-    //     let t: &'_ mut PgConnection = &mut *tx;
-    //     // let r = self.exec_with_executor(query, t);
-    //
-    //     async move {
-    //         let result = query.execute(t).await;
-    //         match result {
-    //             Ok(r) => Ok(r.rows_affected().clone()),
-    //             Err(e) => Err(DbAdapterError { msg: e.to_string() }),
-    //         }
-    //     }
-    // }
 
     /// Execute query with Executor (transaction or connection pool)
     ///
@@ -78,27 +61,19 @@ impl SqlxPostgresAdapter {
         }
     }
 
+    //TODO: fetch with executor
     pub fn fetch_one<'q, F>(
         &'q self,
-        query: Query<'q, Postgres, PgArguments>,
+        query_as: QueryAs<'q, Postgres, F, PgArguments>,
     ) -> impl Future<Output = Result<Option<F>, DbAdapterError>> + Send + 'q
     where
-        F: FromDbRow,
+        F: Send + Unpin + for<'r> FromRow<'r, PgRow> + 'q,
     {
         async move {
-            let result = query.fetch_optional(&*self.pool).await;
+            let result: Result<Option<F>, Error> = query_as.fetch_optional(&*self.pool).await;
 
             match result {
-                Ok(Some(r)) => {
-                    let mut data = BTreeMap::new();
-                    for column in r.columns() {
-                        let name = column.name();
-                        let value = r.try_get_raw(name);
-                        data.insert(name, value.unwrap().as_bytes().unwrap());
-                    }
-
-                    Ok(Some(F::from_db_row(DbRow { data }).unwrap()))
-                }
+                Ok(Some(r)) => Ok(Some(r)),
                 Ok(None) => Ok(None),
                 Err(e) => Err(DbAdapterError { msg: e.to_string() }),
             }
