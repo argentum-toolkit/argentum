@@ -21,7 +21,7 @@ pub struct SqlxPostgresAdapter {
 }
 
 impl SqlxPostgresAdapter {
-    pub async fn new(pool: Arc<PgPool>) -> Self {
+    pub fn new(pool: Arc<PgPool>) -> Self {
         Self { pool }
     }
 

@@ -4,7 +4,6 @@ use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
 use argentum_rest_infrastructure::service::Server;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
 use std::env;
 use std::net::SocketAddr;
 use std::rc::Rc;
@@ -28,14 +27,19 @@ impl DiC {
 }
 
 pub async fn di_factory() -> DiC {
-    let user_pg_connection_pool_manager =
-        Arc::new(ConnectionPoolManager::new("AG_USER_DATABASE_URL"));
+    dotenv().ok();
+
+    const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
+
+    let u_database_url = env::var(U_CONNECTION_URL_ENV_NAME)
+        .unwrap_or_else(|_| panic!("{} must be set", U_CONNECTION_URL_ENV_NAME));
 
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
     let u_di = Rc::new(
         UserDiCBuilder::new()
-            .defalt_services(user_pg_connection_pool_manager, unique_id_factory.clone())
+            .default_services(&u_database_url, 5, unique_id_factory.clone())
+            .await
             .build(),
     );
 
@@ -46,11 +50,10 @@ pub async fn di_factory() -> DiC {
 
     let notificator = Arc::new(StdoutNotificator::new());
 
-    dotenv().ok();
-    const CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
+    const UA_CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
 
-    let database_url = env::var(CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{} must be set", CONNECTION_URL_ENV_NAME));
+    let database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
+        .unwrap_or_else(|_| panic!("{} must be set", UA_CONNECTION_URL_ENV_NAME));
 
     let ua_di = UserAccountInfrastructureDiCBuilder::new(
         u_di.clone(),

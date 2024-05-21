@@ -96,7 +96,7 @@ impl UserAccountInfrastructureDiCBuilder {
                 .unwrap(),
         );
 
-        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool).await);
+        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool));
 
         let password_credential_repository = Arc::new(PasswordCredentialRepository::new(
             pg_adapter.clone(),

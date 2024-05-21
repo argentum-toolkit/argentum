@@ -28,7 +28,6 @@ impl RestorePasswordTokenRepository {
 
     fn find_one<'q>(
         &'q self,
-        // token: String,
         query: QueryAs<'q, Postgres, RestorePasswordTokenDto, PgArguments>,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
         let result: Result<Option<RestorePasswordTokenDto>, DbAdapterError> =

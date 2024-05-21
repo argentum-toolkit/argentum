@@ -19,9 +19,8 @@ argentum_user_business = { path = "../../argentum_user/business" }
 
 chrono = { version = "0.4.*", features = ["serde"] }
 derive_more = "0.99.*"
-diesel = { version = "2.1.*", features = ["postgres", "r2d2", "uuid", "chrono"] }
-dotenv = "0.15.0"
+futures = "0.3.*"
 serde = { version = "1.0", features = ["derive"] }
+sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }
 uuid = { version = "1.5.*", features = ["serde", "v4"] }
 thiserror = "1.0"
-diesel-ulid = "0.2.*"

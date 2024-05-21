@@ -1,7 +1,9 @@
 = Create New Component
 
 == Example
-You can look at `Argentum User` component. It can be good example of component which contains:
+
+You can look at `Argentum User` component.
+It can be good example of component which contains:
 
 * clean business logic (`business`)
 * API documentation (`api-doc`)
@@ -9,7 +11,7 @@ You can look at `Argentum User` component. It can be good example of component w
 * Infrastructure code which interacts with "real world" (`infrastructure`)
 ** Database migrations (`migrations`)
 ** HTTP layer built on `Argentum Rest` (`src/rest`)
-** Data persistence layer built on `Diesel ORM` (`src/db_diesel`)
+** Data persistence layer built on `SQLX` (`src/db`)
 
 == Create file structure
 
@@ -26,6 +28,7 @@ TBD
 ** configure `Cargo.toml` parameters
 * create `readme.adoc` file
 
+//TODO: DESCRIBE HOW TO DEAL WITH DATABASE
 === Add Diesel ORM support if required
 
 WARNING:    You should do it only for infrastructure packages if it is required.
@@ -35,7 +38,8 @@ NOTE:   Diesel ORM manual https://diesel.rs/guides/getting-started
 
 * Configure environment
 ** Add new variable to `.env` `POSTGRES_DB_FOR_{$componentName}`=`$dbName`
-** Add new variable with connection string to `.env`. E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
+** Add new variable with connection string to `.env`.
+E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
 * Add new BD service to 'docker-compose.yaml' with name `service.{$componentName}.db`
 * Add dependencies to `Cargo.toml`
 ** `diesel = { version = "1.4.4", features = ["postgres", "r2d2", "uuidv07", "chrono"] }`
@@ -57,15 +61,15 @@ NOTE:   Diesel ORM manual https://diesel.rs/guides/getting-started
 * Add it as a dependency to your repositories
 * Create file `src/diesel_db/models.rs`
 
-
 NOTE: When you create a new DB for a new component we recommend you make `name of DB`
-equal to the name of the component. E.g. for component with name `User` we will create db with name `argentum_user`
+equal to the name of the component.
+E.g. for component with name `User` we will create db with name `argentum_user`
 
 == How we work with OpenAPI
 
 === Run generator from sources
 
-[source, bash]
+[source,bash]
 ....
 cargo run -- \
   --input {{path/to/openapi.yaml} \
@@ -75,7 +79,7 @@ cargo run -- \
 ....
 
 .Example
-[source, bash]
+[source,bash]
 ....
 cargo run -- \
   --input ../../todo-argentum/api-doc/openapi.yaml \
@@ -89,13 +93,15 @@ cargo run -- \
 //TODO: generate with rest generator
 
 Pull new version of OpenAPI generators image
-[source, bash]
+
+[source,bash]
 ....
 $ docker pull openapitools/openapi-generator-cli:v6.6.0
 ....
 
 How to generate a library with code clients and servers code
-[source, bash]
+
+[source,bash]
 ....
 $ docker run --rm \
     -v "${PWD}:/local" \

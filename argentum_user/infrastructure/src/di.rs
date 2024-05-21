@@ -1,10 +1,11 @@
-use crate::db_diesel::repository::anonymous_binding_repository::AnonymousBindingRepository;
-use crate::db_diesel::repository::anonymous_user_repository::AnonymousUserRepository;
-use crate::db_diesel::repository::authenticated_user_repository::AuthenticatedUserRepository;
-use crate::db_diesel::repository::session_repository::SessionRepository;
+use crate::db::repository::AnonymousBindingRepository;
+use crate::db::repository::AnonymousUserRepository;
+use crate::db::repository::AuthenticatedUserRepository;
+use crate::db::repository::SessionRepository;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db_diesel::connection::pg::ConnectionPoolManager;
+use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::di::{UserBusinessDiC, UserBusinessDiCBuilder};
+use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
 pub struct UserInfrastructureDiC {
@@ -23,25 +24,36 @@ impl UserDiCBuilder {
         }
     }
 
-    pub fn defalt_services(
+    pub async fn default_services(
         &mut self,
-        connection: Arc<ConnectionPoolManager>,
+        connection_url: &str,
+        max_db_connections: u32,
         id_factory: Arc<UniqueIdFactory>,
     ) -> &mut Self {
+        let pool = Arc::new(
+            PgPoolOptions::new()
+                .max_connections(max_db_connections)
+                .connect(connection_url)
+                .await
+                .unwrap(),
+        );
+
+        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool));
+
         self.business_dic_builder
             .anonymous_binding_repository(Arc::new(AnonymousBindingRepository::new(
-                connection.clone(),
+                pg_adapter.clone(),
                 id_factory.clone(),
             )))
             .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(
-                connection.clone(),
+                pg_adapter.clone(),
                 id_factory.clone(),
             )))
             .authenticated_user_repository(Arc::new(AuthenticatedUserRepository::new(
-                connection.clone(),
+                pg_adapter.clone(),
                 id_factory.clone(),
             )))
-            .session_repository(Arc::new(SessionRepository::new(connection, id_factory)));
+            .session_repository(Arc::new(SessionRepository::new(pg_adapter, id_factory)));
 
         self
     }

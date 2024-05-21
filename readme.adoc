@@ -6,13 +6,15 @@
 toc::[]
 
 == Why "Argentum"?
+
 Argentum ToolKit was made to provide the easiest way to implement microservices and back-end applications on Rust programming language.
 Our goal is to allow everyone to create applications without deep knowledge of Rust.
-Of course knowledge of the Rust will be great advantage. But Argentum ToolKit helps you make your first steps as easy as possible and will save much time in the future.
+Of course knowledge of the Rust will be great advantage.
+But Argentum ToolKit helps you make your first steps as easy as possible and will save much time in the future.
 Your learning process will be iterative and easier than without Argentum ToolKit.
 
 .Steps to be ready to create effective applications with Argentum ToolKit
-[plantuml, format="svg"]
+[plantuml,format="svg"]
 ----
 :Run Argentum Demo Application;
 :Read Basic Rust Documentation;
@@ -41,8 +43,8 @@ It is easy with link:docs/quick-start.adoc[Quick Start Guide]
 * link:argentum_user/readme.adoc[Argentum User]
 * link:argentum_user_account/readme.adoc[Argentum User Account]
 
-
 == Argentum ToolKit Architecture. Short description
+
 Argentum ToolKit project is composed of components.
 Each component is usually split to several crates:
 
@@ -51,20 +53,20 @@ Each component is usually split to several crates:
 - OpenAPI documentation (Swagger)
 - Generated API package
 
-What is **abstractions**? Abstractions are a clean business model.
+What is **abstractions**?
+Abstractions are a clean business model.
 It is the main core of the project which responsible for only business logic.
 A Business package should not depend on 3-rd party packages it is possible.
 To follow this restriction you should use Dependency Inversion Principle.
 
-What is **details**? Details are: database adapters, RESTful API, RPC API
-and other connections with world.
+What is **details**?
+Details are: database adapters, RESTful API, RPC API and other connections with world.
 
 NOTE: Of course, you are free to follow other project structures.
-However, we advise you to pay maximum attention to the business logic of your application
-and separate it from the infrastructure.
+However, we advise you to pay maximum attention to the business logic of your application and separate it from the infrastructure.
 
 .The main idea of the architecture of Argentum ToolKit
-[plantuml, format="svg"]
+[plantuml,format="svg"]
 ----
 rectangle "Argentum ToolKit" {
     component Encryption as e {
@@ -76,13 +78,9 @@ rectangle "Argentum ToolKit" {
 }
 ----
 
+WARNING: Package with business logic should be independent or should depend only on other business packages.
 
-WARNING: Package with business logic should be independent
-or should depend only on other business packages.
-
-NOTE: Infrastructure packages can depend on business packages,
-on other infrastructure packages
-or on 3-rd party packages.
+NOTE: Infrastructure packages can depend on business packages, on other infrastructure packages or on 3-rd party packages.
 
 WARNING: Circular dependencies are forbidden.
 
@@ -116,15 +114,14 @@ $ devops/scripts/check.sh
 $ devops/scripts/check-item.sh {{package-name}}
 ....
 
-
 === Allowed 3-rd party packages for business packages of Argentum ToolKit
 
 * *thiserror* - errors
 * *chrono* - time
 
-
 == TODO
-* Diesel migrations; foreign key for session
+
+* Foreign key for session
 * DI builders: make it similar
 * openapi merge tool
 ** error handling
@@ -144,7 +141,8 @@ $ devops/scripts/check-item.sh {{package-name}}
 * parsing instead of validation
 
 * DB
-** update diesel-ulid 0.2.x up to latest
+** migrations
+** table names as a const or as a param
 
 * documentation
 ** ADR

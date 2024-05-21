@@ -5,8 +5,9 @@ use std::error::Error;
 pub trait AnonymousBindingRepositoryTrait: Send + Sync {
     fn find_by_user_id(
         &self,
-        id: &Id,
+        user_id: &Id,
     ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError>;
+
     fn save(&self, binding: &AnonymousBinding) -> Result<(), AnonymousBindingRepositoryError>;
 }
 
