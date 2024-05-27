@@ -2,10 +2,15 @@
 
 == Restrictions
 
-- supports only `$ref` params in case if OpenAPI objects supports `$ref`. (Doesn't support embedded objects in this case)
-- we don't use OpenAPI tags. If you need similar functionality, we would like to recommend split your API to packages
+- supports only `$ref` params in case if OpenAPI objects supports `$ref`.
+(Doesn't support embedded objects in this case)
+- we don't use OpenAPI tags.
+If you need similar functionality, we would like to recommend split your API to packages
 
 == Features
 
 - Generated code compatible with Argentum REST
 - Schemas supports only Object type (Array, AnyOf, AllOf are not implemented yet)
+
+Example:
+cargo run --   --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest

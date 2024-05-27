@@ -121,7 +121,6 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 == TODO
 
-* Foreign key for session
 * DI builders: make it similar
 * openapi merge tool
 ** error handling
@@ -137,12 +136,13 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** generate embedded objects
 
 * New type for Password
-* add examples to OpenAPI doc
+* fix generator for cases when string field parses as integer
 * parsing instead of validation
 
 * DB
 ** migrations
 ** table names as a const or as a param
+** Foreign key for session
 
 * documentation
 ** ADR

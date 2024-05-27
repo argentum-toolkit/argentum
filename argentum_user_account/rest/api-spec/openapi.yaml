@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum
@@ -155,9 +155,11 @@ components:
       - token
       properties:
         anonymous_id:
+          example: c8cabaac-8359-463a-9cce-954eff31e063
           type: string
           format: uuid
         token:
+          example: token-example
           type: string
       type: object
     ChangePasswordSchema:
@@ -166,9 +168,11 @@ components:
       - password
       properties:
         password:
+          example: secure-password
           type: string
           format: password
         token:
+          example: token-example
           type: string
       type: object
     EmptyResponse:
@@ -180,8 +184,10 @@ components:
       - token
       properties:
         token:
+          example: token-example
           type: string
         user_id:
+          example: dd7ea831-ad64-429f-9839-a44c84c74550
           type: string
           format: uuid
       type: object
@@ -207,11 +213,13 @@ components:
       - title
       properties:
         code:
+          example: '401'
           maximum: 599.0
           minimum: 400.0
           type: integer
           format: int32
         message:
+          example: '{"some": "json"}'
           type: string
       type: null
     RegistrationWithPasswordResult:
@@ -219,21 +227,25 @@ components:
       - id
       properties:
         id:
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
           type: string
           format: uuid
       type: object
     RegistrationWithPasswordSchema:
+      example: ololo
       required:
       - email
       - name
       - password
       properties:
         email:
+          example: test-email@test-email.com
           type: string
           format: email
         name:
           $ref: '#/components/schemas/UserName'
         password:
+          example: secure-password
           type: string
           format: password
       type: object
@@ -248,7 +260,6 @@ components:
       type: object
     UserName:
       required:
-      - tst
       - first
       properties:
         first:

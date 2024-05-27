@@ -1,9 +1,8 @@
-openapi: 3.0.3
+openapi: 3.1.0
 
 info:
   title: Argentum User Account component API
   version: 0.2.0-dev
-
   description: User Account API
   license:
     name: BSD-3
