@@ -1,4 +1,4 @@
-image: docker/compose:latest
+image: docker/compose:1.29.2
 
 services:
   - name: docker:dind
