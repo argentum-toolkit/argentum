@@ -122,11 +122,10 @@ $ devops/scripts/check-item.sh {{package-name}}
 == TODO
 
 * DI builders: make it similar
-* openapi merge tool
-** error handling
 * rest-generator
 ** generate `path params`
 ** generate `query params`
+** error handling (replace unwrap. check todo)
 ** fix code duplication
 ** adoc documentation for `argentum_rest`
 ** generate readme.adoc
@@ -134,10 +133,9 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** publish generator to hub.docker.com
 ** tests
 ** generate embedded objects
+** fix generator for cases when string field parses as integer
 
 * New type for Password
-* fix generator for cases when string field parses as integer
-* parsing instead of validation
 
 * DB
 ** migrations

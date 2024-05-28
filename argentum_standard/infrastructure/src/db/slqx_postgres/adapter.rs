@@ -35,7 +35,6 @@ impl SqlxPostgresAdapter {
     /// Execute query with Executor (transaction or connection pool)
     ///
     /// # Examples
-    /// ```no_run
     /// use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
     /// use futures::executor::block_on;
     /// let adapter: SqlxPostgresAdapter = todo!();

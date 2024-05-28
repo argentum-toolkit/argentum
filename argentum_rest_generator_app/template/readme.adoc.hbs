@@ -10,16 +10,16 @@ This server was generated from OpenAPI specification by the link:https://gitlab.
 - API version: {{ version }}
 - Package Name: {{ packageName }}
 {{#if homepage}}
-- Home page: {{ homepage }}
+    - Home page: {{ homepage }}
 {{/if}}
 {{#if repository}}
-- Repository: {{ repository }}
+    - Repository: {{ repository }}
 {{/if}}
 {{#if documentation}}
-- Home page: {{ documentation }}
+    - Home page: {{ documentation }}
 {{/if}}
 {{#if license}}
-- License: `{{ license.name }}`{{#if license.url}} link:{{ license.url }}[]{{/if}}
+    - License: `{{ license.name }}`{{#if license.url}} link:{{ license.url }}[]{{/if}}
 {{/if}}
 
 
@@ -30,10 +30,10 @@ This server was generated from OpenAPI specification by the link:https://gitlab.
 ==== Clone this repository or publish it as a crate
 
 {{#if repository}}
-[source,bash]
-....
-$ git clone {{ repository }} rest
-....
+    [source,bash]
+    ....
+    $ git clone {{ repository }} rest
+    ....
 {{/if}}
 
 link:https://doc.rust-lang.org/cargo/commands/cargo-publish.html[How to publish]
@@ -62,9 +62,9 @@ argentum_log_business = { path = "../argentum_log/business" }
 argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
 {{#if packageName }}
-{{ packageName }} = { path = "../rest" }
+    {{ packageName }} = { path = "../rest" }
 {{ else }}
-{{ packageName }} = "*"
+    {{ packageName }} = "*"
 {{/if}}
 tokio = { version = "1.34.*", features = ["full"] }
 ....
@@ -78,6 +78,6 @@ tokio = { version = "1.34.*", features = ["full"] }
 .di.rs
 [source,rust]
 ....
-$ devops/scripts/check.sh
+
 ....
 <TBD>
