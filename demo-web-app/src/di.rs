@@ -96,7 +96,7 @@ pub async fn di_factory() -> DiC {
 
     let server = Arc::new(Server::new(
         addr,
-        api_di.router,
+        api_di.router, //TODO: implement router collection
         rest_di.response_transformer,
         rest_di.error_handler,
         logger,
