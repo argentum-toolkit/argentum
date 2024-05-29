@@ -8,6 +8,28 @@ paths: { }
 
 components:
   schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+        email:
+          type: string
+          format: email
+          example: test-email@test-email.com
+        name:
+          $ref: '#/components/schemas/UserName'
+        password:
+          type: string
+          format: password
+          example: secure-password
+      required:
+        - email
+        - name
+        - password
+
     UserName:
       type: object
       properties:

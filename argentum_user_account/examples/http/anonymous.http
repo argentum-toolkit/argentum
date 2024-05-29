@@ -1,5 +1,4 @@
-
-POST http://{{host}}{{baseUrl}}/user/anonymous-register
+POST http://{{host}}{{baseUrl}}/user-account/anonymous-register
 Content-Type: application/json
 
 > {%

@@ -31,7 +31,7 @@ impl Router for UserAccountRouter {
     async fn route(&self, req: Request) -> Result<HttpResponse, HttpError> {
         let path = req.uri().path();
         let path = match path.strip_prefix(self.url_prefix.as_str()) {
-            None => return self.error_pre_handler.not_found(req).await,
+            None => return self.error_pre_handler.route_not_found(req).await,
             Some(path) => path,
         };
 
@@ -50,7 +50,7 @@ impl Router for UserAccountRouter {
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
             {{/each}}
-            _ => self.error_pre_handler.not_found(req).await,
+            _ => self.error_pre_handler.route_not_found(req).await,
         }
     }
 }

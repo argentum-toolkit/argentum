@@ -122,6 +122,7 @@ $ devops/scripts/check-item.sh {{package-name}}
 == TODO
 
 * DI builders: make it similar
+
 * rest-generator
 ** generate `path params`
 ** generate `query params`

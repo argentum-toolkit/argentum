@@ -38,28 +38,8 @@ impl Router for UserAccountRouter {
         let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
 
         match segments.as_slice() {
-            ["user-account", "anonymous-register"] => match *req.method() {
-                Method::POST => self.pre_handler.anonymous_registers().await,
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            },
-            ["user-account", "password-login"] => match *req.method() {
-                Method::POST => self.pre_handler.user_logins_with_password(req).await,
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            },
-            ["user-account", "register"] => match *req.method() {
-                Method::POST => self.pre_handler.user_registers_with_password(req).await,
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            },
-            ["user-account", "restore-password", "token-request"] => match *req.method() {
-                Method::POST => self.pre_handler.anonymous_requests_restore_token(req).await,
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            },
-            ["user", "restore-password", "change-password"] => match *req.method() {
-                Method::POST => {
-                    self.pre_handler
-                        .anonymous_with_token_changes_password(req)
-                        .await
-                }
+            ["user", "{userId}"] => match *req.method() {
+                Method::GET => self.pre_handler.get_user().await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },
             _ => self.error_pre_handler.route_not_found(req).await,

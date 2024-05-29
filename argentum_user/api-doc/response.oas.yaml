@@ -1,0 +1,16 @@
+openapi: 3.1.0
+
+info:
+  title: User Account component's responses
+  version: 0.2.0-dev
+paths: { }
+
+components:
+  responses:
+    GetUserOk:
+      description: Created
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "type.oas.yaml#/components/schemas/User"
+

@@ -29,6 +29,20 @@ components:
           schema:
             $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
 
+    403:
+      description: Unauthorized
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
+
+    404:
+      description: Unauthorized
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
+
     422:
       description: Unprocessable Entity
       content:

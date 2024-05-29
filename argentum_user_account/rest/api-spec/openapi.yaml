@@ -36,7 +36,7 @@ tags:
 - description: Managing of the user account
   name: user-account
 paths:
-  /user/anonymous-register:
+  /user-account/anonymous-register:
     post:
       description: Anonymous registers without any data
       operationId: AnonymousRegisters
@@ -46,7 +46,7 @@ paths:
       responses:
         '201':
           $ref: '#/components/responses/AnonymousRegisteredSuccessfully'
-  /user/password-login:
+  /user-account/password-login:
     post:
       description: Login as an user
       operationId: UserLoginsWithPassword
@@ -64,7 +64,7 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
-  /user/register:
+  /user-account/register:
     post:
       description: User registers with email and password
       operationId: UserRegistersWithPassword
@@ -82,6 +82,24 @@ paths:
           $ref: '#/components/responses/400'
         '422':
           $ref: '#/components/responses/422'
+  /user-account/restore-password/token-request:
+    post:
+      description: Requested token and link will be sent to email
+      operationId: AnonymousRequestsRestoreToken
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
+      summary: Anonymous requests restore password token
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
   /user/restore-password/change-password:
     post:
       description: Final step of restoring password process
@@ -93,24 +111,6 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/ChangePasswordRequestBody'
       summary: User with token changes his password
-      responses:
-        '200':
-          $ref: '#/components/responses/EmptyOk'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-  /user/restore-password/token-request:
-    post:
-      description: Requested token and link will be sent to email
-      operationId: AnonymousRequestsRestoreToken
-      tags:
-      - user-account
-      security:
-      - bearerAuth: []
-      requestBody:
-        $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
-      summary: Anonymous requests restore password token
       responses:
         '200':
           $ref: '#/components/responses/EmptyOk'
@@ -232,7 +232,6 @@ components:
           format: uuid
       type: object
     RegistrationWithPasswordSchema:
-      example: ololo
       required:
       - email
       - name

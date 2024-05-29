@@ -15,7 +15,7 @@ components:
           format: email
           example: test-email@test-email.com
         name:
-          $ref: '../../argentum_user/api-doc/types.oas.yaml#/components/schemas/UserName'
+          $ref: '../../argentum_user/api-doc/type.oas.yaml#/components/schemas/UserName'
         password:
           type: string
           format: password

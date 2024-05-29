@@ -1,0 +1,118 @@
+openapi: 3.1.0
+info:
+  contact:
+    url: https://gitlab.com/argentum-toolkit/argentum
+  description: User Account API
+  license:
+    name: BSD-3
+  title: Argentum User Account component API
+  version: 0.2.0-dev
+servers:
+- description: Dev API Server with CORS
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8082'
+      enum:
+      - '8082'
+- description: The production API server
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8080'
+      enum:
+      - '80'
+      - '8080'
+tags:
+- description: Managing of the users
+  name: user
+paths:
+  /user/{userId}:
+    get:
+      description: Get user info
+      operationId: GetUser
+      tags:
+      - user
+      security:
+      - bearerAuth: []
+      summary: Get user info
+      responses:
+        '200':
+          $ref: '#/components/responses/GetUserOk'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+components:
+  requestBodies: {}
+  schemas:
+    ProblemDetail:
+      title: Schema for error response
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+      - code
+      - title
+      properties:
+        code:
+          example: '401'
+          maximum: 599.0
+          minimum: 400.0
+          type: integer
+          format: int32
+        message:
+          example: '{"some": "json"}'
+          type: string
+      type: null
+    User:
+      required:
+      - email
+      - name
+      - password
+      properties:
+        email:
+          example: test-email@test-email.com
+          type: string
+          format: email
+        id:
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+          type: string
+          format: uuid
+        name:
+          $ref: '#/components/schemas/UserName'
+        password:
+          example: secure-password
+          type: string
+          format: password
+      type: object
+  responses:
+    '401':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Unauthorized
+    '403':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Unauthorized
+    '404':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Unauthorized
+    GetUserOk:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+      description: Created
+  securitySchemes: {}

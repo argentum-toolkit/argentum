@@ -54,7 +54,7 @@ impl ErrorHandler {
                     )),
                 )
             }
-            HttpError::NotFound(e) => {
+            HttpError::NotFound(e) | HttpError::RouteNotFound(e) => {
                 self.logger.warning(format!("{:?}", e));
 
                 let code = StatusCode::NOT_FOUND;

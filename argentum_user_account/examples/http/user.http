@@ -1,25 +1,25 @@
-POST http://{{host}}{{baseUrl}}/user/register
+POST http://{{host}}{{baseUrl}}/user-account/register
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-    "email": "troy.odonnell@examples.io",
-    "name": {
-        "first": "Troy",
-        "last": "Odonnell"
-    },
-    "password": "123"
+  "email": "troy.odonnell@examples.io",
+  "name": {
+    "first": "Troy",
+    "last": "Odonnell"
+  },
+  "password": "123"
 }
 
 ###
 
-POST http://{{host}}{{baseUrl}}/user/login
+POST http://{{host}}{{baseUrl}}/user-account/login
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-    "email": "troy.odonnell@examples.io",
-    "password":"123"
+  "email": "troy.odonnell@examples.io",
+  "password": "123"
 }
 
 > {%

@@ -1,0 +1,58 @@
+openapi: 3.1.0
+
+info:
+  title: Argentum User Account component API
+  version: 0.2.0-dev
+  description: User Account API
+  license:
+    name: BSD-3
+
+  contact:
+    url: https://gitlab.com/argentum-toolkit/argentum
+
+servers:
+  - url: http://localhost:{port}/{basePath}
+    description: Dev API Server with CORS
+    variables:
+      port:
+        enum:
+          - '8082'
+        default: '8082'
+      basePath:
+        default: api/v1
+  - url: http://localhost:{port}/{basePath}
+    description: The production API server
+    variables:
+      port:
+        enum:
+          - '80'
+          - '8080'
+        default: '8080'
+      basePath:
+        default: api/v1
+
+tags:
+  - name: user
+    description: Managing of the users
+
+paths:
+  /user/{userId}:
+    get:
+      summary: Get user info
+      description: Get user info
+      tags:
+        - user
+      operationId: GetUser
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          $ref: "./response.oas.yaml#/components/responses/GetUserOk"
+        '401':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
+        '403':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/403"
+        '404':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/404"
+
+components: { }

@@ -20,6 +20,8 @@ pub enum HttpError {
 
     NotFound(NotFoundError),
 
+    RouteNotFound(NotFoundError),
+
     MethodNotAllowed(MethodNotAllowedError),
 
     Conflict(Conflict),

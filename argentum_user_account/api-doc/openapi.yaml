@@ -36,7 +36,7 @@ externalDocs:
   url: https://gitlab.com/argentum-toolkit/argentum
 
 paths:
-  /user/anonymous-register:
+  /user-account/anonymous-register:
     post:
       summary: Anonymous registers
       description: Anonymous registers without any data
@@ -47,7 +47,7 @@ paths:
         '201':
           $ref: "./response.oas.yaml#/components/responses/AnonymousRegisteredSuccessfully"
 
-  /user/register:
+  /user-account/register:
     post:
       summary: User registers with password
       description: User registers with email and password
@@ -66,7 +66,7 @@ paths:
         '422':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
 
-  /user/password-login:
+  /user-account/password-login:
     post:
       summary: Login as an user
       description: Login as an user
@@ -86,7 +86,7 @@ paths:
         '401':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
 
-  /user/restore-password/token-request:
+  /user-account/restore-password/token-request:
     post:
       summary: Anonymous requests restore password token
       description: Requested token and link will be sent to email

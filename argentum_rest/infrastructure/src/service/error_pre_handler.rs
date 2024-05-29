@@ -1,4 +1,4 @@
-use crate::data_type::error::HttpError::{MethodNotAllowed, NotFound};
+use crate::data_type::error::HttpError::{MethodNotAllowed, RouteNotFound};
 use crate::data_type::error::{HttpError, MethodNotAllowedError, NotFoundError};
 use crate::data_type::{HttpResponse, RequestTrait};
 
@@ -10,8 +10,11 @@ impl ErrorPreHandler {
         ErrorPreHandler {}
     }
 
-    pub async fn not_found(&self, _request: impl RequestTrait) -> Result<HttpResponse, HttpError> {
-        Err(NotFound(NotFoundError::new(
+    pub async fn route_not_found(
+        &self,
+        _request: impl RequestTrait,
+    ) -> Result<HttpResponse, HttpError> {
+        Err(RouteNotFound(NotFoundError::new(
             "Resource not found".to_string(),
         )))
     }
