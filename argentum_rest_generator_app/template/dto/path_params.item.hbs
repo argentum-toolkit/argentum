@@ -1,0 +1,31 @@
+{{# each dependencies as |dep|}}
+use {{dep}};
+{{/each}}
+
+use serde::Deserialize;
+use serde_valid::Validate;
+use argentum_rest_infrastructure::data_type::HttpPathParams;
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct {{upper_camel  operation.operationId }}PathParams {
+    {{# each properties as |prop| }}
+        pub {{ snake prop.name }}: {{{ prop.dataType }}},
+    {{/each}}
+}
+
+impl {{upper_camel operation.operationId }}PathParams {
+    fn new(
+    {{# each properties as |prop| }}
+        {{ snake prop.name }}: {{{ prop.dataType }}},
+    {{/each}}
+    ) -> Self {
+        Self {
+        {{# each properties as |prop| }}
+            {{ snake prop.name }},
+        {{/each}}
+        }
+    }
+}
+
+
+impl HttpPathParams for {{upper_camel operation.operationId }}PathParams {}

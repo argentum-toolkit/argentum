@@ -1,0 +1,7 @@
+{{#each operations as |operation|}}
+mod {{snake operation.operationId}}_path_params;
+{{/each}}
+
+{{#each operations as |operation|}}
+pub use {{snake operation.operationId}}_path_params::{{upper_camel operation.operationId}}PathParams;
+{{/each}}

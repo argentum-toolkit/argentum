@@ -40,6 +40,17 @@ paths:
       security:
       - bearerAuth: []
       summary: Get user info
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        deprecated: false
+        allowEmptyValue: false
+        schema:
+          example: a4eaf068-9210-3089-b46e-2b4e567678d8
+          type: string
+          format: uuid
       responses:
         '200':
           $ref: '#/components/responses/GetUserOk'
@@ -89,6 +100,25 @@ components:
           example: secure-password
           type: string
           format: password
+      type: object
+    UserName:
+      required:
+      - first
+      properties:
+        first:
+          example: Winston
+          maxLength: 255
+          minLength: 1
+          type: string
+        last:
+          example: Marko
+          maxLength: 255
+          minLength: 1
+          type: string
+        patronymic:
+          maxLength: 255
+          minLength: 1
+          type: string
       type: object
   responses:
     '401':

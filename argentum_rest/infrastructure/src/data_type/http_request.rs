@@ -1,4 +1,5 @@
 use crate::data_type::DeserializableSchemaRaw;
+use argentum_standard_business::invariant_violation::InvariantResult;
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use serde_valid::Validate;
@@ -68,3 +69,12 @@ impl HttpHeaderParams for AuthHeaderParams {}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct EmptyRequestBody {}
+
+//TODO: use one body for response and for request
+impl DeserializableSchemaRaw<'_> for EmptyRequestBody {
+    type Raw = ();
+
+    fn try_from_raw(_raw: Self::Raw) -> InvariantResult<Self> {
+        Ok(EmptyRequestBody {})
+    }
+}

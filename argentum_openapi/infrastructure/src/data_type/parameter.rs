@@ -1,3 +1,4 @@
+use crate::data_type::{RefOrObject, Schema};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -18,6 +19,8 @@ pub struct Parameter {
 
     #[serde(default)]
     pub allow_empty_value: bool,
+
+    pub schema: RefOrObject<Schema>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

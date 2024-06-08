@@ -42,6 +42,7 @@ impl HttpResponse {
     }
 }
 
+//TODO: use one body for response and for request
 #[derive(Debug, Serialize)]
 pub struct EmptyBody {}
 

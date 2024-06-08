@@ -3,7 +3,8 @@ use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, Router};
 use async_trait::async_trait;
-use hyper::{Method, Uri};
+use hyper::Method;
+use hyper::Uri;
 use std::sync::Arc;
 
 pub struct UserAccountRouter {
@@ -28,7 +29,7 @@ impl UserAccountRouter {
 
 #[async_trait]
 impl Router for UserAccountRouter {
-    fn is_route_supported(&self, uri: &Uri, method: &Method) -> bool {
+    fn route_is_supported(&self, uri: &Uri, method: &Method) -> bool {
         let path = uri.path();
         let path = match path.strip_prefix(self.url_prefix.as_str()) {
             None => return false,
@@ -51,12 +52,12 @@ impl Router for UserAccountRouter {
                 _ => false,
             },
             ["user-account", "restore-password", "token-request"] => match *method {
-                Method::POST => true,
-                _ => false,
+                Method::POST => false,
+                _ => true,
             },
             ["user", "restore-password", "change-password"] => match *method {
-                Method::POST => true,
-                _ => false,
+                Method::POST => false,
+                _ => true,
             },
             _ => false,
         }

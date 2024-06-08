@@ -1,6 +1,6 @@
 use crate::generator::dto::{
-    DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, RequestGenerator,
-    ResponseGenerator, SchemaGenerator,
+    DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
+    RequestGenerator, ResponseGenerator, SchemaGenerator,
 };
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
@@ -52,6 +52,12 @@ pub fn di_factory() -> DiC {
         .unwrap();
 
     reg.register_template_file("dto/request.mod", "template/dto/request.mod.hbs")
+        .unwrap();
+
+    reg.register_template_file("dto/path_params.item", "template/dto/path_params.item.hbs")
+        .unwrap();
+
+    reg.register_template_file("dto/path_params.mod", "template/dto/path_params.mod.hbs")
         .unwrap();
 
     reg.register_template_file("dto/params.item", "template/dto/params.item.hbs")
@@ -107,6 +113,7 @@ pub fn di_factory() -> DiC {
     let renderer = Arc::new(Renderer::new(Arc::new(reg)));
     let oas_yaml_generator = Arc::new(OasYamlGenerator::new());
     let dto_generator = Arc::new(DtoGenerator::new(renderer.clone()));
+    let path_param_generator = Arc::new(PathParamsGenerator::new(renderer.clone()));
     let schema_param_generator = Arc::new(ParamsGenerator::new(renderer.clone()));
     let operation_response_enum_generator =
         Arc::new(OperationResponseEnumGenerator::new(renderer.clone()));
@@ -129,6 +136,7 @@ pub fn di_factory() -> DiC {
         combiner,
         oas_yaml_generator,
         dto_generator,
+        path_param_generator,
         schema_param_generator,
         operation_response_enum_generator,
         response_generator,

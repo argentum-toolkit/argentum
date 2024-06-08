@@ -40,6 +40,15 @@ paths:
     get:
       summary: Get user info
       description: Get user info
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+            example: "a4eaf068-9210-3089-b46e-2b4e567678d8"
       tags:
         - user
       operationId: GetUser

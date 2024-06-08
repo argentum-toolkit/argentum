@@ -28,7 +28,7 @@ impl RequestGenerator {
         Self { renderer }
     }
 
-    fn generate_item(
+    fn generate_item_with_body(
         &self,
         base_output_path: &str,
         operation: &Operation,
@@ -68,6 +68,26 @@ impl RequestGenerator {
         let data = Data {
             operation,
             body_schema,
+        };
+
+        self.renderer
+            .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
+
+        Ok(())
+    }
+    fn generate_item_with_empty_body(
+        &self,
+        base_output_path: &str,
+        operation: &Operation,
+    ) -> Result<(), Box<dyn Error>> {
+        let file_path = format!(
+            "/src/dto/request/{}_request.rs",
+            operation.operation_id.to_case(Case::Snake)
+        );
+
+        let data = Data {
+            operation,
+            body_schema: "".to_string(),
         };
 
         self.renderer
@@ -136,7 +156,9 @@ impl RequestGenerator {
                     RefOrObject::Object(request_body) => request_body,
                 };
 
-                self.generate_item(base_output_path, &operation, request_body)?;
+                self.generate_item_with_body(base_output_path, &operation, request_body)?;
+            } else {
+                self.generate_item_with_empty_body(base_output_path, &operation)?;
             }
         }
 

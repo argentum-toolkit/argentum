@@ -57,9 +57,7 @@ impl ParamsGenerator {
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            if operation.request_body.is_some() {
-                self.generate_item(base_output_path, &operation)?;
-            }
+            self.generate_item(base_output_path, &operation)?;
         }
 
         Ok(())

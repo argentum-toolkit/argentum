@@ -127,6 +127,34 @@ impl Combiner {
                         to_spec.components.schemas.insert(c_name, ss.clone());
                     }
                 }
+            } else if component_ref.file_path.is_none() {
+                let (include_spec, _include_spec_file_path) = self
+                    .loader
+                    .load(current_file_path.to_str().unwrap().to_string());
+
+                let component: Option<&Schema> = include_spec
+                    .components
+                    .schemas
+                    .get(component_ref.component_name.as_str());
+                match component {
+                    None => {
+                        panic!(
+                            "Schema #/components/schemas/{} is not found",
+                            component_ref.component_name.clone()
+                        )
+                    }
+                    Some(s) => {
+                        let c_name = component_ref.component_name;
+
+                        let reference = format!("#/components/schemas/{}", c_name);
+                        r.reference = reference;
+
+                        let ss: &mut Schema = &mut s.clone();
+                        self.collect_schema_properties(ss, current_file_path.into(), to_spec);
+
+                        to_spec.components.schemas.insert(c_name, ss.clone());
+                    }
+                }
             }
         }
     }

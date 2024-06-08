@@ -3,17 +3,18 @@
 {{else}}
     use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
 {{/if}}
-use argentum_rest_infrastructure::data_type::{EmptyPathParams, EmptyQueryParams, HttpParams};
+use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams};
+use crate::dto::path_params::{{upper_camel operation.operationId }}PathParams;
 
-pub struct {{upper_camel  operation.operationId }}Params {
+pub struct {{upper_camel operation.operationId }}Params {
     pub headers: {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}},
-    pub path: EmptyPathParams,
+    pub path: {{upper_camel  operation.operationId }}PathParams,
     pub query: EmptyQueryParams,
 }
 
 impl HttpParams for {{upper_camel  operation.operationId }}Params {
     type Headers = {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}};
-    type Path = EmptyPathParams;
+    type Path = {{upper_camel  operation.operationId }}PathParams;
     type Query = EmptyQueryParams;
 
     fn new(path: Self::Path, query: Self::Query, headers: Self::Headers) -> Self {

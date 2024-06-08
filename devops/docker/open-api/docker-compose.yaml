@@ -9,4 +9,5 @@ services:
     environment:
       URLS: "[
                 { url: 'doc/argentum_user_account/api-doc/openapi.yaml', name: 'User Account'},
+                { url: 'doc/argentum_user/api-doc/openapi.yaml', name: 'User'},
             ]"

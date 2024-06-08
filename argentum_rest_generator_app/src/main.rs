@@ -14,5 +14,5 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let di = di_factory();
 
-    return di.openapi_generator.generate(cli);
+    di.openapi_generator.generate(cli)
 }

@@ -7,6 +7,7 @@ use crate::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
 use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use crate::use_case::GetUserUc;
 use std::sync::Arc;
 
 pub struct UserBusinessDiC {
@@ -14,6 +15,7 @@ pub struct UserBusinessDiC {
     pub anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
     pub authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
     pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
+    pub get_user_uc: Arc<GetUserUc>,
     pub session_repository: Arc<dyn SessionRepositoryTrait>,
 }
 
@@ -76,11 +78,16 @@ impl UserBusinessDiCBuilder {
             self.session_repository.clone().unwrap(),
         ));
 
+        let get_user_uc = Arc::new(GetUserUc::new(
+            self.authenticated_user_repository.clone().unwrap(),
+        ));
+
         UserBusinessDiC {
             anonymous_binding_repository: self.anonymous_binding_repository.clone().unwrap(),
             anonymous_user_repository: self.anonymous_user_repository.clone().unwrap(),
             authenticated_user_repository: self.authenticated_user_repository.clone().unwrap(),
             user_authenticates_with_token_uc,
+            get_user_uc,
             session_repository: self.session_repository.clone().unwrap(),
         }
     }

@@ -1,7 +1,7 @@
 use crate::cli_params::CliParams;
 use crate::generator::dto::{
-    DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, RequestGenerator,
-    ResponseGenerator, SchemaGenerator,
+    DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
+    RequestGenerator, ResponseGenerator, SchemaGenerator,
 };
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
@@ -17,6 +17,7 @@ pub struct OpenApiGenerator {
     combiner: Arc<Combiner>,
     oas_yaml_generator: Arc<OasYamlGenerator>,
     dto_generator: Arc<DtoGenerator>,
+    path_param_generator: Arc<PathParamsGenerator>,
     schema_param_generator: Arc<ParamsGenerator>,
     operation_response_enum_generator: Arc<OperationResponseEnumGenerator>,
     response_generator: Arc<ResponseGenerator>,
@@ -38,6 +39,7 @@ impl OpenApiGenerator {
         combiner: Arc<Combiner>,
         oas_yaml_generator: Arc<OasYamlGenerator>,
         dto_generator: Arc<DtoGenerator>,
+        path_param_generator: Arc<PathParamsGenerator>,
         schema_param_generator: Arc<ParamsGenerator>,
         operation_response_enum_generator: Arc<OperationResponseEnumGenerator>,
         response_generator: Arc<ResponseGenerator>,
@@ -57,6 +59,7 @@ impl OpenApiGenerator {
             combiner,
             oas_yaml_generator,
             dto_generator,
+            path_param_generator,
             schema_param_generator,
             operation_response_enum_generator,
             response_generator,
@@ -82,6 +85,7 @@ impl OpenApiGenerator {
         //generation
         self.oas_yaml_generator.generate(output, &spec)?;
         self.dto_generator.generate(output)?;
+        self.path_param_generator.generate(output, &spec)?;
         self.schema_param_generator.generate(output, &spec)?;
         self.operation_response_enum_generator
             .generate(output, &spec)?;

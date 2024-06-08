@@ -1,11 +1,7 @@
 {{#each operations as |operation|}}
-{{~#if operation.requestBody~}}
 mod {{snake operation.operationId}}_request;
-{{/if}}
 {{/each}}
 
 {{#each operations as |operation|}}
-{{~#if operation.requestBody~}}
 pub use {{snake operation.operationId}}_request::{{upper_camel operation.operationId}}Request;
-{{/if}}
 {{/each}}

@@ -1,4 +1,4 @@
-{{#if operation.requestBody}}use crate::dto::request::{{ upper_camel operation.operationId }}Request;{{/if}}
+use crate::dto::request::{{ upper_camel operation.operationId }}Request;
 use argentum_rest_infrastructure::data_type::error::{HttpError, NotImplementedError};
 {{#if operation.security}}use argentum_user_business::entity::user::User;{{/if}}
 use crate::dto::operation_response_enum::{{ upper_camel operation.operationId }}OperationResponseEnum;
@@ -6,7 +6,7 @@ use crate::dto::operation_response_enum::{{ upper_camel operation.operationId }}
 pub trait {{ upper_camel operation.operationId }}Trait: Send + Sync {
     fn handle(
         &self,
-        {{#if operation.requestBody}}_req: {{ upper_camel operation.operationId }}Request,{{/if}}
+        _req: {{ upper_camel operation.operationId }}Request,
         {{#if operation.security}}_user: User,{{/if}}
     ) -> Result<{{ upper_camel operation.operationId }}OperationResponseEnum, HttpError> {
         Err(HttpError::NotImplemented(NotImplementedError::new()))

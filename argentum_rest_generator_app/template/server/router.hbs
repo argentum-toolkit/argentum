@@ -3,7 +3,7 @@ use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, Router};
 use async_trait::async_trait;
-use hyper::Method;
+use hyper::{Method, Uri};
 use std::sync::Arc;
 
 pub struct UserAccountRouter {
@@ -28,6 +28,32 @@ impl UserAccountRouter {
 
 #[async_trait]
 impl Router for UserAccountRouter {
+    fn is_route_supported(&self, uri: &Uri, method: &Method) -> bool {
+        let path = uri.path();
+        let path = match path.strip_prefix(self.url_prefix.as_str()) {
+            None => return false,
+            Some(path) => path,
+        };
+
+        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
+        // toto:  check that {userId}} is an UUID
+        match segments.as_slice() {
+            {{#each paths as |path|}}
+            [
+                {{~#each path.segments as |segment|~}}
+                "{{~segment~}}",
+                {{~/each~}}
+            ] => match *method {
+                {{#each path.operations }}
+                    {{@key}} => true,
+                {{/each}}
+                _ => false,
+               },
+            {{/each}}
+            _ => false,
+        }
+    }
+
     async fn route(&self, req: Request) -> Result<HttpResponse, HttpError> {
         let path = req.uri().path();
         let path = match path.strip_prefix(self.url_prefix.as_str()) {
@@ -45,7 +71,7 @@ impl Router for UserAccountRouter {
                 {{~/each~}}
             ] => match *req.method() {
                 {{#each path.operations }}
-                    {{@key}} => self.pre_handler.{{snake this.operationId}}({{#if this.requestBody}}req{{/if}}).await,
+                    {{@key}} => self.pre_handler.{{snake this.operationId}}(req).await,
                 {{/each}}
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             },

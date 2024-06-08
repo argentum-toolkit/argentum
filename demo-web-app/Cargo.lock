@@ -88,6 +88,7 @@ dependencies = [
  "argentum_user_account_rest",
  "argentum_user_business",
  "argentum_user_infrastructure",
+ "argentum_user_rest",
  "dotenv",
  "serde",
  "tokio",
@@ -262,15 +263,32 @@ dependencies = [
 name = "argentum_user_infrastructure"
 version = "0.2.0-dev"
 dependencies = [
+ "argentum_rest_infrastructure",
  "argentum_standard_business",
  "argentum_standard_infrastructure",
  "argentum_user_business",
+ "argentum_user_rest",
  "chrono",
  "derive_more",
  "futures",
  "serde",
  "sqlx",
  "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "argentum_user_rest"
+version = "0.2.0-dev"
+dependencies = [
+ "argentum_rest_infrastructure",
+ "argentum_standard_business",
+ "argentum_user_business",
+ "async-trait",
+ "erased-serde",
+ "hyper",
+ "serde",
+ "serde_valid",
  "uuid",
 ]
 

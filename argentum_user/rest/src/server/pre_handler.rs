@@ -1,3 +1,5 @@
+use crate::dto::request::GetUserRequest;
+
 use crate::server::handler::GetUserTrait;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
@@ -24,9 +26,15 @@ impl UserAccountPreHandler {
         }
     }
 
-    pub async fn get_user(&self) -> Result<HttpResponse, HttpError> {
+    pub async fn get_user(&self, request: impl RequestTrait) -> Result<HttpResponse, HttpError> {
+        let raw_path_params = HashMap::from([]);
+        let raw_query_params = HashMap::from([]);
+        let req: GetUserRequest = self
+            .request_transformer
+            .transform(request, raw_path_params, raw_query_params)
+            .await?;
         let user = self.bearer_auth.auth(&req.params.headers)?;
-        let r = self.get_user.handle(user)?;
+        let r = self.get_user.handle(req, user)?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),

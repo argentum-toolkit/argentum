@@ -1,17 +1,21 @@
 use argentum_rest_infrastructure::data_type::HttpRequest;
 use crate::dto::params::{{ upper_camel operation.operationId }}Params;
+{{#if bodySchema}}
 use {{bodySchema}};
+{{else}}
+use argentum_rest_infrastructure::data_type::EmptyRequestBody;
+{{/if}}
 
 pub struct {{ upper_camel operation.operationId }}Request {
-    pub body: {{trim_mod bodySchema}},
+    pub body: {{#if bodySchema}}{{trim_mod bodySchema }}{{else}}EmptyRequestBody{{/if}},
     pub params: {{ upper_camel operation.operationId }}Params,
 }
 
 impl HttpRequest for {{ upper_camel operation.operationId }}Request {
-    type Body = {{trim_mod bodySchema}};
+    type Body = {{#if bodySchema}}{{trim_mod bodySchema }}{{else}}EmptyRequestBody{{/if}};
     type Params = {{ upper_camel operation.operationId }}Params;
 
-    fn new(body: {{trim_mod bodySchema}}, params: {{ upper_camel operation.operationId }}Params) -> Self {
+    fn new(body: {{#if bodySchema}}{{trim_mod bodySchema }}{{else}}EmptyRequestBody{{/if}}, params: {{ upper_camel operation.operationId }}Params) -> Self {
         Self { body, params }
     }
 

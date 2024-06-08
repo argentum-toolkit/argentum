@@ -58,14 +58,14 @@ mod tests {
     async fn test_handle_not_found() {
         let handler = ErrorPreHandler::new();
         let res = handler
-            .not_found(EmptyRequestMock {
+            .route_not_found(EmptyRequestMock {
                 method: Method::GET,
             })
             .await;
 
         assert!(res.is_err());
 
-        assert!(matches!(res, Err(HttpError::NotFound(_))));
+        assert!(matches!(res, Err(HttpError::RouteNotFound(_))));
     }
 
     #[tokio::test]
