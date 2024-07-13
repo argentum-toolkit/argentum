@@ -283,6 +283,7 @@ dependencies = [
  "async-trait",
  "erased-serde",
  "hyper",
+ "regex",
  "serde",
  "serde_valid",
  "uuid",

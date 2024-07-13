@@ -1,5 +1,8 @@
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::SchemaFormat::{Custom, Standard};
+use argentum_openapi_infrastructure::data_type::{
+    InPlace, Operation, Parameter, RefOrObject, SchemaType, SpecificationRoot, StandardFormat,
+};
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::sync::Arc;
@@ -13,8 +16,9 @@ const TEMPLATE: &str = "server/router";
 
 #[derive(Debug, Clone, serde::Serialize)]
 struct PathData {
-    pub segments: Vec<String>,
+    pub pattern: String,
     pub operations: BTreeMap<String, Operation>,
+    pub params: Vec<Parameter>,
 }
 
 impl RouterGenerator {
@@ -30,23 +34,71 @@ impl RouterGenerator {
         let mut paths_data: Vec<PathData> = vec![];
 
         for (url, path) in spec.clone().paths {
-            let segments: Vec<_> = url
-                .split('/')
-                .filter(|s| !s.is_empty())
-                .map(|s| s.to_string())
-                .collect();
-
             let mut operations: BTreeMap<String, Operation> = BTreeMap::new();
 
+            let mut path_params = match path.parameters {
+                None => vec![],
+                Some(params) => params
+                    .into_iter()
+                    .filter(|p| p.in_place == InPlace::Path)
+                    .collect(),
+            };
+
             for (method, operation) in path.operations.clone() {
+                let mut operation_path_params = match operation.parameters.clone() {
+                    None => vec![],
+                    Some(params) => params
+                        .into_iter()
+                        .filter(|p| p.in_place == InPlace::Path)
+                        .collect(),
+                };
+                path_params.append(&mut operation_path_params);
+
                 operations.insert(
                     ("Method::".to_owned() + method.to_string().as_str()).to_string(),
                     operation,
                 );
             }
+
+            let mut pattern = url.replace("/", "\\/");
+            for param in path_params.iter() {
+                //TODO: create regex factory
+
+                let find = format!("{{{}}}", param.name);
+
+                let reg = match param.schema.clone() {
+                    RefOrObject::Ref(_r) => {
+                        //TODO: follow the reference and get the schema
+                        // r.reference.clone();
+                        format!("(?<{}>\\w+)", param.name)
+                    }
+                    RefOrObject::Object(o) => {
+                        if o.schema_type == Some(SchemaType::String)
+                            && o.format == Some(Standard(StandardFormat::Uuid))
+                        {
+                            format!(
+                                "(?<{}>[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}})", param.name
+                            )
+                        } else if o.schema_type == Some(SchemaType::String)
+                            && o.format == Some(Standard(StandardFormat::DateTime))
+                        {
+                            format!("(?<{}>\\w+)", param.name)
+                        } else if o.schema_type == Some(SchemaType::String)
+                            && o.format == Some(Custom("my_custom_format".to_string()))
+                        {
+                            format!("(?<{}>\\w+)", param.name)
+                        } else {
+                            format!("(?<{}>\\w+)", param.name)
+                        }
+                    }
+                };
+                pattern = pattern.replace(find.as_str(), reg.as_str());
+            }
+
             let item = PathData {
-                segments,
+                pattern,
                 operations,
+                params: path_params,
             };
 
             paths_data.push(item);

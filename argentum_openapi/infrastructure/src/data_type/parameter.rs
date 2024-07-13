@@ -23,7 +23,7 @@ pub struct Parameter {
     pub schema: RefOrObject<Schema>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum In {
     Query,

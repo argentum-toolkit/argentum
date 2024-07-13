@@ -124,8 +124,9 @@ $ devops/scripts/check-item.sh {{package-name}}
 * DI builders: make it similar
 
 * rest-generator
-** generate `path params`
+** create regex factory for `path params`
 ** generate `query params`
+** fix struct names in template generator (UserAccountRouter, UserAccountPreHandler are hardcoded)
 ** error handling (replace unwrap. check todo)
 ** fix code duplication
 ** adoc documentation for `argentum_rest`

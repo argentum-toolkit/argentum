@@ -2,14 +2,14 @@
     use crate::server::handler::{{upper_camel operation.operationId}}Trait;
 {{~/each~}}
 
-use crate::server::{UserAccountPreHandler, UserAccountRouter};
+use crate::server::{UserAccountPreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
 use std::sync::Arc;
 
 pub struct ApiDiC {
-    pub router: Arc<UserAccountRouter>,
+    pub router: Arc<Router>,
 }
 
 impl ApiDiC {
@@ -32,7 +32,7 @@ impl ApiDiC {
             {{/each}}
         ));
 
-        let router = Arc::new(UserAccountRouter::new(
+        let router = Arc::new(Router::new(
             pre_handler,
             error_pre_handler,
             url_prefix,

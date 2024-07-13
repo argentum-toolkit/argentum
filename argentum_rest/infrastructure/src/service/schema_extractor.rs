@@ -28,7 +28,6 @@ impl SchemaExtractor {
             body = Vec::from("{}");
         }
 
-        // let deserialized = B::from_json_slice(&body);
         let deserialized: serde_json::Result<B::Raw> = serde_json::from_slice(&body);
 
         match deserialized {

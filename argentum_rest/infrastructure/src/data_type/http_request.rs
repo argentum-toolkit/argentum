@@ -67,14 +67,17 @@ impl AuthHeaderParams {
 
 impl HttpHeaderParams for AuthHeaderParams {}
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EmptyRequestBody {}
 
-//TODO: use one body for response and for request
+//TODO: ???use one body for response and for request
 impl DeserializableSchemaRaw<'_> for EmptyRequestBody {
-    type Raw = ();
+    type Raw = EmptyRequestBodySchemaRaw;
 
     fn try_from_raw(_raw: Self::Raw) -> InvariantResult<Self> {
         Ok(EmptyRequestBody {})
     }
 }
+
+#[derive(serde::Deserialize)]
+pub struct EmptyRequestBodySchemaRaw {}

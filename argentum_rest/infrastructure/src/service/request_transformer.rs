@@ -33,7 +33,7 @@ impl RequestTransformer {
     pub async fn transform<R>(
         &self,
         request: impl RequestTrait,
-        raw_path_params: RawPathParams,
+        raw_path_params: RawPathParams<'_>,
         raw_query_params: RawQueryParams,
     ) -> Result<R, HttpError>
     where

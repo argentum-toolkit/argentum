@@ -28,7 +28,7 @@ impl From<String> for ComponentRef {
             panic!("Wrong format of reference {}", value)
         }
 
-        let file_path = if "" == parts[0] {
+        let file_path = if parts[0].is_empty() {
             None
         } else {
             Some(parts[0].to_string())

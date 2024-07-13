@@ -20,13 +20,13 @@ pub use path_params_extractor::PathParamsExtractor;
 pub use query_params_extractor::QueryParamsExtractor;
 pub use request_transformer::RequestTransformer;
 pub use response_transformer::ResponseToJsonTransformer;
-pub use router::Router;
+pub use router::RouterTrait;
 pub use router_combinator::RouterCombinator;
 pub use schema_extractor::SchemaExtractor;
 pub use server::Server;
 use std::collections::HashMap;
 pub use validation_error_transformer::ValidationErrorTransformer;
 
-type RawPathParams = HashMap<String, String>;
+type RawPathParams<'a> = HashMap<&'a str, &'a str>;
 //TODO: Use recursive object instead of HashMap
 type RawQueryParams = HashMap<String, String>;

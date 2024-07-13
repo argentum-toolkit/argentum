@@ -1,17 +1,20 @@
 use crate::data_type::error::HttpError;
 use crate::data_type::{HttpResponse, Request};
-use crate::service::{ErrorPreHandler, Router};
+use crate::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
 use hyper::{Method, Uri};
 use std::sync::Arc;
 
 pub struct RouterCombinator {
-    routers: Vec<Arc<dyn Router>>,
+    routers: Vec<Arc<dyn RouterTrait>>,
     error_pre_handler: Arc<ErrorPreHandler>,
 }
 
 impl RouterCombinator {
-    pub fn new(routers: Vec<Arc<dyn Router>>, error_pre_handler: Arc<ErrorPreHandler>) -> Self {
+    pub fn new(
+        routers: Vec<Arc<dyn RouterTrait>>,
+        error_pre_handler: Arc<ErrorPreHandler>,
+    ) -> Self {
         RouterCombinator {
             routers,
             error_pre_handler,
@@ -20,7 +23,7 @@ impl RouterCombinator {
 }
 
 #[async_trait]
-impl Router for RouterCombinator {
+impl RouterTrait for RouterCombinator {
     fn is_route_supported(&self, uri: &Uri, method: &Method) -> bool {
         for r in &self.routers {
             if r.is_route_supported(uri, method) {
@@ -34,7 +37,7 @@ impl Router for RouterCombinator {
     async fn route(&self, request: Request) -> Result<HttpResponse, HttpError> {
         let uri = request.uri();
         let method = request.method();
-        let mut router: Option<&Arc<dyn Router>> = None;
+        let mut router: Option<&Arc<dyn RouterTrait>> = None;
 
         for r in &self.routers {
             if r.is_route_supported(uri, method) {

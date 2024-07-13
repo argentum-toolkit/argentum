@@ -14,7 +14,7 @@ pub struct {{upper_camel  operation.operationId }}PathParams {
 }
 
 impl {{upper_camel operation.operationId }}PathParams {
-    fn new(
+    pub fn new(
     {{# each properties as |prop| }}
         {{ snake prop.name }}: {{{ prop.dataType }}},
     {{/each}}

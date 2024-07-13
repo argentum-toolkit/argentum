@@ -1,4 +1,4 @@
-use crate::service::{RawPathParams, ValidationErrorTransformer};
+use crate::service::{RawQueryParams, ValidationErrorTransformer};
 use argentum_standard_business::invariant_violation::InvariantResult;
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
@@ -15,11 +15,11 @@ impl QueryParamsExtractor {
         }
     }
 
-    pub fn extract<R>(&self, raw_path_params: RawPathParams) -> InvariantResult<R>
+    pub fn extract<R>(&self, raw_query_params: RawQueryParams) -> InvariantResult<R>
     where
         R: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>,
     {
-        let pp = serde_json::to_string(&raw_path_params).unwrap();
+        let pp = serde_json::to_string(&raw_query_params).unwrap();
         let deserialized = R::from_json_slice(pp.as_ref());
 
         match deserialized {

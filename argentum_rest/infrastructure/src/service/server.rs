@@ -1,5 +1,5 @@
 use crate::data_type::{Request, Response};
-use crate::service::{ErrorHandler, ResponseToJsonTransformer, Router};
+use crate::service::{ErrorHandler, ResponseToJsonTransformer, RouterTrait};
 use argentum_log_business::LoggerTrait;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
@@ -13,7 +13,7 @@ pub struct Server {
     addr: SocketAddr,
 
     //service dependencies
-    router: Arc<dyn Router>,
+    router: Arc<dyn RouterTrait>,
 
     response_transformer: Arc<ResponseToJsonTransformer>,
 
@@ -25,7 +25,7 @@ pub struct Server {
 impl Server {
     pub fn new(
         addr: SocketAddr,
-        router: Arc<dyn Router>,
+        router: Arc<dyn RouterTrait>,
         response_transformer: Arc<ResponseToJsonTransformer>,
         error_handler: Arc<ErrorHandler>,
         logger: Arc<dyn LoggerTrait>,
@@ -42,7 +42,7 @@ impl Server {
     pub async fn serve(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         async fn handle(
             req: Request,
-            router: Arc<dyn Router>,
+            router: Arc<dyn RouterTrait>,
             transformer: Arc<ResponseToJsonTransformer>,
             error_handler: Arc<ErrorHandler>,
         ) -> Result<Response, hyper::Error> {

@@ -29,6 +29,7 @@ pub use license::License;
 pub use obj::MediaTypeObject;
 pub use obj::Obj;
 pub use operation::Operation;
+pub use parameter::In as InPlace;
 pub use parameter::Parameter;
 pub use path::Path;
 pub use reference::RefOrObject;

@@ -1,24 +1,26 @@
 use crate::server::UserAccountPreHandler;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
-use argentum_rest_infrastructure::service::{ErrorPreHandler, Router};
+use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
 use hyper::{Method, Uri};
+use regex::Regex;
+use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct UserAccountRouter {
+pub struct Router {
     pre_handler: Arc<UserAccountPreHandler>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
 }
 
-impl UserAccountRouter {
+impl Router {
     pub fn new(
         pre_handler: Arc<UserAccountPreHandler>,
         error_pre_handler: Arc<ErrorPreHandler>,
         url_prefix: String,
     ) -> Self {
-        UserAccountRouter {
+        Self {
             pre_handler,
             error_pre_handler,
             url_prefix,
@@ -27,7 +29,7 @@ impl UserAccountRouter {
 }
 
 #[async_trait]
-impl Router for UserAccountRouter {
+impl RouterTrait for Router {
     fn is_route_supported(&self, uri: &Uri, method: &Method) -> bool {
         let path = uri.path();
         let path = match path.strip_prefix(self.url_prefix.as_str()) {
@@ -35,23 +37,18 @@ impl Router for UserAccountRouter {
             Some(path) => path,
         };
 
-        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
-        // toto:  check that {userId}} is an UUID
-        match segments.as_slice() {
-            {{#each paths as |path|}}
-            [
-                {{~#each path.segments as |segment|~}}
-                "{{~segment~}}",
-                {{~/each~}}
-            ] => match *method {
-                {{#each path.operations }}
-                    {{@key}} => true,
-                {{/each}}
-                _ => false,
-               },
-            {{/each}}
-            _ => false,
+        {{#each paths as |path|}}
+        if let Some(_) = Regex::new(r"{{{path.pattern}}}").unwrap().captures(path) {
+            return match *method {
+               {{#each path.operations }}
+                   {{@key}} => true,
+               {{/each}}
+               _ => false,
+           };
         }
+
+        {{/each}}
+        false
     }
 
     async fn route(&self, req: Request) -> Result<HttpResponse, HttpError> {
@@ -61,22 +58,27 @@ impl Router for UserAccountRouter {
             Some(path) => path,
         };
 
-        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
-
-        match segments.as_slice() {
-            {{#each paths as |path|}}
-            [
-                {{~#each path.segments as |segment|~}}
-                "{{~segment~}}",
-                {{~/each~}}
-            ] => match *req.method() {
-                {{#each path.operations }}
-                    {{@key}} => self.pre_handler.{{snake this.operationId}}(req).await,
-                {{/each}}
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            },
+        {{#each paths as |path|}}
+        if let Some(caps) = Regex::new(r"{{{path.pattern}}}").unwrap().captures(path) {
+            {{#each params as |param|}}
+            let {{ snake param.name }} = caps["{{ camel param.name }}"].to_string();
             {{/each}}
-            _ => self.error_pre_handler.route_not_found(req).await,
+
+            let raw_path_params = HashMap::from([
+                {{#each params as |param|}}
+                ("{{ snake param.name }}", {{ snake param.name }}.as_str()),
+                {{/each}}
+            ]);
+
+            return match *req.method() {
+               {{#each path.operations }}
+               {{@key}} => self.pre_handler.{{snake this.operationId}}(req, raw_path_params).await,
+               {{/each}}
+               _ => self.error_pre_handler.method_not_allowed(req).await,
+           };
         }
+
+        {{/each}}
+        self.error_pre_handler.route_not_found(req).await
     }
 }
