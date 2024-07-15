@@ -1,11 +1,12 @@
 openapi: 3.1.0
 
 info:
-  title: Argentum User Account component API
+  title: Argentum User component API
   version: 0.2.0-dev
-  description: User Account API
+  description: User API
   license:
     name: BSD-3
+    identifier: BSD-3
 
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum
@@ -64,4 +65,9 @@ paths:
         '404':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/404"
 
-components: { }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      in: header

@@ -59,7 +59,7 @@ impl RouterTrait for Router {
         };
 
         {{#each paths as |path|}}
-        if let Some(caps) = Regex::new(r"{{{path.pattern}}}").unwrap().captures(path) {
+        if let Some({{#if params}}caps{{else}}_{{/if}}) = Regex::new(r"{{{path.pattern}}}").unwrap().captures(path) {
             {{#each params as |param|}}
             let {{ snake param.name }} = caps["{{ camel param.name }}"].to_string();
             {{/each}}

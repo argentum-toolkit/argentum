@@ -1,3 +1,4 @@
+use crate::dto::request::AnonymousRegistersRequest;
 use crate::dto::request::AnonymousRequestsRestoreTokenRequest;
 use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use crate::dto::request::UserLoginsWithPasswordRequest;
@@ -45,8 +46,17 @@ impl UserAccountPreHandler {
         }
     }
 
-    pub async fn anonymous_registers(&self) -> Result<HttpResponse, HttpError> {
-        let r = self.anonymous_registers.handle()?;
+    pub async fn anonymous_registers(
+        &self,
+        request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
+    ) -> Result<HttpResponse, HttpError> {
+        let raw_query_params = HashMap::from([]);
+        let req: AnonymousRegistersRequest = self
+            .request_transformer
+            .transform(request, raw_path_params, raw_query_params)
+            .await?;
+        let r = self.anonymous_registers.handle(req)?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),
@@ -57,14 +67,13 @@ impl UserAccountPreHandler {
     pub async fn anonymous_requests_restore_token(
         &self,
         request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_path_params = HashMap::from([]);
         let raw_query_params = HashMap::from([]);
         let req: AnonymousRequestsRestoreTokenRequest = self
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-
         let user = self.bearer_auth.auth(&req.params.headers)?;
         let r = self.anonymous_requests_restore_token.handle(req, user)?;
 
@@ -77,14 +86,13 @@ impl UserAccountPreHandler {
     pub async fn anonymous_with_token_changes_password(
         &self,
         request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_path_params = HashMap::from([]);
         let raw_query_params = HashMap::from([]);
         let req: AnonymousWithTokenChangesPasswordRequest = self
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-
         let user = self.bearer_auth.auth(&req.params.headers)?;
         let r = self
             .anonymous_with_token_changes_password
@@ -99,14 +107,13 @@ impl UserAccountPreHandler {
     pub async fn user_logins_with_password(
         &self,
         request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_path_params = HashMap::from([]);
         let raw_query_params = HashMap::from([]);
         let req: UserLoginsWithPasswordRequest = self
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-
         let user = self.bearer_auth.auth(&req.params.headers)?;
         let r = self.user_logins_with_password.handle(req, user)?;
 
@@ -119,14 +126,13 @@ impl UserAccountPreHandler {
     pub async fn user_registers_with_password(
         &self,
         request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
     ) -> Result<HttpResponse, HttpError> {
-        let raw_path_params = HashMap::from([]);
         let raw_query_params = HashMap::from([]);
         let req: UserRegistersWithPasswordRequest = self
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-
         let user = self.bearer_auth.auth(&req.params.headers)?;
         let r = self.user_registers_with_password.handle(req, user)?;
 

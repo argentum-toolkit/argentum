@@ -3,6 +3,7 @@ use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
 use argentum_user_account_rest::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
+use argentum_user_account_rest::dto::request::AnonymousRegistersRequest;
 use argentum_user_account_rest::dto::response::AnonymousRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::AnonymousRegistrationResult;
 use argentum_user_account_rest::server::handler::AnonymousRegistersTrait;
@@ -20,7 +21,10 @@ impl AnonymousRegistersHandler {
 }
 
 impl AnonymousRegistersTrait for AnonymousRegistersHandler {
-    fn handle(&self) -> Result<AnonymousRegistersOperationResponseEnum, HttpError> {
+    fn handle(
+        &self,
+        _req: AnonymousRegistersRequest,
+    ) -> Result<AnonymousRegistersOperationResponseEnum, HttpError> {
         let anonymous_id = self.id_factory.create();
 
         let result = self.uc.execute(&anonymous_id);

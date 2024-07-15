@@ -10,6 +10,8 @@ mod openapi_generator;
 mod readme_adoc_generator;
 pub(crate) mod server;
 
+pub(crate) mod path_param;
+
 pub(crate) use cargo_toml_generator::CargoTomlGenerator;
 pub(crate) use combiner::Combiner;
 pub(crate) use di_generator::DiGenerator;

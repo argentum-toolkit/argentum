@@ -1,4 +1,5 @@
 use crate::generator::OasLoader;
+use argentum_log_business::LoggerTrait;
 use argentum_openapi_infrastructure::data_type::{
     ComponentRef, RefOrObject, RequestBody, Response, Schema, SchemaType, SpecificationRoot,
 };
@@ -7,12 +8,13 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 pub struct Combiner {
+    logger: Arc<dyn LoggerTrait>,
     loader: Arc<OasLoader>,
 }
 
 impl Combiner {
-    pub fn new(loader: Arc<OasLoader>) -> Self {
-        Self { loader }
+    pub fn new(logger: Arc<dyn LoggerTrait>, loader: Arc<OasLoader>) -> Self {
+        Self { logger, loader }
     }
 
     fn collect_request_body(
@@ -73,10 +75,14 @@ impl Combiner {
                 }
             }
             Some(_) => {
-                //TODO: warning
+                self.logger.warning(format!(
+                    "Schema type is not supported by combiner. Type: {:?}",
+                    schema.schema_type
+                ));
             }
             None => {
-                //TODO: warning
+                self.logger
+                    .warning("Empty schema type is not supported by combiner".to_string());
             }
         }
     }

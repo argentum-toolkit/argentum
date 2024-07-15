@@ -41,9 +41,7 @@ impl From<String> for ComponentRef {
         let component_parts = component_path.split('/').collect::<Vec<_>>();
 
         let component_type = ComponentType::from(component_parts[1]);
-        if component_parts.clone().len() != 3 || component_parts[0] != "components"
-        // || component_parts[1] != "requestBodies"
-        {
+        if component_parts.clone().len() != 3 || component_parts[0] != "components" {
             panic!(
                 "Wrong component path {}. Expected: `#/components/<type>/<{{name}}>`",
                 component_path

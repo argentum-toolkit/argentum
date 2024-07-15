@@ -26,8 +26,11 @@ impl UserAccountPreHandler {
         }
     }
 
-    pub async fn get_user(&self, request: impl RequestTrait) -> Result<HttpResponse, HttpError> {
-        let raw_path_params = HashMap::from([]);
+    pub async fn get_user(
+        &self,
+        request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
+    ) -> Result<HttpResponse, HttpError> {
         let raw_query_params = HashMap::from([]);
         let req: GetUserRequest = self
             .request_transformer

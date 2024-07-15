@@ -8,7 +8,7 @@ pub struct GetUserPathParams {
 }
 
 impl GetUserPathParams {
-    fn new(user_id: uuid::Uuid) -> Self {
+    pub fn new(user_id: uuid::Uuid) -> Self {
         Self { user_id }
     }
 }

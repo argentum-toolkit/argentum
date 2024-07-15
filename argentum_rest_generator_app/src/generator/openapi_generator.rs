@@ -10,10 +10,12 @@ use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasYamlGenerator,
     ReadmeAdocGenerator,
 };
+use argentum_log_business::LoggerTrait;
 use std::error::Error;
 use std::sync::Arc;
 
 pub struct OpenApiGenerator {
+    logger: Arc<dyn LoggerTrait>,
     combiner: Arc<Combiner>,
     oas_yaml_generator: Arc<OasYamlGenerator>,
     dto_generator: Arc<DtoGenerator>,
@@ -36,6 +38,7 @@ pub struct OpenApiGenerator {
 
 impl OpenApiGenerator {
     pub fn new(
+        logger: Arc<dyn LoggerTrait>,
         combiner: Arc<Combiner>,
         oas_yaml_generator: Arc<OasYamlGenerator>,
         dto_generator: Arc<DtoGenerator>,
@@ -56,6 +59,7 @@ impl OpenApiGenerator {
         schema_generator: Arc<SchemaGenerator>,
     ) -> Self {
         Self {
+            logger,
             combiner,
             oas_yaml_generator,
             dto_generator,
@@ -78,12 +82,21 @@ impl OpenApiGenerator {
     }
 
     pub fn generate(&self, cli: CliParams) -> Result<(), Box<dyn Error>> {
+        self.logger.info("Start generation...".to_string());
+        self.logger
+            .info("Combine OpenAPI specification...".to_string());
         let spec = self.combiner.combine(cli.input.clone());
+        self.logger
+            .info("OpenAPI specification is combined".to_string());
 
         let output = cli.output.as_str();
 
         //generation
+        self.logger
+            .info("Generate combined OpenAPI YAML file ".to_string());
         self.oas_yaml_generator.generate(output, &spec)?;
+
+        self.logger.info("Generate sources files ".to_string());
         self.dto_generator.generate(output)?;
         self.path_param_generator.generate(output, &spec)?;
         self.schema_param_generator.generate(output, &spec)?;
@@ -116,6 +129,8 @@ impl OpenApiGenerator {
         )?;
         self.gitignore_generator.generate(output)?;
         self.schema_generator.generate(output, &spec)?;
+
+        self.logger.info("Generation is finished".to_string());
 
         Ok(())
     }

@@ -1,24 +1,26 @@
 use crate::server::UserAccountPreHandler;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
-use argentum_rest_infrastructure::service::{ErrorPreHandler, Router};
+use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
 use hyper::{Method, Uri};
+use regex::Regex;
+use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct UserAccountRouter {
+pub struct Router {
     pre_handler: Arc<UserAccountPreHandler>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
 }
 
-impl UserAccountRouter {
+impl Router {
     pub fn new(
         pre_handler: Arc<UserAccountPreHandler>,
         error_pre_handler: Arc<ErrorPreHandler>,
         url_prefix: String,
     ) -> Self {
-        UserAccountRouter {
+        Self {
             pre_handler,
             error_pre_handler,
             url_prefix,
@@ -27,7 +29,7 @@ impl UserAccountRouter {
 }
 
 #[async_trait]
-impl Router for UserAccountRouter {
+impl RouterTrait for Router {
     fn is_route_supported(&self, uri: &Uri, method: &Method) -> bool {
         let path = uri.path();
         let path = match path.strip_prefix(self.url_prefix.as_str()) {
@@ -35,15 +37,19 @@ impl Router for UserAccountRouter {
             Some(path) => path,
         };
 
-        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
-        // toto:  check that {userId}} is an UUID
-        match segments.as_slice() {
-            ["user", "{userId}"] => match *method {
+        if let Some(_) = Regex::new(
+            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        )
+        .unwrap()
+        .captures(path)
+        {
+            return match *method {
                 Method::GET => true,
                 _ => false,
-            },
-            _ => false,
+            };
         }
+
+        false
     }
 
     async fn route(&self, req: Request) -> Result<HttpResponse, HttpError> {
@@ -53,14 +59,22 @@ impl Router for UserAccountRouter {
             Some(path) => path,
         };
 
-        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
+        if let Some(caps) = Regex::new(
+            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        )
+        .unwrap()
+        .captures(path)
+        {
+            let user_id = caps["userId"].to_string();
 
-        match segments.as_slice() {
-            ["user", "{userId}"] => match *req.method() {
-                Method::GET => self.pre_handler.get_user(req).await,
+            let raw_path_params = HashMap::from([("user_id", user_id.as_str())]);
+
+            return match *req.method() {
+                Method::GET => self.pre_handler.get_user(req, raw_path_params).await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
-            },
-            _ => self.error_pre_handler.route_not_found(req).await,
+            };
         }
+
+        self.error_pre_handler.route_not_found(req).await
     }
 }

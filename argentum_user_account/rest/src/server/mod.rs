@@ -4,4 +4,4 @@ mod pre_handler;
 mod router;
 
 pub use pre_handler::UserAccountPreHandler;
-pub use router::UserAccountRouter;
+pub use router::Router;

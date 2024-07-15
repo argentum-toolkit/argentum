@@ -1,7 +1,7 @@
+use crate::generator::path_param::regex::RegexFactory;
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::SchemaFormat::{Custom, Standard};
 use argentum_openapi_infrastructure::data_type::{
-    InPlace, Operation, Parameter, RefOrObject, SchemaType, SpecificationRoot, StandardFormat,
+    InPlace, Operation, Parameter, SpecificationRoot,
 };
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 pub(crate) struct RouterGenerator {
     renderer: Arc<Renderer>,
+    regex_factory: Arc<RegexFactory>,
 }
 
 const PATH: &str = "/src/server/router.rs";
@@ -22,8 +23,11 @@ struct PathData {
 }
 
 impl RouterGenerator {
-    pub fn new(renderer: Arc<Renderer>) -> Self {
-        Self { renderer }
+    pub fn new(renderer: Arc<Renderer>, regex_factory: Arc<RegexFactory>) -> Self {
+        Self {
+            renderer,
+            regex_factory,
+        }
     }
 
     pub fn generate(
@@ -62,36 +66,10 @@ impl RouterGenerator {
 
             let mut pattern = url.replace("/", "\\/");
             for param in path_params.iter() {
-                //TODO: create regex factory
-
                 let find = format!("{{{}}}", param.name);
 
-                let reg = match param.schema.clone() {
-                    RefOrObject::Ref(_r) => {
-                        //TODO: follow the reference and get the schema
-                        // r.reference.clone();
-                        format!("(?<{}>\\w+)", param.name)
-                    }
-                    RefOrObject::Object(o) => {
-                        if o.schema_type == Some(SchemaType::String)
-                            && o.format == Some(Standard(StandardFormat::Uuid))
-                        {
-                            format!(
-                                "(?<{}>[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{12}})", param.name
-                            )
-                        } else if o.schema_type == Some(SchemaType::String)
-                            && o.format == Some(Standard(StandardFormat::DateTime))
-                        {
-                            format!("(?<{}>\\w+)", param.name)
-                        } else if o.schema_type == Some(SchemaType::String)
-                            && o.format == Some(Custom("my_custom_format".to_string()))
-                        {
-                            format!("(?<{}>\\w+)", param.name)
-                        } else {
-                            format!("(?<{}>\\w+)", param.name)
-                        }
-                    }
-                };
+                let reg = self.regex_factory.create(param);
+
                 pattern = pattern.replace(find.as_str(), reg.as_str());
             }
 

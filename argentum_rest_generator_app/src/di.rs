@@ -2,6 +2,7 @@ use crate::generator::dto::{
     DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
     RequestGenerator, ResponseGenerator, SchemaGenerator,
 };
+use crate::generator::path_param::regex::{IntegerFactory, RegexFactory, StringFactory};
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
@@ -14,6 +15,8 @@ use crate::template::helper::{
     upper_camel_helper,
 };
 use crate::template::Renderer;
+use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_infrastructure::stdout::PrettyWriter;
 use handlebars::Handlebars;
 use std::sync::Arc;
 
@@ -110,6 +113,8 @@ pub fn di_factory() -> DiC {
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
 
     //services
+    let log_writer = Arc::new(PrettyWriter::new());
+    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
     let renderer = Arc::new(Renderer::new(Arc::new(reg)));
     let oas_yaml_generator = Arc::new(OasYamlGenerator::new());
     let dto_generator = Arc::new(DtoGenerator::new(renderer.clone()));
@@ -121,7 +126,11 @@ pub fn di_factory() -> DiC {
     let request_generator = Arc::new(RequestGenerator::new(renderer.clone()));
     let handler_generator = Arc::new(HandlerGenerator::new(renderer.clone()));
     let pre_handler_generator = Arc::new(PreHandlerGenerator::new(renderer.clone()));
-    let router_generator = Arc::new(RouterGenerator::new(renderer.clone()));
+    let regex_factory = Arc::new(RegexFactory::new(
+        Arc::new(StringFactory::new()),
+        Arc::new(IntegerFactory::new()),
+    ));
+    let router_generator = Arc::new(RouterGenerator::new(renderer.clone(), regex_factory));
     let server_generator = Arc::new(ServerGenerator::new(renderer.clone()));
     let di_generator = Arc::new(DiGenerator::new(renderer.clone()));
     let lib_generator = Arc::new(LibGenerator::new(renderer.clone()));
@@ -129,10 +138,11 @@ pub fn di_factory() -> DiC {
     let readme_adoc_generator = Arc::new(ReadmeAdocGenerator::new(renderer.clone()));
     let gitignore_generator = Arc::new(GitIgnoreGenerator::new(renderer.clone()));
     let schema_generator = Arc::new(SchemaGenerator::new(renderer));
-    let loader = Arc::new(OasLoader::new());
-    let combiner = Arc::new(Combiner::new(loader));
+    let loader = Arc::new(OasLoader::new(logger.clone()));
+    let combiner = Arc::new(Combiner::new(logger.clone(), loader));
 
     let openapi_generator = Arc::new(OpenApiGenerator::new(
+        logger.clone(),
         combiner,
         oas_yaml_generator,
         dto_generator,

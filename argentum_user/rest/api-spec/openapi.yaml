@@ -2,10 +2,10 @@ openapi: 3.1.0
 info:
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum
-  description: User Account API
+  description: User API
   license:
     name: BSD-3
-  title: Argentum User Account component API
+  title: Argentum User component API
   version: 0.2.0-dev
 servers:
 - description: Dev API Server with CORS
@@ -145,4 +145,10 @@ components:
           schema:
             $ref: '#/components/schemas/User'
       description: Created
-  securitySchemes: {}
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+      name: ''
+      in: header
+      open_id_connect_url: ''

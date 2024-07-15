@@ -106,7 +106,7 @@ How to generate a library with code clients and servers code
 $ docker run --rm \
     -v "${PWD}:/local" \
     -u $(id -u ${USER}):$(id -g ${USER}) \
-    openapitools/openapi-generator-cli:v6.6.0 generate \
+    openapitools/openapi-generator-cli:v7.6.0 generate \
         -i /local/argentum_user_account/api-doc/openapi.yaml \
         -g rust-server \
         -t /local/openapi-templates/rust-server \
@@ -115,3 +115,5 @@ $ docker run --rm \
 
 $ cargo fmt --manifest-path argentum_user_account/api/Cargo.toml
 ....
+
+docker run --rm -v "${PWD}:/local" -u $(id -u ${USER}):$(id -g ${USER}) openapitools/openapi-generator-cli:v7.6.0 generate -i /local/argentum_user/api-doc/openapi.yaml -g rust-server -o /local/argentum_user/api -c /local/argentum_user/api-doc/openapi.config.json

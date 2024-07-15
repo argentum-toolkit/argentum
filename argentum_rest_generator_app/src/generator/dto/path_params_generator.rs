@@ -115,17 +115,6 @@ impl PathParamsGenerator {
                 }
             };
 
-            // let req = &parameter.required;
-            //
-            // let required: bool;
-            //
-            // if req.is_none() || !req.clone().unwrap().contains(&name) {
-            //     data_type = format!("Option<{}>", data_type);
-            //     required = false;
-            // } else {
-            //     required = true;
-            // }
-
             properties.push(Prop {
                 name: name.clone().to_case(Case::Snake),
                 rename: name,
@@ -138,10 +127,8 @@ impl PathParamsGenerator {
 
         let data = Data {
             dependencies,
-            // name,
             properties,
             operation,
-            // parameters,
         };
 
         self.renderer

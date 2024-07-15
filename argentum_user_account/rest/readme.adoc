@@ -2,19 +2,29 @@
 
 User Account API
 
+
 == Overview
 
 This server was generated from OpenAPI specification by the link:https://gitlab.com/argentum-toolkit/argentum(argentum-rest-generator).
 
 - API version: 0.2.0-dev
 - Package Name: argentum_user_account_rest
-- License: `BSD-3`
+    - Home page: https://github.com/argentum-toolkit/argentum
+    - Repository: https://github.com/argentum-toolkit/argentum
+    - Home page: https://github.com/argentum-toolkit/argentum
+    - License: `BSD-3`
+
 
 == How to use
 
 === Create server application
 
 ==== Clone this repository or publish it as a crate
+
+    [source,bash]
+    ....
+    $ git clone https://github.com/argentum-toolkit/argentum rest
+    ....
 
 link:https://doc.rust-lang.org/cargo/commands/cargo-publish.html[How to publish]
 
@@ -41,7 +51,7 @@ edition = "2021"
 argentum_log_business = { path = "../argentum_log/business" }
 argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
-argentum_user_account_rest = { path = "../rest" }
+    argentum_user_account_rest = { path = "../rest" }
 tokio = { version = "1.34.*", features = ["full"] }
 ....
 
@@ -56,5 +66,4 @@ tokio = { version = "1.34.*", features = ["full"] }
 ....
 
 ....
-
 <TBD>

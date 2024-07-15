@@ -1,16 +1,16 @@
-use crate::dto::path_params::AnonymousWithTokenChangesPasswordPathParams;
-use argentum_rest_infrastructure::data_type::AuthHeaderParams;
+use crate::dto::path_params::AnonymousRegistersPathParams;
+use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
 use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams};
 
-pub struct AnonymousWithTokenChangesPasswordParams {
-    pub headers: AuthHeaderParams,
-    pub path: AnonymousWithTokenChangesPasswordPathParams,
+pub struct AnonymousRegistersParams {
+    pub headers: EmptyHeaderParams,
+    pub path: AnonymousRegistersPathParams,
     pub query: EmptyQueryParams,
 }
 
-impl HttpParams for AnonymousWithTokenChangesPasswordParams {
-    type Headers = AuthHeaderParams;
-    type Path = AnonymousWithTokenChangesPasswordPathParams;
+impl HttpParams for AnonymousRegistersParams {
+    type Headers = EmptyHeaderParams;
+    type Path = AnonymousRegistersPathParams;
     type Query = EmptyQueryParams;
 
     fn new(path: Self::Path, query: Self::Query, headers: Self::Headers) -> Self {

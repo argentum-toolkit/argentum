@@ -121,23 +121,23 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 == TODO
 
+* implement argentum_user/infrastructure/src/rest/handler/get_user.rs
+
 * DI builders: make it similar
 
 * rest-generator
-** create regex factory for `path params`
-** generate `query params`
-** fix struct names in template generator (UserAccountRouter, UserAccountPreHandler are hardcoded)
-** error handling (replace unwrap. check todo)
-** fix code duplication
-** adoc documentation for `argentum_rest`
 ** generate readme.adoc
-** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
+** adoc documentation for `argentum_rest`
 ** publish generator to hub.docker.com
 ** tests
+** generate `query params`
+** create regex factory for all types of `path params`
+** fix code duplication
+** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
 ** generate embedded objects
 ** fix generator for cases when string field parses as integer
 
-* New type for Password
+* Configure Cargo for local development and for release as described there https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
 
 * DB
 ** migrations
@@ -148,10 +148,13 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** ADR
 ** codegen
 ** other?
-* Custom API generator
-* OpenTelemetry
+
+* New type for Password
+
 * build scripts (behaviour tests, push artifacts)
 * run docker images as a local user
+* OpenTelemetry
+
 * https://crates.io/crates/cargo-release
 * notifications
 * macro for creation Id types (for user, for account for event)
