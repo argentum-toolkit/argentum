@@ -48,7 +48,7 @@ paths:
         deprecated: false
         allowEmptyValue: false
         schema:
-          example: a4eaf068-9210-3089-b46e-2b4e567678d8
+          example: 7e5d7cb4-7d83-46e3-8e24-4fb90a7e61d6
           type: string
           format: uuid
       responses:
@@ -84,7 +84,6 @@ components:
       required:
       - email
       - name
-      - password
       properties:
         email:
           example: test-email@test-email.com
@@ -96,10 +95,6 @@ components:
           format: uuid
         name:
           $ref: '#/components/schemas/UserName'
-        password:
-          example: secure-password
-          type: string
-          format: password
       type: object
     UserName:
       required:
@@ -146,6 +141,13 @@ components:
             $ref: '#/components/schemas/User'
       description: Created
   securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+      name: ''
+      in: header
+      open_id_connect_url: ''
+es:
     bearerAuth:
       scheme: bearer
       type: http

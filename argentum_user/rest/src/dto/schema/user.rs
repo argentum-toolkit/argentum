@@ -15,18 +15,11 @@ pub struct User {
     pub id: Option<uuid::Uuid>,
 
     pub name: UserName,
-
-    pub password: String,
 }
 
 impl User {
-    pub fn new(email: String, id: Option<uuid::Uuid>, name: UserName, password: String) -> Self {
-        Self {
-            email,
-            id,
-            name,
-            password,
-        }
+    pub fn new(email: String, id: Option<uuid::Uuid>, name: UserName) -> Self {
+        Self { email, id, name }
     }
 }
 
@@ -62,21 +55,9 @@ impl DeserializableSchemaRaw<'_> for User {
                 }
             }
         };
-        let password = raw.password;
-        if password.is_none() {
-            argentum_violations.insert(
-                "password".into(),
-                Violations::new(vec!["field is required".to_string()], None),
-            );
-        }
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(
-                email.unwrap(),
-                id,
-                name.unwrap(),
-                password.unwrap(),
-            ))
+            Ok(Self::new(email.unwrap(), id, name.unwrap()))
         } else {
             Err(Violations::new(
                 vec!["wrong data for User".to_string()],
@@ -94,6 +75,4 @@ pub struct UserRaw {
     pub id: Option<uuid::Uuid>,
     #[serde(rename = "name")]
     pub name: Option<UserNameRaw>,
-    #[serde(rename = "password")]
-    pub password: Option<String>,
 }

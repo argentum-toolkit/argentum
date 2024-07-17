@@ -121,8 +121,6 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 == TODO
 
-* implement argentum_user/infrastructure/src/rest/handler/get_user.rs
-
 * DI builders: make it similar
 
 * rest-generator

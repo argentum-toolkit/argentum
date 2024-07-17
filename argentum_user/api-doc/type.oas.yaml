@@ -21,14 +21,9 @@ components:
           example: test-email@test-email.com
         name:
           $ref: '#/components/schemas/UserName'
-        password:
-          type: string
-          format: password
-          example: secure-password
       required:
         - email
         - name
-        - password
 
     UserName:
       type: object

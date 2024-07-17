@@ -1,7 +1,9 @@
-use argentum_rest_infrastructure::data_type::error::{HttpError, InternalServerError};
+use argentum_rest_infrastructure::data_type::error::{
+    HttpError, InternalServerError, NotFoundError,
+};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_business::entity::user::User;
-use argentum_user_business::use_case::GetUserUc;
+use argentum_user_business::use_case::{GetUserError, GetUserUc};
 use argentum_user_rest::dto::operation_response_enum::GetUserOperationResponseEnum;
 use argentum_user_rest::dto::request::GetUserRequest;
 use argentum_user_rest::dto::response::GetUserOkResponse;
@@ -25,7 +27,7 @@ impl GetUserTrait for GetUserHandler {
     fn handle(
         &self,
         req: GetUserRequest,
-        user: User,
+        _user: User,
     ) -> Result<GetUserOperationResponseEnum, HttpError> {
         //TODO: check if authenticated user granted to see this resource
         let user_id = self.id_factory.uuid_to_id(req.params.path.user_id);
@@ -48,14 +50,18 @@ impl GetUserTrait for GetUserHandler {
                             Some(p) => Some(p.to_string()),
                         },
                     ),
-                    "TODO: remove this field".to_string(), //TODO: remove password
                 );
 
                 Ok(GetUserOperationResponseEnum::Status200(
                     GetUserOkResponse::new_application_json(schema.clone()),
                 ))
             }
-
+            Err(GetUserError::UserNotFound) => {
+                Err(HttpError::NotFound(NotFoundError::new(format!(
+                    "User with id `{}` is not found",
+                    req.params.path.user_id.to_string()
+                ))))
+            }
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
                 Box::new(e),
             ))),

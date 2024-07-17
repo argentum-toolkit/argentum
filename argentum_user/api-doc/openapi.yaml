@@ -49,7 +49,7 @@ paths:
           schema:
             type: string
             format: uuid
-            example: "a4eaf068-9210-3089-b46e-2b4e567678d8"
+            example: "7e5d7cb4-7d83-46e3-8e24-4fb90a7e61d6"
       tags:
         - user
       operationId: GetUser
