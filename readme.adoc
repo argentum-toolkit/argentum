@@ -39,9 +39,15 @@ It is easy with link:docs/quick-start.adoc[Quick Start Guide]
 * link:argentum_event/readme.adoc[Argentum Event]
 * link:argentum_log/readme.adoc[Argentum Log]
 * link:argentum_notification/readme.adoc[Argentum Notification]
+* link:argentum_openapi/infrastructure/readme.adoc[Argentum OpenAPI parser]
+* link:argentum_rest/infrastructure/readme.adoc[Argentum Notification]
 * link:argentum_standard/readme.adoc[Argentum Standard]
 * link:argentum_user/readme.adoc[Argentum User]
 * link:argentum_user_account/readme.adoc[Argentum User Account]
+
+== Tools documentation
+
+* link:argentum_rest_generator_app/readme.adoc[Argentum REST Generator]
 
 == Argentum ToolKit Architecture. Short description
 
@@ -124,7 +130,6 @@ $ devops/scripts/check-item.sh {{package-name}}
 * DI builders: make it similar
 
 * rest-generator
-** adoc documentation for `argentum_rest`
 ** scripts to simplify generation of API library
 ** publish generator to hub.docker.com
 ** tests
