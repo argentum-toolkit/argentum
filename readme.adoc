@@ -124,8 +124,8 @@ $ devops/scripts/check-item.sh {{package-name}}
 * DI builders: make it similar
 
 * rest-generator
-** generate readme.adoc
 ** adoc documentation for `argentum_rest`
+** scripts to simplify generation of API library
 ** publish generator to hub.docker.com
 ** tests
 ** generate `query params`
