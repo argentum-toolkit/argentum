@@ -24,11 +24,31 @@ Supported generators
 
 == How to use
 
-.Example
+.Get source codes
 [source,shell]
 ----
 git clone git@gitlab.com:argentum-toolkit/argentum.git
 
+----
+
+.Install binary
+[source,shell]
+----
+cargo install --path argentum_rest_generator_app/
+
+----
+
+.Generate REST API server library
+[source,shell]
+----
+argentum_rest_generator_app --input api-doc/openapi.yaml --output rest/ --package-name user_account_rest
+----
+
+Or you can generate via `cargo run`
+
+.Example
+[source,shell]
+----
 cd argentum/argentum_rest_generator_app
 
 cargo run --   --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest
@@ -41,6 +61,4 @@ cargo run --   --input ../argentum_user_account/api-doc/openapi.yaml --output ..
 - Schemas supports only Object type (Array, AnyOf, AllOf are not implemented yet)
 - we don't use OpenAPI tags.
 If you need similar functionality, we would like to recommend split your API to packages
-
-Example:
 
