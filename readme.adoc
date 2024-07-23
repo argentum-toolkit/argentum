@@ -145,9 +145,8 @@ $ devops/scripts/check-item.sh {{package-name}}
 * Profiling
 
 * DB
-** how to create new component (DB part)
-** table names as a const or as a param
 ** Foreign key for session
+** table names as a const or as a param
 ** Move DB to new database component
 
 * documentation
