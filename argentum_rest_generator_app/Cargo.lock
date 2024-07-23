@@ -211,6 +211,7 @@ dependencies = [
 name = "argentum_standard_infrastructure"
 version = "0.2.0-dev"
 dependencies = [
+ "argentum_log_business",
  "argentum_standard_business",
  "futures",
  "serde",

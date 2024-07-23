@@ -142,10 +142,13 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 * Configure Cargo for local development and for release as described there https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
 
+* Profiling
+
 * DB
-** migrations
+** how to create new component (DB part)
 ** table names as a const or as a param
 ** Foreign key for session
+** Move DB to new database component
 
 * documentation
 ** ADR

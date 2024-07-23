@@ -3,8 +3,9 @@ use sqlx::postgres::PgPool;
 use std::collections::BTreeMap;
 use std::future::Future;
 
+use argentum_log_business::LoggerTrait;
 use sqlx::query::{Query, QueryAs};
-use sqlx::{Error, Executor, FromRow, Postgres, Transaction};
+use sqlx::{Error, Execute, Executor, FromRow, Postgres, Transaction};
 use sqlx_postgres::{PgArguments, PgRow};
 use std::sync::Arc;
 
@@ -18,11 +19,12 @@ pub trait FromDbRow: Sized {
 
 pub struct SqlxPostgresAdapter {
     pub pool: Arc<PgPool>,
+    logger: Arc<dyn LoggerTrait>,
 }
 
 impl SqlxPostgresAdapter {
-    pub fn new(pool: Arc<PgPool>) -> Self {
-        Self { pool }
+    pub fn new(pool: Arc<PgPool>, logger: Arc<dyn LoggerTrait>) -> Self {
+        Self { pool, logger }
     }
 
     pub fn exec<'q>(
@@ -52,10 +54,16 @@ impl SqlxPostgresAdapter {
         E: Executor<'q, Database = Postgres> + 'q,
     {
         async move {
+            let sql = query.sql().to_string();
+            self.logger.debug(sql.clone());
             let result = query.execute(executor).await;
+            self.logger.trace("done".to_string());
             match result {
                 Ok(r) => Ok(r.rows_affected()),
-                Err(e) => Err(DbAdapterError { msg: e.to_string() }),
+                Err(e) => Err(DbAdapterError {
+                    msg: e.to_string(),
+                    sql: Some(sql),
+                }),
             }
         }
     }
@@ -69,12 +77,18 @@ impl SqlxPostgresAdapter {
         F: Send + Unpin + for<'r> FromRow<'r, PgRow> + 'q,
     {
         async move {
+            let sql = query_as.sql().to_string();
+            self.logger.debug(sql.clone());
             let result: Result<Option<F>, Error> = query_as.fetch_optional(&*self.pool).await;
+            self.logger.trace("done".to_string());
 
             match result {
                 Ok(Some(r)) => Ok(Some(r)),
                 Ok(None) => Ok(None),
-                Err(e) => Err(DbAdapterError { msg: e.to_string() }),
+                Err(e) => Err(DbAdapterError {
+                    msg: e.to_string(),
+                    sql: Some(sql),
+                }),
             }
         }
     }
@@ -84,10 +98,13 @@ impl SqlxPostgresAdapter {
     ) -> impl Future<Output = Result<Transaction<'static, Postgres>, DbAdapterError>> + Send + '_
     {
         async move {
-            // let tx = self.pool.begin().await;
+            self.logger.debug("Begin transaction".to_string());
             match self.pool.begin().await {
                 Ok(tx) => Ok(tx),
-                Err(e) => Err(DbAdapterError { msg: e.to_string() }),
+                Err(e) => Err(DbAdapterError {
+                    msg: e.to_string(),
+                    sql: None,
+                }),
             }
         }
     }
@@ -97,9 +114,13 @@ impl SqlxPostgresAdapter {
         tx: Transaction<'a, Postgres>,
     ) -> impl Future<Output = Result<(), DbAdapterError>> + Send + 'a {
         async move {
+            self.logger.debug("Commit transaction".to_string());
             match tx.commit().await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(DbAdapterError { msg: e.to_string() }),
+                Err(e) => Err(DbAdapterError {
+                    msg: e.to_string(),
+                    sql: None,
+                }),
             }
         }
     }
@@ -109,9 +130,13 @@ impl SqlxPostgresAdapter {
         tx: Transaction<'a, Postgres>,
     ) -> impl Future<Output = Result<(), DbAdapterError>> + Send + 'a {
         async move {
+            self.logger.debug("Rollback transaction".to_string());
             match tx.rollback().await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(DbAdapterError { msg: e.to_string() }),
+                Err(e) => Err(DbAdapterError {
+                    msg: e.to_string(),
+                    sql: None,
+                }),
             }
         }
     }

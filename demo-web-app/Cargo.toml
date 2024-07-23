@@ -1,5 +1,5 @@
 [package]
-name = "argentum_demo_web_app"
+name = "argentum_demo_web_app_migration"
 description = "Demo web app of argentum toolkit"
 version = "0.2.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
@@ -9,6 +9,15 @@ homepage = "https://github.com/argentum-toolkit/argentum"
 repository = "https://github.com/argentum-toolkit/argentum"
 documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
+
+
+[[bin]]
+name = "api"
+path = "src/api/main.rs"
+
+[[bin]]
+name = "migration"
+path = "src/migration/main.rs"
 
 [dependencies]
 argentum_encryption_business = { path = "../argentum_encryption/business", version = "0.2.0-dev" }
@@ -31,3 +40,4 @@ argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
 tokio = { version = "1.34.*", features = ["full"] }
 dotenv = "0.15.0"
 serde = { version = "1.0", features = ["derive"] }
+sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }

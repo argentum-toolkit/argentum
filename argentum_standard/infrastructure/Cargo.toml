@@ -11,6 +11,7 @@ documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
+argentum_log_business = { path = "../../argentum_log/business" }
 argentum_standard_business = { path = "../business", version = "0.2.0-dev" }
 
 sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "chrono"] }

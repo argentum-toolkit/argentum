@@ -1,5 +1,7 @@
 mod migration_000_init;
 
-pub fn up() -> Vec<String> {
-    vec![migration_000_init::up()]
+use argentum_standard_infrastructure::db::slqx_postgres::migration::MigrationCollection;
+
+pub fn up(table_name_prefix: &str) -> MigrationCollection {
+    MigrationCollection::from([("000_init", migration_000_init::up(table_name_prefix))])
 }

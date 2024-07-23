@@ -42,7 +42,7 @@ pub async fn di_factory() -> DiC {
 
     let u_di = Rc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
-            .default_services(&u_database_url, 5) //todo: use params
+            .default_services(&u_database_url, 5, logger.clone()) //todo: use params
             .await
             .build(),
     );
@@ -77,7 +77,7 @@ pub async fn di_factory() -> DiC {
         logger.clone(),
         notificator,
     )
-    .services(unique_id_factory, &database_url, 5)
+    .services(unique_id_factory, &database_url, 5, logger.clone())
     .await
     .config(
         "Argentum ToolKit demo web application".to_string(),

@@ -13,6 +13,7 @@ readme = "readme.adoc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+argentum_log_business = { path = "../../argentum_log/business" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure" }
 argentum_standard_business = { path = "../../argentum_standard/business" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }

@@ -87,6 +87,7 @@ impl UserAccountInfrastructureDiCBuilder {
         id_factory: Arc<UniqueIdFactory>,
         connection_url: &str,
         max_db_connections: u32,
+        logger: Arc<dyn LoggerTrait>,
     ) -> &mut Self {
         let pool = Arc::new(
             PgPoolOptions::new()
@@ -96,7 +97,7 @@ impl UserAccountInfrastructureDiCBuilder {
                 .unwrap(),
         );
 
-        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool));
+        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
 
         let password_credential_repository = Arc::new(PasswordCredentialRepository::new(
             pg_adapter.clone(),

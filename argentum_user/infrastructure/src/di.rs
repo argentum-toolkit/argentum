@@ -3,6 +3,7 @@ use crate::db::repository::AnonymousUserRepository;
 use crate::db::repository::AuthenticatedUserRepository;
 use crate::db::repository::SessionRepository;
 use crate::rest::handler::GetUserHandler;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::di::{UserBusinessDiC, UserBusinessDiCBuilder};
@@ -33,6 +34,7 @@ impl UserInfrastructureDiCBuilder {
         &mut self,
         connection_url: &str,
         max_db_connections: u32,
+        logger: Arc<dyn LoggerTrait>,
     ) -> &mut Self {
         let pool = Arc::new(
             PgPoolOptions::new()
@@ -42,7 +44,7 @@ impl UserInfrastructureDiCBuilder {
                 .unwrap(),
         );
 
-        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool));
+        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
 
         self.business_builder
             .anonymous_binding_repository(Arc::new(AnonymousBindingRepository::new(

@@ -31,7 +31,7 @@ docker compose up
 [bash]
 ----
 cd demo-webapp
-cargo run
+cargo run --bin app
 ----
 
 Now you can see API documentation and send requests via Swagger-UI. link:http://localhost:8083/[]
