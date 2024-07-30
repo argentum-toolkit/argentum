@@ -129,14 +129,14 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 === V0.2
 
-* performance optimization
 * build scripts to push artifacts
 
 === V0.3
 
 * DI builders: make it similar
-* https://crates.io/crates/cargo-release
 * behaviour tests
+
+* performance optimization
 
 * rest-generator
 ** scripts to simplify generation of API library
