@@ -13,12 +13,12 @@ readme = "readme.adoc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-argentum_log_business = { path = "../../argentum_log/business" }
-argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure" }
-argentum_standard_business = { path = "../../argentum_standard/business" }
-argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }
-argentum_user_business = { path = "../../argentum_user/business" }
-argentum_user_rest = { path = "../../argentum_user/rest" }
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.2.0-dev,<0.3.0" }
 
 chrono = { version = "0.4.*", features = ["serde"] }
 derive_more = "0.99.*"
