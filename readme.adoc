@@ -128,8 +128,9 @@ $ devops/scripts/check-item.sh {{package-name}}
 == TODO
 
 * DI builders: make it similar
-* build scripts (behaviour tests, push artifacts)
+* build scripts to push artifacts
 * https://crates.io/crates/cargo-release
+* behaviour tests
 
 * rest-generator
 ** scripts to simplify generation of API library

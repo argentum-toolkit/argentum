@@ -1,7 +1,7 @@
 [package]
 name = "argentum_notification_business"
 description = "Business layer of notification component"
-version = "0.2.0-dev"
+version = "0.2.0-dev.1"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
@@ -11,6 +11,6 @@ documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
-argentum_standard_business = { path = "../../argentum_standard/business", version = "0.2.0-dev" }
-argentum_user_business = { path = "../../argentum_user/business", version = "0.2.0-dev" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }
 thiserror = "1.0.*"

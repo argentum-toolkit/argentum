@@ -71,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_demo_app"
-version = "0.2.0-dev"
+version = "0.2.0-dev.1"
 dependencies = [
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",
@@ -92,7 +92,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_encryption_business"
-version = "0.2.0-dev"
+version = "0.2.0-dev.1"
 dependencies = [
  "thiserror",
 ]

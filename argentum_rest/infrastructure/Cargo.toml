@@ -1,7 +1,7 @@
 [package]
 name = "argentum_rest_infrastructure"
 description = "The infrastructure layer of REST component"
-version = "0.2.0-dev"
+version = "0.2.0-dev.1"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
@@ -24,8 +24,8 @@ serde_valid = "0.16.*"
 tokio = { version = "1.34.*", features = ["full"] }
 thiserror = "1.0.*"
 
-argentum_log_business = { path = "../../argentum_log/business", version = "0.2.0-dev" }
-argentum_standard_business = { path = "../../argentum_standard/business", version = "0.2.0-dev" }
-argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = "0.2.0-dev" }
-argentum_user_account_business = { path = "../../argentum_user_account/business", version = "0.2.0-dev" }
-argentum_user_business = { path = "../../argentum_user/business", version = "0.2.0-dev" }
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_account_business = { path = "../../argentum_user_account/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }

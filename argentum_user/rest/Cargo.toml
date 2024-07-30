@@ -1,7 +1,7 @@
 [package]
 name = "argentum_user_rest"
 description = "Argentum User component API"
-version = "0.2.0-dev"
+version = "0.2.0-dev.1"
 license = "BSD-3"
 edition = "2021"
 
@@ -13,9 +13,9 @@ readme = "readme.adoc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure" }
-argentum_standard_business = { path = "../../argentum_standard/business" }
-argentum_user_business = { path = "../../argentum_user/business" }
+argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }
 
 async-trait = "0.1.*"
 hyper = { version = "1.0.0", features = ["full"] }

@@ -1,7 +1,7 @@
 [package]
 name = "argentum_log_infrastructure"
 description = "Business layer of encryption"
-version = "0.2.0-dev"
+version = "0.2.0-dev.1"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
@@ -11,6 +11,6 @@ documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
-argentum_log_business = { path = "../business" }
+argentum_log_business = { path = "../business", version = ">=0.2.0-dev,<0.3.0" }
 chrono = "0.4.*"
 ansi_term = "0.12.*"

@@ -1,7 +1,7 @@
 [package]
 name = "argentum_standard_business"
 description = "The business layer of standart component"
-version = "0.2.0-dev"
+version = "0.2.0-dev.1"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
