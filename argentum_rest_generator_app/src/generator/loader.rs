@@ -18,13 +18,11 @@ impl OasLoader {
 
         let path = PathBuf::from(file_path.clone());
 
-        let f = fs::File::open(path.clone()).expect(&format!(
-            "Should have been able to read the file {}",
-            file_path
-        ));
+        let f = fs::File::open(path.clone())
+            .unwrap_or_else(|_| panic!("Should have been able to read the file {}", file_path));
 
         let spec: SpecificationRoot = serde_yaml::from_reader(f)
-            .expect(&format!("Could not read values from '{}'.", file_path));
+            .unwrap_or_else(|_| panic!("Could not read values from '{}'.", file_path));
 
         (spec, path)
     }

@@ -38,7 +38,7 @@ async fn create_migrator<'a>(
     let pool = Arc::new(
         PgPoolOptions::new()
             .max_connections(max_db_connections)
-            .connect(&u_database_url)
+            .connect(u_database_url)
             .await
             .unwrap(),
     );

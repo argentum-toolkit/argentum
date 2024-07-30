@@ -77,9 +77,9 @@ impl AuthenticatedUserRepository {
 
 impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
     fn find(&self, user_id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
-        let id = self.id_factory.id_to_uuid(&user_id);
+        let id = self.id_factory.id_to_uuid(user_id);
         let sql = "SELECT id, created_at, first_name, last_name, email FROM ag_user_authenticated WHERE id = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(&id);
+        let query = sqlx::query_as(sql).bind(id);
 
         self.find_one(query)
     }
@@ -97,10 +97,8 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
     fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
         let id = self.id_factory.id_to_uuid(&user.id);
 
-        let last = match &user.name.last {
-            None => None,
-            Some(l) => Some(l.to_string()),
-        };
+        let last = user.name.last.as_ref().map(|l| l.to_string());
+
         let sql = "INSERT INTO ag_user_authenticated (id, created_at, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)";
         let query = sqlx::query(sql)
             .bind(id)

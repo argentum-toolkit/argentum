@@ -24,7 +24,7 @@ impl Combiner {
     ) -> (SpecificationRoot, RequestBody) {
         let mut to_spec = SpecificationRoot::new_empty();
 
-        for (_content_type, media_type) in &mut body.content {
+        for media_type in body.content.values_mut() {
             let ref_or_schema = &mut media_type.schema;
 
             self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path.clone());
@@ -40,7 +40,7 @@ impl Combiner {
     ) -> (SpecificationRoot, Response) {
         let mut to_spec = SpecificationRoot::new_empty();
 
-        for (_content_type, media_type) in &mut response.content {
+        for media_type in response.content.values_mut() {
             let ref_or_schema = &mut media_type.schema;
 
             self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path.clone());
@@ -156,7 +156,7 @@ impl Combiner {
                         r.reference = reference;
 
                         let ss: &mut Schema = &mut s.clone();
-                        self.collect_schema_properties(ss, current_file_path.into(), to_spec);
+                        self.collect_schema_properties(ss, current_file_path, to_spec);
 
                         to_spec.components.schemas.insert(c_name, ss.clone());
                     }
@@ -287,7 +287,7 @@ impl Combiner {
         to_spec: &mut SpecificationRoot,
         current_file_path: PathBuf,
     ) {
-        for (_name, property) in properties.into_iter() {
+        for (_name, property) in properties.iter_mut() {
             self.collect_ref_to_schema(property, to_spec, current_file_path.clone());
         }
     }
@@ -296,12 +296,12 @@ impl Combiner {
         let (mut spec, current_file_path) = self.loader.load(file_path);
         let mut res_spec = SpecificationRoot::new_empty();
 
-        res_spec.openapi = spec.openapi.clone();
-        res_spec.external_docs = spec.external_docs.clone();
-        res_spec.info = spec.info.clone();
-        res_spec.security = spec.security.clone();
-        res_spec.tags = spec.tags.clone();
-        res_spec.servers = spec.servers.clone();
+        res_spec.openapi.clone_from(&spec.openapi);
+        res_spec.external_docs.clone_from(&spec.external_docs);
+        res_spec.info.clone_from(&spec.info);
+        res_spec.security.clone_from(&spec.security);
+        res_spec.tags.clone_from(&spec.tags);
+        res_spec.servers.clone_from(&spec.servers);
 
         for (body_name, body) in &mut spec.components.request_bodies {
             let (body_spec, updated_body) =
@@ -346,7 +346,7 @@ impl Combiner {
         }
 
         for (uri, path) in &mut spec.paths {
-            for (_method_name, operation) in &mut path.operations {
+            for operation in path.operations.values_mut() {
                 if let Some(ref_or_schema) = &mut operation.request_body {
                     self.collect_ref_to_request_body(
                         ref_or_schema,
@@ -355,7 +355,7 @@ impl Combiner {
                     );
                 }
 
-                for (_response_code, ref_or_response) in &mut operation.responses {
+                for ref_or_response in operation.responses.values_mut() {
                     self.collect_ref_to_response(
                         ref_or_response,
                         &mut res_spec,
@@ -369,6 +369,6 @@ impl Combiner {
 
         res_spec.components.security_schemes = spec.components.security_schemes.clone();
 
-        return res_spec;
+        res_spec
     }
 }

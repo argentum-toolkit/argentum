@@ -41,14 +41,8 @@ impl GetUserTrait for GetUserHandler {
                     Some(id),
                     UserNameDto::new(
                         user.name.first.to_string(),
-                        match user.name.last {
-                            None => None,
-                            Some(l) => Some(l.to_string()),
-                        },
-                        match user.name.patronymic {
-                            None => None,
-                            Some(p) => Some(p.to_string()),
-                        },
+                        user.name.last.map(|l| l.to_string()),
+                        user.name.patronymic.map(|p| p.to_string()),
                     ),
                 );
 
@@ -56,12 +50,9 @@ impl GetUserTrait for GetUserHandler {
                     GetUserOkResponse::new_application_json(schema.clone()),
                 ))
             }
-            Err(GetUserError::UserNotFound) => {
-                Err(HttpError::NotFound(NotFoundError::new(format!(
-                    "User with id `{}` is not found",
-                    req.params.path.user_id.to_string()
-                ))))
-            }
+            Err(GetUserError::UserNotFound) => Err(HttpError::NotFound(NotFoundError::new(
+                format!("User with id `{}` is not found", req.params.path.user_id),
+            ))),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
                 Box::new(e),
             ))),

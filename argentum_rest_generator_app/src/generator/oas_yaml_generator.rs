@@ -24,6 +24,7 @@ impl OasYamlGenerator {
         let f = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open(file_path)?;
 
         serde_yaml::to_writer(f, &spec)?;

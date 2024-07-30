@@ -76,19 +76,10 @@ impl RequestTransformer {
             Err(e) => (None, e),
         };
 
-        if body.is_some()
-            && path_params.is_some()
-            && header_params.is_some()
-            && query_params.is_some()
+        if let (Some(b), Some(pp), Some(hp), Some(qp)) =
+            (body, path_params, header_params, query_params)
         {
-            Ok(R::new(
-                body.unwrap(),
-                R::Params::new(
-                    path_params.unwrap(),
-                    query_params.unwrap(),
-                    header_params.unwrap(),
-                ),
-            ))
+            Ok(R::new(b, R::Params::new(pp, qp, hp)))
         } else {
             Err(BadRequest(BadRequestError::new(
                 body_violations,

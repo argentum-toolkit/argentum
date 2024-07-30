@@ -156,11 +156,11 @@ impl PathParamsGenerator {
         let operations = spec.operations();
         self.generate_mod(base_output_path, operations.clone())?;
 
-        for (_uri, path) in &spec.paths {
+        for path in spec.paths.values() {
             let operations = &path.operations;
 
-            for (_method, operation) in operations.into_iter() {
-                self.generate_item(base_output_path, &operation, &path.parameters)?;
+            for (_method, operation) in operations.iter() {
+                self.generate_item(base_output_path, operation, &path.parameters)?;
             }
         }
 

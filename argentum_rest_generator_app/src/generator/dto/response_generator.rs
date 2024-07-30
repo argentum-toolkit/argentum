@@ -98,15 +98,11 @@ impl ResponseGenerator {
     }
 
     fn escape_response_name(&self, name: String) -> String {
-        let response_name;
-
         if name[0..1].parse::<u8>().is_ok() {
-            response_name = "Status".to_owned() + &name;
+            "Status".to_owned() + &name
         } else {
-            response_name = name;
+            name
         }
-
-        response_name
     }
 
     pub fn generate(

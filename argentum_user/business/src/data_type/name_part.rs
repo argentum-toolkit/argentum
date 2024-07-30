@@ -1,4 +1,5 @@
 use argentum_standard_business::invariant_violation::InvariantResult;
+use std::fmt::Display;
 
 const ERR_NAME_EMPTY: &str = "Should not be empty";
 
@@ -15,9 +16,9 @@ impl NamePart {
     }
 }
 
-impl ToString for NamePart {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for NamePart {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.clone())
     }
 }
 

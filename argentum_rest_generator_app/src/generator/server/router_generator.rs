@@ -64,7 +64,7 @@ impl RouterGenerator {
                 );
             }
 
-            let mut pattern = url.replace("/", "\\/");
+            let mut pattern = url.replace('/', "\\/");
             for param in path_params.iter() {
                 let find = format!("{{{}}}", param.name);
 

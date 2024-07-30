@@ -54,9 +54,9 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
         &self,
         token_id: &Id,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
-        let id = self.id_factory.id_to_uuid(&token_id);
+        let id = self.id_factory.id_to_uuid(token_id);
         let sql = "SELECT id, user_id, token, created_at FROM ag_user_account_restore_password_token WHERE id = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(&id);
+        let query = sqlx::query_as(sql).bind(id);
 
         self.find_one(query)
     }
@@ -81,8 +81,8 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
         let sql = "INSERT INTO ag_user_account_restore_password_token (id, user_id, token, created_at) VALUES ($1, $2, $3, $4)";
 
         let query = sqlx::query(sql)
-            .bind(&id)
-            .bind(&user_id)
+            .bind(id)
+            .bind(user_id)
             .bind(token.token.clone())
             .bind(token.created_at.naive_utc());
 
@@ -95,7 +95,7 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
     }
 
     fn delete_users_tokens(&self, user_id: &Id) -> Result<(), RestorePasswordTokenRepositoryError> {
-        let id = &self.id_factory.id_to_uuid(&user_id);
+        let id = &self.id_factory.id_to_uuid(user_id);
         let sql = "DELETE FROM ag_user_account_restore_password_token WHERE user_id = $1";
         let query = sqlx::query(sql).bind(id);
 

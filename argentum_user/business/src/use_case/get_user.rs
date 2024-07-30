@@ -114,7 +114,7 @@ mod tests {
 
         match result {
             Err(GetUserError::UserNotFound) => Ok(()),
-            Ok(u) => Err("This user is not in storage"),
+            Ok(_) => Err("This user is not in storage"),
             Err(_) => Err("Can't get user"),
         }
     }

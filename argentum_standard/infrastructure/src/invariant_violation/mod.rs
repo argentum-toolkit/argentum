@@ -46,9 +46,9 @@ impl From<&Violations> for ViolationsDto {
     }
 }
 
-impl Into<ViolationItem> for ViolationItemDto {
-    fn into(self) -> ViolationItem {
-        match self {
+impl From<ViolationItemDto> for ViolationItem {
+    fn from(val: ViolationItemDto) -> Self {
+        match val {
             ViolationItemDto::Object(o) => {
                 let map = o
                     .iter()
@@ -65,11 +65,11 @@ impl Into<ViolationItem> for ViolationItemDto {
     }
 }
 
-impl Into<Violations> for ViolationsDto {
-    fn into(self) -> Violations {
+impl From<ViolationsDto> for Violations {
+    fn from(val: ViolationsDto) -> Self {
         // self.items.unwrap()
-        let items = self.items.as_ref().map(|v| (*v).clone().into());
-        Violations::new(self.errors.clone(), items)
+        let items = val.items.as_ref().map(|v| (*v).clone().into());
+        Violations::new(val.errors.clone(), items)
     }
 }
 

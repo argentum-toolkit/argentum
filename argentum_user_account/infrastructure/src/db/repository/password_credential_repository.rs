@@ -30,7 +30,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
         let user_id = self.id_factory.id_to_uuid(&cred.user_id);
         let sql = "INSERT INTO ag_user_account_password_credential (user_id, password, salt) VALUES ($1, $2, $3)";
         let query = sqlx::query(sql)
-            .bind(&user_id)
+            .bind(user_id)
             .bind(cred.password.clone())
             .bind(cred.salt.clone());
 
@@ -49,7 +49,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
         let id = self.id_factory.id_to_uuid(user_id);
 
         let sql = "SELECT user_id, password, salt FROM ag_user_account_password_credential WHERE user_id = $1 LIMIT 1";
-        let query_as = sqlx::query_as(sql).bind(&id);
+        let query_as = sqlx::query_as(sql).bind(id);
         let result: Result<Option<PasswordCredentialDto>, DbAdapterError> =
             block_on(self.adapter.fetch_one(query_as));
 
@@ -69,7 +69,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
 
         let query =
             sqlx::query("DELETE FROM ag_user_account_password_credential WHERE user_id = $1")
-                .bind(&user_id);
+                .bind(user_id);
 
         let result = block_on(self.adapter.exec(query));
 

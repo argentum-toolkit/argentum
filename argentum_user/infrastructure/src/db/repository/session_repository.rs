@@ -51,8 +51,8 @@ impl SessionRepositoryTrait for SessionRepository {
 
         let sql = "INSERT INTO ag_user_session (id, user_id, token) VALUES ($1, $2, $3)";
         let query = sqlx::query(sql)
-            .bind(&id)
-            .bind(&user_id)
+            .bind(id)
+            .bind(user_id)
             .bind(session.token.clone());
 
         let result = block_on(self.adapter.exec(query));
@@ -64,9 +64,9 @@ impl SessionRepositoryTrait for SessionRepository {
     }
 
     fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
-        let id = self.id_factory.id_to_uuid(&user_id);
+        let id = self.id_factory.id_to_uuid(user_id);
 
-        let query = sqlx::query("DELETE FROM ag_user_session WHERE user_id = $1").bind(&id);
+        let query = sqlx::query("DELETE FROM ag_user_session WHERE user_id = $1").bind(id);
 
         let result = block_on(self.adapter.exec(query));
 

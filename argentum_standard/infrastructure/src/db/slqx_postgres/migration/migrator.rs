@@ -51,7 +51,7 @@ impl<'a> Migrator<'a> {
             }
             Err(e) => {
                 self.logger
-                    .critical(format!("Ensuring was failed with error: {}", e.to_string()));
+                    .critical(format!("Ensuring was failed with error: {}", e));
                 Err(e.to_string())
             }
         }
@@ -59,10 +59,8 @@ impl<'a> Migrator<'a> {
 
     async fn rollback(&self, tx: Transaction<'a, Postgres>) -> Result<(), String> {
         if let Err(rollback_error) = self.adapter.rollback(tx).await {
-            self.logger.critical(format!(
-                "Can't rollback transaction: {}",
-                rollback_error.to_string()
-            ));
+            self.logger
+                .critical(format!("Can't rollback transaction: {}", rollback_error));
 
             return Err(rollback_error.to_string());
         }
@@ -88,7 +86,7 @@ impl<'a> Migrator<'a> {
         let tx_res = self.adapter.begin_transaction().await;
         if let Err(e) = tx_res {
             self.logger
-                .critical(format!("Can't start transaction: {}", e.to_string()));
+                .critical(format!("Can't start transaction: {}", e));
 
             return Err(e.to_string());
         }
@@ -128,7 +126,7 @@ impl<'a> Migrator<'a> {
             self.migration_table_name
         );
 
-        let query = sqlx::query(&sql).bind(&dto.version).bind(&dto.executed_at);
+        let query = sqlx::query(&sql).bind(&dto.version).bind(dto.executed_at);
 
         let result = self.adapter.exec_with_executor(query, &mut *tx).await;
 
@@ -151,7 +149,7 @@ impl<'a> Migrator<'a> {
             Ok(_) => Ok(()),
             Err(e) => {
                 self.logger
-                    .critical(format!("Can't commit transaction: {}", e.to_string()));
+                    .critical(format!("Can't commit transaction: {}", e));
 
                 Err(e.to_string())
             }

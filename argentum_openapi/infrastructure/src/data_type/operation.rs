@@ -3,6 +3,7 @@ use crate::data_type::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::fmt::Display;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -38,12 +39,13 @@ pub enum StatusCode {
     String(String),
 }
 
-impl ToString for StatusCode {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for StatusCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
             Self::Uint(u) => u.to_string(),
             Self::String(s) => s.clone(),
-        }
+        };
+        write!(f, "{}", str)
     }
 }
 

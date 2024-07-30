@@ -7,6 +7,13 @@
 * Rust 1.78+
 * Cargo
 
+=== Optional for contributors
+
+[source,shell]
+----
+cargo install cargo-edit
+----
+
 == Dependencies
 
 [bash]

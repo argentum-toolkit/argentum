@@ -29,7 +29,7 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
         &self,
         user_id: &Id,
     ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
-        let id = self.id_factory.id_to_uuid(&user_id);
+        let id = self.id_factory.id_to_uuid(user_id);
         //move todo table name/prefix to const/param
         let sql = "SELECT user_id, anonymous_id, created_at FROM ag_user_anonymous_binding WHERE id = $1 LIMIT 1";
         let query = sqlx::query_as(sql).bind(id);
@@ -41,7 +41,7 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
             Ok(Some(dto)) => Ok(Some(AnonymousBinding {
                 user_id: self.id_factory.uuid_to_id(dto.user_id),
                 anonymous_id: self.id_factory.uuid_to_id(dto.anonymous_id),
-                created_at: dto.created_at.clone(),
+                created_at: dto.created_at,
             })),
 
             Ok(None) => Ok(None),
@@ -55,8 +55,8 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
 
         let sql = "INSERT INTO ag_user_anonymous_binding (user_id, anonymous_id, created_at) VALUES ($1, $2, $3)";
         let query = sqlx::query(sql)
-            .bind(&user_id)
-            .bind(&anonymous_id)
+            .bind(user_id)
+            .bind(anonymous_id)
             .bind(binding.created_at);
 
         let result = block_on(self.adapter.exec(query));

@@ -26,7 +26,7 @@ impl AnonymousUserRepository {
 
 impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
     fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
-        let user_id = self.id_factory.id_to_uuid(&id);
+        let user_id = self.id_factory.id_to_uuid(id);
         //move todo table name/prefix to const/param
         let sql = "SELECT id, created_at FROM ag_user_anonymous WHERE id = $1 LIMIT 1";
         let query = sqlx::query_as(sql).bind(user_id);
@@ -37,7 +37,7 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
         match result {
             Ok(Some(dto)) => Ok(Some(AnonymousUser {
                 id: self.id_factory.uuid_to_id(dto.id),
-                created_at: dto.created_at.clone(),
+                created_at: dto.created_at,
             })),
 
             Ok(None) => Ok(None),
@@ -49,7 +49,7 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
         let id = self.id_factory.id_to_uuid(&user.id);
 
         let sql = "INSERT INTO ag_user_anonymous (id, created_at) VALUES ($1, $2)";
-        let query = sqlx::query(sql).bind(&id).bind(user.created_at);
+        let query = sqlx::query(sql).bind(id).bind(user.created_at);
 
         let result = block_on(self.adapter.exec(query));
 
