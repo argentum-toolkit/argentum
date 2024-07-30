@@ -160,7 +160,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_rest_generator_app"
-version = "0.2.0-dev.1"
+version = "0.2.0"
 dependencies = [
  "argentum_log_business",
  "argentum_log_infrastructure",
