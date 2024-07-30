@@ -4,6 +4,30 @@ use serde::Serialize;
 pub trait SerializableBody: erased_serde::Serialize {}
 erased_serde::serialize_trait_object!(SerializableBody);
 
+pub trait ContentTypeResponseTrait {
+    fn content_type(&self) -> Option<String>;
+    fn body(&self) -> Box<dyn SerializableBody>;
+}
+
+#[derive(Clone)]
+pub struct NoContent {}
+
+impl ContentTypeResponseTrait for NoContent {
+    fn content_type(&self) -> Option<String> {
+        None
+    }
+
+    fn body(&self) -> Box<dyn SerializableBody> {
+        EmptyBody::new_boxed()
+    }
+}
+
+impl NoContent {
+    pub fn new_boxed() -> Box<Self> {
+        Box::new(Self {})
+    }
+}
+
 // #[derive(Serialize)]
 pub struct HttpResponse {
     pub code: StatusCode,
@@ -18,6 +42,7 @@ impl HttpResponse {
     }
 }
 
+//TODO: use one body for response and for request
 #[derive(Debug, Serialize)]
 pub struct EmptyBody {}
 

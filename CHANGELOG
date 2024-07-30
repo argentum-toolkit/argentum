@@ -1,0 +1,5 @@
+0.2
+introduced component argentum_rest
+introduced component argentum_openapi
+introduced component argentum_rest_generator
+introduced application argentum_rest_generator_app

@@ -1,0 +1,144 @@
+= REST library for Argentum User Account component API
+
+User Account API
+
+
+== Overview
+
+This server was generated from OpenAPI specification by the link:https://gitlab.com/argentum-toolkit/argentum(argentum-rest-generator).
+
+- API version: 0.2.0-dev
+- Package Name: argentum_user_account_rest
+    - Home page: https://github.com/argentum-toolkit/argentum
+    - Repository: https://github.com/argentum-toolkit/argentum
+    - Home page: https://github.com/argentum-toolkit/argentum
+    - License: `BSD-3`
+
+
+== How to use
+
+=== Create server application
+
+==== Clone this repository or publish it as a crate
+
+    [source,bash]
+    ....
+    $ git clone https://github.com/argentum-toolkit/argentum rest
+    ....
+
+link:https://doc.rust-lang.org/cargo/commands/cargo-publish.html[How to publish]
+
+==== Create application
+
+[source,bash]
+....
+$ cargo new app --name argentum_user_account_rest_app
+$ cd app
+....
+
+==== Add dependencies
+
+.Cargo.toml example
+[source,toml]
+....
+[package]
+name = "argentum_user_account_rest_app"
+description = "Argentum User Account component API"
+version = "0.2.0-dev"
+edition = "2021"
+
+[dependencies]
+argentum_log_business = { path = "../argentum_log/business" }
+argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
+argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
+argentum_user_account_rest = { path = "../rest" }
+tokio = { version = "1.34.*", features = ["full"] }
+....
+
+.main.rs
+[source,rust]
+....
+mod di;
+
+use crate::di::di_factory;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let di = di_factory().await;
+    di.server.serve().await
+}
+....
+
+.di.rs
+[source,rust]
+....
+use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_infrastructure::stdout::PrettyWriter;
+use argentum_rest_infrastructure::service::{RouterCombinator, Server};
+use std::net::SocketAddr;
+
+use argentum_rest_infrastructure::RestDiC;
+use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use argentum_user_account_rest::ApiDiC;
+use dotenv::dotenv;
+use std::sync::Arc;
+
+pub struct DiC {
+    // Public services
+    pub server: Arc<Server>,
+}
+
+impl DiC {
+    pub fn new(server: Arc<Server>) -> DiC {
+        DiC { server }
+    }
+}
+
+pub async fn di_factory() -> DiC {
+    dotenv().ok();
+
+    let log_writer = Arc::new(PrettyWriter::new());
+    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+
+    //TODO: create instance of
+    let user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>;
+    // ...
+
+    let rest_di = RestDiC::new(logger.clone(), user_authenticates_with_token_uc);
+
+    let u_api_di = ApiDiC::new(
+        "/api/v1".to_string(),
+        rest_di.request_transformer.clone(),
+        rest_di.bearer_authenticator.clone(),
+        // Implementations of handler traits (`use argentum_user_account_rest::server::handler::*`)
+        //...
+        rest_di.error_pre_handler.clone(),
+    );
+
+    let listen = "0.0.0.0:8080";
+    // or something like that:
+    // let listen = "172.18.0.1:8080";
+    // let listen = "127.0.0.1:8080";
+    let addr: SocketAddr = listen.parse().expect("Unable to parse socket address");
+
+    let router = Arc::new(RouterCombinator::new(
+        vec![
+            u_api_di.router,
+            //other routers
+        ],
+        rest_di.error_pre_handler,
+    ));
+
+    let server = Arc::new(Server::new(
+        addr,
+        router, // or just u_api_di.router
+        rest_di.response_transformer,
+        rest_di.error_handler,
+        logger,
+    ));
+
+    DiC::new(server)
+}
+
+....
+

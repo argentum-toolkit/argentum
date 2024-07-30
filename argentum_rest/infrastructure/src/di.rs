@@ -1,9 +1,10 @@
 use crate::service::{
     BearerAuthenticator, ErrorHandler, ErrorPreHandler, HeaderParamsExtractor, PathParamsExtractor,
-    RequestTransformer, ResponseToJsonTransformer, SchemaExtractor, ValidationErrorTransformer,
+    QueryParamsExtractor, RequestTransformer, ResponseToJsonTransformer, SchemaExtractor,
+    ValidationErrorTransformer,
 };
 use argentum_log_business::LoggerTrait;
-use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct RestDiC {
@@ -20,17 +21,21 @@ impl RestDiC {
         user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
     ) -> Self {
         let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
-        let schema_extractor = Arc::new(SchemaExtractor::new(validation_error_transformer.clone()));
+        let schema_extractor = Arc::new(SchemaExtractor::new());
         let header_params_extractor = Arc::new(HeaderParamsExtractor::new(
             validation_error_transformer.clone(),
         ));
+        let path_params_extractor = Arc::new(PathParamsExtractor::new(
+            validation_error_transformer.clone(),
+        ));
+        let query_params_extractor =
+            Arc::new(QueryParamsExtractor::new(validation_error_transformer));
 
-        let path_params_extractor =
-            Arc::new(PathParamsExtractor::new(validation_error_transformer));
         let request_transformer = Arc::new(RequestTransformer::new(
             schema_extractor,
             header_params_extractor,
             path_params_extractor,
+            query_params_extractor,
         ));
         let response_transformer = Arc::new(ResponseToJsonTransformer::new());
         let error_pre_handler = Arc::new(ErrorPreHandler::new());

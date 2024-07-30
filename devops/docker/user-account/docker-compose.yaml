@@ -1,13 +1,12 @@
-version: "3.8"
-
 services:
   service.user_account.db:
-    image: 'postgres:13.4'
+    image: 'postgres:16.1'
+    command: -c jit=off
     environment:
       - POSTGRES_DB=${POSTGRES_DB_FOR_ARGENTUM_USER_ACCOUNT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-#    user: $HOST_UID:$HOST_GID
+    #    user: $HOST_UID:$HOST_GID
     volumes:
       - ../../../var/db/user_account/data:/var/lib/postgresql/data
     tmpfs:

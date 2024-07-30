@@ -1,9 +1,10 @@
-openapi: 3.0.3
+openapi: 3.1.0
 
 info:
   title: User Account component's request bodies
-  version: 0.1.0-dev
-paths: {}
+  version: 0.2.0-dev
+
+paths: { }
 
 components:
   requestBodies:

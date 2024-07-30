@@ -1,0 +1,43 @@
+{{~#each operations as |operation|~}}
+    use crate::server::handler::{{upper_camel operation.operationId}}Trait;
+{{~/each~}}
+
+use crate::server::{UserAccountPreHandler, Router};
+use argentum_rest_infrastructure::service::{
+    BearerAuthenticator, ErrorPreHandler, RequestTransformer,
+};
+use std::sync::Arc;
+
+pub struct ApiDiC {
+    pub router: Arc<Router>,
+}
+
+impl ApiDiC {
+    pub fn new(
+        //config
+        url_prefix: String,
+        //services
+        request_transformer: Arc<RequestTransformer>,
+        bearer_auth: Arc<BearerAuthenticator>,
+        {{#each operations as |operation|}}
+            {{snake operation.operationId}}_handler: Arc<dyn {{upper_camel operation.operationId}}Trait>,
+        {{/each}}
+        error_pre_handler: Arc<ErrorPreHandler>,
+    ) -> Self {
+        let pre_handler = Arc::new(UserAccountPreHandler::new(
+            request_transformer,
+            bearer_auth,
+            {{#each operations as |operation|}}
+                {{snake operation.operationId}}_handler,
+            {{/each}}
+        ));
+
+        let router = Arc::new(Router::new(
+            pre_handler,
+            error_pre_handler,
+            url_prefix,
+        ));
+
+        ApiDiC { router }
+    }
+}

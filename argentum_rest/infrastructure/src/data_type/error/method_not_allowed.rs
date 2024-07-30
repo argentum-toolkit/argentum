@@ -1,17 +1,19 @@
 use hyper::Method;
 use serde::{Serialize, Serializer};
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct MethodNotAllowedError {
     pub method: Method,
 }
 
-impl ToString for MethodNotAllowedError {
-    fn to_string(&self) -> String {
-        format!(
+impl Display for MethodNotAllowedError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = format!(
             "Method {} not allowed for this endpoint",
             self.method.as_str()
-        )
+        );
+        write!(f, "{}", str)
     }
 }
 impl Serialize for MethodNotAllowedError {

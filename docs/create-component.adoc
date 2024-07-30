@@ -1,7 +1,9 @@
 = Create New Component
 
 == Example
-You can look at `Argentum User` component. It can be good example of component which contains:
+
+You can look at `Argentum User` component.
+It can be good example of component which contains:
 
 * clean business logic (`business`)
 * API documentation (`api-doc`)
@@ -9,11 +11,13 @@ You can look at `Argentum User` component. It can be good example of component w
 * Infrastructure code which interacts with "real world" (`infrastructure`)
 ** Database migrations (`migrations`)
 ** HTTP layer built on `Argentum Rest` (`src/rest`)
-** Data persistence layer built on `Diesel ORM` (`src/db_diesel`)
+** Data persistence layer built on `SQLX` (`src/db`)
 
 == Create file structure
 
 TBD
+
+NOTE:    As examples you can look at `argentum_user` and `argentum_user_account` components
 
 == How to create new package
 
@@ -26,61 +30,43 @@ TBD
 ** configure `Cargo.toml` parameters
 * create `readme.adoc` file
 
-=== Add Diesel ORM support if required
+=== Add Database support if required
 
 WARNING:    You should do it only for infrastructure packages if it is required.
 Business packages must not be dependent on 3rd party code.
 
-NOTE:   Diesel ORM manual https://diesel.rs/guides/getting-started
-
 * Configure environment
 ** Add new variable to `.env` `POSTGRES_DB_FOR_{$componentName}`=`$dbName`
-** Add new variable with connection string to `.env`. E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
+** Add new variable with connection string to `.env`.
+E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
 * Add new BD service to 'docker-compose.yaml' with name `service.{$componentName}.db`
 * Add dependencies to `Cargo.toml`
-** `diesel = { version = "1.4.4", features = ["postgres", "r2d2", "uuidv07", "chrono"] }`
+** `argentum_standard_business = { path = "../../argentum_standard/business" }`
+** `argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }`
+** `sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }`
 ** `dotenv = "0.15.0"`
 ** `chrono = { version = "0.4.19", features = ["serde"] }`
 ** `serde = { version = "1.0", features = ["derive"] }`
-** `uuid = { version = "0.8", features = ["serde", "v4"] }`
+** `uuid = { version = "1.4", features = ["serde", "v4"] }`
 
-* Setup diesel
-`DATABASE_URL=postgres://dev:dev@*:54321/argentum_user diesel setup`
-* Update diesel.toml
-`file = "src/db_diesel/schema.rs"`
-* Create folder `{$componentName}/infrastructure/src/db_diesel`
-* Create migrations `DATABASE_URL=postgres://dev:dev@*:54321/argentum_user diesel migration generate create_argentum_user`
-* Write the SQL for migrations (`up.sql`)
-* `DATABASE_URL=postgres://dev:dev@*:54321/argentum_user diesel migration run`
-* Init a connection manager in `di.rs`
-`let user_pg_connection_pool_manager = Arc::new(ConnectionPoolManager::new("AG_USER_DATABASE_URL"));`
-* Add it as a dependency to your repositories
-* Create file `src/diesel_db/models.rs`
-
+* Create DB module
+** Create folder `src/db`
+** Create subfolders `dto`, `migration`, `repository`
+** Add `dto` files
+** Add `repository` structs
+** Add `migration`
+** Init a connection pool in `di.rs`
 
 NOTE: When you create a new DB for a new component we recommend you make `name of DB`
-equal to the name of the component. E.g. for component with name `User` we will create db with name `argentum_user`
+equal to the name of the component.
+E.g. for component with name `User` we will create db with name `argentum_user`
 
 == How we work with OpenAPI
 
-Pull new version of OpenAPI generators image
-[source, bash]
-....
-$ docker pull openapitools/openapi-generator-cli:v6.6.0
-....
+=== Create OpenAPI documentation (
 
-How to generate a library with code clients and servers code
-[source, bash]
-....
-$ docker run --rm \
-    -v "${PWD}:/local" \
-    -u $(id -u ${USER}):$(id -g ${USER}) \
-    openapitools/openapi-generator-cli:v6.6.0 generate \
-        -i /local/argentum_user_account/api-doc/openapi.yaml \
-        -g rust-server \
-        -t /local/openapi-templates/rust-server \
-        -o /local/argentum_user_account/api \
-        -c /local/argentum_user_account/api-doc/openapi.config.json
+Basically we use that path `api-doc/openapi.yaml`
 
-$ cargo fmt --manifest-path argentum_user_account/api/Cargo.toml
-....
+=== Generate REST API library with code generator
+
+link:../argentum_rest_generator_app/readme.adoc[Argentum REST Generator]

@@ -1,58 +1,70 @@
-openapi: 3.0.3
+openapi: 3.1.0
 
 info:
   title: User Account component's types (schemas)
-  version: 0.1.0-dev
-paths: {}
+  version: 0.2.0-dev
+paths: { }
 
 components:
   schemas:
     RegistrationWithPasswordSchema:
+      type: object
       properties:
         email:
           type: string
           format: email
+          example: test-email@test-email.com
         name:
-          $ref: '../../argentum_user/api-doc/types.oas.yaml#/components/schemas/UserName'
+          $ref: '../../argentum_user/api-doc/type.oas.yaml#/components/schemas/UserName'
         password:
           type: string
           format: password
+          example: secure-password
       required:
         - email
         - name
         - password
 
     AnonymousRegistrationResult:
+      type: object
       properties:
-        aonymous_id:
+        anonymous_id:
           type: string
           format: uuid
+          example: c8cabaac-8359-463a-9cce-954eff31e063
         token:
           type: string
+          example: token-example
       required:
-        - aonymous_id
+        - anonymous_id
         - token
 
     RegistrationWithPasswordResult:
+      type: object
       properties:
         id:
           type: string
           format: uuid
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
       required:
         - id
 
     LoginResult:
+      type: object
       properties:
         user_id:
           type: string
           format: uuid
+          example: dd7ea831-ad64-429f-9839-a44c84c74550
         token:
           type: string
+          example: token-example
       required:
         - user_id
         - token
 
     LoginWithPasswordSchema:
+      type: object
       properties:
         email:
           type: string
@@ -67,6 +79,7 @@ components:
         - password
 
     RequestRestoreTokenSchema:
+      type: object
       properties:
         email:
           type: string
@@ -76,12 +89,15 @@ components:
         - email
 
     ChangePasswordSchema:
+      type: object
       properties:
         token:
           type: string
+          example: token-example
         password:
           type: string
           format: password
+          example: secure-password
       required:
         - token
         - password

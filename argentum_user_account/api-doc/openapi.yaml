@@ -1,10 +1,9 @@
-openapi: 3.0.3
+openapi: 3.1.0
 
 info:
-  title: Demo app
-  version: 0.1.0-dev
-
-  description: This is demo app
+  title: Argentum User Account component API
+  version: 0.2.0-dev
+  description: User Account API
   license:
     name: BSD-3
 
@@ -37,30 +36,24 @@ externalDocs:
   url: https://gitlab.com/argentum-toolkit/argentum
 
 paths:
-  /user/anonymous-register:
+  /user-account/anonymous-register:
     post:
       summary: Anonymous registers
       description: Anonymous registers without any data
       tags:
         - anonymous
-      operationId: anonymousRegisters
-      requestBody:
-        $ref: "../../argentum_standard/api-doc/request.oas.yaml#/components/requestBodies/Empty"
+      operationId: AnonymousRegisters
       responses:
         '201':
           $ref: "./response.oas.yaml#/components/responses/AnonymousRegisteredSuccessfully"
-        '400':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '422':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
 
-  /user/register:
+  /user-account/register:
     post:
       summary: User registers with password
       description: User registers with email and password
       tags:
         - user-account
-      operationId: registerWithPassword
+      operationId: UserRegistersWithPassword
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -73,13 +66,13 @@ paths:
         '422':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
 
-  /user/password-login:
+  /user-account/password-login:
     post:
       summary: Login as an user
       description: Login as an user
       tags:
         - user-account
-      operationId: loginWithPassword
+      operationId: UserLoginsWithPassword
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -93,13 +86,13 @@ paths:
         '401':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
 
-  /user/restore-password/token-request:
+  /user-account/restore-password/token-request:
     post:
       summary: Anonymous requests restore password token
       description: Requested token and link will be sent to email
       tags:
         - user-account
-      operationId: requestRestoreToken
+      operationId: AnonymousRequestsRestoreToken
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -119,7 +112,7 @@ paths:
       description: Final step of restoring password process
       tags:
         - user-account
-      operationId: changePasswordWithToken
+      operationId: AnonymousWithTokenChangesPassword
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -138,6 +131,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+      in: header
 
 tags:
   - name: anonymous

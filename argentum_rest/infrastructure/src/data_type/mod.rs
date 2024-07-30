@@ -1,3 +1,4 @@
+mod deserializable_schema_raw;
 pub mod error;
 mod http_request;
 pub mod http_response;
@@ -5,10 +6,11 @@ mod problem_detail;
 
 use bytes::Bytes;
 use http_body_util::Full;
+pub use http_response::EmptyBody;
 use hyper::body::Incoming as IncomingBody;
 use hyper::{http, Error, HeaderMap, Method};
 
-pub use http_response::EmptyBody;
+pub use deserializable_schema_raw::DeserializableSchemaRaw;
 pub use http_response::HttpResponse;
 pub use http_response::SerializableBody;
 
@@ -43,10 +45,12 @@ impl RequestTrait for Request {
 pub use http_request::AuthHeaderParams;
 pub use http_request::EmptyHeaderParams;
 pub use http_request::EmptyPathParams;
+pub use http_request::EmptyQueryParams;
 pub use http_request::EmptyRequestBody;
 pub use http_request::HttpHeaderParams;
 pub use http_request::HttpParams;
 pub use http_request::HttpPathParams;
+pub use http_request::HttpQueryParams;
 pub use http_request::HttpRequest;
 pub use problem_detail::ProblemDetail;
 pub use problem_detail::ProblemDetailExtension;

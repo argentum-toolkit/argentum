@@ -1,10 +1,10 @@
-use crate::api::dto::request::UserRegistersWithPasswordRequest;
 use argentum_rest_infrastructure::data_type::error::{BadRequestError, HttpError};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
+use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
 use argentum_user_business::data_type::builder::NameBuilder;
 use argentum_user_business::data_type::Name;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 pub struct DtoToUserRegistersWithPasswordParams {}
 
@@ -17,7 +17,7 @@ impl DtoToUserRegistersWithPasswordParams {
         &self,
         req: UserRegistersWithPasswordRequest,
     ) -> Result<(Name, EmailAddress, String), HttpError> {
-        let mut vo = HashMap::new();
+        let mut vo = BTreeMap::new();
 
         let raw_name = req.body.name.clone();
         let name_result = NameBuilder::new(raw_name.first)
@@ -47,6 +47,7 @@ impl DtoToUserRegistersWithPasswordParams {
         } else {
             Err(HttpError::BadRequest(BadRequestError::new(
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),
+                Violations::new(vec![], None),
                 Violations::new(vec![], None),
                 Violations::new(vec![], None),
             )))

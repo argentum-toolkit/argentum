@@ -1,0 +1,328 @@
+openapi: 3.1.0
+info:
+  contact:
+    url: https://gitlab.com/argentum-toolkit/argentum
+  description: User Account API
+  license:
+    name: BSD-3
+  title: Argentum User Account component API
+  version: 0.2.0-dev
+externalDocs:
+  description: Find more info here
+  url: https://gitlab.com/argentum-toolkit/argentum
+servers:
+- description: Dev API Server with CORS
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8082'
+      enum:
+      - '8082'
+- description: The production API server
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8080'
+      enum:
+      - '80'
+      - '8080'
+tags:
+- description: Managing of the anonymous
+  name: anonymous
+- description: Managing of the user account
+  name: user-account
+paths:
+  /user-account/anonymous-register:
+    post:
+      description: Anonymous registers without any data
+      operationId: AnonymousRegisters
+      tags:
+      - anonymous
+      summary: Anonymous registers
+      responses:
+        '201':
+          $ref: '#/components/responses/AnonymousRegisteredSuccessfully'
+  /user-account/password-login:
+    post:
+      description: Login as an user
+      operationId: UserLoginsWithPassword
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/LoginWithPasswordRequestBody'
+      summary: Login as an user
+      responses:
+        '200':
+          $ref: '#/components/responses/UserLoggedInSuccessfully'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+  /user-account/register:
+    post:
+      description: User registers with email and password
+      operationId: UserRegistersWithPassword
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/RegistrationWithPasswordRequestBody'
+      summary: User registers with password
+      responses:
+        '201':
+          $ref: '#/components/responses/UserRegisteredSuccessfully'
+        '400':
+          $ref: '#/components/responses/400'
+        '422':
+          $ref: '#/components/responses/422'
+  /user-account/restore-password/token-request:
+    post:
+      description: Requested token and link will be sent to email
+      operationId: AnonymousRequestsRestoreToken
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
+      summary: Anonymous requests restore password token
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+  /user/restore-password/change-password:
+    post:
+      description: Final step of restoring password process
+      operationId: AnonymousWithTokenChangesPassword
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/ChangePasswordRequestBody'
+      summary: User with token changes his password
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+components:
+  requestBodies:
+    ChangePasswordRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChangePasswordSchema'
+      description: Required data to change password with token
+      required: true
+    LoginWithPasswordRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginWithPasswordSchema'
+      description: Required data to login with email and password
+      required: true
+    RegistrationWithPasswordRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrationWithPasswordSchema'
+      description: Data required to register with email and password
+      required: true
+    RequestRestoreTokenRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestRestoreTokenSchema'
+      description: Required data to get restore password token
+      required: true
+  schemas:
+    AnonymousRegistrationResult:
+      required:
+      - anonymous_id
+      - token
+      properties:
+        anonymous_id:
+          example: c8cabaac-8359-463a-9cce-954eff31e063
+          type: string
+          format: uuid
+        token:
+          example: token-example
+          type: string
+      type: object
+    ChangePasswordSchema:
+      required:
+      - token
+      - password
+      properties:
+        password:
+          example: secure-password
+          type: string
+          format: password
+        token:
+          example: token-example
+          type: string
+      type: object
+    EmptyResponse:
+      title: Empty response
+      type: null
+    LoginResult:
+      required:
+      - user_id
+      - token
+      properties:
+        token:
+          example: token-example
+          type: string
+        user_id:
+          example: dd7ea831-ad64-429f-9839-a44c84c74550
+          type: string
+          format: uuid
+      type: object
+    LoginWithPasswordSchema:
+      required:
+      - email
+      - password
+      properties:
+        email:
+          example: test-email@test-email.com
+          type: string
+          format: email
+        password:
+          example: secure-password
+          type: string
+          format: password
+      type: object
+    ProblemDetail:
+      title: Schema for error response
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+      - code
+      - title
+      properties:
+        code:
+          example: '401'
+          maximum: 599.0
+          minimum: 400.0
+          type: integer
+          format: int32
+        message:
+          example: '{"some": "json"}'
+          type: string
+      type: null
+    RegistrationWithPasswordResult:
+      required:
+      - id
+      properties:
+        id:
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+          type: string
+          format: uuid
+      type: object
+    RegistrationWithPasswordSchema:
+      required:
+      - email
+      - name
+      - password
+      properties:
+        email:
+          example: test-email@test-email.com
+          type: string
+          format: email
+        name:
+          $ref: '#/components/schemas/UserName'
+        password:
+          example: secure-password
+          type: string
+          format: password
+      type: object
+    RequestRestoreTokenSchema:
+      required:
+      - email
+      properties:
+        email:
+          example: test-email@test-email.com
+          type: string
+          format: email
+      type: object
+    UserName:
+      required:
+      - first
+      properties:
+        first:
+          example: Winston
+          maxLength: 255
+          minLength: 1
+          type: string
+        last:
+          example: Marko
+          maxLength: 255
+          minLength: 1
+          type: string
+        patronymic:
+          maxLength: 255
+          minLength: 1
+          type: string
+      type: object
+  responses:
+    '400':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Bad request
+    '401':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Unauthorized
+    '422':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Unprocessable Entity
+    AnonymousRegisteredSuccessfully:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AnonymousRegistrationResult'
+      description: Created
+    EmptyOk:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmptyResponse'
+      description: OK
+    UserLoggedInSuccessfully:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginResult'
+      description: OK
+    UserRegisteredSuccessfully:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegistrationWithPasswordResult'
+      description: Created
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+      name: ''
+      in: header
+      open_id_connect_url: ''

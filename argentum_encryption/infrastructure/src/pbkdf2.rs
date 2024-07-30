@@ -52,6 +52,7 @@ impl Validator for Pbkdf2 {
     fn validate(&self, password: &str, salt: &str, encoded_password: &str) -> bool {
         let n_iter: NonZeroU32 = NonZeroU32::new(100000).unwrap();
 
+        //TODO: check errors instead of unwrap
         let should_succeed = pbkdf2::verify(
             pbkdf2::PBKDF2_HMAC_SHA512,
             n_iter,

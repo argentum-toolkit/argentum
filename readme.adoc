@@ -6,13 +6,15 @@
 toc::[]
 
 == Why "Argentum"?
+
 Argentum ToolKit was made to provide the easiest way to implement microservices and back-end applications on Rust programming language.
 Our goal is to allow everyone to create applications without deep knowledge of Rust.
-Of course knowledge of the Rust will be great advantage. But Argentum ToolKit helps you make your first steps as easy as possible and will save much time in the future.
+Of course knowledge of the Rust will be great advantage.
+But Argentum ToolKit helps you make your first steps as easy as possible and will save much time in the future.
 Your learning process will be iterative and easier than without Argentum ToolKit.
 
 .Steps to be ready to create effective applications with Argentum ToolKit
-[plantuml, format="svg"]
+[plantuml,format="svg"]
 ----
 :Run Argentum Demo Application;
 :Read Basic Rust Documentation;
@@ -37,12 +39,18 @@ It is easy with link:docs/quick-start.adoc[Quick Start Guide]
 * link:argentum_event/readme.adoc[Argentum Event]
 * link:argentum_log/readme.adoc[Argentum Log]
 * link:argentum_notification/readme.adoc[Argentum Notification]
+* link:argentum_openapi/infrastructure/readme.adoc[Argentum OpenAPI parser]
+* link:argentum_rest/infrastructure/readme.adoc[Argentum Notification]
 * link:argentum_standard/readme.adoc[Argentum Standard]
 * link:argentum_user/readme.adoc[Argentum User]
 * link:argentum_user_account/readme.adoc[Argentum User Account]
 
+== Tools documentation
+
+* link:argentum_rest_generator_app/readme.adoc[Argentum REST Generator]
 
 == Argentum ToolKit Architecture. Short description
+
 Argentum ToolKit project is composed of components.
 Each component is usually split to several crates:
 
@@ -51,20 +59,20 @@ Each component is usually split to several crates:
 - OpenAPI documentation (Swagger)
 - Generated API package
 
-What is **abstractions**? Abstractions are a clean business model.
+What is **abstractions**?
+Abstractions are a clean business model.
 It is the main core of the project which responsible for only business logic.
 A Business package should not depend on 3-rd party packages it is possible.
 To follow this restriction you should use Dependency Inversion Principle.
 
-What is **details**? Details are: database adapters, RESTful API, RPC API
-and other connections with world.
+What is **details**?
+Details are: database adapters, RESTful API, RPC API and other connections with world.
 
 NOTE: Of course, you are free to follow other project structures.
-However, we advise you to pay maximum attention to the business logic of your application
-and separate it from the infrastructure.
+However, we advise you to pay maximum attention to the business logic of your application and separate it from the infrastructure.
 
 .The main idea of the architecture of Argentum ToolKit
-[plantuml, format="svg"]
+[plantuml,format="svg"]
 ----
 rectangle "Argentum ToolKit" {
     component Encryption as e {
@@ -76,13 +84,9 @@ rectangle "Argentum ToolKit" {
 }
 ----
 
+WARNING: Package with business logic should be independent or should depend only on other business packages.
 
-WARNING: Package with business logic should be independent
-or should depend only on other business packages.
-
-NOTE: Infrastructure packages can depend on business packages,
-on other infrastructure packages
-or on 3-rd party packages.
+NOTE: Infrastructure packages can depend on business packages, on other infrastructure packages or on 3-rd party packages.
 
 WARNING: Circular dependencies are forbidden.
 
@@ -116,26 +120,51 @@ $ devops/scripts/check.sh
 $ devops/scripts/check-item.sh {{package-name}}
 ....
 
-
 === Allowed 3-rd party packages for business packages of Argentum ToolKit
 
 * *thiserror* - errors
 * *chrono* - time
 
-
 == TODO
 
-* New type for Password
-* add examples to OpenAPI doc
-* validation
+=== V0.2
+
+* build scripts to push artifacts
+
+=== V0.3
+
+* DI builders: make it similar
+* behaviour tests
+
+* performance optimization
+
+* rest-generator
+** scripts to simplify generation of API library
+** publish generator to hub.docker.com
+** create regex factory for all types of `path params`
+** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
+** generate `query params`
+** generate embedded objects
+** tests
+** fix generator for cases when string field parses as integer
+
+* Configure Cargo for local development and for release as described there https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
+
+* Profiling
+
+* DB
+** table names as a const or as a param
+** Move DB to new database component
+** ?Foreign key for session
 
 * documentation
+** ADR
 ** codegen
 ** other?
-* Custom API generator
-* OpenTelemetry
-* build scripts (behaviour tests, push artifacts)
+
+* New type for Password
 * run docker images as a local user
-* https://crates.io/crates/cargo-release
+* OpenTelemetry
+
 * notifications
 * macro for creation Id types (for user, for account for event)

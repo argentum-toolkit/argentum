@@ -1,9 +1,12 @@
+use crate::data_type::DeserializableSchemaRaw;
+use argentum_standard_business::invariant_violation::InvariantResult;
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use serde_valid::Validate;
 
 pub trait HttpRequest {
-    type Body: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>;
+    type Body: for<'a> DeserializableSchemaRaw<'a>;
+
     type Params: HttpParams;
 
     fn new(body: Self::Body, params: Self::Params) -> Self;
@@ -14,14 +17,15 @@ pub trait HttpRequest {
 }
 
 pub trait HttpParams {
-    //TODO: implement Query
-    // type Query;
-    type Path: HttpPathParams;
-
     type Headers: HttpHeaderParams;
 
-    fn new(path: Self::Path, headers: Self::Headers) -> Self;
-    // fn query(&self) -> Self::Query;
+    type Path: HttpPathParams;
+
+    type Query: HttpQueryParams;
+
+    fn new(path: Self::Path, query: Self::Query, headers: Self::Headers) -> Self;
+
+    fn query(&self) -> &Self::Query;
 
     fn path(&self) -> &Self::Path;
 
@@ -30,12 +34,20 @@ pub trait HttpParams {
 
 pub trait HttpPathParams: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a> {}
 
+//TODO: think about alternative for serialize and deserialize
+pub trait HttpQueryParams: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a> {}
+
 pub trait HttpHeaderParams: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a> {}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct EmptyPathParams {}
 
 impl HttpPathParams for EmptyPathParams {}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct EmptyQueryParams {}
+
+impl HttpQueryParams for EmptyQueryParams {}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct EmptyHeaderParams {}
@@ -55,5 +67,17 @@ impl AuthHeaderParams {
 
 impl HttpHeaderParams for AuthHeaderParams {}
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EmptyRequestBody {}
+
+//TODO: ???use one body for response and for request
+impl DeserializableSchemaRaw<'_> for EmptyRequestBody {
+    type Raw = EmptyRequestBodySchemaRaw;
+
+    fn try_from_raw(_raw: Self::Raw) -> InvariantResult<Self> {
+        Ok(EmptyRequestBody {})
+    }
+}
+
+#[derive(serde::Deserialize)]
+pub struct EmptyRequestBodySchemaRaw {}

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
-pub type ViolationObject = HashMap<String, Violations>;
+pub type ViolationObject = BTreeMap<String, Violations>;
 pub type ViolationArray = Vec<Violations>;
 pub type InvariantResult<T> = Result<T, Violations>;
 
@@ -50,7 +50,7 @@ impl From<&str> for Violations {
 #[cfg(test)]
 mod tests {
     use crate::invariant_violation::{ViolationItem, Violations};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     const TEST_ERROR: &str = "Test error";
     const ANOTHER_ERROR: &str = "Another error";
@@ -94,7 +94,7 @@ mod tests {
             assert!(b.is_empty())
         }
         {
-            let b = ViolationItem::Object(HashMap::from([]));
+            let b = ViolationItem::Object(BTreeMap::from([]));
             assert!(b.is_empty())
         }
     }
@@ -108,7 +108,7 @@ mod tests {
         }
 
         {
-            let b = ViolationItem::Object(HashMap::from([(
+            let b = ViolationItem::Object(BTreeMap::from([(
                 "some-field-name".to_string(),
                 Violations::new(vec![], None),
             )]));

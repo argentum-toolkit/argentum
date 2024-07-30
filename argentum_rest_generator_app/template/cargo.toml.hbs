@@ -1,0 +1,37 @@
+[package]
+name = "{{ packageName }}"
+description = "{{ description }}"
+version = "{{ version }}"
+{{#if license}}
+license = "{{ license.name }}"
+{{#if license.url}}
+license-file = "{{ license.url }}"
+{{/if}}
+{{/if}}
+edition = "2021"
+
+{{#if homepage}}
+homepage = "{{ homepage }}"
+{{/if}}
+{{#if repository}}
+repository = "{{ repository }}"
+{{/if}}
+{{#if documentation}}
+documentation = "{{ documentation }}"
+{{/if}}
+readme = "readme.adoc"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }
+
+async-trait = "0.1.*"
+hyper = { version = "1.0.0", features = ["full"] }
+erased-serde = "0.3.*"
+regex = "1.10.*"
+serde = { version = "1.0.*", features = ["derive"] }
+serde_valid = "0.16.*"
+uuid = {version = "1.5.*", features = ["serde", "v4"]}

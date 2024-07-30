@@ -1,0 +1,7 @@
+{{#each responseNames as |responseName|}}
+mod {{snake responseName}}_response;
+{{/each}}
+
+{{#each responseNames as |responseName|}}
+pub use {{snake responseName}}_response::{{upper_camel responseName}}Response;
+{{/each}}

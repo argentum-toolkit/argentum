@@ -1,0 +1,47 @@
+openapi: 3.1.0
+
+info:
+  title: User component's types (schemas)
+  version: 0.2.0-dev
+
+paths: { }
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+        email:
+          type: string
+          format: email
+          example: test-email@test-email.com
+        name:
+          $ref: '#/components/schemas/UserName'
+      required:
+        - email
+        - name
+
+    UserName:
+      type: object
+      properties:
+        first:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Winston
+        last:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: Marko
+        patronymic:
+          type: string
+          minLength: 1
+          maxLength: 255
+
+      required:
+        - first

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   swagger-ui:
     image: swaggerapi/swagger-ui
@@ -10,5 +8,6 @@ services:
       - ../../..:/usr/share/nginx/html/doc
     environment:
       URLS: "[
-                { url: 'doc/argentum_user_account/api/api/openapi.yaml', name: 'User Account'},
+                { url: 'doc/argentum_user_account/api-doc/openapi.yaml', name: 'User Account'},
+                { url: 'doc/argentum_user/api-doc/openapi.yaml', name: 'User'},
             ]"

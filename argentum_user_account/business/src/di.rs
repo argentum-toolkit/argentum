@@ -1,17 +1,14 @@
 use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
 use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
-use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
 use crate::mock::token::TokenGeneratorMock;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
 use crate::repository::password_credential_writer::PasswordCredentialWriter;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-use crate::repository::session_repository::SessionRepositoryTrait;
 use crate::token::GeneratorTrait;
 use crate::use_case::anonymous_registers::AnonymousRegistersUc;
 use crate::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
 use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
-use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
 use crate::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
 use argentum_encryption_business::password::{Encryptor, Validator};
@@ -21,10 +18,13 @@ use argentum_standard_business::data_type::id::IdFactory;
 use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
 use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
 use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
 use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
+use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct BusinessDiC {

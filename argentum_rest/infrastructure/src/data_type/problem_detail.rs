@@ -32,10 +32,7 @@ impl ProblemDetail {
         detail: Option<String>,
         extension: Option<Box<dyn ProblemDetailExtension>>,
     ) -> Self {
-        let problem_type = match problem_type {
-            None => PROBLEM_TYPE_BLANK.to_string(),
-            Some(s) => s,
-        };
+        let problem_type = problem_type.unwrap_or_else(|| PROBLEM_TYPE_BLANK.to_string());
 
         Self {
             problem_type,
@@ -76,6 +73,7 @@ mod tests {
             let problem_type = "https://example.com/test".to_string();
             let detail = "Some description".to_string();
             let ext = Box::new(BadRequestError::new(
+                Violations::new(vec![], None),
                 Violations::new(vec![], None),
                 Violations::new(vec![], None),
                 Violations::new(vec![], None),

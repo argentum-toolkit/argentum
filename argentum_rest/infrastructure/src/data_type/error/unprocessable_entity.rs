@@ -1,14 +1,15 @@
 use serde::{Serialize, Serializer};
 use std::error::Error;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct UnprocessableEntity {
     pub source: Box<dyn Error>,
 }
 
-impl ToString for UnprocessableEntity {
-    fn to_string(&self) -> String {
-        self.source.to_string()
+impl Display for UnprocessableEntity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.source)
     }
 }
 

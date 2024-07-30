@@ -1,18 +1,21 @@
 :source-highlighter: rouge
 
-= Invariant Violation
+= 001 Invariant Violation
 
 == Context and Problem Statement
-Requests validation, error handling and model integrity are important parts of robust application. User-friendly error messages are necessary to achieve good user experience. This document describes the way how to write robust code with pretty error messages.
 
+Requests validation, error handling and model integrity are important parts of robust application.
+User-friendly error messages are necessary to achieve good user experience.
+This document describes the way how to write robust code with pretty error messages.
 
 === Why we don't use validators
 
-Validation assumes that data type instance can be in a valid or invalid state. We design our types to be always valid.
+Validation assumes that data type instance can be in a valid or invalid state.
+We design our types to be always valid.
 
-Validators bring *temporal coupling*. It means that we should be sure that instance of data type will be validated before first usage. In our case, we have instance of data type that will be consistent independent of previous operations.
-
-
+Validators bring *temporal coupling*.
+It means that we should be sure that instance of data type will be validated before first usage.
+In our case, we have instance of data type that will be consistent independent of previous operations.
 
 == Decision
 
@@ -23,7 +26,7 @@ Validators bring *temporal coupling*. It means that we should be sure that insta
 Struct `Violations` contains fields `errors` for his own errors and `items` for violations of internal fields.
 
 .Example
-[source, rust]
+[source,rust]
 ----
 pub struct EmailAddress(String);
 
@@ -52,10 +55,11 @@ impl EmailAddress {
 
 === Handling of nested objects
 
-In this case we recommend to use `builder`. It means that builder will collect raw data, but constructor of custom type will receive only valid parameters.
+In this case we recommend to use `builder`.
+It means that builder will collect raw data, but constructor of custom type will receive only valid parameters.
 
 .Example
-[source, rust]
+[source,rust]
 ----
 #[derive(Clone, Debug)]
 pub struct Name {
@@ -134,11 +138,17 @@ impl NameBuilder {
 ----
 
 == Consequences +/-
-<TBD>
--
 
-== How to check (Validation)
+=== Pros (+)
+
 <TBD>
+
+=== Cons (-)
+
+<TBD>
+
+== How to check (Validation) <TBD>
 
 == Links
+
 <TBD>

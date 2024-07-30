@@ -1,4 +1,4 @@
-use crate::data_type::error::HttpError::{MethodNotAllowed, NotFound};
+use crate::data_type::error::HttpError::{MethodNotAllowed, RouteNotFound};
 use crate::data_type::error::{HttpError, MethodNotAllowedError, NotFoundError};
 use crate::data_type::{HttpResponse, RequestTrait};
 
@@ -10,8 +10,11 @@ impl ErrorPreHandler {
         ErrorPreHandler {}
     }
 
-    pub async fn not_found(&self, _request: impl RequestTrait) -> Result<HttpResponse, HttpError> {
-        Err(NotFound(NotFoundError::new(
+    pub async fn route_not_found(
+        &self,
+        _request: impl RequestTrait,
+    ) -> Result<HttpResponse, HttpError> {
+        Err(RouteNotFound(NotFoundError::new(
             "Resource not found".to_string(),
         )))
     }
@@ -55,14 +58,14 @@ mod tests {
     async fn test_handle_not_found() {
         let handler = ErrorPreHandler::new();
         let res = handler
-            .not_found(EmptyRequestMock {
+            .route_not_found(EmptyRequestMock {
                 method: Method::GET,
             })
             .await;
 
         assert!(res.is_err());
 
-        assert!(matches!(res, Err(HttpError::NotFound(_))));
+        assert!(matches!(res, Err(HttpError::RouteNotFound(_))));
     }
 
     #[tokio::test]

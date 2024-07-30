@@ -60,7 +60,7 @@ mod tests {
     pub fn test_extract() {
         let extractor = PathParamsExtractor::new(Arc::new(ValidationErrorTransformer::new()));
 
-        let params = HashMap::from([("title".to_string(), "v".to_string())]);
+        let params = HashMap::from([("title", "v")]);
         let result = extractor.extract::<ExtractMock>(params);
 
         assert!(result.is_ok());
@@ -71,7 +71,7 @@ mod tests {
     pub fn test_extract_with_wrong_params() {
         let extractor = PathParamsExtractor::new(Arc::new(ValidationErrorTransformer::new()));
 
-        let params = HashMap::from([("wrong_field".to_string(), "v".to_string())]);
+        let params = HashMap::from([("wrong_field", "v")]);
         let result = extractor.extract::<ExtractMock>(params);
 
         assert!(result.is_err());

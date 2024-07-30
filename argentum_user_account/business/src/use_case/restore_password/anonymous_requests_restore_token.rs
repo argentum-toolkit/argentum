@@ -94,7 +94,7 @@ impl AnonymousRequestsRestoreTokenUc {
             </p>
 
         ",
-            user.name.first.to_string(),
+            user.name.first,
             last,
             self.product_name,
             self.restore_password_front_url,

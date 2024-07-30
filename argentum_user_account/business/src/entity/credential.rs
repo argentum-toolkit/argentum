@@ -1,7 +1,7 @@
 use argentum_standard_business::data_type::id::Id;
 use std::any::Any;
 
-pub trait Credential {
+pub trait Credential: Send {
     fn as_any(&self) -> &dyn Any;
 }
 

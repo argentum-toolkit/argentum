@@ -1,7 +1,7 @@
 [package]
 name = "argentum_demo_app"
 description = "Demo app of argentum toolkit"
-version = "0.1.0-dev"
+version = "0.2.0-dev.1"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
@@ -11,19 +11,18 @@ documentation = "https://github.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
-#argentum_encryption_business = "0.1.0"
-argentum_encryption_business = { path = "../argentum_encryption/business", version = "0.1.0-dev" }
-argentum_encryption_infrastructure = { path = "../argentum_encryption/infrastructure" }
-argentum_event_business = { path = "../argentum_event/business", version = "0.1.0-dev" }
-argentum_notification_business = { path = "../argentum_notification/business", version = "0.1.0-dev" }
-argentum_notification_infrastructure = { path = "../argentum_notification/infrastructure", version = "0.1.0-dev" }
-argentum_standard_business = { path = "../argentum_standard/business" }
-argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure" }
-argentum_user_business = { path = "../argentum_user/business" }
-argentum_user_account_business = { path = "../argentum_user_account/business" }
-argentum_user_account_infrastructure = { path = "../argentum_user_account/infrastructure" }
-argentum_log_business = { path = "../argentum_log/business" }
-argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
-rand = "0.8.4"
+argentum_encryption_business = { path = "../argentum_encryption/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_encryption_infrastructure = { path = "../argentum_encryption/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_event_business = { path = "../argentum_event/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_notification_business = { path = "../argentum_notification/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_notification_infrastructure = { path = "../argentum_notification/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_business = { path = "../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_business = { path = "../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_account_business = { path = "../argentum_user_account/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_account_infrastructure = { path = "../argentum_user_account/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+argentum_log_business = { path = "../argentum_log/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_log_infrastructure = { path = "../argentum_log/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
+rand = "0.8.5"
 thiserror = "1.0"
-lettre = "0.10.0-rc.4"
+lettre = "0.11.*"

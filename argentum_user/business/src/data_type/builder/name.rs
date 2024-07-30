@@ -2,7 +2,7 @@ use crate::data_type::{Name, NamePart};
 use argentum_standard_business::invariant_violation::{
     InvariantResult, ViolationItem, ViolationObject, Violations,
 };
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::vec;
 
 const ERR_WRONG_NAME: &str = "Wrong name";
@@ -16,7 +16,7 @@ pub struct NameBuilder {
 
 impl NameBuilder {
     pub fn new(first: String) -> Self {
-        let mut violations = HashMap::new();
+        let mut violations = BTreeMap::new();
 
         let first_name = match NamePart::try_new(first) {
             Ok(f) => Some(f),

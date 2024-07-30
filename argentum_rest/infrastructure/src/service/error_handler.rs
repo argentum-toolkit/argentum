@@ -54,7 +54,7 @@ impl ErrorHandler {
                     )),
                 )
             }
-            HttpError::NotFound(e) => {
+            HttpError::NotFound(e) | HttpError::RouteNotFound(e) => {
                 self.logger.warning(format!("{:?}", e));
 
                 let code = StatusCode::NOT_FOUND;
@@ -150,6 +150,7 @@ mod tests {
         let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::BadRequest(BadRequestError::new(
+            Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),

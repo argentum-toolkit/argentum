@@ -8,6 +8,7 @@ use serde::{Serialize, Serializer};
 pub struct BadRequestError {
     body: Violations,
     path: Violations,
+    query: Violations,
     headers: Violations,
 }
 
@@ -26,6 +27,10 @@ impl Serialize for BadRequestError {
             state.serialize_field("path", &ViolationsDto::from(&self.path))?;
         }
 
+        if !self.query.is_empty() {
+            state.serialize_field("query", &ViolationsDto::from(&self.path))?;
+        }
+
         if !self.headers.is_empty() {
             state.serialize_field("headers", &ViolationsDto::from(&self.headers))?;
         }
@@ -35,10 +40,11 @@ impl Serialize for BadRequestError {
 }
 
 impl BadRequestError {
-    pub fn new(body: Violations, path: Violations, headers: Violations) -> Self {
+    pub fn new(body: Violations, path: Violations, query: Violations, headers: Violations) -> Self {
         Self {
             body,
             path,
+            query,
             headers,
         }
     }
@@ -54,11 +60,12 @@ mod tests {
     use argentum_standard_business::invariant_violation::ViolationItem;
     use argentum_standard_business::invariant_violation::Violations;
     use serde_json::json;
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     #[test]
     fn empty_bad_request_serialize() {
         let br = BadRequestError::new(
+            Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),
             Violations::new(vec![], None),
@@ -78,7 +85,7 @@ mod tests {
                 vec!["error1.1".to_string(), "error1.2".to_string()],
                 Some(ViolationItem::Array(vec![Violations::new(
                     vec![],
-                    Some(ViolationItem::Object(HashMap::from([(
+                    Some(ViolationItem::Object(BTreeMap::from([(
                         "str".to_string(),
                         Violations::new(vec!["error1.3".to_string()], None),
                     )]))),
@@ -91,6 +98,7 @@ mod tests {
                     None,
                 )])),
             ),
+            Violations::new(vec![], None),
             Violations::new(vec![], None),
         );
 
@@ -109,8 +117,7 @@ mod tests {
                             "str": {
                                 "errors": [
                                     "error1.3"
-                                ],
-                                "items": null
+                                ]
                             }
                         }
                     }
@@ -125,15 +132,14 @@ mod tests {
                     {
                         "errors": [
                             "error2.3"
-                        ],
-                        "items": null
+                        ]
                     }
                 ]
             }
         });
 
-        assert_eq!(false, br.body.is_empty());
-        assert_eq!(false, br.path.is_empty());
+        assert!(!br.body.is_empty());
+        assert!(!br.path.is_empty());
         assert_eq!(str, expected);
     }
 }

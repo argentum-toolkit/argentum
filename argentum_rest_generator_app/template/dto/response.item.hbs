@@ -1,0 +1,53 @@
+use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
+{{#if content}}
+use argentum_rest_infrastructure::data_type::SerializableBody;
+{{else}}
+use argentum_rest_infrastructure::data_type::http_response::NoContent;
+{{/if}}
+
+{{#each content as |schemaName|}}
+use {{schemaName}};
+{{/each}}
+
+{{#each content as |schemaName|}}
+#[derive(Clone)]
+pub struct {{content_type_to_type @key}}({{trim_mod schemaName}});
+{{/each}}
+
+{{#each content as |schemaName|}}
+impl ContentTypeResponseTrait for {{content_type_to_type @key}} {
+    fn content_type(&self) -> Option<String> {
+        Some("{{@key}}".to_string())
+    }
+
+    fn body(&self) -> Box<dyn SerializableBody> {
+        Box::new(self.0.clone())
+    }
+}
+{{/each}}
+
+pub enum {{ upper_camel responseName }}Response {
+{{#each content as |schemaName|}}
+    {{content_type_to_type @key}}({{content_type_to_type @key}})
+{{/each}}
+}
+
+impl {{ upper_camel responseName }}Response {
+{{#each content as |schemaName|}}
+    pub fn new_{{snake (content_type_to_type @key)}}(r: {{trim_mod schemaName}}) -> Self{
+        Self::{{content_type_to_type @key}}({{content_type_to_type @key}}(r))
+    }
+{{/each}}
+
+    pub fn to_content_type_response_trait(&self) -> Box<dyn ContentTypeResponseTrait> {
+    {{#if content}}
+        match self {
+            {{#each content as |schemaName|}}
+            Self::{{upper_camel (content_type_to_type @key)}}(r) => Box::new(r.clone()),
+            {{/each}}
+        }
+    {{else}}
+        NoContent::new_boxed()
+    {{/if}}
+    }
+}

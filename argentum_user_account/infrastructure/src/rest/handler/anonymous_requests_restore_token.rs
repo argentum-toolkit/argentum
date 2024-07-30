@@ -1,14 +1,14 @@
-use crate::api::dto::request::AnonymousRequestsRestoreTokenRequest;
-use crate::api::server::handler::AnonymousRequestsRestoreTokenTrait;
 use crate::rest::transformer::DtoToAnonymousRequestsRestoreTokenParams;
 use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
-use argentum_rest_infrastructure::data_type::HttpResponse;
-use argentum_user_account_api::models::EmptyResponse;
 use argentum_user_account_business::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
+use argentum_user_account_rest::dto::operation_response_enum::AnonymousRequestsRestoreTokenOperationResponseEnum;
+use argentum_user_account_rest::dto::request::AnonymousRequestsRestoreTokenRequest;
+use argentum_user_account_rest::dto::response::EmptyOkResponse;
+use argentum_user_account_rest::dto::schema::EmptyResponse;
+use argentum_user_account_rest::server::handler::AnonymousRequestsRestoreTokenTrait;
 use argentum_user_business::entity::user::User;
-use hyper::StatusCode;
 use std::sync::Arc;
 
 pub struct AnonymousRequestsRestoreTokenHandler {
@@ -38,7 +38,7 @@ impl AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler
         &self,
         req: AnonymousRequestsRestoreTokenRequest,
         _user: User,
-    ) -> Result<HttpResponse, HttpError> {
+    ) -> Result<AnonymousRequestsRestoreTokenOperationResponseEnum, HttpError> {
         let email = self
             .dto_to_anonymous_requests_restore_token_params
             .transform(req)?;
@@ -46,11 +46,11 @@ impl AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler
         let result = self.uc.execute(email);
 
         match result {
-            Ok(_) => {
-                let dto = EmptyResponse::from(serde_json::Value::Null);
-
-                Ok(HttpResponse::new(StatusCode::OK, Box::new(dto)))
-            }
+            Ok(_) => Ok(
+                AnonymousRequestsRestoreTokenOperationResponseEnum::Status200(
+                    EmptyOkResponse::new_application_json(EmptyResponse::new()),
+                ),
+            ),
 
             Err(e) => match e {
                 RestorePasswordError::UserNotFoundError => {

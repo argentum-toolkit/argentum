@@ -1,8 +1,8 @@
 use crate::data_type::error::{HttpError, InternalServerError, Unauthorized};
 use crate::data_type::AuthHeaderParams;
-use argentum_user_account_business::use_case::user_authenticates_with_token::AuthenticationError as BusinessAuthenticationError;
-use argentum_user_account_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use argentum_user_business::entity::user::User;
+use argentum_user_business::use_case::user_authenticates_with_token::AuthenticationError;
+use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct BearerAuthenticator {
@@ -30,10 +30,9 @@ impl BearerAuthenticator {
 
         match self.uc.execute(token) {
             Ok(user) => Ok(user),
-            Err(BusinessAuthenticationError::UserNotFound)
-            | Err(BusinessAuthenticationError::WrongToken) => Err(HttpError::Unauthorized(
-                Unauthorized::new("can't authenticate".to_string()),
-            )),
+            Err(AuthenticationError::UserNotFound) | Err(AuthenticationError::WrongToken) => Err(
+                HttpError::Unauthorized(Unauthorized::new("can't authenticate".to_string())),
+            ),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
                 Box::new(e),
             ))),

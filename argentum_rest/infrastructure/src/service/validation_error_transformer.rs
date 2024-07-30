@@ -1,7 +1,7 @@
 use argentum_standard_business::invariant_violation::ViolationItem;
 use argentum_standard_business::invariant_violation::Violations;
 use serde_valid::validation::{Errors, VecErrors};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[derive(Default)]
 pub struct ValidationErrorTransformer {}
@@ -46,7 +46,7 @@ impl ValidationErrorTransformer {
             }
             Errors::Object(e) => {
                 let errors = self.collect_errors(e.errors);
-                let mut properties = HashMap::new();
+                let mut properties = BTreeMap::new();
 
                 for (name, values) in e.properties {
                     properties.insert(name.to_string(), self.collect_violations(values));

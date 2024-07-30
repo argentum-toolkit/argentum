@@ -1,0 +1,77 @@
+{{#each operations as |operation|}}
+{{!--     {{#if operation.requestBody}} --}}
+use crate::dto::request::{{upper_camel operation.operationId}}Request;
+{{!--     {{/if}} --}}
+{{/each}}
+
+{{#each operations as |operation|}}
+use crate::server::handler::{{upper_camel operation.operationId}}Trait;
+{{/each}}
+use argentum_rest_infrastructure::data_type::error::HttpError;
+use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
+use argentum_rest_infrastructure::service::{BearerAuthenticator, RequestTransformer};
+use std::collections::HashMap;
+use std::sync::Arc;
+
+pub struct UserAccountPreHandler {
+    request_transformer: Arc<RequestTransformer>,
+    bearer_auth: Arc<BearerAuthenticator>,
+    {{#each operations as |operation|}}
+    {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait>,
+    {{/each}}
+}
+
+impl UserAccountPreHandler {
+    pub fn new(
+        request_transformer: Arc<RequestTransformer>,
+        bearer_auth: Arc<BearerAuthenticator>,
+        {{#each operations as |operation|}}
+        {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait>,
+        {{/each}}
+    ) -> Self {
+        UserAccountPreHandler {
+            request_transformer,
+            bearer_auth,
+            {{#each operations as |operation|}}
+                {{snake operation.operationId}},
+            {{/each}}
+        }
+    }
+
+    {{#each operations as |operation|}}
+    pub async fn {{snake operation.operationId}}(
+        &self,
+        request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
+    ) -> Result<HttpResponse, HttpError> {
+        {{#if operation.requestBody}}
+            {{#if operation.security}}
+                let raw_query_params = HashMap::from([]);
+                let req: {{upper_camel operation.operationId}}Request = self
+                    .request_transformer
+                    .transform(request, raw_path_params, raw_query_params)
+                    .await?;
+                let user = self.bearer_auth.auth(&req.params.headers)?;
+                let r = self.{{snake operation.operationId}}.handle(req, user)?;
+            {{else}}
+                let r = self.{{snake operation.operationId}}.handle(req)?;
+            {{/if}}
+        {{else}}
+                let raw_query_params = HashMap::from([]);
+                let req: {{upper_camel operation.operationId}}Request = self
+                    .request_transformer
+                    .transform(request, raw_path_params, raw_query_params)
+                    .await?;
+            {{#if operation.security}}
+                let user = self.bearer_auth.auth(&req.params.headers)?;
+                let r = self.{{snake operation.operationId}}.handle(req, user)?;
+            {{else}}
+                let r = self.{{snake operation.operationId}}.handle(req)?;
+            {{/if}}
+        {{/if}}
+
+        Ok(HttpResponse::new(r.to_status_code(), r.to_response().body()))
+    }
+
+    {{/each}}
+}

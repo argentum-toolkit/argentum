@@ -1,14 +1,15 @@
 use serde::{Serialize, Serializer};
 use std::error::Error;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct Conflict {
     pub source: Box<dyn Error>,
 }
 
-impl ToString for Conflict {
-    fn to_string(&self) -> String {
-        self.source.to_string()
+impl Display for Conflict {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.source)
     }
 }
 
