@@ -2,7 +2,7 @@
 name = "argentum_user_account_rest"
 description = "Argentum User Account component API"
 version = "0.2.0-dev.1"
-license = "BSD-3"
+license = "BSD-3-Clause"
 edition = "2021"
 
 homepage = "https://github.com/argentum-toolkit/argentum"
@@ -23,4 +23,4 @@ erased-serde = "0.3.*"
 regex = "1.10.*"
 serde = { version = "1.0.*", features = ["derive"] }
 serde_valid = "0.16.*"
-uuid = {version = "1.5.*", features = ["serde", "v4"]}
+uuid = { version = "1.5.*", features = ["serde", "v4"] }
