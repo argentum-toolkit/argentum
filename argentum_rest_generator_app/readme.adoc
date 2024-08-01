@@ -22,9 +22,17 @@ Supported generators
 - Low code duplication in generated code
 - Extendable and reusable generated code
 
-== How to use
+== How to install
 
-.Get source codes
+=== Via cargo install
+
+[source,shell]
+----
+cargo install argentum_rest_generator_app
+----
+
+.From source codes
+.Clone
 [source,shell]
 ----
 git clone git@gitlab.com:argentum-toolkit/argentum.git
@@ -38,13 +46,15 @@ cargo install --path argentum_rest_generator_app/
 
 ----
 
+== How to use
+
 .Generate REST API server library
 [source,shell]
 ----
 argentum_rest_generator_app --input api-doc/openapi.yaml --output rest/ --package-name user_account_rest
 ----
 
-Or you can generate via `cargo run`
+Or you can generate via `cargo run` (sources should be cloned)
 
 .Example
 [source,shell]
