@@ -147,10 +147,3 @@ components:
       name: ''
       in: header
       open_id_connect_url: ''
-es:
-    bearerAuth:
-      scheme: bearer
-      type: http
-      name: ''
-      in: header
-      open_id_connect_url: ''

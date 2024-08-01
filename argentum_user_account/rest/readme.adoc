@@ -48,9 +48,10 @@ version = "0.2.0-dev"
 edition = "2021"
 
 [dependencies]
-argentum_log_business = { path = "../argentum_log/business" }
-argentum_log_infrastructure = { path = "../argentum_log/infrastructure" }
-argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure" }
+argentum_log_business = ">=0.2.0-dev,<0.3.0"
+argentum_log_infrastructure = ">=0.2.0-dev,<0.3.0"
+argentum_rest_infrastructure = ">=0.2.0-dev,<0.3.0"
+
 argentum_user_account_rest = { path = "../rest" }
 tokio = { version = "1.34.*", features = ["full"] }
 ....

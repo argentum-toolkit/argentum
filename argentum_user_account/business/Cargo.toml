@@ -1,7 +1,7 @@
 [package]
 name = "argentum_user_account_business"
 description = "Business layer of user account component"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
