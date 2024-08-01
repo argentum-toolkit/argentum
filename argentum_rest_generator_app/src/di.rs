@@ -33,73 +33,116 @@ impl DiC {
 
 pub fn di_factory() -> DiC {
     let mut reg = Handlebars::new();
-    reg.register_template_file(
+    reg.register_template_string(
         "dto/operation_response_enum.item",
-        "template/dto/operation_response_enum.item.hbs",
+        include_str!("../template/dto/operation_response_enum.item.hbs"),
     )
     .unwrap();
 
-    reg.register_template_file(
+    reg.register_template_string(
         "dto/operation_response_enum.mod",
-        "template/dto/operation_response_enum.mod.hbs",
+        include_str!("../template/dto/operation_response_enum.mod.hbs"),
     )
     .unwrap();
 
-    reg.register_template_file("dto/response.item", "template/dto/response.item.hbs")
+    reg.register_template_string(
+        "dto/response.item",
+        include_str!("../template/dto/response.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/response.mod",
+        include_str!("../template/dto/response.mod.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/request.item",
+        include_str!("../template/dto/request.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/request.mod",
+        include_str!("../template/dto/request.mod.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/path_params.item",
+        include_str!("../template/dto/path_params.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/path_params.mod",
+        include_str!("../template/dto/path_params.mod.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/params.item",
+        include_str!("../template/dto/params.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/params.mod",
+        include_str!("../template/dto/params.mod.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/schema.item",
+        include_str!("../template/dto/schema.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/schema.mod",
+        include_str!("../template/dto/schema.mod.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string("dto/mod", include_str!("../template/dto/mod.hbs"))
         .unwrap();
 
-    reg.register_template_file("dto/response.mod", "template/dto/response.mod.hbs")
+    reg.register_template_string(
+        "server/handler.mod",
+        include_str!("../template/server/handler.mod.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "server/handler.item",
+        include_str!("../template/server/handler.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "server/pre_handler",
+        include_str!("../template/server/pre_handler.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "server/router",
+        include_str!("../template/server/router.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string("server/mod", include_str!("../template/server/mod.hbs"))
         .unwrap();
 
-    reg.register_template_file("dto/request.item", "template/dto/request.item.hbs")
+    reg.register_template_string("di", include_str!("../template/di.hbs"))
         .unwrap();
-
-    reg.register_template_file("dto/request.mod", "template/dto/request.mod.hbs")
+    reg.register_template_string("lib", include_str!("../template/lib.hbs"))
         .unwrap();
-
-    reg.register_template_file("dto/path_params.item", "template/dto/path_params.item.hbs")
+    reg.register_template_string("cargo.toml", include_str!("../template/cargo.toml.hbs"))
         .unwrap();
-
-    reg.register_template_file("dto/path_params.mod", "template/dto/path_params.mod.hbs")
+    reg.register_template_string("readme.adoc", include_str!("../template/readme.adoc.hbs"))
         .unwrap();
-
-    reg.register_template_file("dto/params.item", "template/dto/params.item.hbs")
-        .unwrap();
-
-    reg.register_template_file("dto/params.mod", "template/dto/params.mod.hbs")
-        .unwrap();
-
-    reg.register_template_file("dto/schema.item", "template/dto/schema.item.hbs")
-        .unwrap();
-
-    reg.register_template_file("dto/schema.mod", "template/dto/schema.mod.hbs")
-        .unwrap();
-
-    reg.register_template_file("dto/mod", "template/dto/mod.hbs")
-        .unwrap();
-
-    reg.register_template_file("server/handler.mod", "template/server/handler.mod.hbs")
-        .unwrap();
-    reg.register_template_file("server/handler.item", "template/server/handler.item.hbs")
-        .unwrap();
-
-    reg.register_template_file("server/pre_handler", "template/server/pre_handler.hbs")
-        .unwrap();
-
-    reg.register_template_file("server/router", "template/server/router.hbs")
-        .unwrap();
-
-    reg.register_template_file("server/mod", "template/server/mod.hbs")
-        .unwrap();
-
-    reg.register_template_file("di", "template/di.hbs").unwrap();
-    reg.register_template_file("lib", "template/lib.hbs")
-        .unwrap();
-    reg.register_template_file("cargo.toml", "template/cargo.toml.hbs")
-        .unwrap();
-    reg.register_template_file("readme.adoc", "template/readme.adoc.hbs")
-        .unwrap();
-    reg.register_template_file(".gitignore", "template/.gitignore.hbs")
+    reg.register_template_string(".gitignore", include_str!("../template/.gitignore.hbs"))
         .unwrap();
 
     reg.register_helper("snake", Box::new(snake_helper));

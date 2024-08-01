@@ -119,21 +119,21 @@ dependencies = [
 
 [[package]]
 name = "argentum_encryption_business"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "thiserror",
 ]
 
 [[package]]
 name = "argentum_log_business"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "chrono",
 ]
 
 [[package]]
 name = "argentum_log_infrastructure"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "ansi_term",
  "argentum_log_business",
@@ -142,7 +142,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_notification_business"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "argentum_standard_business",
  "argentum_user_business",
@@ -151,7 +151,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_openapi_infrastructure"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -160,7 +160,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_rest_generator_app"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "argentum_log_business",
  "argentum_log_infrastructure",
@@ -177,7 +177,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_rest_infrastructure"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
@@ -199,7 +199,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_standard_business"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "chrono",
  "rand",
@@ -209,7 +209,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_standard_infrastructure"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
@@ -224,7 +224,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_business"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "argentum_encryption_business",
  "argentum_log_business",
@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_business"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "argentum_encryption_business",
  "argentum_standard_business",
@@ -787,9 +787,9 @@ dependencies = [
 
 [[package]]
 name = "handlebars"
-version = "5.0.0-beta.5"
+version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa5bb5621f5b879a43fe21b22a1c6baa725a01383a4c99a2d7e067d539cb6943"
+checksum = "5226a0e122dc74917f3a701484482bed3ee86d016c7356836abbaa033133a157"
 dependencies = [
  "log",
  "pest",
