@@ -1,8 +1,8 @@
 [package]
 name = "argentum_user_rest"
 description = "Argentum User component API"
-version = "0.2.2"
-license = "BSD-3"
+version = "0.2.0-dev"
+license = "BSD-3-Clause"
 edition = "2021"
 
 homepage = "https://github.com/argentum-toolkit/argentum"

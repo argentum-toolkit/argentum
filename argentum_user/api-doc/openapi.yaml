@@ -5,8 +5,8 @@ info:
   version: 0.2.0-dev
   description: User API
   license:
-    name: BSD-3
-    identifier: BSD-3
+    name: BSD-3-Clause
+    identifier: BSD-3-Clause
 
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum

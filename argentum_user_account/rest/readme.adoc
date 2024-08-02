@@ -12,7 +12,7 @@ This server was generated from OpenAPI specification by the link:https://gitlab.
     - Home page: https://github.com/argentum-toolkit/argentum
     - Repository: https://github.com/argentum-toolkit/argentum
     - Home page: https://github.com/argentum-toolkit/argentum
-    - License: `BSD-3`
+    - License: `BSD-3-Clause`
 
 
 == How to use

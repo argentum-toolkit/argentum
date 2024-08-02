@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_rest"
-version = "0.2.2"
+version = "0.2.0-dev"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_rest"
-version = "0.2.2"
+version = "0.2.0-dev"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",

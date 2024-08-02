@@ -4,7 +4,7 @@ info:
     url: https://gitlab.com/argentum-toolkit/argentum
   description: User API
   license:
-    name: BSD-3
+    name: BSD-3-Clause
   title: Argentum User component API
   version: 0.2.0-dev
 servers:
