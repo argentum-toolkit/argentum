@@ -7,19 +7,19 @@ use argentum_rest_infrastructure::service::{BearerAuthenticator, RequestTransfor
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct UserAccountPreHandler {
+pub struct PreHandler {
     request_transformer: Arc<RequestTransformer>,
     bearer_auth: Arc<BearerAuthenticator>,
     get_user: Arc<dyn GetUserTrait>,
 }
 
-impl UserAccountPreHandler {
+impl PreHandler {
     pub fn new(
         request_transformer: Arc<RequestTransformer>,
         bearer_auth: Arc<BearerAuthenticator>,
         get_user: Arc<dyn GetUserTrait>,
     ) -> Self {
-        UserAccountPreHandler {
+        Self {
             request_transformer,
             bearer_auth,
             get_user,

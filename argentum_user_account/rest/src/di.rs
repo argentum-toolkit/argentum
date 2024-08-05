@@ -3,7 +3,7 @@ use crate::server::handler::AnonymousRequestsRestoreTokenTrait;
 use crate::server::handler::AnonymousWithTokenChangesPasswordTrait;
 use crate::server::handler::UserLoginsWithPasswordTrait;
 use crate::server::handler::UserRegistersWithPasswordTrait;
-use crate::server::{Router, UserAccountPreHandler};
+use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
@@ -29,7 +29,7 @@ impl ApiDiC {
         user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
-        let pre_handler = Arc::new(UserAccountPreHandler::new(
+        let pre_handler = Arc::new(PreHandler::new(
             request_transformer,
             bearer_auth,
             anonymous_registers_handler,

@@ -2,7 +2,7 @@ use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_log_business::{DefaultLogger, Level};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
-use argentum_rest_infrastructure::service::{RouterCombinator, Server};
+use argentum_rest_infrastructure::service::{BearerAuthenticator, RouterCombinator, Server};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use std::env;
 use std::net::SocketAddr;
@@ -47,15 +47,16 @@ pub async fn di_factory() -> DiC {
             .build(),
     );
 
-    let rest_di = RestDiC::new(
-        logger.clone(),
+    let rest_di = RestDiC::new(logger.clone());
+
+    let bearer_authenticator = Arc::new(BearerAuthenticator::new(
         u_di.business_dic.user_authenticates_with_token_uc.clone(),
-    );
+    ));
 
     let u_api_di = UserApiDiC::new(
         "/api/v1".to_string(),
         rest_di.request_transformer.clone(),
-        rest_di.bearer_authenticator.clone(),
+        bearer_authenticator.clone(),
         u_di.get_user_handler.clone(),
         rest_di.error_pre_handler.clone(),
     );
@@ -89,7 +90,7 @@ pub async fn di_factory() -> DiC {
     let ua_api_di = ApiDiC::new(
         "/api/v1".to_string(),
         rest_di.request_transformer,
-        rest_di.bearer_authenticator,
+        bearer_authenticator,
         ua_di.anonymous_registers_handler,
         ua_di.anonymous_requests_restore_token_handler,
         ua_di.anonymous_with_token_changes_password_handler,

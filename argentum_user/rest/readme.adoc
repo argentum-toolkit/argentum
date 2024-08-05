@@ -48,6 +48,8 @@ version = "0.2.0-dev"
 edition = "2021"
 
 [dependencies]
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_log_infrastructure = { path = "../../argentum_log/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }
@@ -81,7 +83,6 @@ use std::net::SocketAddr;
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use argentum_user_rest::ApiDiC;
-use dotenv::dotenv;
 use std::sync::Arc;
 
 pub struct DiC {
@@ -96,8 +97,6 @@ impl DiC {
 }
 
 pub async fn di_factory() -> DiC {
-    dotenv().ok();
-
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 

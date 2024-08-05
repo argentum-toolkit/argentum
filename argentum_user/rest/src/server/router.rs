@@ -1,4 +1,4 @@
-use crate::server::UserAccountPreHandler;
+use crate::server::PreHandler;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
@@ -9,14 +9,14 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct Router {
-    pre_handler: Arc<UserAccountPreHandler>,
+    pre_handler: Arc<PreHandler>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
 }
 
 impl Router {
     pub fn new(
-        pre_handler: Arc<UserAccountPreHandler>,
+        pre_handler: Arc<PreHandler>,
         error_pre_handler: Arc<ErrorPreHandler>,
         url_prefix: String,
     ) -> Self {

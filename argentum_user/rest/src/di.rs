@@ -1,5 +1,5 @@
 use crate::server::handler::GetUserTrait;
-use crate::server::{Router, UserAccountPreHandler};
+use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
@@ -19,7 +19,7 @@ impl ApiDiC {
         get_user_handler: Arc<dyn GetUserTrait>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
-        let pre_handler = Arc::new(UserAccountPreHandler::new(
+        let pre_handler = Arc::new(PreHandler::new(
             request_transformer,
             bearer_auth,
             get_user_handler,

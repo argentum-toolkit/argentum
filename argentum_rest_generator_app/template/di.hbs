@@ -2,9 +2,12 @@
     use crate::server::handler::{{upper_camel operation.operationId}}Trait;
 {{~/each~}}
 
-use crate::server::{UserAccountPreHandler, Router};
+use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
-    BearerAuthenticator, ErrorPreHandler, RequestTransformer,
+{{#if securityEnabled}}
+    BearerAuthenticator,
+{{/if}}
+    ErrorPreHandler, RequestTransformer,
 };
 use std::sync::Arc;
 
@@ -18,15 +21,19 @@ impl ApiDiC {
         url_prefix: String,
         //services
         request_transformer: Arc<RequestTransformer>,
-        bearer_auth: Arc<BearerAuthenticator>,
+        {{#if securityEnabled}}
+            bearer_auth: Arc<BearerAuthenticator>,
+        {{/if}}
         {{#each operations as |operation|}}
             {{snake operation.operationId}}_handler: Arc<dyn {{upper_camel operation.operationId}}Trait>,
         {{/each}}
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
-        let pre_handler = Arc::new(UserAccountPreHandler::new(
+        let pre_handler = Arc::new(PreHandler::new(
             request_transformer,
+            {{#if securityEnabled}}
             bearer_auth,
+            {{/if}}
             {{#each operations as |operation|}}
                 {{snake operation.operationId}}_handler,
             {{/each}}

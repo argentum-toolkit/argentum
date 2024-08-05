@@ -1,15 +1,21 @@
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::SpecificationRoot;
-use std::collections::HashMap;
+use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
 use std::error::Error;
 use std::sync::Arc;
+
+const PATH: &str = "/src/di.rs";
+const TEMPLATE: &str = "di";
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Data {
+    pub operations: Vec<Operation>,
+    pub security_enabled: bool,
+}
 
 pub(crate) struct DiGenerator {
     renderer: Arc<Renderer>,
 }
-
-const PATH: &str = "/src/di.rs";
-const TEMPLATE: &str = "di";
 
 impl DiGenerator {
     pub fn new(renderer: Arc<Renderer>) -> Self {
@@ -22,7 +28,21 @@ impl DiGenerator {
         spec: &SpecificationRoot,
     ) -> Result<(), Box<dyn Error>> {
         let operations = spec.operations();
-        let data = HashMap::from([("operations", operations)]);
+
+        let mut security_enabled = false;
+
+        for operation in operations.clone().into_iter() {
+            if operation.security.is_some() {
+                security_enabled = true;
+
+                break;
+            }
+        }
+
+        let data = Data {
+            operations,
+            security_enabled,
+        };
 
         self.renderer
             .render(base_output_path, TEMPLATE, data, PATH)?;
