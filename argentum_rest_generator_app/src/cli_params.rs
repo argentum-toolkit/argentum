@@ -19,4 +19,7 @@ pub struct CliParams {
 
     #[arg(short, long)]
     pub(crate) documentation: Option<String>,
+
+    #[arg(short, long)]
+    pub(crate) argentum_path: Option<String>,
 }

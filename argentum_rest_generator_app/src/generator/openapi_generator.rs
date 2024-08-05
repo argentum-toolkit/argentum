@@ -117,6 +117,7 @@ impl OpenApiGenerator {
             cli.homepage.clone(),
             cli.repository.clone(),
             cli.documentation.clone(),
+            cli.argentum_path.clone(),
         )?;
 
         self.readme_adoc_generator.generate(
@@ -126,6 +127,7 @@ impl OpenApiGenerator {
             cli.homepage,
             cli.repository,
             cli.documentation,
+            cli.argentum_path,
         )?;
         self.gitignore_generator.generate(output)?;
         self.schema_generator.generate(output, &spec)?;

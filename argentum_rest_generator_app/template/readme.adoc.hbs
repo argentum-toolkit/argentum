@@ -58,9 +58,9 @@ version = "{{ version }}"
 edition = "2021"
 
 [dependencies]
-argentum_log_business = ">=0.2.0-dev,<0.3.0"
-argentum_log_infrastructure = ">=0.2.0-dev,<0.3.0"
-argentum_rest_infrastructure = ">=0.2.0-dev,<0.3.0"
+argentum_rest_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_rest/infrastructure", {{/if}}version = ">=0.2.0-dev,<0.3.0" }
+argentum_standard_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/business", {{/if}}version = ">=0.2.0-dev,<0.3.0" }
+argentum_user_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_user/business", {{/if}}version = ">=0.2.0-dev,<0.3.0" }
 
 {{#if packageName }}
 {{ packageName }} = { path = "../rest" }

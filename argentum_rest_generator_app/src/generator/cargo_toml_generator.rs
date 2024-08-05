@@ -17,6 +17,7 @@ struct Data {
     homepage: Option<String>,
     repository: Option<String>,
     documentation: Option<String>,
+    argentum_path: Option<String>,
 }
 
 pub(crate) struct CargoTomlGenerator {
@@ -36,6 +37,7 @@ impl CargoTomlGenerator {
         homepage: Option<String>,
         repository: Option<String>,
         documentation: Option<String>,
+        argentum_path: Option<String>,
     ) -> Result<(), Box<dyn Error>> {
         let data = Data {
             package_name,
@@ -45,6 +47,7 @@ impl CargoTomlGenerator {
             homepage,
             repository,
             documentation,
+            argentum_path,
         };
 
         self.renderer

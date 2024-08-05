@@ -18,6 +18,7 @@ struct Data {
     homepage: Option<String>,
     repository: Option<String>,
     documentation: Option<String>,
+    argentum_path: Option<String>,
 }
 
 pub(crate) struct ReadmeAdocGenerator {
@@ -37,6 +38,7 @@ impl ReadmeAdocGenerator {
         homepage: Option<String>,
         repository: Option<String>,
         documentation: Option<String>,
+        argentum_path: Option<String>,
     ) -> Result<(), Box<dyn Error>> {
         let data = Data {
             package_name,
@@ -47,6 +49,7 @@ impl ReadmeAdocGenerator {
             homepage,
             repository,
             documentation,
+            argentum_path,
         };
 
         self.renderer
