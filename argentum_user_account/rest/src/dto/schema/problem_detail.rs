@@ -7,13 +7,13 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct ProblemDetail {
-    pub code: String,
+    pub code: i32,
 
     pub message: Option<String>,
 }
 
 impl ProblemDetail {
-    pub fn new(code: String, message: Option<String>) -> Self {
+    pub fn new(code: i32, message: Option<String>) -> Self {
         Self { code, message }
     }
 }
@@ -49,7 +49,7 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
 #[derive(serde::Deserialize)]
 pub struct ProblemDetailRaw {
     #[serde(rename = "code")]
-    pub code: Option<String>,
+    pub code: Option<i32>,
     #[serde(rename = "message")]
     pub message: Option<String>,
 }

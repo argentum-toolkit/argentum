@@ -47,27 +47,27 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
         {{# each properties as |prop| }}
             {{#if prop.isRef}}
                 {{#if prop.required}}
-                    let name = if raw.name.is_none() {
+                    let {{ snake prop.name }} = if raw.{{ snake prop.name }}.is_none() {
                     argentum_violations.insert(
                             "name".into(),
                             Violations::new(vec!["required field".to_string()], None),
                         );
                         None
                     } else {
-                        match UserName::try_from_raw(raw.name.unwrap()) {
+                        match {{ upper_camel prop.dataType }}::try_from_raw(raw.{{ snake prop.name }}.unwrap()) {
                             Ok(value) => Some(value),
                             Err(v) => {
-                                argentum_violations.insert("name".into(), v);
+                                argentum_violations.insert("{{ snake prop.name }}".into(), v);
 
                                 None
                             }
                         }
                     };
                 {{else}}
-                    let name = match UserName::try_from_raw(raw.name.unwrap()) {
+                    let {{ snake prop.name }} = match {{ upper_camel prop.dataType }}::try_from_raw(raw.{{ snake prop.name }}.unwrap()) {
                         Ok(value) => Some(value),
                         Err(v) => {
-                            argentum_violations.insert("name".into(), v);
+                            argentum_violations.insert("{{ snake prop.name }}".into(), v);
 
                             None
                         }

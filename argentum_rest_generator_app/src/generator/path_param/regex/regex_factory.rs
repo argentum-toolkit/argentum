@@ -21,13 +21,13 @@ impl RegexFactory {
             RefOrObject::Ref(_r) => {
                 //TODO: follow the reference and get the schema
                 // r.reference.clone();
-                format!("(?<{}>\\w+)", param.name)
+                format!("(?<{}>[\\w,-]+)", param.name)
             }
             RefOrObject::Object(s) => match s.schema_type {
                 Some(SchemaType::String) => self.string_factory.create(s, param.name.clone()),
                 Some(SchemaType::Integer) => self.integer_factory.create(s, param.name.clone()),
                 _ => {
-                    format!("(?<{}>\\w+)", param.name)
+                    format!("(?<{}>[\\w,-]+)", param.name)
                 }
             },
         }

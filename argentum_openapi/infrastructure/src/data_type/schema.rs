@@ -21,6 +21,9 @@ pub struct Schema {
     pub properties: Option<BTreeMap<String, RefOrObject<Self>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub items: Box<Option<RefOrObject<Self>>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum: Option<f64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,12 +75,12 @@ pub enum SchemaFormat {
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum StandardFormat {
-    Int8,
-    Int16,
+    // Int8,
+    // Int16,
     Int32,
     Int64,
-    UInt8,
-    UInt16,
+    // UInt8,
+    // UInt16,
     UInt32,
     UInt64,
     Float,

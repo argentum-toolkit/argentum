@@ -38,7 +38,7 @@ impl RouterTrait for Router {
         };
 
         if let Some(_) = Regex::new(
-            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$",
         )
         .unwrap()
         .captures(path)
@@ -60,7 +60,7 @@ impl RouterTrait for Router {
         };
 
         if let Some(caps) = Regex::new(
-            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$",
         )
         .unwrap()
         .captures(path)

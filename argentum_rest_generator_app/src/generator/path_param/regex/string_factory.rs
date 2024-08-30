@@ -24,9 +24,9 @@ impl StringFactory {
             }
             Some(Custom(_custom_format)) => {
                 //TODO: create regex factory for custom format
-                format!("(?<{}>\\w+)", name)
+                format!("(?<{}>[\\w,-]+)", name)
             }
-            _ => format!("(?<{}>\\w+)", name),
+            _ => format!("(?<{}>[\\w,-]+)", name),
         }
     }
 }

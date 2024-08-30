@@ -94,8 +94,14 @@ pub fn di_factory() -> DiC {
     .unwrap();
 
     reg.register_template_string(
-        "dto/schema.item",
-        include_str!("../template/dto/schema.item.hbs"),
+        "dto/schema_object.item",
+        include_str!("../template/dto/schema_object.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "dto/schema_array.item",
+        include_str!("../template/dto/schema_array.item.hbs"),
     )
     .unwrap();
 

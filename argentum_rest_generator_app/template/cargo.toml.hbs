@@ -29,8 +29,9 @@ argentum_standard_business = { {{#if argentumPath}}path = "{{argentumPath}}/arge
 argentum_user_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_user/business", {{/if}}version = ">=0.2.0-dev,<0.3.0" }
 
 async-trait = "0.1.*"
-hyper = { version = "1.0.0", features = ["full"] }
+chrono = "0.4.*"
 erased-serde = "0.3.*"
+hyper = { version = "1.0.0", features = ["full"] }
 regex = "1.10.*"
 serde = { version = "1.0.*", features = ["derive"] }
 serde_valid = "0.16.*"

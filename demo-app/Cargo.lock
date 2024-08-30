@@ -71,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_demo_app"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",
@@ -234,12 +234,13 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_rest"
-version = "0.2.5"
+version = "0.2.0-dev"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
  "argentum_user_business",
  "async-trait",
+ "chrono",
  "erased-serde",
  "hyper",
  "regex",
@@ -279,12 +280,13 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_rest"
-version = "0.2.5"
+version = "0.2.0-dev"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
  "argentum_user_business",
  "async-trait",
+ "chrono",
  "erased-serde",
  "hyper",
  "regex",

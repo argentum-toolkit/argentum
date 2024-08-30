@@ -37,7 +37,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = Regex::new(r"\/user-account\/anonymous-register")
+        if let Some(_) = Regex::new(r"\/user-account\/anonymous-register$")
             .unwrap()
             .captures(path)
         {
@@ -47,7 +47,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user-account\/password-login")
+        if let Some(_) = Regex::new(r"\/user-account\/password-login$")
             .unwrap()
             .captures(path)
         {
@@ -57,7 +57,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user-account\/register")
+        if let Some(_) = Regex::new(r"\/user-account\/register$")
             .unwrap()
             .captures(path)
         {
@@ -67,7 +67,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user-account\/restore-password\/token-request")
+        if let Some(_) = Regex::new(r"\/user-account\/restore-password\/token-request$")
             .unwrap()
             .captures(path)
         {
@@ -77,7 +77,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user\/restore-password\/change-password")
+        if let Some(_) = Regex::new(r"\/user\/restore-password\/change-password$")
             .unwrap()
             .captures(path)
         {
@@ -97,7 +97,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = Regex::new(r"\/user-account\/anonymous-register")
+        if let Some(_) = Regex::new(r"\/user-account\/anonymous-register$")
             .unwrap()
             .captures(path)
         {
@@ -113,7 +113,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user-account\/password-login")
+        if let Some(_) = Regex::new(r"\/user-account\/password-login$")
             .unwrap()
             .captures(path)
         {
@@ -129,7 +129,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user-account\/register")
+        if let Some(_) = Regex::new(r"\/user-account\/register$")
             .unwrap()
             .captures(path)
         {
@@ -145,7 +145,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user-account\/restore-password\/token-request")
+        if let Some(_) = Regex::new(r"\/user-account\/restore-password\/token-request$")
             .unwrap()
             .captures(path)
         {
@@ -161,7 +161,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = Regex::new(r"\/user\/restore-password\/change-password")
+        if let Some(_) = Regex::new(r"\/user\/restore-password\/change-password$")
             .unwrap()
             .captures(path)
         {

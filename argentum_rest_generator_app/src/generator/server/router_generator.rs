@@ -73,6 +73,8 @@ impl RouterGenerator {
                 pattern = pattern.replace(find.as_str(), reg.as_str());
             }
 
+            pattern.push('$');
+
             let item = PathData {
                 pattern,
                 operations,

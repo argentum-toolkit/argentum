@@ -68,7 +68,15 @@ impl Combiner {
         to_spec: &mut SpecificationRoot,
     ) {
         match schema.schema_type {
-            Some(SchemaType::Array) => {}
+            Some(SchemaType::Array) => match &mut *schema.items {
+                None => {
+                    self.logger
+                        .warning("The items keyword is required in arrays".to_string());
+                }
+                Some(items) => {
+                    self.collect_ref_to_schema(items, to_spec, current_file_path.clone());
+                }
+            },
             Some(SchemaType::Object) => {
                 if let Some(properties) = schema.properties.as_mut() {
                     self.collect_properties(properties, to_spec, current_file_path);
