@@ -33,7 +33,15 @@ You can try Argentum ToolKit with Docker without deep diving into Rust or the ar
 It is easy with link:docs/quick-start.adoc[Quick Start Guide]
 ====
 
-== Components documentation
+== Documentation
+
+=== Argentum ToolKit Short Book
+
+Currently, this book is not released yet, but it can help you learn a couple of features by example.
+
+link:https://gitlab.com/argentum-toolkit/argentum-short-book/[Short Book]
+
+=== Components documentation
 
 * link:argentum_encryption/readme.adoc[Argentum Encryption]
 * link:argentum_event/readme.adoc[Argentum Event]
@@ -45,11 +53,11 @@ It is easy with link:docs/quick-start.adoc[Quick Start Guide]
 * link:argentum_user/readme.adoc[Argentum User]
 * link:argentum_user_account/readme.adoc[Argentum User Account]
 
-== Tools documentation
+=== Tools documentation
 
 * link:argentum_rest_generator_app/readme.adoc[Argentum REST Generator]
 
-== Argentum ToolKit Architecture. Short description
+=== Argentum ToolKit Architecture. Short description
 
 Argentum ToolKit project is composed of components.
 Each component is usually split to several crates:
@@ -126,10 +134,6 @@ $ devops/scripts/check-item.sh {{package-name}}
 * *chrono* - time
 
 == TODO
-
-=== V0.2
-
-* build scripts to push artifacts
 
 === V0.3
 
