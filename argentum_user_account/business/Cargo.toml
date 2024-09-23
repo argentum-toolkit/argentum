@@ -5,9 +5,9 @@ version = "0.2.6"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
 edition = "2021"
-homepage = "https://github.com/argentum-toolkit/argentum"
-repository = "https://github.com/argentum-toolkit/argentum"
-documentation = "https://github.com/argentum-toolkit/argentum"
+homepage = "https://gitlab.com/argentum-toolkit/argentum"
+repository = "https://gitlab.com/argentum-toolkit/argentum"
+documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
