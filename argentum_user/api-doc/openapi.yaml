@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Argentum User component API
-  version: 0.2.0-dev
+  version: 0.3.0-dev
   description: User API
   license:
     name: BSD-3-Clause

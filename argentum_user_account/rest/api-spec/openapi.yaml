@@ -6,7 +6,7 @@ info:
   license:
     name: BSD-3-Clause
   title: Argentum User Account component API
-  version: 0.2.0-dev
+  version: 0.3.0-dev
 externalDocs:
   description: Find more info here
   url: https://gitlab.com/argentum-toolkit/argentum

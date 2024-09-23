@@ -6,7 +6,7 @@ info:
   license:
     name: BSD-3-Clause
   title: Argentum User component API
-  version: 0.2.0-dev
+  version: 0.3.0-dev
 servers:
 - description: Dev API Server with CORS
   url: http://localhost:{port}/{basePath}
