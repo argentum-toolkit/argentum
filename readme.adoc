@@ -133,10 +133,26 @@ $ devops/scripts/check-item.sh {{package-name}}
 * *thiserror* - errors
 * *chrono* - time
 
+== Dioxus dependencies
+
+As soon as Argentum ToolKit uses Dioxus, we need to have some dependencies such as `perl`
+
+[source,shell]
+....
+cargo install dioxus-cli
+....
+
 == TODO
 
 === V0.3
 
+* Web APP + UI
+** Client library
+** Dioxus Web App
+*** User
+*** User Account
+*** Auth
+** Theme (Skin)
 * DI builders: make it similar
 * behaviour tests
 
