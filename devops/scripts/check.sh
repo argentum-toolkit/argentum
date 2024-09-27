@@ -22,7 +22,7 @@ packages=(
   'argentum_user_account/business'
   'argentum_user_account/infrastructure'
   'demo-app'
-  'demo-web-app'
+  'demo-api-app'
 )
 
 SOURCE="${BASH_SOURCE[0]}"
