@@ -12,7 +12,8 @@ serde = { version = "1.0.197", features = ["derive"] }
 dioxus = { version = "0.5", features = ["fullstack", "router"] }
 
 # Debug
-dioxus-logger = "0.5.1"
+dioxus-logger = "0.5.*"
+dioxus-sdk = { version = "0.5.*", features = ["storage"] }
 
 [features]
 default = []
