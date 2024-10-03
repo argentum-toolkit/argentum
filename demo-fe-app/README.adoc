@@ -13,3 +13,10 @@ Launch the Dioxus Fullstack app:
 ----
 dx serve --platform fullstack
 ----
+
+theme:
+
+https://github.com/NextJSTemplates/startup-nextjs
+
+https://startup.demo.nextjstemplates.com/
+

@@ -1,5 +1,6 @@
 /.asciidoctor
 /.idea
+/NO
 .asciidoctor
 **/.asciidoctor
 /*/target

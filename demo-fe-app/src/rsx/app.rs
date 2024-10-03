@@ -24,12 +24,12 @@ pub(crate) fn App() -> Element {
     });
 
     rsx! {
+        Router::<Route> {}
         div {
             match token.read().as_ref() {
                 Some(t) => rsx!{ "Token: {t}"},
                 None => rsx!{"No token"},
             }
         },
-        Router::<Route> {}
     }
 }

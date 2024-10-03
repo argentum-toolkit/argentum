@@ -10,6 +10,8 @@ use crate::rsx::app::App;
 use dioxus::prelude::*;
 use dioxus_logger::tracing;
 
+const _TAILWIND_URL: &str = manganis::mg!(file("public/tailwind.css"));
+
 fn main() {
     // Init logger
     dioxus_sdk::storage::set_dir!();
