@@ -18,6 +18,7 @@ asset_dir = "assets"
 # HTML title tag content
 title = "argentum-demo-fe-app"
 
+
 [web.watcher]
 
 # when watcher trigger, regenerate the `index.html`

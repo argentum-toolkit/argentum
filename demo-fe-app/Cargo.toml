@@ -15,6 +15,8 @@ dioxus = { version = "0.5", features = ["fullstack", "router"] }
 dioxus-logger = "0.5.*"
 dioxus-sdk = { version = "0.5.*", features = ["storage"] }
 manganis = "0.2.2"
+tokio = "1.40.0"
+reqwest = { version = "0.12", features = ["json"] }
 
 [features]
 default = []

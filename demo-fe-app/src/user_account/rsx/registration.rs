@@ -9,7 +9,7 @@ pub fn Registration() -> Element {
         section {
             div { class: "container",
                 div { class:"pb-40",
-                    h2 { class:"mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl", "Sign in to your account"}
+                    h2 { class:"mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl", "Create your account"}
 
                     div { class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
                         form { class:"space-y-6", action:"#", method:"POST",

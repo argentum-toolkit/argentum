@@ -1,25 +1,39 @@
 use crate::route::Route;
 use crate::rsx::dark_mode::DarkMode;
 use dioxus::prelude::*;
-use dioxus_logger::tracing;
 use dioxus_sdk::storage::*;
+use std::collections::HashMap;
 
 pub(crate) fn App() -> Element {
     use_context_provider(|| Signal::new(DarkMode(false)));
 
-    let mut token =
-        use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
+    let mut token: Signal<Option<String>> = use_signal(|| None);
 
-    // use_hook(move || {
-    // use_future(move || async move {
-    use_effect(move || {
-        if token().is_some() {
-            tracing::info!("TOKEN FROM STORAGE: {}", token.read().to_owned().unwrap());
-        }
-        if token().is_none() {
-            //TODO: api call to log in
-            *token.write() = Some(String::from("SOME-SECURE-TOKEN"));
-            // token.set(Some(String::from("unknown4")))
+    use_future(move || async move {
+        let mut local_storage_token =
+            use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
+
+        if local_storage_token().is_some() {
+            token.set(local_storage_token());
+        } else {
+            let client = reqwest::Client::new();
+
+            let res = client
+                .post("http://localhost:8082/api/v1/user-account/anonymous-register")
+                .header("Accept", "application/json")
+                .body("")
+                .send()
+                .await
+                .unwrap();
+
+            let data = res.json::<HashMap<String, String>>().await.unwrap();
+
+            if let Some(server_token) = data.get("token") {
+                local_storage_token.set(Some(server_token.to_string()));
+            }
+
+            // tkn.set(Some(String::from("unknown4")));
+            token.set(local_storage_token());
         }
     });
 

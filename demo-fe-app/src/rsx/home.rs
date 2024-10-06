@@ -1,7 +1,4 @@
-use crate::route::Route;
-use crate::server::{get_server_data, post_server_data};
 use dioxus::prelude::*;
-use dioxus_logger::tracing;
 
 #[component]
 pub fn Home() -> Element {
