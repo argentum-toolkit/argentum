@@ -5,6 +5,7 @@ set -ex
 rustc -V && cargo -V
 
 packages=(
+  'argentum_db/infrastructure'
   'argentum_encryption/business'
   'argentum_encryption/infrastructure'
   'argentum_event/business'
