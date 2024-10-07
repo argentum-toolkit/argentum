@@ -1,7 +1,7 @@
-use crate::db::adapter::DbAdapterError;
-use crate::db::slqx_postgres::migration::collection::MigrationCollection;
-use crate::db::slqx_postgres::migration::MigrationDto;
-use crate::db::slqx_postgres::SqlxPostgresAdapter;
+use crate::adapter::DbAdapterError;
+use crate::slqx_postgres::migration::collection::MigrationCollection;
+use crate::slqx_postgres::migration::MigrationDto;
+use crate::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use sqlx::types::chrono::Utc;
 use sqlx::Transaction;

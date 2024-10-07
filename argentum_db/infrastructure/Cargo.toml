@@ -1,6 +1,6 @@
 [package]
-name = "argentum_standard_infrastructure"
-description = "The infrastructure layer of standart component"
+name = "argentum_db_infrastructure"
+description = "The infrastructure layer of database component"
 version = "0.3.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
@@ -12,8 +12,11 @@ readme = "readme.adoc"
 
 [dependencies]
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_business = { path = "../business", version = ">=0.3.0-dev,<0.4.0" }
 
-serde = { version = "1.0.*", features = ["derive"] }
+sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "chrono"] }
+sqlx-postgres = { version = "0.7.*" }
+tokio = { version = "1.34.*", features = ["full"] }
+futures = "0.3.*"
+
 thiserror = "1.0.*"
 uuid = { version = "1.5.*", features = ["serde", "v4"] }

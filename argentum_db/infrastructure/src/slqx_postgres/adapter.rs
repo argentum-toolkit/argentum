@@ -1,4 +1,4 @@
-use crate::db::adapter::DbAdapterError;
+use crate::adapter::DbAdapterError;
 use sqlx::postgres::PgPool;
 use std::collections::BTreeMap;
 use std::future::Future;
@@ -37,7 +37,7 @@ impl SqlxPostgresAdapter {
     /// Execute query with Executor (transaction or connection pool)
     ///
     /// # Examples
-    /// use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
+    /// use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
     /// use futures::executor::block_on;
     /// let adapter: SqlxPostgresAdapter = todo!();
     /// let mut tx = block_on(adapter.begin_transaction()).unwrap();

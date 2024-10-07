@@ -1,8 +1,8 @@
 use crate::db::dto::SessionDto;
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::entity::session::Session;
 use argentum_user_business::repository::session_repository::{
     SessionRepositoryError, SessionRepositoryTrait,

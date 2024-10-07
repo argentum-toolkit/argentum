@@ -1,9 +1,9 @@
 use crate::db::dto::AuthenticatedUserDto;
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::data_type::builder::NameBuilder;
 use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{

@@ -1,7 +1,7 @@
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_account_business::entity::credential::PasswordCredential;
 use argentum_user_account_business::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,

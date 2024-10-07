@@ -20,6 +20,7 @@ name = "migration"
 path = "src/migration/main.rs"
 
 [dependencies]
+argentum_db_infrastructure = { path = "../argentum_db/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_encryption_business = { path = "../argentum_encryption/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_encryption_infrastructure = { path = "../argentum_encryption/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_event_business = { path = "../argentum_event/business", version = ">=0.3.0-dev,<0.4.0" }

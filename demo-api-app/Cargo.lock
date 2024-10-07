@@ -70,9 +70,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "argentum_db_infrastructure"
+version = "0.3.0-dev"
+dependencies = [
+ "argentum_log_business",
+ "futures",
+ "sqlx",
+ "sqlx-postgres",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "argentum_demo_web_app_migration"
 version = "0.3.0-dev"
 dependencies = [
+ "argentum_db_infrastructure",
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",
  "argentum_event_business",
@@ -188,12 +202,8 @@ version = "0.3.0-dev"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
- "futures",
  "serde",
- "sqlx",
- "sqlx-postgres",
  "thiserror",
- "tokio",
  "uuid",
 ]
 
@@ -216,6 +226,7 @@ dependencies = [
 name = "argentum_user_account_infrastructure"
 version = "0.3.0-dev"
 dependencies = [
+ "argentum_db_infrastructure",
  "argentum_encryption_business",
  "argentum_log_business",
  "argentum_notification_business",
@@ -268,6 +279,7 @@ dependencies = [
 name = "argentum_user_infrastructure"
 version = "0.3.0-dev"
 dependencies = [
+ "argentum_db_infrastructure",
  "argentum_log_business",
  "argentum_rest_infrastructure",
  "argentum_standard_business",

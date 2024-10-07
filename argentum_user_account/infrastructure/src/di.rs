@@ -22,7 +22,7 @@ use argentum_user_account_rest::server::handler::{
 use argentum_user_infrastructure::di::UserInfrastructureDiC;
 use std::rc::Rc;
 
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
