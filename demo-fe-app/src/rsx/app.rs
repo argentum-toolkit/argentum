@@ -1,8 +1,8 @@
 use crate::route::Route;
 use crate::rsx::dark_mode::DarkMode;
+use argentum_user_account_rest::dto::schema::AnonymousRegistrationResult;
 use dioxus::prelude::*;
 use dioxus_sdk::storage::*;
-use std::collections::HashMap;
 
 pub(crate) fn App() -> Element {
     use_context_provider(|| Signal::new(DarkMode(false)));
@@ -26,13 +26,9 @@ pub(crate) fn App() -> Element {
                 .await
                 .unwrap();
 
-            let data = res.json::<HashMap<String, String>>().await.unwrap();
+            let data = res.json::<AnonymousRegistrationResult>().await.unwrap();
+            local_storage_token.set(Some(data.token));
 
-            if let Some(server_token) = data.get("token") {
-                local_storage_token.set(Some(server_token.to_string()));
-            }
-
-            // tkn.set(Some(String::from("unknown4")));
             token.set(local_storage_token());
         }
     });

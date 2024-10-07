@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn UserName() -> Element {
-    let first = use_signal(|| "".to_string());
+    // let first = use_signal(|| "".to_string());
     rsx! {
 
         div {

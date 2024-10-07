@@ -9,6 +9,8 @@ mod response_transformer;
 mod router;
 mod router_combinator;
 mod schema_extractor;
+
+#[cfg(feature = "server")]
 mod server;
 mod validation_error_transformer;
 
@@ -23,6 +25,7 @@ pub use response_transformer::ResponseToJsonTransformer;
 pub use router::RouterTrait;
 pub use router_combinator::RouterCombinator;
 pub use schema_extractor::SchemaExtractor;
+#[cfg(feature = "server")]
 pub use server::Server;
 use std::collections::HashMap;
 pub use validation_error_transformer::ValidationErrorTransformer;

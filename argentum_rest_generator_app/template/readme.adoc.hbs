@@ -69,7 +69,7 @@ argentum_user_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum
 {{ else }}
 {{ packageName }} = "*"
 {{/if}}
-tokio = { version = "1.34.*", features = ["full"] }
+tokio = { version = "^1.40.*", features = ["full"] }
 ....
 
 .main.rs

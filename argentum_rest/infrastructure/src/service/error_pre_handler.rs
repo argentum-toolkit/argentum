@@ -54,6 +54,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "server")]
     #[tokio::test]
     async fn test_handle_not_found() {
         let handler = ErrorPreHandler::new();
@@ -68,6 +69,7 @@ mod tests {
         assert!(matches!(res, Err(HttpError::RouteNotFound(_))));
     }
 
+    #[cfg(feature = "server")]
     #[tokio::test]
     async fn test_handle_not_allowed() {
         let handler = ErrorPreHandler::new();

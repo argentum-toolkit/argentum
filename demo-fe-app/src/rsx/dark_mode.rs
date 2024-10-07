@@ -11,7 +11,7 @@ pub fn DarkModeToggle() -> Element {
             onclick: move |_event| {
                 theme = match theme {
                     "dark" => "light",
-                    default => "dark"
+                    _ => "dark"
                 }
             },
             svg {

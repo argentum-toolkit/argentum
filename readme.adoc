@@ -153,6 +153,7 @@ cargo install dioxus-cli
 *** User Account
 *** Auth
 ** Theme (Skin)
+*** Dark mode
 * DI builders: make it similar
 * behaviour tests
 
