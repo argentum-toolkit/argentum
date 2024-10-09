@@ -5,7 +5,7 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct RequestRestoreTokenSchema {
     pub email: String,
 }

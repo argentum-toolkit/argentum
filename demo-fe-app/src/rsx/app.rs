@@ -1,7 +1,18 @@
 use crate::route::Route;
 use crate::rsx::dark_mode::DarkMode;
-use argentum_user_account_rest::dto::schema::AnonymousRegistrationResult;
+use argentum_rest_infrastructure::data_type::HttpParams;
+use argentum_rest_infrastructure::data_type::HttpRequest;
+use argentum_rest_infrastructure::data_type::{
+    EmptyHeaderParams, EmptyQueryParams, EmptyRequestBody,
+};
+use argentum_user_account_rest::client::Client;
+use argentum_user_account_rest::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
+use argentum_user_account_rest::dto::params::AnonymousRegistersParams;
+use argentum_user_account_rest::dto::path_params::AnonymousRegistersPathParams;
+use argentum_user_account_rest::dto::request::AnonymousRegistersRequest;
+use argentum_user_account_rest::dto::response::AnonymousRegisteredSuccessfullyResponse::ApplicationJson;
 use dioxus::prelude::*;
+use dioxus_logger::tracing::error;
 use dioxus_sdk::storage::*;
 
 pub(crate) fn App() -> Element {
@@ -16,20 +27,30 @@ pub(crate) fn App() -> Element {
         if local_storage_token().is_some() {
             token.set(local_storage_token());
         } else {
-            let client = reqwest::Client::new();
+            let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
+            let params = AnonymousRegistersParams::new(
+                AnonymousRegistersPathParams::new(),
+                EmptyQueryParams {},
+                EmptyHeaderParams {},
+            );
             let res = client
-                .post("http://localhost:8082/api/v1/user-account/anonymous-register")
-                .header("Accept", "application/json")
-                .body("")
-                .send()
-                .await
-                .unwrap();
+                .anonymous_registers(AnonymousRegistersRequest::new(EmptyRequestBody {}, params))
+                .await;
 
-            let data = res.json::<AnonymousRegistrationResult>().await.unwrap();
-            local_storage_token.set(Some(data.token));
-
-            token.set(local_storage_token());
+            match res {
+                Ok(data) => match data {
+                    AnonymousRegistersOperationResponseEnum::Status201(r) => match r {
+                        ApplicationJson(j) => {
+                            local_storage_token.set(Some(j.0.token));
+                            token.set(local_storage_token());
+                        }
+                    },
+                },
+                Err(_) => {
+                    error!("Cant get token");
+                }
+            }
         }
     });
 

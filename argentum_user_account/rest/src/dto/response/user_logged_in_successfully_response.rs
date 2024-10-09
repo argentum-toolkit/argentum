@@ -4,7 +4,7 @@ use argentum_rest_infrastructure::data_type::SerializableBody;
 use crate::dto::schema::LoginResult;
 
 #[derive(Clone)]
-pub struct ApplicationJson(LoginResult);
+pub struct ApplicationJson(pub LoginResult);
 
 impl ContentTypeResponseTrait for ApplicationJson {
     fn content_type(&self) -> Option<String> {

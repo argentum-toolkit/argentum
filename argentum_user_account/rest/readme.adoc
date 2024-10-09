@@ -2,16 +2,18 @@
 
 User Account API
 
+
 == Overview
 
 This server was generated from OpenAPI specification by the link:https://gitlab.com/argentum-toolkit/argentum(argentum-rest-generator).
 
 - API version: 0.3.0-dev
 - Package Name: argentum_user_account_rest
-- Home page: https://gitlab.com/argentum-toolkit/argentum
-- Repository: https://gitlab.com/argentum-toolkit/argentum
-- Home page: https://gitlab.com/argentum-toolkit/argentum
-- License: `BSD-3-Clause`
+    - Home page: https://gitlab.com/argentum-toolkit/argentum
+    - Repository: https://gitlab.com/argentum-toolkit/argentum
+    - Home page: https://gitlab.com/argentum-toolkit/argentum
+    - License: `BSD-3-Clause`
+
 
 == How to use
 

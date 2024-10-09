@@ -1,3 +1,4 @@
+use crate::generator::client::ClientGenerator;
 use crate::generator::dto::{
     DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
     RequestGenerator, ResponseGenerator, SchemaGenerator,
@@ -137,6 +138,9 @@ pub fn di_factory() -> DiC {
     )
     .unwrap();
 
+    reg.register_template_string("client/mod", include_str!("../template/client/mod.hbs"))
+        .unwrap();
+
     reg.register_template_string("server/mod", include_str!("../template/server/mod.hbs"))
         .unwrap();
 
@@ -186,9 +190,10 @@ pub fn di_factory() -> DiC {
     let cargo_toml_generator = Arc::new(CargoTomlGenerator::new(renderer.clone()));
     let readme_adoc_generator = Arc::new(ReadmeAdocGenerator::new(renderer.clone()));
     let gitignore_generator = Arc::new(GitIgnoreGenerator::new(renderer.clone()));
-    let schema_generator = Arc::new(SchemaGenerator::new(renderer));
+    let schema_generator = Arc::new(SchemaGenerator::new(renderer.clone()));
     let loader = Arc::new(OasLoader::new(logger.clone()));
     let combiner = Arc::new(Combiner::new(logger.clone(), loader));
+    let client_generator = Arc::new(ClientGenerator::new(renderer));
 
     let openapi_generator = Arc::new(OpenApiGenerator::new(
         logger.clone(),
@@ -210,6 +215,7 @@ pub fn di_factory() -> DiC {
         readme_adoc_generator,
         gitignore_generator,
         schema_generator,
+        client_generator,
     ));
 
     DiC::new(openapi_generator)

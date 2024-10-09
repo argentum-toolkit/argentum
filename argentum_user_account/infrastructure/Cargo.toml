@@ -21,7 +21,7 @@ argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", ve
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_user_account_business = { path = "../business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_account_rest = { path = "../rest", version = ">=0.3.0-dev,<0.4.0" }
+argentum_user_account_rest = { path = "../rest", version = ">=0.3.0-dev,<0.4.0", features = ["server"] }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 
