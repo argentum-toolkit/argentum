@@ -1,5 +1,6 @@
 use crate::route::Route;
 use dioxus::prelude::*;
+use dioxus_logger::tracing::info;
 
 #[component]
 pub fn Login() -> Element {
@@ -9,8 +10,18 @@ pub fn Login() -> Element {
                 div { class:"pb-40",
                     h2 { class:"mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl", "Sign in to your account"}
 
-                    div { class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
-                        form { class:"space-y-6", action:"#", method:"POST",
+                    div {
+
+                        class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
+                        form {
+                            onsubmit: move |event| {
+                                let valid = event.data.valid();
+                                let values = event.data.values();
+                                info!("!IS_VALID! {valid:?} ");
+                                info!("!Submitted! {values:?} ");
+                            },
+                            class:"space-y-6", action:"#", method:"POST",
+
                             div {
                                 label { "for":"email", class:"block text-sm font-medium leading-6 text-gray-900 dark:text-body-color-dark", "Email address" }
                                 div { class:"mt-2",

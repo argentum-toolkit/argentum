@@ -1,5 +1,7 @@
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::{ComponentRef, RefOrObject, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::{
+    ComponentRef, RefOrObject, SecurityRequirementObject, SpecificationRoot,
+};
 use reqwest::StatusCode;
 use std::collections::BTreeMap;
 use std::error::Error;
@@ -30,6 +32,7 @@ struct ResponseData {
 struct OperationData {
     operation_id: String,
     method: String,
+    pub security: Option<Vec<SecurityRequirementObject>>,
     pub responses: Vec<ResponseData>,
 }
 
@@ -217,6 +220,7 @@ impl ClientGenerator {
 
                 operations.push(OperationData {
                     method: ("Method::".to_owned() + method.to_string().as_str()).to_string(),
+                    security: operation.security,
                     operation_id: operation.operation_id,
                     responses: response_data,
                 });

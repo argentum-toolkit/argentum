@@ -29,14 +29,15 @@ pub(crate) fn App() -> Element {
         } else {
             let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
-            let params = AnonymousRegistersParams::new(
-                AnonymousRegistersPathParams::new(),
-                EmptyQueryParams {},
-                EmptyHeaderParams {},
+            let req = AnonymousRegistersRequest::new(
+                EmptyRequestBody {},
+                AnonymousRegistersParams::new(
+                    AnonymousRegistersPathParams::new(),
+                    EmptyQueryParams {},
+                    EmptyHeaderParams {},
+                ),
             );
-            let res = client
-                .anonymous_registers(AnonymousRegistersRequest::new(EmptyRequestBody {}, params))
-                .await;
+            let res = client.anonymous_registers(req).await;
 
             match res {
                 Ok(data) => match data {

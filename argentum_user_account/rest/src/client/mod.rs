@@ -22,6 +22,8 @@ use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use crate::dto::request::UserLoginsWithPasswordRequest;
 use crate::dto::request::UserRegistersWithPasswordRequest;
 
+use argentum_user_business::entity::user::User;
+
 use reqwest::StatusCode;
 
 pub struct Client {
@@ -39,7 +41,8 @@ impl Client {
 
     pub async fn anonymous_registers(
         &self,
-        _req: AnonymousRegistersRequest,
+        req: AnonymousRegistersRequest,
+        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<AnonymousRegistersOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
@@ -57,11 +60,14 @@ impl Client {
             self.server_url, self.base_path,
         );
 
+        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        //TODO: params: header, query, path, auth
+
         //TODO: transform AnonymousRegistersRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
-            .body("")
+            .body(body)
             .send()
             .await;
 
@@ -82,7 +88,8 @@ impl Client {
 
     pub async fn user_logins_with_password(
         &self,
-        _req: UserLoginsWithPasswordRequest,
+        req: UserLoginsWithPasswordRequest,
+        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<UserLoginsWithPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
@@ -91,7 +98,7 @@ impl Client {
         //    .request_transformer
         //    .transform(request, raw_path_params, raw_query_params)
         //    .await?;
-        //    let r = self.user_logins_with_password.handle(req)?;
+        //TODO: deal with security
 
         let client = reqwest::Client::new();
 
@@ -100,11 +107,18 @@ impl Client {
             self.server_url, self.base_path,
         );
 
+        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        //TODO: params: header, query, path, auth
+
         //TODO: transform UserLoginsWithPasswordRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
-            .body("")
+            .header(
+                "authorization",
+                format!("Bearer {}", req.params.headers.authorization),
+            )
+            .body(body)
             .send()
             .await;
 
@@ -137,7 +151,8 @@ impl Client {
 
     pub async fn user_registers_with_password(
         &self,
-        _req: UserRegistersWithPasswordRequest,
+        req: UserRegistersWithPasswordRequest,
+        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<UserRegistersWithPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
@@ -146,7 +161,7 @@ impl Client {
         //    .request_transformer
         //    .transform(request, raw_path_params, raw_query_params)
         //    .await?;
-        //    let r = self.user_registers_with_password.handle(req)?;
+        //TODO: deal with security
 
         let client = reqwest::Client::new();
 
@@ -155,11 +170,18 @@ impl Client {
             self.server_url, self.base_path,
         );
 
+        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        //TODO: params: header, query, path, auth
+
         //TODO: transform UserRegistersWithPasswordRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
-            .body("")
+            .header(
+                "authorization",
+                format!("Bearer {}", req.params.headers.authorization),
+            )
+            .body(body)
             .send()
             .await;
 
@@ -194,7 +216,8 @@ impl Client {
 
     pub async fn anonymous_requests_restore_token(
         &self,
-        _req: AnonymousRequestsRestoreTokenRequest,
+        req: AnonymousRequestsRestoreTokenRequest,
+        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<AnonymousRequestsRestoreTokenOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
@@ -203,7 +226,7 @@ impl Client {
         //    .request_transformer
         //    .transform(request, raw_path_params, raw_query_params)
         //    .await?;
-        //    let r = self.anonymous_requests_restore_token.handle(req)?;
+        //TODO: deal with security
 
         let client = reqwest::Client::new();
 
@@ -212,11 +235,18 @@ impl Client {
             self.server_url, self.base_path,
         );
 
+        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        //TODO: params: header, query, path, auth
+
         //TODO: transform AnonymousRequestsRestoreTokenRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
-            .body("")
+            .header(
+                "authorization",
+                format!("Bearer {}", req.params.headers.authorization),
+            )
+            .body(body)
             .send()
             .await;
 
@@ -255,7 +285,8 @@ impl Client {
 
     pub async fn anonymous_with_token_changes_password(
         &self,
-        _req: AnonymousWithTokenChangesPasswordRequest,
+        req: AnonymousWithTokenChangesPasswordRequest,
+        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<AnonymousWithTokenChangesPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
@@ -264,7 +295,7 @@ impl Client {
         //    .request_transformer
         //    .transform(request, raw_path_params, raw_query_params)
         //    .await?;
-        //    let r = self.anonymous_with_token_changes_password.handle(req)?;
+        //TODO: deal with security
 
         let client = reqwest::Client::new();
 
@@ -273,11 +304,18 @@ impl Client {
             self.server_url, self.base_path,
         );
 
+        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        //TODO: params: header, query, path, auth
+
         //TODO: transform AnonymousWithTokenChangesPasswordRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
-            .body("")
+            .header(
+                "authorization",
+                format!("Bearer {}", req.params.headers.authorization),
+            )
+            .body(body)
             .send()
             .await;
 

@@ -12,6 +12,9 @@
     {{/each}}
 {{/each}}
 
+{{#if securityEnabled}}use argentum_user_business::entity::user::User;{{/if}}
+
+
 {{!-- {{#if securityEnabled}} --}}
 {{!-- use argentum_user_business::entity::user::User; --}}
 {{!-- {{/if}} --}}
@@ -33,8 +36,9 @@ impl Client {
         {{#each path.operations as |operation| }}
         pub async fn {{snake operation.operationId}}(
             &self,
-            _req: {{ upper_camel operation.operationId }}Request,
-            {{#if operation.security}}_user: User,{{/if}}
+            req: {{ upper_camel operation.operationId }}Request,
+            //TODO: need some way to deal with anonymous/authorized users
+{{!--             {{#if operation.security}}_user: User,{{/if}} --}}
         ) -> Result<{{ upper_camel operation.operationId }}OperationResponseEnum, String> {
             //TODO: use better type instead of Err(String)
 
@@ -59,11 +63,20 @@ impl Client {
                 self.server_url, self.base_path,
             );
 
+            let body = serde_json::to_vec_pretty(&req.body).unwrap();
+            //TODO: params: header, query, path, auth
+
             //TODO: transform {{ upper_camel operation.operationId }}Request into reqwest object
             let res = client
                 .post(url)
                 .header("Accept", "application/json")
-                .body("")
+                {{#if operation.security}}
+                .header(
+                    "authorization",
+                    format!("Bearer {}", req.params.headers.authorization),
+                )
+                {{/if}}
+                .body(body)
                 .send()
                 .await;
 
