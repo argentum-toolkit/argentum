@@ -24,9 +24,14 @@ pub(crate) fn App() -> Element {
         let mut local_storage_token =
             use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
 
+        let local_storage_user_token = use_synced_storage::<LocalStorage, Option<String>>(
+            "x_auth_user_token".to_string(),
+            || None,
+        );
+
         if local_storage_token().is_some() {
             token.set(local_storage_token());
-        } else {
+        } else if local_storage_user_token().is_none() {
             let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
             let req = AnonymousRegistersRequest::new(

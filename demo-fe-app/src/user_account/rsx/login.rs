@@ -32,8 +32,8 @@ pub fn Login() -> Element {
                                 async move {
                                     let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
-                                    let local_storage_token =
-                                        use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None).unwrap();
+                                    let mut local_storage_token =
+                                        use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
 
                                     let req = UserLoginsWithPasswordRequest::new(
                                         LoginWithPasswordSchema::new(email(), password()),
@@ -41,7 +41,7 @@ pub fn Login() -> Element {
                                             UserLoginsWithPasswordPathParams::new(),
                                             EmptyQueryParams{},
                                             // TODO: get from localstorage
-                                            AuthHeaderParams::new(local_storage_token),
+                                            AuthHeaderParams::new(local_storage_token.unwrap()),
                                         ),
                                     );
 
@@ -55,6 +55,12 @@ pub fn Login() -> Element {
                                                         use_synced_storage::<LocalStorage, Option<String>>("x_auth_user_token".to_string(), || None);
 
                                                     local_storage_user_token.set(Some(j.0.token));
+
+                                                    local_storage_token.set(None);
+                                                    // *local_storage_token.write() =None;
+
+                                                    // let nav = navigator();
+                                                    // nav.push(Route::Home {});
                                                 }
                                             },
                                             UserLoginsWithPasswordOperationResponseEnum::Status400(_) => {error!("ERR STATUS: 400");},
