@@ -1,9 +1,23 @@
 use crate::route::Route;
+use crate::standard::rsx::LabeledInput;
+use argentum_rest_infrastructure::data_type::{
+    AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
+};
+use argentum_user_account_rest::client::Client;
+use argentum_user_account_rest::dto::operation_response_enum::UserLoginsWithPasswordOperationResponseEnum;
+use argentum_user_account_rest::dto::params::UserLoginsWithPasswordParams;
+use argentum_user_account_rest::dto::path_params::UserLoginsWithPasswordPathParams;
+use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
+use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse::ApplicationJson;
+use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
 use dioxus::prelude::*;
-use dioxus_logger::tracing::info;
+use dioxus_logger::tracing::error;
+use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 #[component]
 pub fn Login() -> Element {
+    let mut email = use_signal(|| "".to_string());
+    let mut password = use_signal(|| "".to_string());
     rsx! {
         section {
             div { class: "container",
@@ -14,36 +28,64 @@ pub fn Login() -> Element {
 
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
                         form {
-                            onsubmit: move |event| {
-                                let valid = event.data.valid();
-                                let values = event.data.values();
-                                info!("!IS_VALID! {valid:?} ");
-                                info!("!Submitted! {values:?} ");
+                            onsubmit: move |_event| {
+                                async move {
+                                    let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
+
+                                    let local_storage_token =
+                                        use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None).unwrap();
+
+                                    let req = UserLoginsWithPasswordRequest::new(
+                                        LoginWithPasswordSchema::new(email(), password()),
+                                        UserLoginsWithPasswordParams::new(
+                                            UserLoginsWithPasswordPathParams::new(),
+                                            EmptyQueryParams{},
+                                            // TODO: get from localstorage
+                                            AuthHeaderParams::new(local_storage_token),
+                                        ),
+                                    );
+
+                                    let res = client.user_logins_with_password(req).await ;
+
+                                    match res {
+                                        Ok(data) => match data {
+                                            UserLoginsWithPasswordOperationResponseEnum::Status200(r) => match r {
+                                                ApplicationJson(j) => {
+                                                    let mut local_storage_user_token =
+                                                        use_synced_storage::<LocalStorage, Option<String>>("x_auth_user_token".to_string(), || None);
+
+                                                    local_storage_user_token.set(Some(j.0.token));
+                                                }
+                                            },
+                                            UserLoginsWithPasswordOperationResponseEnum::Status400(_) => {error!("ERR STATUS: 400");},
+                                            UserLoginsWithPasswordOperationResponseEnum::Status401(_) => {error!("ERR STATUS: 401");}
+                                        },
+                                        Err(e) => {
+
+                                            error!("Cant get token with error: `{:?}`", e);
+                                        }
+                                    }
+                                }
                             },
                             class:"space-y-6", action:"#", method:"POST",
 
-                            div {
-                                label { "for":"email", class:"block text-sm font-medium leading-6 text-gray-900 dark:text-body-color-dark", "Email address" }
-                                div { class:"mt-2",
-                                    input {
-                                        id:"email", name:"email", "type":"email", autocomplete:"email", required:true,
-                                        class:"border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                                    }
-                                }
-                            }
+                            LabeledInput {
+                                id: "email".to_string(),
+                                name: "email".to_string(),
+                                label: "Email address".to_string(),
+                                input_type: "email".to_string(),
+                                value: email,
+                                oninput: move |event: String| email.set(event),
+                            },
 
-                            div {
-                                div { class:"flex items-center justify-between",
-                                    label {"for":"password", class:"block text-sm font-medium leading-6 text-gray-900 dark:text-body-color-dark", "Password"}
-                                }
-                                div { class:"mt-2",
-                                    input {
-                                        id:"password", name:"password", "type":"password", autocomplete:"current-password", required:true,
-                                        class: "border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                                    }
-                                }
-
-                            }
+                            LabeledInput {
+                                id: "password".to_string(),
+                                name: "password".to_string(),
+                                label: "Password".to_string(),
+                                input_type: "password".to_string(),
+                                value: password,
+                                oninput: move |event: String| password.set(event),
+                            },
                             div { class:"text-sm",
                                     a {href:"#", class:"text-sm font-medium text-primary hover:underline", "Forgot password?"}
                                 }

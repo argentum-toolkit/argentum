@@ -1,4 +1,5 @@
 use crate::route::Route;
+use crate::standard::rsx::LabeledInput;
 use crate::user_account::rsx::user_name::UserNameComponent;
 use argentum_rest_infrastructure::data_type::HttpParams;
 use argentum_rest_infrastructure::data_type::HttpRequest;
@@ -18,15 +19,10 @@ use std::string::ToString;
 #[component]
 pub fn Registration() -> Element {
     // TODO: get daa from this values
-    let mut agree = use_signal(|| true);
+    let agree = use_signal(|| true);
     let mut email = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
     let mut user_name = use_signal(|| UserName::new("".to_string(), None, None));
-    // let mut user_name = use_signal(|| UserNameDto {
-    //     first: "".to_string(),
-    //     last: Some("".to_string()),
-    //     patronymic: Some("".to_string()),
-    // });
 
     rsx! {
         section {
@@ -36,24 +32,14 @@ pub fn Registration() -> Element {
 
                     div { class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
                         form { class:"space-y-6", action:"#", method:"POST",
-                            // oninput: move |event| {},
-                            onsubmit: move |event| {
+                            onsubmit: move |_event| {
                                 async move {
                                     let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
-
-                                    let data = event.data;
-
-                                    info!("@@@Submitted! {data:?} ");
 
                                     let local_storage_token =
                                         use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None).unwrap();
 
                                     let req = UserRegistersWithPasswordRequest::new(
-                                        // RegistrationWithPasswordSchema::new(email(), UserName{
-                                        //     first: user_name().first,
-                                        //     last: user_name().last,
-                                        //     patronymic: user_name().patronymic,
-                                        // }, password()),
                                         RegistrationWithPasswordSchema::new(email(), user_name(), password()),
                                         UserRegistersWithPasswordParams::new(
                                             UserRegistersWithPasswordPathParams::new(),
@@ -62,7 +48,6 @@ pub fn Registration() -> Element {
                                             AuthHeaderParams::new(local_storage_token),
                                         ),
                                     );
-
 
                                     let res = client.user_registers_with_password(req).await ;
 
@@ -76,47 +61,34 @@ pub fn Registration() -> Element {
                                             UserRegistersWithPasswordOperationResponseEnum::Status400(_) => {error!("ERR STATUS: 400");},
                                             UserRegistersWithPasswordOperationResponseEnum::Status422(_) => {error!("ERR STATUS: 422");}
                                         },
-                                        Err(_) => {
-                                            error!("Cant get token");
+                                        Err(e) => {
+
+                                            error!("Cant get token with error: `{:?}`", e);
                                         }
                                     }
-                                // info!("@@REQ! {req:?} ");
                                 }
                             },
-                            div {
-                                label { "for":"email", class:"block text-sm font-medium leading-6 text-gray-900 dark:text-body-color-dark", "Email address" }
-                                div { class:"mt-2",
-                                    input {
-                                        id:"email", name:"email", "type":"email", autocomplete:"email", required:true,
-                                        value: "{email}",
-                                        class:"border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none",
-                                        oninput: move |event| email.set(event.value())
-                                    }
-                                }
-                            }
+                            LabeledInput {
+                                id: "email".to_string(),
+                                name: "email".to_string(),
+                                label: "Email address".to_string(),
+                                input_type: "email".to_string(),
+                                value: email,
+                                oninput: move |event: String| email.set(event),
+                            },
 
-                            div {
-                                div { class:"flex items-center justify-between",
-                                    label {"for":"password", class:"block text-sm font-medium leading-6 text-gray-900 dark:text-body-color-dark", "Password"}
-                                }
-                                div { class:"mt-2",
-                                    input {
-                                        id:"password", name:"password", "type":"password", autocomplete:"current-password", required:true,
-                                        value: "{password}",
-                                        class: "border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none",
-                                        oninput: move |event| password.set(event.value())
-                                    }
-                                }
-
-                            }
+                            LabeledInput {
+                                id: "password".to_string(),
+                                name: "password".to_string(),
+                                label: "Password".to_string(),
+                                input_type: "password".to_string(),
+                                value: password,
+                                oninput: move |event: String| password.set(event),
+                            },
 
                             UserNameComponent {
                                 user_name: user_name(),
-                                // last: user_name().last,
-                                // patronymic: user_name().patronymic,
-                                // oninput: move |event: UserName| {},
                                 oninput: move |event: UserName| user_name.set(event)
-                                // oninput: move
                             }
 
                             div { class: "mb-8 flex",
