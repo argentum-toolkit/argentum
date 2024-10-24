@@ -14,8 +14,14 @@ dioxus = { version = "0.5", features = ["fullstack", "router"] }
 # Debug
 dioxus-logger = "0.5.*"
 dioxus-sdk = { version = "0.5.*", features = ["storage"] }
-manganis = "0.2.2"
-tokio = "1.40.0"
+manganis = "^0.2"
+tokio = "^1.40"
+
+futures = "^0.3"
+
+uuid = { version = "1.5.*", features = ["serde", "v4"] }
+reqwest = "0.11.27"
+log = "0.4.22"
 
 [features]
 default = []

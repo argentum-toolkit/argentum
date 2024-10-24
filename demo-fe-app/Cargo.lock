@@ -688,9 +688,13 @@ dependencies = [
  "dioxus",
  "dioxus-logger",
  "dioxus-sdk",
+ "futures",
+ "log",
  "manganis",
+ "reqwest 0.11.27",
  "serde",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
