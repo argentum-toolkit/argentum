@@ -1,71 +1,74 @@
 use crate::route::Route;
 use crate::standard::rsx::LabeledInput;
-#[cfg(feature = "web")]
-use crate::user_account::service::ClientSideAuthenticator;
-use argentum_rest_infrastructure::data_type::{
-    AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
-};
-use argentum_user_account_rest::client::Client;
-use argentum_user_account_rest::dto::operation_response_enum::UserLoginsWithPasswordOperationResponseEnum;
-use argentum_user_account_rest::dto::params::UserLoginsWithPasswordParams;
-use argentum_user_account_rest::dto::path_params::UserLoginsWithPasswordPathParams;
-use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
-use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse::ApplicationJson;
-use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
+
 use dioxus::prelude::*;
 use dioxus_logger::tracing::error;
-use std::cell::RefCell;
 
 #[component]
 pub fn Login() -> Element {
     let mut email = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
 
-    #[cfg(feature = "web")]
-    let mut authenticator = use_context::<Signal<RefCell<ClientSideAuthenticator>>>();
-
-    #[cfg(feature = "server")]
-    let onsubmit = move |_| {};
+    #[cfg(not(feature = "web"))]
+    let on_submit: fn(Event<FormData>) = move |_| {};
 
     #[cfg(feature = "web")]
-    let onsubmit = move |_event| {
-        async move {
-            let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
+    let on_submit = {
+        use crate::user_account::service::ClientSideAuthenticator;
+        use argentum_rest_infrastructure::data_type::{
+            AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
+        };
+        use argentum_user_account_rest::client::Client;
+        use argentum_user_account_rest::dto::operation_response_enum::UserLoginsWithPasswordOperationResponseEnum;
+        use argentum_user_account_rest::dto::params::UserLoginsWithPasswordParams;
+        use argentum_user_account_rest::dto::path_params::UserLoginsWithPasswordPathParams;
+        use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
+        use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse::ApplicationJson;
+        use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
+        use std::cell::RefCell;
 
-            let req = UserLoginsWithPasswordRequest::new(
-                LoginWithPasswordSchema::new(email(), password()),
-                UserLoginsWithPasswordParams::new(
-                    UserLoginsWithPasswordPathParams::new(),
-                    EmptyQueryParams {},
-                    AuthHeaderParams::new(authenticator().borrow().anonymous_token().unwrap()),
-                ),
-            );
+        let mut authenticator = use_context::<Signal<RefCell<ClientSideAuthenticator>>>();
 
-            let res = client.user_logins_with_password(req).await;
+        move |_| {
+            spawn(async move {
+                let client =
+                    Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
-            match res {
-                Ok(data) => match data {
-                    UserLoginsWithPasswordOperationResponseEnum::Status200(r) => match r {
-                        ApplicationJson(j) => {
-                            authenticator()
-                                .borrow_mut()
-                                .auth_user(j.0.token, j.0.user_id);
+                let req = UserLoginsWithPasswordRequest::new(
+                    LoginWithPasswordSchema::new(email(), password()),
+                    UserLoginsWithPasswordParams::new(
+                        UserLoginsWithPasswordPathParams::new(),
+                        EmptyQueryParams {},
+                        AuthHeaderParams::new(authenticator().borrow().anonymous_token().unwrap()),
+                    ),
+                );
 
-                            // let nav = navigator();
-                            // nav.push(Route::Home {});
+                let res = client.user_logins_with_password(req).await;
+
+                match res {
+                    Ok(data) => match data {
+                        UserLoginsWithPasswordOperationResponseEnum::Status200(r) => match r {
+                            ApplicationJson(j) => {
+                                authenticator()
+                                    .borrow_mut()
+                                    .auth_user(j.0.token, j.0.user_id);
+
+                                // let nav = navigator();
+                                // nav.push(Route::Home {});
+                            }
+                        },
+                        UserLoginsWithPasswordOperationResponseEnum::Status400(_) => {
+                            error!("ERR STATUS: 400");
+                        }
+                        UserLoginsWithPasswordOperationResponseEnum::Status401(_) => {
+                            error!("ERR STATUS: 401");
                         }
                     },
-                    UserLoginsWithPasswordOperationResponseEnum::Status400(_) => {
-                        error!("ERR STATUS: 400");
+                    Err(e) => {
+                        error!("Cant get token with error: `{:?}`", e);
                     }
-                    UserLoginsWithPasswordOperationResponseEnum::Status401(_) => {
-                        error!("ERR STATUS: 401");
-                    }
-                },
-                Err(e) => {
-                    error!("Cant get token with error: `{:?}`", e);
                 }
-            }
+            });
         }
     };
 
@@ -79,7 +82,7 @@ pub fn Login() -> Element {
 
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
                         form {
-                            onsubmit: onsubmit,
+                            onsubmit: on_submit,
                             class:"space-y-6", action:"#", method:"POST",
 
                             LabeledInput {

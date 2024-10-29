@@ -1,6 +1,6 @@
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{
-    ComponentRef, RefOrObject, SecurityRequirementObject, SpecificationRoot,
+    ComponentRef, Parameter, RefOrObject, SecurityRequirementObject, SpecificationRoot,
 };
 use reqwest::StatusCode;
 use std::collections::BTreeMap;
@@ -34,6 +34,7 @@ struct OperationData {
     method: String,
     pub security: Option<Vec<SecurityRequirementObject>>,
     pub responses: Vec<ResponseData>,
+    pub parameters: Vec<Parameter>,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -141,6 +142,26 @@ impl ClientGenerator {
         for (url, path) in spec.clone().paths {
             let mut operations: Vec<OperationData> = vec![];
             for (method, operation) in path.operations.clone() {
+                let uri_parameters = path.parameters.clone();
+                let mut parameters: Vec<Parameter> = vec![];
+
+                match uri_parameters {
+                    Some(params) => {
+                        for param in params {
+                            parameters.push(param.clone())
+                        }
+                    }
+                    None => {}
+                };
+                match &operation.parameters {
+                    Some(params) => {
+                        for param in params {
+                            parameters.push(param.clone())
+                        }
+                    }
+                    None => {}
+                }
+
                 if operation.security.is_some() {
                     security_enabled = true;
                 }
@@ -223,14 +244,11 @@ impl ClientGenerator {
                     security: operation.security,
                     operation_id: operation.operation_id,
                     responses: response_data,
+                    parameters,
                 });
             }
 
-            let item = PathData {
-                url,
-                operations,
-                // params: path_params,
-            };
+            let item = PathData { url, operations };
 
             paths_data.push(item);
         }

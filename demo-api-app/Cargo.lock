@@ -309,6 +309,7 @@ dependencies = [
  "hyper",
  "regex",
  "serde",
+ "serde_json",
  "serde_valid",
  "uuid",
 ]

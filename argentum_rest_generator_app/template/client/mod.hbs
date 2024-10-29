@@ -2,7 +2,7 @@
     use crate::dto::response::{{upper_camel response}}Response;
 {{/each}}
 {{#each useSchemas as |schema|}}
-    use crate::dto::schema::{{upper_camel schema}};
+    use crate::dto::schema::{{upper_camel schema}} as {{upper_camel schema}}Schema;
 {{/each}}
 
 {{#each paths as |path|}}
@@ -42,11 +42,11 @@ impl Client {
         ) -> Result<{{ upper_camel operation.operationId }}OperationResponseEnum, String> {
             //TODO: use better type instead of Err(String)
 
-            //let raw_query_params = HashMap::from([]);
+            {{!-- //let raw_query_params = HashMap::from([]);
             //let req: {{upper_camel operation.operationId}}Request = self
             //    .request_transformer
             //    .transform(request, raw_path_params, raw_query_params)
-            //    .await?;
+            //    .await?; --}}
             {{#if operation.security}}
             //TODO: deal with security
     {{!--             let user = self.bearer_auth.auth(&req.params.headers)?; --}}
@@ -58,13 +58,20 @@ impl Client {
 
             let client = reqwest::Client::new();
 
-            let url = format!(
-                "{}{}{{path.url}}",
-                self.server_url, self.base_path,
+            let mut url_tpl = "{{path.url}}".to_string();
+
+            {{#each operation.parameters as |param|~}}
+            url_tpl = url_tpl.replace(
+                "{ {{~param.name~}} }",
+                req.params.path.{{snake param.name}}.to_string().as_str(),
             );
+            {{/each}}
+
+            let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
+
 
             let body = serde_json::to_vec_pretty(&req.body).unwrap();
-            //TODO: params: header, query, path, auth
+            //TODO: params: header, query, auth
 
             //TODO: transform {{ upper_camel operation.operationId }}Request into reqwest object
             let res = client
@@ -87,14 +94,14 @@ impl Client {
                         StatusCode::{{resp.statusName}} => {
                             {{#each resp.content as |content| }}
                                 {{#if (eq content.contentType "application/json") }}
-                                match response.json::<{{content.schemaName}}>().await {
+                                match response.json::<{{content.schemaName}}Schema>().await {
                                     Ok(data) => Ok({{ upper_camel operation.operationId }}OperationResponseEnum::Status{{resp.statusCode}}(
                                         {{resp.responseName}}Response::new_application_json(data),
                                     )),
                                     Err(e) => Err(e.to_string()),
                                 }
                                 {{else if (eq content.contentType "application/problem+json") }}
-                                match response.json::<{{content.schemaName}}>().await {
+                                match response.json::<{{content.schemaName}}Schema>().await {
                                     Ok(data) => Ok({{ upper_camel operation.operationId }}OperationResponseEnum::Status{{resp.statusCode}}(
                                         {{resp.responseName}}Response::new_application_problem_json(data),
                                     )),

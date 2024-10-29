@@ -76,7 +76,7 @@ impl ClientSideAuthenticator {
                     Ok(data) => match data {
                         AnonymousRegistersOperationResponseEnum::Status201(r) => match r {
                             ApplicationJson(j) => {
-                                error!("TST TMP");
+                                error!("TST TMP TOKEN FROM SERVER");
                                 local_storage_anonymous_token.set(Some(j.0.token));
                                 anonymous_token.set(local_storage_anonymous_token());
                             }

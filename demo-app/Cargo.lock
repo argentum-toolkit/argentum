@@ -177,6 +177,7 @@ dependencies = [
  "serde_json",
  "serde_valid",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -302,6 +303,7 @@ dependencies = [
  "hyper",
  "regex",
  "serde",
+ "serde_json",
  "serde_valid",
  "uuid",
 ]

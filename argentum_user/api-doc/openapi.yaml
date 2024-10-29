@@ -38,32 +38,32 @@ tags:
 
 paths:
   /user/{userId}:
-  get:
-    summary: Get user info
-    description: Get user info
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        description: User ID
-        schema:
-          type: string
-          format: uuid
-          example: "7e5d7cb4-7d83-46e3-8e24-4fb90a7e61d6"
-    tags:
-      - user
-    operationId: GetUser
-    security:
-      - bearerAuth: [ ]
-    responses:
-      '200':
-        $ref: "./response.oas.yaml#/components/responses/GetUserOk"
-      '401':
-        $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
-      '403':
-        $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/403"
-      '404':
-        $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/404"
+    get:
+      summary: Get user info
+      description: Get user info
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+            example: "7e5d7cb4-7d83-46e3-8e24-4fb90a7e61d6"
+      tags:
+        - user
+      operationId: GetUser
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          $ref: "./response.oas.yaml#/components/responses/GetUserOk"
+        '401':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
+        '403':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/403"
+        '404':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/404"
 
 components:
   securitySchemes:

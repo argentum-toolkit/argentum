@@ -1,9 +1,7 @@
 use crate::route::Route;
 use crate::rsx::dark_mode::DarkModeToggle;
-#[cfg(feature = "web")]
-use crate::user_account::service::ClientSideAuthenticator;
+
 use dioxus::prelude::*;
-use std::cell::RefCell;
 
 #[component]
 pub(crate) fn NavBar() -> Element {
@@ -11,7 +9,9 @@ pub(crate) fn NavBar() -> Element {
 
     #[cfg(feature = "web")]
     use_effect(move || {
-        let authenticator = use_context::<Signal<RefCell<ClientSideAuthenticator>>>();
+        use crate::user_account::service::ClientSideAuthenticator;
+        use std::cell::RefCell;
+        let authenticator: Signal<RefCell<ClientSideAuthenticator>> = use_context();
         is_user_authenticated.set(authenticator().borrow().is_user_authenticated());
     });
 

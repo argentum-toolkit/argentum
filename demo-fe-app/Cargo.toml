@@ -7,6 +7,7 @@ edition = "2021"
 [dependencies]
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_user_account_rest = { path = "../argentum_user_account/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client"] }
+argentum_user_rest = { path = "../argentum_user/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client"] }
 serde = { version = "1.0.197", features = ["derive"] }
 
 dioxus = { version = "0.5", features = ["fullstack", "router"] }
@@ -17,7 +18,7 @@ dioxus-sdk = { version = "0.5.*", features = ["storage"] }
 manganis = "^0.2"
 tokio = "^1.40"
 
-futures = "^0.3"
+#futures = "^0.3"
 
 uuid = { version = "1.5.*", features = ["serde", "v4"] }
 reqwest = "0.11.27"

@@ -15,11 +15,11 @@ readme = "readme.adoc"
 [dependencies]
 argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
+argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", features = ["server"], version = ">=0.3.0-dev,<0.4.0" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.3.0-dev,<0.4.0" }
+argentum_user_rest = { path = "../../argentum_user/rest", features = ["server"], version = ">=0.3.0-dev,<0.4.0" }
 
 chrono = { version = "0.4.*", features = ["serde"] }
 derive_more = "0.99.*"

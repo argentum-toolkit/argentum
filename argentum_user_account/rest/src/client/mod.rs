@@ -22,8 +22,6 @@ use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use crate::dto::request::UserLoginsWithPasswordRequest;
 use crate::dto::request::UserRegistersWithPasswordRequest;
 
-use argentum_user_business::entity::user::User;
-
 use reqwest::StatusCode;
 
 pub struct Client {
