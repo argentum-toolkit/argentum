@@ -47,13 +47,13 @@ impl Client {
 
         //TODO: transform GetUserRequest into reqwest object
         let res = client
-            .post(url)
+            .get(url)
             .header("Accept", "application/json")
             .header(
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),
             )
-            .body(body)
+            // .body(body)
             .send()
             .await;
 

@@ -54,9 +54,9 @@ impl ClientSideAuthenticator {
             local_storage_user_id.set(None);
         }
 
-        spawn(async move {
+        let task = spawn(async move {
             if user_token().is_some() {
-                //TODO: load current user info from server
+                
             } else if anonymous_token().is_none() {
                 let client =
                     Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
@@ -89,7 +89,6 @@ impl ClientSideAuthenticator {
             }
         });
 
-        error!("TST TMP");
         Self {
             anonymous_token: anonymous_token(),
             user_token: user_token(),
@@ -102,6 +101,7 @@ impl ClientSideAuthenticator {
         self.user_id = None;
         self.anonymous_token = Some(token);
     }
+
     pub fn auth_user(&mut self, token: String, user_id: uuid::Uuid) {
         self.anonymous_token = None;
         self.user_token = Some(token.clone());

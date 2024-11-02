@@ -1,6 +1,6 @@
 /.asciidoctor
 /.idea
-/NO
+/.vscode
 .asciidoctor
 **/.asciidoctor
 /*/target
