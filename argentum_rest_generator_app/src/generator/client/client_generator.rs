@@ -1,6 +1,6 @@
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{
-    ComponentRef, Parameter, RefOrObject, SecurityRequirementObject, SpecificationRoot,
+    ComponentRef, Method, Parameter, RefOrObject, SecurityRequirementObject, SpecificationRoot,
 };
 use reqwest::StatusCode;
 use std::collections::BTreeMap;
@@ -31,6 +31,7 @@ struct ResponseData {
 #[serde(rename_all = "camelCase")]
 struct OperationData {
     operation_id: String,
+    need_body: bool,
     method: String,
     pub security: Option<Vec<SecurityRequirementObject>>,
     pub responses: Vec<ResponseData>,
@@ -68,7 +69,7 @@ fn to_enum_name(code: &str) -> String {
         ("207", "MULTI_STATUS"),
         ("208", "ALREADY_REPORTED"),
         ("226", "IM_USED"),
-        ("300", "MULTIPLE_CHOICES"),
+        ("300", "MULTIif methPLE_CHOICES"),
         ("301", "MOVED_PERMANENTLY"),
         ("302", "FOUND"),
         ("303", "SEE_OTHER"),
@@ -239,8 +240,14 @@ impl ClientGenerator {
                     });
                 }
 
+                let need_body = match method {
+                    Method::Post => true,
+                    _ => false,
+                };
+
                 operations.push(OperationData {
-                    method: ("Method::".to_owned() + method.to_string().as_str()).to_string(),
+                    method: method.to_string(),
+                    need_body,
                     security: operation.security,
                     operation_id: operation.operation_id,
                     responses: response_data,

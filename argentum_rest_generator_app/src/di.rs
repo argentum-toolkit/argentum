@@ -12,8 +12,8 @@ use crate::generator::{
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
 };
 use crate::template::helper::{
-    camel_helper, content_type_to_type_helper, eq_helper, snake_helper, trim_mod_helper,
-    upper_camel_helper,
+    camel_helper, content_type_to_type_helper, eq_helper, lower_helper, snake_helper,
+    trim_mod_helper, upper_camel_helper,
 };
 use crate::template::Renderer;
 use argentum_log_business::{DefaultLogger, Level};
@@ -158,6 +158,7 @@ pub fn di_factory() -> DiC {
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
+    reg.register_helper("lower", Box::new(lower_helper));
     reg.register_helper("eq", Box::new(eq_helper));
     reg.register_helper(
         "content_type_to_type",

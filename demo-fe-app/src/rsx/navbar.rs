@@ -8,7 +8,6 @@ use dioxus_logger::tracing::error;
 pub(crate) fn NavBar() -> Element {
     let mut first_name: Signal<Option<String>> = use_signal(|| None);
 
-
     #[cfg(feature = "web")]
     spawn(async move {
         use crate::user_account::service::ClientSideAuthenticator;
@@ -44,13 +43,9 @@ pub(crate) fn NavBar() -> Element {
             let first = match result {
                 Ok(response) => {
                     match response {
-                        GetUserOperationResponseEnum::Status200(r) => {
-                            match r {
-                                GetUserOkResponse::ApplicationJson(j) => {
-                                    Some(j.0.name.first.clone())
-                                }
-                            }
-                        }
+                        GetUserOperationResponseEnum::Status200(r) => match r {
+                            GetUserOkResponse::ApplicationJson(j) => Some(j.0.name.first.clone()),
+                        },
                         _en => {
                             //TODO: process other statuses
                             error!("Bad data. Error: ?????");

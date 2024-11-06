@@ -56,7 +56,6 @@ impl ClientSideAuthenticator {
 
         let task = spawn(async move {
             if user_token().is_some() {
-                
             } else if anonymous_token().is_none() {
                 let client =
                     Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());

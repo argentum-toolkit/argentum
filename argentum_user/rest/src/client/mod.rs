@@ -42,8 +42,7 @@ impl Client {
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-        let body = serde_json::to_vec_pretty(&req.body).unwrap();
-        //TODO: params: header, query, path, auth
+        //TODO: params: header, query, auth
 
         //TODO: transform GetUserRequest into reqwest object
         let res = client
@@ -53,7 +52,6 @@ impl Client {
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),
             )
-            // .body(body)
             .send()
             .await;
 

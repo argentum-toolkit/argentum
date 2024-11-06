@@ -69,13 +69,14 @@ impl Client {
 
             let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-
+            {{#if operation.needBody}}
             let body = serde_json::to_vec_pretty(&req.body).unwrap();
+            {{/if}}
             //TODO: params: header, query, auth
 
             //TODO: transform {{ upper_camel operation.operationId }}Request into reqwest object
             let res = client
-                .post(url)
+                .{{lower operation.method}}(url)
                 .header("Accept", "application/json")
                 {{#if operation.security}}
                 .header(
@@ -83,7 +84,9 @@ impl Client {
                     format!("Bearer {}", req.params.headers.authorization),
                 )
                 {{/if}}
+                {{#if operation.needBody}}
                 .body(body)
+                {{/if}}
                 .send()
                 .await;
 
