@@ -27,7 +27,7 @@ pub fn Login() -> Element {
         use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
         use std::cell::RefCell;
 
-        let mut authenticator = use_context::<Signal<RefCell<ClientSideAuthenticator>>>();
+        let authenticator = use_context::<Signal<RefCell<ClientSideAuthenticator>>>();
 
         move |_| {
             spawn(async move {

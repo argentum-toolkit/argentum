@@ -56,7 +56,6 @@ impl Client {
             {{/if}}
 
 
-            let client = reqwest::Client::new();
 
             let mut url_tpl = "{{path.url}}".to_string();
 
@@ -72,8 +71,9 @@ impl Client {
             {{#if operation.needBody}}
             let body = serde_json::to_vec_pretty(&req.body).unwrap();
             {{/if}}
-            //TODO: params: header, query, auth
+            //TODO: params: auth, header, query
 
+            let client = reqwest::Client::new();
             //TODO: transform {{ upper_camel operation.operationId }}Request into reqwest object
             let res = client
                 .{{lower operation.method}}(url)

@@ -54,7 +54,7 @@ impl ClientSideAuthenticator {
             local_storage_user_id.set(None);
         }
 
-        let task = spawn(async move {
+        spawn(async move {
             if user_token().is_some() {
             } else if anonymous_token().is_none() {
                 let client =
