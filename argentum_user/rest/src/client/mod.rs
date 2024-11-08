@@ -7,9 +7,6 @@ use crate::dto::schema::User as UserSchema;
 
 use crate::dto::operation_response_enum::GetUserOperationResponseEnum;
 use crate::dto::request::GetUserRequest;
-
-use argentum_user_business::entity::user::User;
-
 use reqwest::StatusCode;
 
 pub struct Client {
@@ -28,13 +25,8 @@ impl Client {
     pub async fn get_user(
         &self,
         req: GetUserRequest,
-        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<GetUserOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
-
-        //TODO: deal with security
-
-        let client = reqwest::Client::new();
 
         let mut url_tpl = "/user/{userId}".to_string();
 
@@ -42,12 +34,14 @@ impl Client {
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-        //TODO: params: header, query, auth
+        //TODO: params: header, query
 
+        let client = reqwest::Client::new();
         //TODO: transform GetUserRequest into reqwest object
         let res = client
             .get(url)
             .header("Accept", "application/json")
+            //TODO: add support of another authorization schemas
             .header(
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),

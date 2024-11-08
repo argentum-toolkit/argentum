@@ -2,6 +2,7 @@ use crate::dto::path_params::GetUserPathParams;
 use argentum_rest_infrastructure::data_type::AuthHeaderParams;
 use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams};
 
+//TODO: query params generator
 pub struct GetUserParams {
     pub headers: AuthHeaderParams,
     pub path: GetUserPathParams,

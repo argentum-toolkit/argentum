@@ -11,14 +11,6 @@
     use crate::dto::operation_response_enum::{{ upper_camel operation.operationId }}OperationResponseEnum;
     {{/each}}
 {{/each}}
-
-{{#if securityEnabled}}use argentum_user_business::entity::user::User;{{/if}}
-
-
-{{!-- {{#if securityEnabled}} --}}
-{{!-- use argentum_user_business::entity::user::User; --}}
-{{!-- {{/if}} --}}
-
 use reqwest::StatusCode;
 
 pub struct Client {
@@ -37,25 +29,8 @@ impl Client {
         pub async fn {{snake operation.operationId}}(
             &self,
             req: {{ upper_camel operation.operationId }}Request,
-            //TODO: need some way to deal with anonymous/authorized users
-{{!--             {{#if operation.security}}_user: User,{{/if}} --}}
         ) -> Result<{{ upper_camel operation.operationId }}OperationResponseEnum, String> {
             //TODO: use better type instead of Err(String)
-
-            {{!-- //let raw_query_params = HashMap::from([]);
-            //let req: {{upper_camel operation.operationId}}Request = self
-            //    .request_transformer
-            //    .transform(request, raw_path_params, raw_query_params)
-            //    .await?; --}}
-            {{#if operation.security}}
-            //TODO: deal with security
-    {{!--             let user = self.bearer_auth.auth(&req.params.headers)?; --}}
-    {{!--             let r = self.{{snake operation.operationId}}.handle(req, user)?; --}}
-            {{else}}
-            //    let r = self.{{snake operation.operationId}}.handle(req)?;
-            {{/if}}
-
-
 
             let mut url_tpl = "{{path.url}}".to_string();
 
@@ -71,7 +46,7 @@ impl Client {
             {{#if operation.needBody}}
             let body = serde_json::to_vec_pretty(&req.body).unwrap();
             {{/if}}
-            //TODO: params: auth, header, query
+            //TODO: params: header, query
 
             let client = reqwest::Client::new();
             //TODO: transform {{ upper_camel operation.operationId }}Request into reqwest object
@@ -79,6 +54,7 @@ impl Client {
                 .{{lower operation.method}}(url)
                 .header("Accept", "application/json")
                 {{#if operation.security}}
+                //TODO: add support of another authorization schemas
                 .header(
                     "authorization",
                     format!("Bearer {}", req.params.headers.authorization),

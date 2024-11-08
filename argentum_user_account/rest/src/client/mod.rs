@@ -42,15 +42,6 @@ impl Client {
         req: AnonymousRegistersRequest,
         //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<AnonymousRegistersOperationResponseEnum, String> {
-        //TODO: use better type instead of Err(String)
-
-        //let raw_query_params = HashMap::from([]);
-        //let req: AnonymousRegistersRequest = self
-        //    .request_transformer
-        //    .transform(request, raw_path_params, raw_query_params)
-        //    .await?;
-        //    let r = self.anonymous_registers.handle(req)?;
-
         let client = reqwest::Client::new();
 
         let url = format!(
