@@ -4,15 +4,14 @@ use dioxus::prelude::*;
 pub(crate) struct DarkMode(pub bool);
 
 pub fn DarkModeToggle() -> Element {
-    let mut theme = "dark";
+    let mut dark_mode_context = use_context::<Signal<DarkMode>>();
 
     rsx! {
-        button { class: "flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-2 dark:bg-dark-bg h-9 w-9 dark:text-white md:h-14 md:w-14",
+        div {
+            class: "flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-2 dark:bg-dark-bg h-9 w-9 dark:text-white md:h-14 md:w-14",
             onclick: move |_event| {
-                theme = match theme {
-                    "dark" => "light",
-                    _ => "dark"
-                }
+                dark_mode_context.set(DarkMode(!dark_mode_context().0));
+
             },
             svg {
                 "viewBox":"0 0 23 23",
