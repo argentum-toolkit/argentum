@@ -2,7 +2,6 @@ use crate::route::Route;
 use crate::rsx::dark_mode::DarkModeToggle;
 
 use dioxus::prelude::*;
-use dioxus_logger::tracing::error;
 
 #[component]
 pub(crate) fn NavBar() -> Element {
@@ -11,6 +10,7 @@ pub(crate) fn NavBar() -> Element {
     #[cfg(feature = "web")]
     spawn(async move {
         use crate::user_account::service::ClientSideAuthenticator;
+        use dioxus_logger::tracing::error;
         use std::cell::RefCell;
         let authenticator: Signal<RefCell<ClientSideAuthenticator>> = use_context();
         if authenticator().borrow().is_user_authenticated() && first_name().is_none() {

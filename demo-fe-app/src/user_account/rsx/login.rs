@@ -2,7 +2,6 @@ use crate::route::Route;
 use crate::standard::rsx::LabeledInput;
 
 use dioxus::prelude::*;
-use dioxus_logger::tracing::error;
 
 #[component]
 pub fn Login() -> Element {
@@ -25,6 +24,7 @@ pub fn Login() -> Element {
         use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
         use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse::ApplicationJson;
         use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
+        use dioxus_logger::tracing::error;
         use std::cell::RefCell;
 
         let authenticator = use_context::<Signal<RefCell<ClientSideAuthenticator>>>();

@@ -1,4 +1,3 @@
-use super::dark_mode::DarkMode;
 use crate::route::Route;
 use crate::rsx::footer::Footer;
 use crate::rsx::navbar::NavBar;
@@ -6,12 +5,24 @@ use dioxus::prelude::*;
 
 #[component]
 pub(crate) fn Wrapper() -> Element {
-    let dark_mode = use_context::<Signal<DarkMode>>();
+    let mut theme_class = use_signal(|| "");
 
-    let theme_class = match dark_mode().0 {
-        true => "dark",
-        false => "",
-    };
+    #[cfg(feature = "web")]
+    use_effect(move || {
+        use super::dark_mode::DarkMode;
+
+        let dark_mode = use_context::<Signal<DarkMode>>();
+
+        let class = match dark_mode().0 {
+            true => "dark",
+            false => "",
+        };
+
+        theme_class.set(class);
+    });
+
+    #[cfg(not(feature = "web"))]
+    theme_class.set("");
 
     rsx! {
         div {

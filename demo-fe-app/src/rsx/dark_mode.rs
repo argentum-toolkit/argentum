@@ -4,14 +4,21 @@ use dioxus::prelude::*;
 pub(crate) struct DarkMode(pub bool);
 
 pub fn DarkModeToggle() -> Element {
-    let mut dark_mode_context = use_context::<Signal<DarkMode>>();
-
     rsx! {
         div {
             class: "flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-2 dark:bg-dark-bg h-9 w-9 dark:text-white md:h-14 md:w-14",
             onclick: move |_event| {
-                dark_mode_context.set(DarkMode(!dark_mode_context().0));
+                #[cfg(feature = "web")]
+                {
+                    use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
+                    let mut dark_mode_context = use_context::<Signal<DarkMode>>();
+                    let is_dark = !dark_mode_context().0;
+                    let mut is_dark_signal = use_synced_storage::<LocalStorage, bool>("dark_mode_enabled".to_string(), || false);
+
+                    dark_mode_context.set(DarkMode(is_dark));
+                    is_dark_signal.set(is_dark);
+                }
             },
             svg {
                 "viewBox":"0 0 23 23",
