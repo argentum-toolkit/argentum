@@ -31,7 +31,7 @@ pub(crate) fn Wrapper() -> Element {
                 NavBar {}
             }
             main {
-                class: "mb-auto dark:bg-gray-dark text-body-color dark:text-body-color-dark pt-16 md:pt-20 lg:pt-28",
+                class: "dark:bg-gray-dark text-body-color dark:text-body-color-dark pt-16 md:pt-20 lg:pt-28",
                 Outlet::<Route> {}
             }
             Footer {}
