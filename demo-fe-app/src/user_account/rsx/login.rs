@@ -3,6 +3,16 @@ use crate::standard::rsx::LabeledInput;
 
 use dioxus::prelude::*;
 
+fn redirect_to_home() {
+    let window = web_sys::window().expect("Missing Window");
+    let navigator = window.navigator();
+    let document = window.document().expect("Could not get document");
+    let location = document.location().expect("Could not get location");
+    let home = Route::Home {};
+
+    _ = location.set_href(&home.to_string());
+}
+
 #[component]
 pub fn Login() -> Element {
     let mut email = use_signal(|| "".to_string());
@@ -51,8 +61,7 @@ pub fn Login() -> Element {
                                 authenticator()
                                     .auth_user(j.0.token, j.0.user_id);
 
-                                // let nav = navigator();
-                                // nav.push(Route::Home {});
+                                redirect_to_home();                           
                             }
                         },
                         UserLoginsWithPasswordOperationResponseEnum::Status400(_) => {

@@ -20,6 +20,8 @@ manganis = "^0.2"
 uuid = { version = "1.5.*", features = ["serde", "v4"] }
 log = "0.4.22"
 
+web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
+
 [features]
 default = []
 server = ["dioxus/axum"]

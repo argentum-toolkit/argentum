@@ -712,6 +712,7 @@ dependencies = [
  "manganis",
  "serde",
  "uuid",
+ "web-sys",
 ]
 
 [[package]]
