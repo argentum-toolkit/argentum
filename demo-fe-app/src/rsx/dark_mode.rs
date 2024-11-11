@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 
 #[derive(Clone, Copy)]
+#[cfg(feature = "web")]
 pub(crate) struct DarkMode(pub bool);
 
 pub fn use_dark_mode() {
@@ -8,7 +9,6 @@ pub fn use_dark_mode() {
     {
         use crate::rsx::dark_mode::DarkMode;
         use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
-        use std::cell::RefCell;
 
         let is_dark =
             use_synced_storage::<LocalStorage, bool>("dark_mode_enabled".to_string(), || false);

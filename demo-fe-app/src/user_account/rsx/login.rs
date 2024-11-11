@@ -25,9 +25,8 @@ pub fn Login() -> Element {
         use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse::ApplicationJson;
         use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
         use dioxus_logger::tracing::error;
-        use std::cell::RefCell;
 
-        let authenticator = use_context::<Signal<RefCell<ClientSideAuthenticator>>>();
+        let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         move |_| {
             spawn(async move {
@@ -39,7 +38,7 @@ pub fn Login() -> Element {
                     UserLoginsWithPasswordParams::new(
                         UserLoginsWithPasswordPathParams::new(),
                         EmptyQueryParams {},
-                        AuthHeaderParams::new(authenticator().borrow().anonymous_token().unwrap()),
+                        AuthHeaderParams::new(authenticator().anonymous_token().unwrap()),
                     ),
                 );
 
@@ -50,7 +49,6 @@ pub fn Login() -> Element {
                         UserLoginsWithPasswordOperationResponseEnum::Status200(r) => match r {
                             ApplicationJson(j) => {
                                 authenticator()
-                                    .borrow_mut()
                                     .auth_user(j.0.token, j.0.user_id);
 
                                 // let nav = navigator();
