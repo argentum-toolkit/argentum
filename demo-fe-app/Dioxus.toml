@@ -32,10 +32,13 @@ watch_path = ["src", "assets", "index.html"]
 
 # CSS style file
 
-style = ["/tailwind.css"]
+style = [
+    "/tailwind.css"
+]
 
 # Javascript code file
-script = []
+script = [
+]
 
 [web.resource.dev]
 

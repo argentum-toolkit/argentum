@@ -13,7 +13,6 @@ pub fn Blog(id: i32) -> Element {
                             }
                             div {
                                 "Blog post {id}"
-
                             }
                         }
                     }

@@ -3,16 +3,6 @@ use crate::standard::rsx::LabeledInput;
 
 use dioxus::prelude::*;
 
-fn redirect_to_home() {
-    let window = web_sys::window().expect("Missing Window");
-    let navigator = window.navigator();
-    let document = window.document().expect("Could not get document");
-    let location = document.location().expect("Could not get location");
-    let home = Route::Home {};
-
-    _ = location.set_href(&home.to_string());
-}
-
 #[component]
 pub fn Login() -> Element {
     let mut email = use_signal(|| "".to_string());
@@ -23,6 +13,7 @@ pub fn Login() -> Element {
 
     #[cfg(feature = "web")]
     let on_submit = {
+        use crate::standard::service::redirect;
         use crate::user_account::service::ClientSideAuthenticator;
         use argentum_rest_infrastructure::data_type::{
             AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
@@ -58,10 +49,9 @@ pub fn Login() -> Element {
                     Ok(data) => match data {
                         UserLoginsWithPasswordOperationResponseEnum::Status200(r) => match r {
                             ApplicationJson(j) => {
-                                authenticator()
-                                    .auth_user(j.0.token, j.0.user_id);
+                                authenticator().auth_user(j.0.token, j.0.user_id);
 
-                                redirect_to_home();                           
+                                redirect(Route::Home {});
                             }
                         },
                         UserLoginsWithPasswordOperationResponseEnum::Status400(_) => {

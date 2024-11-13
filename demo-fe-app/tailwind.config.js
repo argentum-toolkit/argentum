@@ -5,7 +5,7 @@ module.exports = {
     mode: "all",
     content: [
         "./src/**/*.{rs,html,css}",
-        "./dist/**/*.html"
+        "./dist/**/*.html",
     ],
     // darkMode: "selector",
     // darkMode: ['selector', '[data-mode="dark"]'],

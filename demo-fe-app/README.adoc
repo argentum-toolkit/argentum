@@ -4,7 +4,7 @@
 
 [source,bash]
 ----
-npx tailwindcss -i ./input.css -o ./assets/styles.css --watch
+npx tailwindcss -i ./input.css -o ./public/tailwind.css --watch
 ----
 
 Launch the Dioxus Fullstack app:

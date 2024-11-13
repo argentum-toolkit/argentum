@@ -4,7 +4,7 @@ use dioxus::prelude::*;
 pub(crate) fn Footer() -> Element {
     rsx! {
         footer {
-            class:"relative z-10 pt-8 bg-gray-100 dark:bg-gray-dark md:pt-10 lg:pt-12",
+            class:"z-10 pt-8 bg-gray-100 dark:bg-gray-dark md:pt-10 lg:pt-12",
             div { class:"container",
                 div { class:"-mx-4 flex flex-wrap",
                     div { class:"w-full px-4 md:w-1/2 lg:w-4/12 xl:w-5/12",

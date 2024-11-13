@@ -129,6 +129,25 @@ impl ClientSideAuthenticator {
         self.anonymous_token = None;
         self.user_token = None;
         self.user_id = None;
+
+        let mut local_storage_anonymous_token =
+            use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
+
+        local_storage_anonymous_token.set(None);
+
+        let mut local_storage_user_token = use_synced_storage::<LocalStorage, Option<String>>(
+            "x_auth_user_token".to_string(),
+            || None,
+        );
+
+        local_storage_user_token.set(None);
+
+        let mut local_storage_user_id = use_synced_storage::<LocalStorage, Option<uuid::Uuid>>(
+            "x_auth_user_id".to_string(),
+            || None,
+        );
+
+        local_storage_user_id.set(None);
     }
 
     pub fn anonymous_token(&self) -> Option<String> {
