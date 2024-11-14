@@ -14,3 +14,10 @@ handlebars_helper!(eq_helper: |a: String, b: String| {
 handlebars_helper!(trim_mod_helper: |s: String| {
     s.split("::").last().unwrap_or("")
 });
+
+handlebars_helper!(escape_var_name_helper: |s: String| {
+    match s.as_str() {
+        "type" => "r#type".to_string(),
+        _ => s,
+    }
+});

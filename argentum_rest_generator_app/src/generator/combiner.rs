@@ -89,11 +89,14 @@ impl Combiner {
                 ));
             }
             None => {
-                self.logger
-                    .warning("Empty schema type is not supported by combiner".to_string());
-            }
+                self.logger.warning(format!(
+                    "Empty schema type is not supported by combiner. File: `{:?}`",
+                    current_file_path
+                ));
+            } //TODO: add support of empty types
         }
     }
+
     fn collect_ref_to_schema(
         &self,
         property: &mut RefOrObject<Schema>,

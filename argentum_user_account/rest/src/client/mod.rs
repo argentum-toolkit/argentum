@@ -5,11 +5,11 @@ use crate::dto::response::Status401Response;
 use crate::dto::response::Status422Response;
 use crate::dto::response::UserLoggedInSuccessfullyResponse;
 use crate::dto::response::UserRegisteredSuccessfullyResponse;
-use crate::dto::schema::AnonymousRegistrationResult;
-use crate::dto::schema::EmptyResponse;
-use crate::dto::schema::LoginResult;
-use crate::dto::schema::ProblemDetail;
-use crate::dto::schema::RegistrationWithPasswordResult;
+use crate::dto::schema::AnonymousRegistrationResult as AnonymousRegistrationResultSchema;
+use crate::dto::schema::EmptyResponse as EmptyResponseSchema;
+use crate::dto::schema::LoginResult as LoginResultSchema;
+use crate::dto::schema::ProblemDetail as ProblemDetailSchema;
+use crate::dto::schema::RegistrationWithPasswordResult as RegistrationWithPasswordResultSchema;
 
 use crate::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
 use crate::dto::operation_response_enum::AnonymousRequestsRestoreTokenOperationResponseEnum;
@@ -21,7 +21,6 @@ use crate::dto::request::AnonymousRequestsRestoreTokenRequest;
 use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use crate::dto::request::UserLoginsWithPasswordRequest;
 use crate::dto::request::UserRegistersWithPasswordRequest;
-
 use reqwest::StatusCode;
 
 pub struct Client {
@@ -40,18 +39,17 @@ impl Client {
     pub async fn anonymous_registers(
         &self,
         req: AnonymousRegistersRequest,
-        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<AnonymousRegistersOperationResponseEnum, String> {
-        let client = reqwest::Client::new();
+        //TODO: use better type instead of Err(String)
 
-        let url = format!(
-            "{}{}/user-account/anonymous-register",
-            self.server_url, self.base_path,
-        );
+        let mut url_tpl = "/user-account/anonymous-register".to_string();
+
+        let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
-        //TODO: params: header, query, path, auth
+        //TODO: params: header, query
 
+        let client = reqwest::Client::new();
         //TODO: transform AnonymousRegistersRequest into reqwest object
         let res = client
             .post(url)
@@ -62,12 +60,14 @@ impl Client {
 
         match res {
             Ok(response) => match response.status() {
-                StatusCode::CREATED => match response.json::<AnonymousRegistrationResult>().await {
-                    Ok(data) => Ok(AnonymousRegistersOperationResponseEnum::Status201(
-                        AnonymousRegisteredSuccessfullyResponse::new_application_json(data),
-                    )),
-                    Err(e) => Err(e.to_string()),
-                },
+                StatusCode::CREATED => {
+                    match response.json::<AnonymousRegistrationResultSchema>().await {
+                        Ok(data) => Ok(AnonymousRegistersOperationResponseEnum::Status201(
+                            AnonymousRegisteredSuccessfullyResponse::new_application_json(data),
+                        )),
+                        Err(e) => Err(e.to_string()),
+                    }
+                }
 
                 _ => Err("Wrong status code".to_string()),
             },
@@ -78,31 +78,22 @@ impl Client {
     pub async fn user_logins_with_password(
         &self,
         req: UserLoginsWithPasswordRequest,
-        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<UserLoginsWithPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        //let raw_query_params = HashMap::from([]);
-        //let req: UserLoginsWithPasswordRequest = self
-        //    .request_transformer
-        //    .transform(request, raw_path_params, raw_query_params)
-        //    .await?;
-        //TODO: deal with security
+        let mut url_tpl = "/user-account/password-login".to_string();
 
-        let client = reqwest::Client::new();
-
-        let url = format!(
-            "{}{}/user-account/password-login",
-            self.server_url, self.base_path,
-        );
+        let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
-        //TODO: params: header, query, path, auth
+        //TODO: params: header, query
 
+        let client = reqwest::Client::new();
         //TODO: transform UserLoginsWithPasswordRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
+            //TODO: add support of another authorization schemas
             .header(
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),
@@ -113,19 +104,19 @@ impl Client {
 
         match res {
             Ok(response) => match response.status() {
-                StatusCode::OK => match response.json::<LoginResult>().await {
+                StatusCode::OK => match response.json::<LoginResultSchema>().await {
                     Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status200(
                         UserLoggedInSuccessfullyResponse::new_application_json(data),
                     )),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::BAD_REQUEST => match response.json::<ProblemDetail>().await {
+                StatusCode::BAD_REQUEST => match response.json::<ProblemDetailSchema>().await {
                     Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status400(
                         Status400Response::new_application_problem_json(data),
                     )),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetail>().await {
+                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetailSchema>().await {
                     Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status401(
                         Status401Response::new_application_problem_json(data),
                     )),
@@ -141,31 +132,22 @@ impl Client {
     pub async fn user_registers_with_password(
         &self,
         req: UserRegistersWithPasswordRequest,
-        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<UserRegistersWithPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        //let raw_query_params = HashMap::from([]);
-        //let req: UserRegistersWithPasswordRequest = self
-        //    .request_transformer
-        //    .transform(request, raw_path_params, raw_query_params)
-        //    .await?;
-        //TODO: deal with security
+        let mut url_tpl = "/user-account/register".to_string();
 
-        let client = reqwest::Client::new();
-
-        let url = format!(
-            "{}{}/user-account/register",
-            self.server_url, self.base_path,
-        );
+        let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
-        //TODO: params: header, query, path, auth
+        //TODO: params: header, query
 
+        let client = reqwest::Client::new();
         //TODO: transform UserRegistersWithPasswordRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
+            //TODO: add support of another authorization schemas
             .header(
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),
@@ -177,25 +159,30 @@ impl Client {
         match res {
             Ok(response) => match response.status() {
                 StatusCode::CREATED => {
-                    match response.json::<RegistrationWithPasswordResult>().await {
+                    match response
+                        .json::<RegistrationWithPasswordResultSchema>()
+                        .await
+                    {
                         Ok(data) => Ok(UserRegistersWithPasswordOperationResponseEnum::Status201(
                             UserRegisteredSuccessfullyResponse::new_application_json(data),
                         )),
                         Err(e) => Err(e.to_string()),
                     }
                 }
-                StatusCode::BAD_REQUEST => match response.json::<ProblemDetail>().await {
+                StatusCode::BAD_REQUEST => match response.json::<ProblemDetailSchema>().await {
                     Ok(data) => Ok(UserRegistersWithPasswordOperationResponseEnum::Status400(
                         Status400Response::new_application_problem_json(data),
                     )),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::UNPROCESSABLE_ENTITY => match response.json::<ProblemDetail>().await {
-                    Ok(data) => Ok(UserRegistersWithPasswordOperationResponseEnum::Status422(
-                        Status422Response::new_application_problem_json(data),
-                    )),
-                    Err(e) => Err(e.to_string()),
-                },
+                StatusCode::UNPROCESSABLE_ENTITY => {
+                    match response.json::<ProblemDetailSchema>().await {
+                        Ok(data) => Ok(UserRegistersWithPasswordOperationResponseEnum::Status422(
+                            Status422Response::new_application_problem_json(data),
+                        )),
+                        Err(e) => Err(e.to_string()),
+                    }
+                }
 
                 _ => Err("Wrong status code".to_string()),
             },
@@ -206,31 +193,22 @@ impl Client {
     pub async fn anonymous_requests_restore_token(
         &self,
         req: AnonymousRequestsRestoreTokenRequest,
-        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<AnonymousRequestsRestoreTokenOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        //let raw_query_params = HashMap::from([]);
-        //let req: AnonymousRequestsRestoreTokenRequest = self
-        //    .request_transformer
-        //    .transform(request, raw_path_params, raw_query_params)
-        //    .await?;
-        //TODO: deal with security
+        let mut url_tpl = "/user-account/restore-password/token-request".to_string();
 
-        let client = reqwest::Client::new();
-
-        let url = format!(
-            "{}{}/user-account/restore-password/token-request",
-            self.server_url, self.base_path,
-        );
+        let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
-        //TODO: params: header, query, path, auth
+        //TODO: params: header, query
 
+        let client = reqwest::Client::new();
         //TODO: transform AnonymousRequestsRestoreTokenRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
+            //TODO: add support of another authorization schemas
             .header(
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),
@@ -241,7 +219,7 @@ impl Client {
 
         match res {
             Ok(response) => match response.status() {
-                StatusCode::OK => match response.json::<EmptyResponse>().await {
+                StatusCode::OK => match response.json::<EmptyResponseSchema>().await {
                     Ok(data) => Ok(
                         AnonymousRequestsRestoreTokenOperationResponseEnum::Status200(
                             EmptyOkResponse::new_application_json(data),
@@ -249,7 +227,7 @@ impl Client {
                     ),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::BAD_REQUEST => match response.json::<ProblemDetail>().await {
+                StatusCode::BAD_REQUEST => match response.json::<ProblemDetailSchema>().await {
                     Ok(data) => Ok(
                         AnonymousRequestsRestoreTokenOperationResponseEnum::Status400(
                             Status400Response::new_application_problem_json(data),
@@ -257,7 +235,7 @@ impl Client {
                     ),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetail>().await {
+                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetailSchema>().await {
                     Ok(data) => Ok(
                         AnonymousRequestsRestoreTokenOperationResponseEnum::Status401(
                             Status401Response::new_application_problem_json(data),
@@ -275,31 +253,22 @@ impl Client {
     pub async fn anonymous_with_token_changes_password(
         &self,
         req: AnonymousWithTokenChangesPasswordRequest,
-        //TODO: need some way to deal with anonymous/authorized users
     ) -> Result<AnonymousWithTokenChangesPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        //let raw_query_params = HashMap::from([]);
-        //let req: AnonymousWithTokenChangesPasswordRequest = self
-        //    .request_transformer
-        //    .transform(request, raw_path_params, raw_query_params)
-        //    .await?;
-        //TODO: deal with security
+        let mut url_tpl = "/user/restore-password/change-password".to_string();
 
-        let client = reqwest::Client::new();
-
-        let url = format!(
-            "{}{}/user/restore-password/change-password",
-            self.server_url, self.base_path,
-        );
+        let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
-        //TODO: params: header, query, path, auth
+        //TODO: params: header, query
 
+        let client = reqwest::Client::new();
         //TODO: transform AnonymousWithTokenChangesPasswordRequest into reqwest object
         let res = client
             .post(url)
             .header("Accept", "application/json")
+            //TODO: add support of another authorization schemas
             .header(
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),
@@ -310,7 +279,7 @@ impl Client {
 
         match res {
             Ok(response) => match response.status() {
-                StatusCode::OK => match response.json::<EmptyResponse>().await {
+                StatusCode::OK => match response.json::<EmptyResponseSchema>().await {
                     Ok(data) => Ok(
                         AnonymousWithTokenChangesPasswordOperationResponseEnum::Status200(
                             EmptyOkResponse::new_application_json(data),
@@ -318,7 +287,7 @@ impl Client {
                     ),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::BAD_REQUEST => match response.json::<ProblemDetail>().await {
+                StatusCode::BAD_REQUEST => match response.json::<ProblemDetailSchema>().await {
                     Ok(data) => Ok(
                         AnonymousWithTokenChangesPasswordOperationResponseEnum::Status400(
                             Status400Response::new_application_problem_json(data),
@@ -326,7 +295,7 @@ impl Client {
                     ),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetail>().await {
+                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetailSchema>().await {
                     Ok(data) => Ok(
                         AnonymousWithTokenChangesPasswordOperationResponseEnum::Status401(
                             Status401Response::new_application_problem_json(data),

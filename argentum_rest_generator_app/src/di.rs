@@ -12,8 +12,8 @@ use crate::generator::{
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
 };
 use crate::template::helper::{
-    camel_helper, content_type_to_type_helper, eq_helper, lower_helper, snake_helper,
-    trim_mod_helper, upper_camel_helper,
+    camel_helper, content_type_to_type_helper, eq_helper, escape_var_name_helper, lower_helper,
+    snake_helper, trim_mod_helper, upper_camel_helper,
 };
 use crate::template::Renderer;
 use argentum_log_business::{DefaultLogger, Level};
@@ -165,6 +165,7 @@ pub fn di_factory() -> DiC {
         Box::new(content_type_to_type_helper),
     );
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
+    reg.register_helper("escape_var_name", Box::new(escape_var_name_helper));
 
     //services
     let log_writer = Arc::new(PrettyWriter::new());

@@ -209,19 +209,26 @@ components:
       title: Schema for error response
       description: RFC 7807 Problem Details for HTTP APIs
       required:
-      - code
+      - status
       - title
       properties:
-        code:
+        body:
+          $ref: '#/components/schemas/Violation'
+        detail:
+          type: string
+        status:
           example: '401'
           maximum: 599.0
           minimum: 400.0
           type: integer
           format: int32
-        message:
-          example: '{"some": "json"}'
+        title:
+          example: Bad Request
           type: string
-      type: null
+        type:
+          example: about:blank
+          type: string
+      type: object
     RegistrationWithPasswordResult:
       required:
       - id
@@ -275,6 +282,17 @@ components:
           maxLength: 255
           minLength: 1
           type: string
+      type: object
+    Violation:
+      properties:
+        errors:
+          items:
+            type: string
+          type: array
+        items:
+          items:
+            $ref: '#/components/schemas/Violation'
+          type: array
       type: object
   responses:
     '400':

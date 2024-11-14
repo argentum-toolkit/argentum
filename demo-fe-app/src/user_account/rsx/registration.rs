@@ -9,6 +9,7 @@ use argentum_user_account_rest::dto::operation_response_enum::UserRegistersWithP
 use argentum_user_account_rest::dto::params::UserRegistersWithPasswordParams;
 use argentum_user_account_rest::dto::path_params::UserRegistersWithPasswordPathParams;
 use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
+use argentum_user_account_rest::dto::response::Status400Response::ApplicationProblemJson;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse::ApplicationJson;
 use argentum_user_account_rest::dto::schema::{RegistrationWithPasswordSchema, UserName};
 use dioxus::prelude::*;
@@ -58,12 +59,17 @@ pub fn Registration() -> Element {
                                                     info!("Registered: {:?}", j.0);
                                                 }
                                             },
-                                            UserRegistersWithPasswordOperationResponseEnum::Status400(_) => {error!("ERR STATUS: 400");},
+                                            UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
+                                                ApplicationProblemJson(j) => {
+                                                    info!("problem: {:?}", j.0.body);
+                                                }
+
+                                            },
                                             UserRegistersWithPasswordOperationResponseEnum::Status422(_) => {error!("ERR STATUS: 422");}
                                         },
                                         Err(e) => {
 
-                                            error!("Cant get token with error: `{:?}`", e);
+                                            error!("Cant register with error: `{:?}`", e);
                                         }
                                     }
                                 }
