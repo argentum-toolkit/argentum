@@ -286,14 +286,18 @@ components:
     Violation:
       properties:
         errors:
-          items:
-            type: string
-          type: array
+          $ref: '#/components/schemas/ViolationErrors'
         items:
-          items:
-            $ref: '#/components/schemas/Violation'
-          type: array
+          $ref: '#/components/schemas/ViolationItems'
       type: object
+    ViolationErrors:
+      items:
+        type: string
+      type: array
+    ViolationItems:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Violation'
   responses:
     '400':
       content:

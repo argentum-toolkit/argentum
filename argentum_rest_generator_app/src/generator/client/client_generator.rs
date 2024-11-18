@@ -215,7 +215,7 @@ impl ClientGenerator {
                                         component_ref.component_name
                                     }
                                     RefOrObject::Object(_) => {
-                                        panic!("We don't support onboarded objects yet. Only Refs are allowed. Skipping...");
+                                        panic!("We don't support inline objects yet. Only Refs are allowed. Skipping...");
                                     }
                                 };
 
@@ -228,7 +228,7 @@ impl ClientGenerator {
                             }
                         }
                         RefOrObject::Object(_) => {
-                            panic!("We don't support onboarded objects yet. Only Refs are allowed. Skipping...");
+                            panic!("We don't support inline objects yet. Only Refs are allowed. Skipping...");
                         }
                     };
 

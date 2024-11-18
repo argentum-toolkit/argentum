@@ -32,7 +32,7 @@ impl Client {
         ) -> Result<{{ upper_camel operation.operationId }}OperationResponseEnum, String> {
             //TODO: use better type instead of Err(String)
 
-            let mut url_tpl = "{{path.url}}".to_string();
+            let {{#if operation.parameters}}mut {{/if}}url_tpl = "{{path.url}}".to_string();
 
             {{#each operation.parameters as |param|~}}
             url_tpl = url_tpl.replace(

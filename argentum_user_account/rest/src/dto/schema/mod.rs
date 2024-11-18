@@ -9,6 +9,8 @@ mod registration_with_password_schema;
 mod request_restore_token_schema;
 mod user_name;
 mod violation;
+mod violation_errors;
+mod violation_items;
 
 pub use anonymous_registration_result::AnonymousRegistrationResult;
 pub use anonymous_registration_result::AnonymousRegistrationResultRaw;
@@ -32,3 +34,7 @@ pub use user_name::UserName;
 pub use user_name::UserNameRaw;
 pub use violation::Violation;
 pub use violation::ViolationRaw;
+pub use violation_errors::ViolationErrors;
+pub use violation_errors::ViolationErrorsRaw;
+pub use violation_items::ViolationItems;
+pub use violation_items::ViolationItemsRaw;

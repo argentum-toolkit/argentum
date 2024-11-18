@@ -3,18 +3,23 @@ use argentum_log_business::LoggerTrait;
 use argentum_openapi_infrastructure::data_type::{
     ComponentRef, RefOrObject, RequestBody, Response, Schema, SchemaType, SpecificationRoot,
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 pub struct Combiner {
     logger: Arc<dyn LoggerTrait>,
     loader: Arc<OasLoader>,
+    combined_schemas: RwLock<HashMap<String, bool>>,
 }
 
 impl Combiner {
     pub fn new(logger: Arc<dyn LoggerTrait>, loader: Arc<OasLoader>) -> Self {
-        Self { logger, loader }
+        Self {
+            logger,
+            loader,
+            combined_schemas: RwLock::new(HashMap::<String, bool>::new()),
+        }
     }
 
     fn collect_request_body(
@@ -77,11 +82,16 @@ impl Combiner {
                     self.collect_ref_to_schema(items, to_spec, current_file_path.clone());
                 }
             },
-            Some(SchemaType::Object) => {
-                if let Some(properties) = schema.properties.as_mut() {
-                    self.collect_properties(properties, to_spec, current_file_path);
+            Some(SchemaType::Object) => match *schema.additional_properties.clone() {
+                Some(mut additional) => {
+                    self.collect_ref_to_schema(&mut additional, to_spec, current_file_path);
                 }
-            }
+                None => {
+                    if let Some(properties) = schema.properties.as_mut() {
+                        self.collect_properties(properties, to_spec, current_file_path);
+                    }
+                }
+            },
             Some(_) => {
                 self.logger.warning(format!(
                     "Schema type is not supported by combiner. Type: {:?}",
@@ -112,64 +122,100 @@ impl Combiner {
                 );
             }
 
+            let component_name = component_ref.component_name;
+
+            let reference = format!("#/components/schemas/{}", component_name);
+            r.reference = reference;
+
             if let Some(file_path) = component_ref.file_path {
                 let dir = current_file_path.parent().unwrap();
                 let dir = dir.to_str().unwrap();
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
-                //load from filesystem
-                let (include_spec, _include_spec_file_path) =
-                    self.loader.load(inner_file_path.clone());
+                let hash_key = format!("{}#{}", inner_file_path, component_name);
+                if self
+                    .combined_schemas
+                    .read()
+                    .unwrap()
+                    .contains_key(&hash_key)
+                {
+                    self.logger.info(format!(
+                        "Schema `{}` already loaded from file `{}`",
+                        component_name, inner_file_path
+                    ));
+                } else {
+                    self.combined_schemas
+                        .write()
+                        .unwrap()
+                        .insert(hash_key, true);
 
-                let component: Option<&Schema> = include_spec
-                    .components
-                    .schemas
-                    .get(component_ref.component_name.as_str());
-                match component {
-                    None => {
-                        panic!(
-                            "Schema #/components/schemas/{} is not found",
-                            component_ref.component_name.clone()
-                        )
-                    }
-                    Some(s) => {
-                        let c_name = component_ref.component_name;
+                    //load from filesystem
+                    let (include_spec, _include_spec_file_path) =
+                        self.loader.load(inner_file_path.clone());
 
-                        let reference = format!("#/components/schemas/{}", c_name);
-                        r.reference = reference;
+                    let component: Option<&Schema> =
+                        include_spec.components.schemas.get(component_name.as_str());
+                    match component {
+                        None => {
+                            panic!(
+                                "Schema #/components/schemas/{} is not found",
+                                component_name.clone()
+                            )
+                        }
+                        Some(s) => {
+                            let ss: &mut Schema = &mut s.clone();
+                            self.collect_schema_properties(ss, inner_file_path.into(), to_spec);
 
-                        let ss: &mut Schema = &mut s.clone();
-                        self.collect_schema_properties(ss, inner_file_path.into(), to_spec);
-
-                        to_spec.components.schemas.insert(c_name, ss.clone());
+                            to_spec
+                                .components
+                                .schemas
+                                .insert(component_name, ss.clone());
+                        }
                     }
                 }
             } else if component_ref.file_path.is_none() {
-                let (include_spec, _include_spec_file_path) = self
-                    .loader
-                    .load(current_file_path.to_str().unwrap().to_string());
+                let hash_key =
+                    format!("{}#{}", current_file_path.to_str().unwrap(), component_name);
+                if self
+                    .combined_schemas
+                    .read()
+                    .unwrap()
+                    .contains_key(&hash_key)
+                {
+                    self.logger.info(format!(
+                        "Schema `{}` already loaded from file `{}`",
+                        component_name,
+                        current_file_path.to_str().unwrap()
+                    ));
+                } else {
+                    self.combined_schemas
+                        .write()
+                        .unwrap()
+                        .insert(hash_key, true);
 
-                let component: Option<&Schema> = include_spec
-                    .components
-                    .schemas
-                    .get(component_ref.component_name.as_str());
-                match component {
-                    None => {
-                        panic!(
-                            "Schema #/components/schemas/{} is not found",
-                            component_ref.component_name.clone()
-                        )
-                    }
-                    Some(s) => {
-                        let c_name = component_ref.component_name;
+                    let (include_spec, _include_spec_file_path) = self
+                        .loader
+                        .load(current_file_path.to_str().unwrap().to_string());
 
-                        let reference = format!("#/components/schemas/{}", c_name);
-                        r.reference = reference;
+                    let component: Option<&Schema> =
+                        include_spec.components.schemas.get(component_name.as_str());
 
-                        let ss: &mut Schema = &mut s.clone();
-                        self.collect_schema_properties(ss, current_file_path, to_spec);
+                    match component {
+                        None => {
+                            panic!(
+                                "Schema #/components/schemas/{} is not found",
+                                component_name.clone()
+                            )
+                        }
+                        Some(s) => {
+                            let ss: &mut Schema = &mut s.clone();
+                            self.collect_schema_properties(ss, current_file_path, to_spec);
 
-                        to_spec.components.schemas.insert(c_name, ss.clone());
+                            to_spec
+                                .components
+                                .schemas
+                                .insert(component_name, ss.clone());
+                        }
                     }
                 }
             }

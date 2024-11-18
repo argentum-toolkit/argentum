@@ -38,17 +38,24 @@ components:
       type: object
       properties:
         errors:
-          type: array
-          items:
-            type: string
+          $ref: "#/components/schemas/ViolationErrors"
         items:
-          type: array
-          items: 
-            $ref: "#/components/schemas/Violation"
+          $ref: "#/components/schemas/ViolationItems"
+    
+    ViolationErrors:
+      type: array
+      items:
+        type: string
+        #TODO: examples
+
+    ViolationItems:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/Violation"
 
     EmptyResponse:
       title: Empty response
-      # TODO: add support of empty types
+      #TODO: add support of empty types
 
     DateRange:
       type: object

@@ -46,7 +46,6 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
 
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
-        use argentum_rest_infrastructure::data_type::DeserializableSchemaRaw;
 
         let body = match Violation::try_from_raw(raw.body.unwrap()) {
             Ok(value) => Some(value),

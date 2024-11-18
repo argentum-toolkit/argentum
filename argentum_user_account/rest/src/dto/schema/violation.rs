@@ -4,17 +4,21 @@ use argentum_standard_business::invariant_violation::{
     InvariantResult, ViolationItem, ViolationObject, Violations,
 };
 use std::collections::BTreeMap;
-use std::collections::HashMap;
+
+use crate::dto::schema::ViolationErrors;
+use crate::dto::schema::ViolationErrorsRaw;
+use crate::dto::schema::ViolationItems;
+use crate::dto::schema::ViolationItemsRaw;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Violation {
-    pub errors: Option<Vec<String>>,
+    pub errors: Option<ViolationErrors>,
 
-    pub items: Option<HashMap<String, Violation>>,
+    pub items: Option<ViolationItems>,
 }
 
 impl Violation {
-    pub fn new(errors: Option<Vec<String>>, items: Option<HashMap<String, Violation>>) -> Self {
+    pub fn new(errors: Option<ViolationErrors>, items: Option<ViolationItems>) -> Self {
         Self { errors, items }
     }
 }
@@ -27,8 +31,22 @@ impl DeserializableSchemaRaw<'_> for Violation {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let errors = raw.errors;
-        let items = raw.items;
+        let errors = match ViolationErrors::try_from_raw(raw.errors.unwrap()) {
+            Ok(value) => Some(value),
+            Err(v) => {
+                argentum_violations.insert("errors".into(), v);
+
+                None
+            }
+        };
+        let items = match ViolationItems::try_from_raw(raw.items.unwrap()) {
+            Ok(value) => Some(value),
+            Err(v) => {
+                argentum_violations.insert("items".into(), v);
+
+                None
+            }
+        };
 
         if argentum_violations.is_empty() {
             Ok(Self::new(errors, items))
@@ -44,7 +62,7 @@ impl DeserializableSchemaRaw<'_> for Violation {
 #[derive(serde::Deserialize)]
 pub struct ViolationRaw {
     #[serde(rename = "errors")]
-    pub errors: Option<Vec<String>>,
+    pub errors: Option<ViolationErrorsRaw>,
     #[serde(rename = "items")]
-    pub items: Option<HashMap<String, Violation>>,
+    pub items: Option<ViolationItemsRaw>,
 }

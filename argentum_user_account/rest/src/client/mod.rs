@@ -42,7 +42,7 @@ impl Client {
     ) -> Result<AnonymousRegistersOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        let mut url_tpl = "/user-account/anonymous-register".to_string();
+        let url_tpl = "/user-account/anonymous-register".to_string();
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
@@ -81,7 +81,7 @@ impl Client {
     ) -> Result<UserLoginsWithPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        let mut url_tpl = "/user-account/password-login".to_string();
+        let url_tpl = "/user-account/password-login".to_string();
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
@@ -135,7 +135,7 @@ impl Client {
     ) -> Result<UserRegistersWithPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        let mut url_tpl = "/user-account/register".to_string();
+        let url_tpl = "/user-account/register".to_string();
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
@@ -196,7 +196,7 @@ impl Client {
     ) -> Result<AnonymousRequestsRestoreTokenOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        let mut url_tpl = "/user-account/restore-password/token-request".to_string();
+        let url_tpl = "/user-account/restore-password/token-request".to_string();
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
@@ -256,7 +256,7 @@ impl Client {
     ) -> Result<AnonymousWithTokenChangesPasswordOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        let mut url_tpl = "/user/restore-password/change-password".to_string();
+        let url_tpl = "/user/restore-password/change-password".to_string();
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 

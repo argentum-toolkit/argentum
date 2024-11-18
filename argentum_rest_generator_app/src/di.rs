@@ -107,6 +107,12 @@ pub fn di_factory() -> DiC {
     .unwrap();
 
     reg.register_template_string(
+        "dto/schema_dictionary.item",
+        include_str!("../template/dto/schema_dictionary.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
         "dto/schema.mod",
         include_str!("../template/dto/schema.mod.hbs"),
     )

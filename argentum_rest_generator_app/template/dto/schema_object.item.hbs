@@ -54,7 +54,7 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
                         );
                         None
                     } else {
-                        match {{{ upper_camel prop.dataType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
+                        match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
                             Ok(value) => Some(value),
                             Err(v) => {
                                 argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);
@@ -64,7 +64,7 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
                         }
                     };
                 {{else}}
-                    let {{ escape_var_name (snake prop.name) }} = match {{{ upper_camel prop.dataType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
+                    let {{ escape_var_name (snake prop.name) }} = match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
                         Ok(value) => Some(value),
                         Err(v) => {
                             argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);

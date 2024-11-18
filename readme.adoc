@@ -147,13 +147,11 @@ cargo install dioxus-cli
 === V0.3
 
 * Web APP + UI
+** Show validation errors in form
 ** Client library
 ** Dioxus Web App
 *** User
 *** User Account
-*** Auth
-** Theme (Skin)
-*** Dark mode
 * DI builders: make it similar
 * behaviour tests
 

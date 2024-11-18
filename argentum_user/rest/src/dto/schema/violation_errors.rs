@@ -1,23 +1,22 @@
 use argentum_rest_infrastructure::data_type::DeserializableSchemaRaw;
 use argentum_rest_infrastructure::data_type::SerializableBody;
-use argentum_standard_business::invariant_violation::{InvariantResult, ViolationArray, ViolationItem, Violations};
-{{# each dependencies as |dep|}}
-use {{dep}};
-{{/each}}
+use argentum_standard_business::invariant_violation::{
+    InvariantResult, ViolationArray, ViolationItem, Violations,
+};
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct {{ name }} (Vec<{{{ itemsType.dataType }}}>);
+pub struct ViolationErrors(Vec<String>);
 
-impl {{ name }} {
-    pub fn new(items: Vec<{{{ itemsType.dataType }}}>) -> Self {
+impl ViolationErrors {
+    pub fn new(items: Vec<String>) -> Self {
         Self(items)
     }
 }
 
-impl SerializableBody for {{ name }} {}
+impl SerializableBody for ViolationErrors {}
 
-impl DeserializableSchemaRaw<'_> for {{ name }} {
-    type Raw = {{ name }}Raw;
+impl DeserializableSchemaRaw<'_> for ViolationErrors {
+    type Raw = ViolationErrorsRaw;
 
     fn try_from_raw(raw_list: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationArray = vec![];
@@ -25,15 +24,18 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
         let mut items = vec![];
         for raw in raw_list.0 {
             match raw {
-                Some(r) => match {{{ itemsType.dataType }}}::try_from_raw(r) {
+                Some(r) => match String::try_from_raw(r) {
                     Ok(item) => {
                         items.push(item);
-                    },
+                    }
                     Err(e) => {
                         argentum_violations.push(e);
-                    },
+                    }
                 },
-                None => argentum_violations.push(Violations::new(vec!["Array item should not be None".to_string()], None)),
+                None => argentum_violations.push(Violations::new(
+                    vec!["Array item should not be None".to_string()],
+                    None,
+                )),
             };
         }
 
@@ -41,7 +43,7 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
             Ok(Self::new(items))
         } else {
             Err(Violations::new(
-                vec!["wrong data for {{ name }}".to_string()],
+                vec!["wrong data for ViolationErrors".to_string()],
                 Some(ViolationItem::Array(argentum_violations)),
             ))
         }
@@ -49,4 +51,4 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
 }
 
 #[derive(serde::Deserialize)]
-pub struct {{ name }}Raw (Vec<{{{ itemsType.rawType }}}>);
+pub struct ViolationErrorsRaw(Vec<Option<String>>);
