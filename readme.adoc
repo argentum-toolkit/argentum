@@ -146,14 +146,15 @@ cargo install dioxus-cli
 
 === V0.3
 
+*`type ViolationItems = HashMap<String, Violation>`; instead of `struct ViolationItems(pub HashMap<String, Violation>);`
 * Web APP + UI
 ** Show validation errors in form
 ** Client library
-** Dioxus Web App
+** Demo Dioxus Web App 
 *** User
 *** User Account
 * DI builders: make it similar
-* behaviour tests
+* behavior tests
 
 * performance optimization
 

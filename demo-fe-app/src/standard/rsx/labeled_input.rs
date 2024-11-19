@@ -1,4 +1,6 @@
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
+use dioxus_logger::tracing::error;
 
 #[derive(PartialEq, Props, Clone)]
 pub struct InputTextProps {
@@ -7,21 +9,52 @@ pub struct InputTextProps {
     pub name: String,
     pub input_type: String,
     pub label: String,
+    pub violations: Option<ViolationsDto>,
 
     oninput: EventHandler<String>,
 }
 
 #[component]
+fn ErrorMessage(err: ReadOnlySignal<String>) -> Element {
+    rsx! {
+        "HOHOHOHOH"
+    }
+}
+
+#[component]
 pub fn LabeledInput(props: InputTextProps) -> Element {
+    let label_class = match props.violations {
+        Some(_) => "text-red-700 dark:text-red-500",
+        None => "text-gray-900 dark:text-body-color-dark",
+    };
+
+    let input_bg = match props.violations {
+        Some(_) => "bg-red-100 dark:bg-red-950 border-red-700 dark:border-red-500",
+        None => "bg-gray-50 dark:bg-gray-700",
+    };
+
     rsx! {
         div {
-            label { "for":"{props.id}", class:"block text-sm font-medium leading-6 text-gray-900 dark:text-body-color-dark", "{props.label}" }
+            label { "for":"{props.id}",
+                class: "block text-sm font-medium leading-6 {label_class}",
+                "{props.label}"
+            }
+
             div { class:"mt-2",
                 input {
                     id:"{props.id}", name:"{props.name}", "type":"{props.input_type}", autocomplete:"email", required:true,
                     value: "{props.value}",
-                    class:"border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none",
+                    class: "{input_bg} border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:focus:border-primary dark:focus:shadow-none",
                     oninput: move |event| props.oninput.call(event.value())
+                }
+
+                if let Some(v) = props.violations {
+                    for e in v.errors {
+                        div {
+                            class: "mt-4 text-sm text-red-700 dark:text-red-500",
+                            "{e}",
+                        }
+                    }
                 }
             }
         }

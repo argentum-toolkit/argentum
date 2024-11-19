@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 pub type ViolationObjectDto = BTreeMap<String, ViolationsDto>;
 pub type ViolationArrayDto = Vec<ViolationsDto>;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize)]
 pub enum ViolationItemDto {
     Object(ViolationObjectDto),
     Array(ViolationArrayDto),
@@ -85,7 +85,7 @@ impl Serialize for ViolationItemDto {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct ViolationsDto {
     pub errors: Vec<String>,
 

@@ -4,6 +4,7 @@ use crate::user_account::rsx::user_name::UserNameComponent;
 use argentum_rest_infrastructure::data_type::HttpParams;
 use argentum_rest_infrastructure::data_type::HttpRequest;
 use argentum_rest_infrastructure::data_type::{AuthHeaderParams, EmptyQueryParams};
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_user_account_rest::client::Client;
 use argentum_user_account_rest::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
 use argentum_user_account_rest::dto::params::UserRegistersWithPasswordParams;
@@ -24,6 +25,8 @@ pub fn Registration() -> Element {
     let mut email = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
     let mut user_name = use_signal(|| UserName::new("".to_string(), None, None));
+
+    let mut email_violation: Signal<Option<ViolationsDto>> = use_signal(|| None);
 
     rsx! {
         section {
@@ -51,6 +54,7 @@ pub fn Registration() -> Element {
                                     );
 
                                     let res = client.user_registers_with_password(req).await ;
+                                    email_violation.set(None);
 
                                     match res {
                                         Ok(data) => match data {
@@ -62,6 +66,16 @@ pub fn Registration() -> Element {
                                             UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                                                 ApplicationProblemJson(j) => {
                                                     info!("problem: {:?}", j.0.body);
+                                                    if let Some(body_violation) = j.0.body {
+                                                        if let Some(items) =  body_violation.items {
+                                                            if let Some(v) = items.0.get("email") {
+                                                                let pp = serde_json::to_string(&v).unwrap();
+                                                                let violations: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
+
+                                                                email_violation.set(Some(violations));
+                                                            }
+                                                        };
+                                                    };
                                                 }
 
                                             },
@@ -80,6 +94,7 @@ pub fn Registration() -> Element {
                                 label: "Email address".to_string(),
                                 input_type: "email".to_string(),
                                 value: email,
+                                violations: email_violation(),
                                 oninput: move |event: String| email.set(event),
                             },
 
