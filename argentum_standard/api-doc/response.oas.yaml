@@ -43,6 +43,13 @@ components:
           schema:
             $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
 
+    409:
+      description: Conflict
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
+
     422:
       description: Unprocessable Entity
       content:

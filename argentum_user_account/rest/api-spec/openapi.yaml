@@ -80,8 +80,8 @@ paths:
           $ref: '#/components/responses/UserRegisteredSuccessfully'
         '400':
           $ref: '#/components/responses/400'
-        '422':
-          $ref: '#/components/responses/422'
+        '409':
+          $ref: '#/components/responses/409'
   /user-account/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email
@@ -311,12 +311,12 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
       description: Unauthorized
-    '422':
+    '409':
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
-      description: Unprocessable Entity
+      description: Conflict
     AnonymousRegisteredSuccessfully:
       content:
         application/json:

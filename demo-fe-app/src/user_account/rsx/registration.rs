@@ -4,6 +4,7 @@ use crate::user_account::rsx::user_name::UserNameComponent;
 use argentum_rest_infrastructure::data_type::HttpParams;
 use argentum_rest_infrastructure::data_type::HttpRequest;
 use argentum_rest_infrastructure::data_type::{AuthHeaderParams, EmptyQueryParams};
+use argentum_standard_infrastructure::invariant_violation::ViolationItemDto;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_user_account_rest::client::Client;
 use argentum_user_account_rest::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
@@ -11,12 +12,14 @@ use argentum_user_account_rest::dto::params::UserRegistersWithPasswordParams;
 use argentum_user_account_rest::dto::path_params::UserRegistersWithPasswordPathParams;
 use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
 use argentum_user_account_rest::dto::response::Status400Response::ApplicationProblemJson;
+use argentum_user_account_rest::dto::response::Status409Response;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse::ApplicationJson;
 use argentum_user_account_rest::dto::schema::{RegistrationWithPasswordSchema, UserName};
 use dioxus::prelude::*;
 use dioxus_logger::tracing::{error, info};
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 use std::string::ToString;
+use std::vec;
 
 #[component]
 pub fn Registration() -> Element {
@@ -24,9 +27,15 @@ pub fn Registration() -> Element {
     let agree = use_signal(|| true);
     let mut email = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
-    let mut user_name = use_signal(|| UserName::new("".to_string(), None, None));
+    let mut name = use_signal(|| UserName::new("".to_string(), None, None));
 
-    let mut email_violation: Signal<Option<ViolationsDto>> = use_signal(|| None);
+    let mut email_violations: Signal<Option<ViolationsDto>> = use_signal(|| None);
+    let mut password_violations: Signal<Option<ViolationsDto>> = use_signal(|| None);
+    let mut name_violations: Signal<Option<ViolationsDto>> = use_signal(|| None);
+
+    let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
+
+    let mut submit_disabled = use_signal(|| false);
 
     rsx! {
         section {
@@ -35,16 +44,22 @@ pub fn Registration() -> Element {
                     h2 { class:"mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl", "Create your account"}
 
                     div { class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
-                        form { class:"space-y-6", action:"#", method:"POST",
+                        form {
+                            class:"space-y-6",
+                            action:"#",
+                            method:"POST",
+                            "novalidate": true,
                             onsubmit: move |_event| {
                                 async move {
+                                    submit_disabled.set(true);
+
                                     let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
                                     let local_storage_token =
                                         use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None).unwrap();
 
                                     let req = UserRegistersWithPasswordRequest::new(
-                                        RegistrationWithPasswordSchema::new(email(), user_name(), password()),
+                                        RegistrationWithPasswordSchema::new(email(), name(), password()),
                                         UserRegistersWithPasswordParams::new(
                                             UserRegistersWithPasswordPathParams::new(),
                                             EmptyQueryParams{},
@@ -53,8 +68,12 @@ pub fn Registration() -> Element {
                                         ),
                                     );
 
+                                    email_violations.set(None);
+                                    password_violations.set(None);
+                                    name_violations.set(None);
+                                    errors.set(vec![]);
+
                                     let res = client.user_registers_with_password(req).await ;
-                                    email_violation.set(None);
 
                                     match res {
                                         Ok(data) => match data {
@@ -65,36 +84,58 @@ pub fn Registration() -> Element {
                                             },
                                             UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                                                 ApplicationProblemJson(j) => {
-                                                    info!("problem: {:?}", j.0.body);
-                                                    if let Some(body_violation) = j.0.body {
-                                                        if let Some(items) =  body_violation.items {
-                                                            if let Some(v) = items.0.get("email") {
-                                                                let pp = serde_json::to_string(&v).unwrap();
-                                                                let violations: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
+                                                    let body_violation = match j.0.body {
+                                                        Some(body_violation) => {
+                                                            let pp = serde_json::to_string(&body_violation).unwrap();
+                                                            let violations: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
+                                                            Some(violations)
+                                                        },
+                                                        None => None,
+                                                    };
 
-                                                                email_violation.set(Some(violations));
-                                                            }
+                                                    if let Some(violations) = body_violation {
+                                                        if let Some(ViolationItemDto::Object(items))  = violations.items {
+                                                            email_violations.set(items.get("email").cloned());
+                                                            password_violations.set(items.get("password").cloned());
+                                                            name_violations.set(items.get("name").cloned());
                                                         };
                                                     };
+
+                                                    submit_disabled.set(false);
                                                 }
 
                                             },
-                                            UserRegistersWithPasswordOperationResponseEnum::Status422(_) => {error!("ERR STATUS: 422");}
+                                            UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
+                                                Status409Response::ApplicationProblemJson(j) => {
+                                                    errors.set(vec![j.0.title]);
+
+                                                    submit_disabled.set(false);
+                                                },
+                                            }
                                         },
                                         Err(e) => {
-
+                                            errors.set(vec!["Unexpected error. Please try again latter".to_string()]);
                                             error!("Cant register with error: `{:?}`", e);
+
+                                            submit_disabled.set(false);
                                         }
                                     }
                                 }
                             },
+                            for e in errors() {
+                                div {
+                                    class: "mt-4 text-sm text-red-700 dark:text-red-500",
+                                    "{e}",
+                                }
+                            }
+
                             LabeledInput {
                                 id: "email".to_string(),
                                 name: "email".to_string(),
                                 label: "Email address".to_string(),
                                 input_type: "email".to_string(),
                                 value: email,
-                                violations: email_violation(),
+                                violations: email_violations(),
                                 oninput: move |event: String| email.set(event),
                             },
 
@@ -104,12 +145,14 @@ pub fn Registration() -> Element {
                                 label: "Password".to_string(),
                                 input_type: "password".to_string(),
                                 value: password,
+                                violations: password_violations(),
                                 oninput: move |event: String| password.set(event),
                             },
 
                             UserNameComponent {
-                                user_name: user_name(),
-                                oninput: move |event: UserName| user_name.set(event)
+                                user_name: name(),
+                                violations: name_violations(),
+                                oninput: move |event: UserName| name.set(event)
                             }
 
                             div { class: "mb-8 flex",
@@ -153,8 +196,24 @@ pub fn Registration() -> Element {
                             div {
                                 button {
                                     "type":"submit",
-                                    class:"shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90",
-                                    "Sign Up"
+                                    class:"shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90 disabled:opacity-25",
+                                    disabled: "{submit_disabled}",
+
+                                    if submit_disabled() {
+                                        svg {
+                                            width: "20",
+                                            height: "20",
+                                            fill: "currentColor",
+                                            class: "mr-2 animate-spin",
+                                            "viewBox": "0 0 1792 1792",
+                                            "xmlns": "http://www.w3.org/2000/svg",
+                                            path {
+                                                d: "M526 1394q0 53-37.5 90.5t-90.5 37.5q-52 0-90-38t-38-90q0-53 37.5-90.5t90.5-37.5 90.5 37.5 37.5 90.5zm498 206q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-704-704q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm1202 498q0 52-38 90t-90 38q-53 0-90.5-37.5t-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-964-996q0 66-47 113t-113 47-113-47-47-113 47-113 113-47 113 47 47 113zm1170 498q0 53-37.5 90.5t-90.5 37.5-90.5-37.5-37.5-90.5 37.5-90.5 90.5-37.5 90.5 37.5 37.5 90.5zm-640-704q0 80-56 136t-136 56-136-56-56-136 56-136 136-56 136 56 56 136zm530 206q0 93-66 158.5t-158 65.5q-93 0-158.5-65.5t-65.5-158.5q0-92 65.5-158t158.5-66q92 0 158 66t66 158z",
+                                            }
+                                        }
+                                    }
+
+                                    "Sign Up",
                                 }
                             }
                         }

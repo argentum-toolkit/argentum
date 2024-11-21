@@ -1,8 +1,8 @@
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
-use dioxus_logger::tracing::error;
 
 #[derive(PartialEq, Props, Clone)]
+#[props(borrowed)]
 pub struct InputTextProps {
     pub value: String,
     pub id: String,
@@ -12,13 +12,6 @@ pub struct InputTextProps {
     pub violations: Option<ViolationsDto>,
 
     oninput: EventHandler<String>,
-}
-
-#[component]
-fn ErrorMessage(err: ReadOnlySignal<String>) -> Element {
-    rsx! {
-        "HOHOHOHOH"
-    }
 }
 
 #[component]
@@ -49,7 +42,7 @@ pub fn LabeledInput(props: InputTextProps) -> Element {
                 }
 
                 if let Some(v) = props.violations {
-                    for e in v.errors {
+                    for e in &v.errors {
                         div {
                             class: "mt-4 text-sm text-red-700 dark:text-red-500",
                             "{e}",

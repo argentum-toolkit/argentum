@@ -16,11 +16,11 @@ impl ContentTypeResponseTrait for ApplicationProblemJson {
     }
 }
 
-pub enum Status422Response {
+pub enum Status409Response {
     ApplicationProblemJson(ApplicationProblemJson),
 }
 
-impl Status422Response {
+impl Status409Response {
     pub fn new_application_problem_json(r: ProblemDetail) -> Self {
         Self::ApplicationProblemJson(ApplicationProblemJson(r))
     }

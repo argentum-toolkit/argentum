@@ -146,7 +146,6 @@ cargo install dioxus-cli
 
 === V0.3
 
-*`type ViolationItems = HashMap<String, Violation>`; instead of `struct ViolationItems(pub HashMap<String, Violation>);`
 * Web APP + UI
 ** Show validation errors in form
 ** Client library
@@ -163,8 +162,9 @@ cargo install dioxus-cli
 ** publish generator to hub.docker.com
 ** create regex factory for all types of `path params`
 ** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
+**`type ViolationItems = HashMap<String, Violation>`; instead of `struct ViolationItems(pub HashMap<String, Violation>);`
 ** generate `query params`
-** generate embedded objects
+** generate inline objects
 ** tests
 ** fix generator for cases when string field parses as integer
 

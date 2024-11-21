@@ -64,8 +64,8 @@ paths:
           $ref: "./response.oas.yaml#/components/responses/UserRegisteredSuccessfully"
         '400':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '422':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
+        '409':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/409"
 
   /user-account/password-login:
     post:

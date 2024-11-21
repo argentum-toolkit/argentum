@@ -66,7 +66,7 @@ impl UserRegistersWithPasswordUc {
 
 #[derive(thiserror::Error, Debug)]
 pub enum RegistrationError {
-    #[error("User with email Already exists")]
+    #[error("User with such email already exists")]
     EmailAlreadyExists,
 
     #[error("Can't encrypt password")]

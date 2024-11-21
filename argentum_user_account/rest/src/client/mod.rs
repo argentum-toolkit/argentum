@@ -2,7 +2,7 @@ use crate::dto::response::AnonymousRegisteredSuccessfullyResponse;
 use crate::dto::response::EmptyOkResponse;
 use crate::dto::response::Status400Response;
 use crate::dto::response::Status401Response;
-use crate::dto::response::Status422Response;
+use crate::dto::response::Status409Response;
 use crate::dto::response::UserLoggedInSuccessfullyResponse;
 use crate::dto::response::UserRegisteredSuccessfullyResponse;
 use crate::dto::schema::AnonymousRegistrationResult as AnonymousRegistrationResultSchema;
@@ -175,14 +175,12 @@ impl Client {
                     )),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::UNPROCESSABLE_ENTITY => {
-                    match response.json::<ProblemDetailSchema>().await {
-                        Ok(data) => Ok(UserRegistersWithPasswordOperationResponseEnum::Status422(
-                            Status422Response::new_application_problem_json(data),
-                        )),
-                        Err(e) => Err(e.to_string()),
-                    }
-                }
+                StatusCode::CONFLICT => match response.json::<ProblemDetailSchema>().await {
+                    Ok(data) => Ok(UserRegistersWithPasswordOperationResponseEnum::Status409(
+                        Status409Response::new_application_problem_json(data),
+                    )),
+                    Err(e) => Err(e.to_string()),
+                },
 
                 _ => Err("Wrong status code".to_string()),
             },

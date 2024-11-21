@@ -6,6 +6,7 @@ pub type ViolationObjectDto = BTreeMap<String, ViolationsDto>;
 pub type ViolationArrayDto = Vec<ViolationsDto>;
 
 #[derive(Debug, PartialEq, Clone, Deserialize)]
+#[serde(untagged)]
 pub enum ViolationItemDto {
     Object(ViolationObjectDto),
     Array(ViolationArrayDto),
@@ -39,12 +40,13 @@ impl From<&ViolationItem> for ViolationItemDto {
     }
 }
 
-impl From<&Violations> for ViolationsDto {
-    fn from(violations: &Violations) -> Self {
-        let items = violations.items.as_ref().map(ViolationItemDto::from);
-        ViolationsDto::new(violations.errors.clone(), items)
-    }
-}
+// impl <'de> Deserialize for ViolationItemDto {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: serde::Deserializer<'de> {
+//         todo!()
+//     }
+// }
 
 impl From<ViolationItemDto> for ViolationItem {
     fn from(val: ViolationItemDto) -> Self {
@@ -70,6 +72,13 @@ impl From<ViolationsDto> for Violations {
         // self.items.unwrap()
         let items = val.items.as_ref().map(|v| (*v).clone().into());
         Violations::new(val.errors.clone(), items)
+    }
+}
+
+impl From<&Violations> for ViolationsDto {
+    fn from(violations: &Violations) -> Self {
+        let items = violations.items.as_ref().map(ViolationItemDto::from);
+        ViolationsDto::new(violations.errors.clone(), items)
     }
 }
 
