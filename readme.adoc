@@ -179,7 +179,6 @@ cargo install dioxus-cli
 
 * documentation
 ** ADR
-** codegen
 ** other?
 
 * New type for Password
