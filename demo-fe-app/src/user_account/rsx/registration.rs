@@ -1,4 +1,5 @@
 use crate::route::Route;
+use crate::standard::rsx::ErrorBlock;
 use crate::standard::rsx::LabeledInput;
 use crate::standard::rsx::SubmitButton;
 use crate::user_account::rsx::user_name::UserNameComponent;
@@ -139,12 +140,7 @@ pub fn Registration() -> Element {
                                         }
                                     },
 
-                                    for e in errors() {
-                                        div {
-                                            class: "mt-4 text-sm text-red-700 dark:text-red-500",
-                                            "{e}",
-                                        }
-                                    }
+                                    ErrorBlock {errors: errors()}
 
                                     LabeledInput {
                                         id: "email".to_string(),

@@ -1,3 +1,4 @@
+use crate::standard::rsx::ErrorBlock;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
@@ -42,12 +43,7 @@ pub fn LabeledInput(props: InputTextProps) -> Element {
                 }
 
                 if let Some(v) = props.violations {
-                    for e in &v.errors {
-                        div {
-                            class: "mt-4 text-sm text-red-700 dark:text-red-500",
-                            "{e}",
-                        }
-                    }
+                    ErrorBlock {errors: v.errors}
                 }
             }
         }

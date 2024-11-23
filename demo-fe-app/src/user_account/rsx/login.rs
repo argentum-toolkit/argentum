@@ -1,5 +1,5 @@
 use crate::route::Route;
-use crate::standard::rsx::{LabeledInput, SubmitButton};
+use crate::standard::rsx::{ErrorBlock, LabeledInput, SubmitButton};
 
 use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
 use argentum_user_account_rest::dto::response::Status401Response;
@@ -38,12 +38,17 @@ impl RsxViolations {
     }
 }
 
-fn create_on_submit(
-    mut errors: Signal<Vec<String>>,
-    mut submit_disabled: Signal<bool>,
-) -> (impl FnMut(Event<FormData>), Values, RsxViolations) {
+fn create_on_submit() -> (
+    impl FnMut(Event<FormData>),
+    Values,
+    RsxViolations,
+    Signal<Vec<String>>,
+    Signal<bool>,
+) {
     let mut values = Values::new();
     let mut rsx_violations = RsxViolations::new();
+    let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
+    let mut submit_disabled = use_signal(|| false);
 
     #[cfg(not(feature = "web"))]
     let on_submit: fn(Event<FormData>) = move |_| {};
@@ -138,19 +143,12 @@ fn create_on_submit(
         }
     };
 
-    (on_submit, values, rsx_violations)
+    (on_submit, values, rsx_violations, errors, submit_disabled)
 }
 
 #[component]
 pub fn Login() -> Element {
-    // let mut email_violations: Signal<Option<ViolationsDto>> = use_signal(|| None);
-    // let mut password_violations: Signal<Option<ViolationsDto>> = use_signal(|| None);
-
-    let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
-
-    let mut submit_disabled = use_signal(|| false);
-
-    let (on_submit, mut values, mut violations) = create_on_submit(errors, submit_disabled);
+    let (on_submit, mut values, violations, errors, submit_disabled) = create_on_submit();
 
     rsx! {
         section {
@@ -166,12 +164,13 @@ pub fn Login() -> Element {
                             class:"space-y-6", action:"#", method:"POST",
                             "novalidate": true,
 
-                            for e in errors() {
-                                div {
-                                    class: "mt-4 text-sm text-red-700 dark:text-red-500",
-                                    "{e}",
-                                }
-                            }
+                            ErrorBlock {errors: errors()}
+                            // for e in errors() {
+                            //     div {
+                            //         class: "mt-4 text-sm text-red-700 dark:text-red-500",
+                            //         "{e}",
+                            //     }
+                            // }
 
                             LabeledInput {
                                 id: "email".to_string(),
