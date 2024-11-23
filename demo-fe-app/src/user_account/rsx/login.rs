@@ -1,8 +1,7 @@
 use crate::route::Route;
 use crate::standard::rsx::{ErrorBlock, LabeledInput, SubmitButton};
 
-use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
-use argentum_user_account_rest::dto::response::Status401Response;
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
 struct Values {
@@ -31,13 +30,9 @@ impl RsxViolations {
             password: use_signal(|| None),
         }
     }
-
-    pub fn clear(&mut self) {
-        self.email.set(None);
-        self.password.set(None);
-    }
 }
 
+#[cfg(not(feature = "web"))]
 fn create_on_submit() -> (
     impl FnMut(Event<FormData>),
     Values,
@@ -45,31 +40,47 @@ fn create_on_submit() -> (
     Signal<Vec<String>>,
     Signal<bool>,
 ) {
+    let values = Values::new();
+    let rsx_violations = RsxViolations::new();
+    let errors: Signal<Vec<String>> = use_signal(|| vec![]);
+    let submit_disabled = use_signal(|| false);
+
+    let on_submit: fn(Event<FormData>) = move |_| {};
+
+    (on_submit, values, rsx_violations, errors, submit_disabled)
+}
+
+#[cfg(feature = "web")]
+fn create_on_submit() -> (
+    impl FnMut(Event<FormData>),
+    Values,
+    RsxViolations,
+    Signal<Vec<String>>,
+    Signal<bool>,
+) {
+    use crate::standard::service::redirect;
+    use crate::user_account::service::ClientSideAuthenticator;
+    use argentum_rest_infrastructure::data_type::{
+        AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
+    };
+    use argentum_standard_infrastructure::invariant_violation::ViolationItemDto;
+    use argentum_user_account_rest::client::Client;
+    use argentum_user_account_rest::dto::operation_response_enum::UserLoginsWithPasswordOperationResponseEnum;
+    use argentum_user_account_rest::dto::params::UserLoginsWithPasswordParams;
+    use argentum_user_account_rest::dto::path_params::UserLoginsWithPasswordPathParams;
+    use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
+    use argentum_user_account_rest::dto::response::Status400Response;
+    use argentum_user_account_rest::dto::response::Status401Response;
+    use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
+    use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
+    use dioxus_logger::tracing::error;
+
     let mut values = Values::new();
     let mut rsx_violations = RsxViolations::new();
     let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
     let mut submit_disabled = use_signal(|| false);
 
-    #[cfg(not(feature = "web"))]
-    let on_submit: fn(Event<FormData>) = move |_| {};
-
-    #[cfg(feature = "web")]
     let on_submit = {
-        use crate::standard::service::redirect;
-        use crate::user_account::service::ClientSideAuthenticator;
-        use argentum_rest_infrastructure::data_type::{
-            AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
-        };
-        use argentum_user_account_rest::client::Client;
-        use argentum_user_account_rest::dto::operation_response_enum::UserLoginsWithPasswordOperationResponseEnum;
-        use argentum_user_account_rest::dto::params::UserLoginsWithPasswordParams;
-        use argentum_user_account_rest::dto::path_params::UserLoginsWithPasswordPathParams;
-        use argentum_user_account_rest::dto::request::UserLoginsWithPasswordRequest;
-        use argentum_user_account_rest::dto::response::Status400Response;
-        use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
-        use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
-        use dioxus_logger::tracing::error;
-
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         move |_| {
@@ -147,9 +158,54 @@ fn create_on_submit() -> (
 }
 
 #[component]
-pub fn Login() -> Element {
+pub fn LoginWithPasswordForm() -> Element {
     let (on_submit, mut values, violations, errors, submit_disabled) = create_on_submit();
 
+    rsx! {
+        form {
+            onsubmit: on_submit,
+            class:"space-y-6", action:"#", method:"POST",
+            "novalidate": true,
+
+            ErrorBlock {errors: errors()}
+
+            LabeledInput {
+                //todo: id should be longer
+                id: "email".to_string(),
+                name: "email".to_string(),
+                label: "Email address".to_string(),
+                input_type: "email".to_string(),
+                value: values.email,
+                violations: (violations.email)(),
+                oninput: move |event: String| (values.email).set(event),
+            },
+
+            LabeledInput {
+                id: "password".to_string(),
+                name: "password".to_string(),
+                label: "Password".to_string(),
+                input_type: "password".to_string(),
+                value: values.password,
+                violations: (violations.password)(),
+                oninput: move |event: String| (values.password).set(event),
+            },
+
+            div { class:"text-sm",
+                a {href:"#", class:"text-sm font-medium text-primary hover:underline", "Forgot password?"}
+            }
+
+            div {
+                SubmitButton {
+                    title: "Sign In".to_string(),
+                    disabled: submit_disabled(),
+                }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn Login() -> Element {
     rsx! {
         section {
             div { class: "container",
@@ -157,51 +213,9 @@ pub fn Login() -> Element {
                     h2 { class:"mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl", "Sign in to your account"}
 
                     div {
-
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
-                        form {
-                            onsubmit: on_submit,
-                            class:"space-y-6", action:"#", method:"POST",
-                            "novalidate": true,
 
-                            ErrorBlock {errors: errors()}
-                            // for e in errors() {
-                            //     div {
-                            //         class: "mt-4 text-sm text-red-700 dark:text-red-500",
-                            //         "{e}",
-                            //     }
-                            // }
-
-                            LabeledInput {
-                                id: "email".to_string(),
-                                name: "email".to_string(),
-                                label: "Email address".to_string(),
-                                input_type: "email".to_string(),
-                                value: values.email,
-                                violations: (violations.email)(),
-                                oninput: move |event: String| (values.email).set(event),
-                            },
-
-                            LabeledInput {
-                                id: "password".to_string(),
-                                name: "password".to_string(),
-                                label: "Password".to_string(),
-                                input_type: "password".to_string(),
-                                value: values.password,
-                                violations: (violations.password)(),
-                                oninput: move |event: String| (values.password).set(event),
-                            },
-                            div { class:"text-sm",
-                                a {href:"#", class:"text-sm font-medium text-primary hover:underline", "Forgot password?"}
-                            }
-
-                            div {
-                                SubmitButton {
-                                    title: "Sign In".to_string(),
-                                    disabled: submit_disabled(),
-                                }
-                            }
-                        }
+                        LoginWithPasswordForm {}
 
                         div { class: "text-center text-base font-medium text-body-color py-8 dark:text-body-color-dark",
                             "Don't you have an account?"

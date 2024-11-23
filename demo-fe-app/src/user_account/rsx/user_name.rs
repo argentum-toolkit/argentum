@@ -4,7 +4,6 @@ use crate::standard::rsx::LabeledInput;
 use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
 use argentum_user_account_rest::dto::schema::UserName;
 use dioxus::prelude::*;
-use dioxus_logger::tracing::info;
 
 #[derive(PartialEq, Props, Clone)]
 pub struct UserNameProps {

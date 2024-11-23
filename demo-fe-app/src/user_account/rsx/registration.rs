@@ -18,7 +18,7 @@ use argentum_user_account_rest::dto::response::Status409Response;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse::ApplicationJson;
 use argentum_user_account_rest::dto::schema::{RegistrationWithPasswordSchema, UserName};
 use dioxus::prelude::*;
-use dioxus_logger::tracing::{error, info};
+use dioxus_logger::tracing::error;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 use std::string::ToString;
 use std::vec;
