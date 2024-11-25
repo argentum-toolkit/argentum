@@ -2,6 +2,7 @@ use crate::route::Route;
 use crate::standard::rsx::{ErrorBlock, LabeledInput, SubmitButton};
 
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
 use dioxus::prelude::*;
 
 struct Values {
@@ -33,7 +34,7 @@ impl RsxViolations {
 }
 
 #[cfg(not(feature = "web"))]
-fn create_form_boilerplate() -> (
+fn create_form_boilerplate(_props: LoginWithPasswordProps) -> (
     impl FnMut(Event<FormData>),
     Values,
     RsxViolations,
@@ -51,15 +52,13 @@ fn create_form_boilerplate() -> (
 }
 
 #[cfg(feature = "web")]
-fn create_form_boilerplate() -> (
+fn create_form_boilerplate(props: LoginWithPasswordProps) -> (
     impl FnMut(Event<FormData>),
     Values,
     RsxViolations,
     Signal<Vec<String>>,
     Signal<bool>,
 ) {
-    use crate::standard::service::redirect;
-    use crate::user_account::service::ClientSideAuthenticator;
     use argentum_rest_infrastructure::data_type::{
         AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
     };
@@ -74,6 +73,7 @@ fn create_form_boilerplate() -> (
     use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
     use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
     use dioxus_logger::tracing::error;
+    use crate::user_account::service::ClientSideAuthenticator;
 
     let mut values = Values::new();
     let mut rsx_violations = RsxViolations::new();
@@ -107,12 +107,8 @@ fn create_form_boilerplate() -> (
 
                 match res {
                     Ok(data) => match data {
-                        UserLoginsWithPasswordOperationResponseEnum::Status200(r) => match r {
-                            UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
-                                authenticator().auth_user(j.0.token, j.0.user_id);
-
-                                redirect(Route::Home {});
-                            }
+                        UserLoginsWithPasswordOperationResponseEnum::Status200(r) => {
+                            props.on_response_ok.call(r);
                         },
                         UserLoginsWithPasswordOperationResponseEnum::Status400(r) => match r {
                             Status400Response::ApplicationProblemJson(j) => {
@@ -157,16 +153,21 @@ fn create_form_boilerplate() -> (
     (on_submit, values, rsx_violations, errors, submit_disabled)
 }
 
+
+#[derive(Clone, PartialEq, Props)]
+struct LoginWithPasswordProps {
+    on_response_ok: EventHandler<UserLoggedInSuccessfullyResponse>,
+}
+
 #[component]
-pub fn LoginWithPasswordForm() -> Element {
-    let (on_submit, mut values, violations, errors, submit_disabled) = create_form_boilerplate();
+fn LoginWithPasswordForm(props: LoginWithPasswordProps) -> Element {
+    let (on_submit, mut values, violations, errors, submit_disabled) = create_form_boilerplate(props);
 
     rsx! {
         form {
             onsubmit: on_submit,
             class:"space-y-6", action:"#", method:"POST",
             "novalidate": true,
-
             ErrorBlock {errors: errors()}
 
             LabeledInput {
@@ -206,6 +207,28 @@ pub fn LoginWithPasswordForm() -> Element {
 
 #[component]
 pub fn Login() -> Element {
+    #[cfg(feature = "web")]
+    let on_response_ok = {
+        use crate::user_account::service::ClientSideAuthenticator;
+        use crate::standard::service::redirect;
+
+        let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+
+        move |response: UserLoggedInSuccessfullyResponse| {
+            match response {
+                UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
+                    authenticator().auth_user(j.0.token, j.0.user_id);
+            
+                    redirect(Route::Home {});
+                }
+            }
+        }
+    };
+
+    #[cfg(not(feature = "web"))]
+    let on_response_ok = move |_response: UserLoggedInSuccessfullyResponse| {};
+    
+
     rsx! {
         section {
             div { class: "container",
@@ -215,7 +238,7 @@ pub fn Login() -> Element {
                     div {
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
 
-                        LoginWithPasswordForm {}
+                        LoginWithPasswordForm { on_response_ok: on_response_ok }
 
                         div { class: "text-center text-base font-medium text-body-color py-8 dark:text-body-color-dark",
                             "Don't you have an account?"
