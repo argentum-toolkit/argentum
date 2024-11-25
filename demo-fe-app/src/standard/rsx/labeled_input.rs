@@ -2,7 +2,7 @@ use crate::standard::rsx::ErrorBlock;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
-#[derive(PartialEq, Props, Clone)]
+#[derive(Clone, PartialEq, Props)]
 #[props(borrowed)]
 pub struct InputTextProps {
     pub value: String,

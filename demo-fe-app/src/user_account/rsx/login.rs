@@ -33,7 +33,7 @@ impl RsxViolations {
 }
 
 #[cfg(not(feature = "web"))]
-fn create_on_submit() -> (
+fn create_form_boilerplate() -> (
     impl FnMut(Event<FormData>),
     Values,
     RsxViolations,
@@ -51,7 +51,7 @@ fn create_on_submit() -> (
 }
 
 #[cfg(feature = "web")]
-fn create_on_submit() -> (
+fn create_form_boilerplate() -> (
     impl FnMut(Event<FormData>),
     Values,
     RsxViolations,
@@ -159,7 +159,7 @@ fn create_on_submit() -> (
 
 #[component]
 pub fn LoginWithPasswordForm() -> Element {
-    let (on_submit, mut values, violations, errors, submit_disabled) = create_on_submit();
+    let (on_submit, mut values, violations, errors, submit_disabled) = create_form_boilerplate();
 
     rsx! {
         form {
