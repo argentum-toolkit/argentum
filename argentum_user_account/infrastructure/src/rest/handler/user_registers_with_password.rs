@@ -41,11 +41,13 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
     ) -> Result<UserRegistersWithPasswordOperationResponseEnum, HttpError> {
         let user_id = self.id_factory.create();
 
-        let (name, email, password) = self
+        let (name, email, password, terms_accepted) = self
             .dto_to_user_registers_with_password_params
             .transform(req)?;
 
-        let result = self.uc.execute(user_id, name, email, password);
+        let result = self
+            .uc
+            .execute(user_id, name, email, password, terms_accepted);
 
         match result {
             Ok(user) => {
@@ -58,6 +60,9 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
             }
 
             Err(e) => match e {
+                RegistrationError::TermsNotAccepted => {
+                    Err(HttpError::Conflict(Conflict::new(Box::new(e))))
+                }
                 RegistrationError::EmailAlreadyExists => {
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
                 }

@@ -16,7 +16,7 @@ impl DtoToUserRegistersWithPasswordParams {
     pub fn transform(
         &self,
         req: UserRegistersWithPasswordRequest,
-    ) -> Result<(Name, EmailAddress, String), HttpError> {
+    ) -> Result<(Name, EmailAddress, String, bool), HttpError> {
         let mut vo = BTreeMap::new();
 
         let raw_name = req.body.name.clone();
@@ -42,8 +42,15 @@ impl DtoToUserRegistersWithPasswordParams {
             }
         };
 
+        let terms_accepted = req.body.terms;
+
         if vo.is_empty() {
-            Ok((name.unwrap(), email.unwrap(), req.body.password))
+            Ok((
+                name.unwrap(),
+                email.unwrap(),
+                req.body.password,
+                terms_accepted,
+            ))
         } else {
             Err(HttpError::BadRequest(BadRequestError::new(
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),

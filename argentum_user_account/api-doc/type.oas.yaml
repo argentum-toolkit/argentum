@@ -12,18 +12,25 @@ components:
       properties:
         email:
           type: string
+          title: Email
           format: email
           example: test-email@test-email.com
         name:
           $ref: '../../argentum_user/api-doc/type.oas.yaml#/components/schemas/UserName'
         password:
           type: string
+          title: Password
           format: password
           example: secure-password
+        terms:
+          type: boolean
+          title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
+          example: "false"
       required:
         - email
         - name
         - password
+        - terms
 
     AnonymousRegistrationResult:
       type: object
@@ -68,10 +75,12 @@ components:
       properties:
         email:
           type: string
+          title: Email
           format: email
           example: test-email@test-email.com
         password:
           type: string
+          title: Password
           format: password
           example: secure-password
       required:

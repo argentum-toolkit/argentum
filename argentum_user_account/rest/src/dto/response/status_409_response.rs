@@ -16,6 +16,7 @@ impl ContentTypeResponseTrait for ApplicationProblemJson {
     }
 }
 
+#[derive(Clone)]
 pub enum Status409Response {
     ApplicationProblemJson(ApplicationProblemJson),
 }

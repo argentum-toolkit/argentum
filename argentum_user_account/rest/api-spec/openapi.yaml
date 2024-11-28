@@ -198,10 +198,12 @@ components:
       properties:
         email:
           example: test-email@test-email.com
+          title: Email
           type: string
           format: email
         password:
           example: secure-password
+          title: Password
           type: string
           format: password
       type: object
@@ -243,17 +245,24 @@ components:
       - email
       - name
       - password
+      - terms
       properties:
         email:
           example: test-email@test-email.com
+          title: Email
           type: string
           format: email
         name:
           $ref: '#/components/schemas/UserName'
         password:
           example: secure-password
+          title: Password
           type: string
           format: password
+        terms:
+          example: 'false'
+          title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
+          type: boolean
       type: object
     RequestRestoreTokenSchema:
       required:

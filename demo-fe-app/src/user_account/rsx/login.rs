@@ -2,7 +2,9 @@ use crate::route::Route;
 use crate::standard::rsx::{ErrorBlock, LabeledInput, SubmitButton};
 
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
-use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
+use argentum_user_account_rest::dto::response::{
+    Status400Response, Status401Response, UserLoggedInSuccessfullyResponse,
+};
 use dioxus::prelude::*;
 
 struct Values {
@@ -32,33 +34,38 @@ impl RsxViolations {
         }
     }
 }
+struct LoginWithPasswordFormData {
+    values: Values,
+    violations: RsxViolations,
+    errors: Signal<Vec<String>>,
+    disabled: Signal<bool>,
+}
 
 #[cfg(not(feature = "web"))]
-fn create_form_boilerplate(_props: LoginWithPasswordProps) -> (
-    impl FnMut(Event<FormData>),
-    Values,
-    RsxViolations,
-    Signal<Vec<String>>,
-    Signal<bool>,
-) {
+fn create_form_boilerplate(
+    _props: LoginWithPasswordProps,
+) -> (impl FnMut(Event<FormData>), LoginWithPasswordFormData) {
     let values = Values::new();
-    let rsx_violations = RsxViolations::new();
+    let violations = RsxViolations::new();
     let errors: Signal<Vec<String>> = use_signal(|| vec![]);
-    let submit_disabled = use_signal(|| false);
+    let disabled = use_signal(|| false);
 
     let on_submit: fn(Event<FormData>) = move |_| {};
+    let data = LoginWithPasswordFormData {
+        values,
+        violations,
+        errors,
+        disabled,
+    };
 
-    (on_submit, values, rsx_violations, errors, submit_disabled)
+    (on_submit, data)
 }
 
 #[cfg(feature = "web")]
-fn create_form_boilerplate(props: LoginWithPasswordProps) -> (
-    impl FnMut(Event<FormData>),
-    Values,
-    RsxViolations,
-    Signal<Vec<String>>,
-    Signal<bool>,
-) {
+fn create_form_boilerplate(
+    props: LoginWithPasswordProps,
+) -> (impl FnMut(Event<FormData>), LoginWithPasswordFormData) {
+    use crate::user_account::service::ClientSideAuthenticator;
     use argentum_rest_infrastructure::data_type::{
         AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
     };
@@ -73,12 +80,11 @@ fn create_form_boilerplate(props: LoginWithPasswordProps) -> (
     use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
     use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
     use dioxus_logger::tracing::error;
-    use crate::user_account::service::ClientSideAuthenticator;
 
     let mut values = Values::new();
     let mut rsx_violations = RsxViolations::new();
     let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
-    let mut submit_disabled = use_signal(|| false);
+    let mut disabled = use_signal(|| false);
 
     let on_submit = {
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
@@ -88,7 +94,7 @@ fn create_form_boilerplate(props: LoginWithPasswordProps) -> (
                 // rsx_violations.clear();
                 rsx_violations.email.set(None);
                 rsx_violations.password.set(None);
-                submit_disabled.set(true);
+                disabled.set(true);
                 errors.set(vec![]);
 
                 let client =
@@ -108,41 +114,75 @@ fn create_form_boilerplate(props: LoginWithPasswordProps) -> (
                 match res {
                     Ok(data) => match data {
                         UserLoginsWithPasswordOperationResponseEnum::Status200(r) => {
-                            props.on_response_ok.call(r);
-                        },
-                        UserLoginsWithPasswordOperationResponseEnum::Status400(r) => match r {
-                            Status400Response::ApplicationProblemJson(j) => {
-                                let body_violation = match j.0.body {
-                                    Some(body_violation) => {
-                                        let pp = serde_json::to_string(&body_violation).unwrap();
-                                        let violations: ViolationsDto =
-                                            serde_json::from_slice(pp.as_ref()).unwrap();
-                                        Some(violations)
-                                    }
-                                    None => None,
-                                };
-
-                                if let Some(violations) = body_violation {
-                                    if let Some(ViolationItemDto::Object(items)) = violations.items
-                                    {
-                                        rsx_violations.email.set(items.get("email").cloned());
-                                        rsx_violations.password.set(items.get("password").cloned());
+                            props.on_user_logged_in_successfully.call(r);
+                        }
+                        UserLoginsWithPasswordOperationResponseEnum::Status400(r) => {
+                            match r.clone() {
+                                Status400Response::ApplicationProblemJson(j) => {
+                                    let body_violation = match j.0.body {
+                                        Some(body_violation) => {
+                                            let pp =
+                                                serde_json::to_string(&body_violation).unwrap();
+                                            let violations: ViolationsDto =
+                                                serde_json::from_slice(pp.as_ref()).unwrap();
+                                            Some(violations)
+                                        }
+                                        None => None,
                                     };
-                                };
 
-                                submit_disabled.set(false);
-                            }
-                        },
-                        UserLoginsWithPasswordOperationResponseEnum::Status401(r) => match r {
-                            Status401Response::ApplicationProblemJson(j) => {
-                                errors.set(vec![j.0.detail.unwrap_or(j.0.title)]);
+                                    if let Some(violations) = body_violation {
+                                        if let Some(ViolationItemDto::Object(items)) =
+                                            violations.items
+                                        {
+                                            rsx_violations.email.set(items.get("email").cloned());
+                                            rsx_violations
+                                                .password
+                                                .set(items.get("password").cloned());
+                                        };
+                                    };
 
-                                submit_disabled.set(false);
+                                    disabled.set(false);
+                                }
                             }
-                        },
+
+                            props.on_status_400.call(r);
+                        }
+                        UserLoginsWithPasswordOperationResponseEnum::Status401(r) => {
+                            match r.clone() {
+                                Status401Response::ApplicationProblemJson(j) => {
+                                    errors.set(vec![j.0.detail.unwrap_or(j.0.title)]);
+
+                                    let body_violation = match j.0.body {
+                                        Some(body_violation) => {
+                                            let pp =
+                                                serde_json::to_string(&body_violation).unwrap();
+                                            let violations: ViolationsDto =
+                                                serde_json::from_slice(pp.as_ref()).unwrap();
+                                            Some(violations)
+                                        }
+                                        None => None,
+                                    };
+
+                                    if let Some(violations) = body_violation {
+                                        if let Some(ViolationItemDto::Object(items)) =
+                                            violations.items
+                                        {
+                                            rsx_violations.email.set(items.get("email").cloned());
+                                            rsx_violations
+                                                .password
+                                                .set(items.get("password").cloned());
+                                        };
+                                    };
+
+                                    disabled.set(false);
+                                }
+                            }
+
+                            props.on_status_401.call(r);
+                        }
                     },
                     Err(e) => {
-                        submit_disabled.set(false);
+                        disabled.set(false);
                         error!("Cant get token with error: `{:?}`", e);
                     }
                 }
@@ -150,25 +190,36 @@ fn create_form_boilerplate(props: LoginWithPasswordProps) -> (
         }
     };
 
-    (on_submit, values, rsx_violations, errors, submit_disabled)
-}
+    let data = LoginWithPasswordFormData {
+        values,
+        violations: rsx_violations,
+        errors,
+        disabled,
+    };
 
+    (on_submit, data)
+}
 
 #[derive(Clone, PartialEq, Props)]
 struct LoginWithPasswordProps {
-    on_response_ok: EventHandler<UserLoggedInSuccessfullyResponse>,
+    #[props(default = EventHandler::new(move |_response: UserLoggedInSuccessfullyResponse| {}))]
+    on_user_logged_in_successfully: EventHandler<UserLoggedInSuccessfullyResponse>,
+    #[props(default = EventHandler::new(move |_response: Status400Response| {}))]
+    on_status_400: EventHandler<Status400Response>,
+    #[props(default = EventHandler::new(move |_response: Status401Response| {}))]
+    on_status_401: EventHandler<Status401Response>,
 }
 
 #[component]
 fn LoginWithPasswordForm(props: LoginWithPasswordProps) -> Element {
-    let (on_submit, mut values, violations, errors, submit_disabled) = create_form_boilerplate(props);
+    let (on_submit, mut form_data) = create_form_boilerplate(props);
 
     rsx! {
         form {
             onsubmit: on_submit,
             class:"space-y-6", action:"#", method:"POST",
             "novalidate": true,
-            ErrorBlock {errors: errors()}
+            ErrorBlock {errors: (form_data.errors)()}
 
             LabeledInput {
                 //todo: id should be longer
@@ -176,9 +227,9 @@ fn LoginWithPasswordForm(props: LoginWithPasswordProps) -> Element {
                 name: "email".to_string(),
                 label: "Email address".to_string(),
                 input_type: "email".to_string(),
-                value: values.email,
-                violations: (violations.email)(),
-                oninput: move |event: String| (values.email).set(event),
+                value: (form_data.values).email,
+                violations: (form_data.violations.email)(),
+                oninput: move |event: String| (form_data.values.email).set(event),
             },
 
             LabeledInput {
@@ -186,20 +237,14 @@ fn LoginWithPasswordForm(props: LoginWithPasswordProps) -> Element {
                 name: "password".to_string(),
                 label: "Password".to_string(),
                 input_type: "password".to_string(),
-                value: values.password,
-                violations: (violations.password)(),
-                oninput: move |event: String| (values.password).set(event),
+                value: form_data.values.password,
+                violations: (form_data.violations.password)(),
+                oninput: move |event: String| (form_data.values.password).set(event),
             },
 
-            div { class:"text-sm",
-                a {href:"#", class:"text-sm font-medium text-primary hover:underline", "Forgot password?"}
-            }
-
-            div {
-                SubmitButton {
-                    title: "Sign In".to_string(),
-                    disabled: submit_disabled(),
-                }
+            SubmitButton {
+                title: "Sign In".to_string(),
+                disabled: (form_data.disabled)(),
             }
         }
     }
@@ -208,26 +253,23 @@ fn LoginWithPasswordForm(props: LoginWithPasswordProps) -> Element {
 #[component]
 pub fn Login() -> Element {
     #[cfg(feature = "web")]
-    let on_response_ok = {
-        use crate::user_account::service::ClientSideAuthenticator;
+    let on_user_logged_in_successfully = {
         use crate::standard::service::redirect;
+        use crate::user_account::service::ClientSideAuthenticator;
 
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        move |response: UserLoggedInSuccessfullyResponse| {
-            match response {
-                UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
-                    authenticator().auth_user(j.0.token, j.0.user_id);
-            
-                    redirect(Route::Home {});
-                }
+        move |response: UserLoggedInSuccessfullyResponse| match response {
+            UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
+                authenticator().auth_user(j.0.token, j.0.user_id);
+
+                redirect(Route::Home {});
             }
         }
     };
 
     #[cfg(not(feature = "web"))]
-    let on_response_ok = move |_response: UserLoggedInSuccessfullyResponse| {};
-    
+    let on_user_logged_in_successfully = move |_response: UserLoggedInSuccessfullyResponse| {};
 
     rsx! {
         section {
@@ -238,9 +280,14 @@ pub fn Login() -> Element {
                     div {
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
 
-                        LoginWithPasswordForm { on_response_ok: on_response_ok }
+                        LoginWithPasswordForm {
+                            on_user_logged_in_successfully: on_user_logged_in_successfully,
+                        }
 
-                        div { class: "text-center text-base font-medium text-body-color py-8 dark:text-body-color-dark",
+                        div { class:"text-center text-base font-medium text-body-color py-4 dark:text-body-color-dark",
+                            a {href:"#", class:"text-sm font-medium text-primary hover:underline", "Forgot password?"}
+                        }
+                        div { class: "text-center text-base font-medium text-body-color py-3 dark:text-body-color-dark",
                             "Don't you have an account?"
                             Link { class: "text-primary hover:underline pl-2", to: Route::Registration {}, "Sign Up" }
                         }

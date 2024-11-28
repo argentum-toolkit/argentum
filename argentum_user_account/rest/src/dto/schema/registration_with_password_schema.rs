@@ -15,14 +15,17 @@ pub struct RegistrationWithPasswordSchema {
     pub name: UserName,
 
     pub password: String,
+
+    pub terms: bool,
 }
 
 impl RegistrationWithPasswordSchema {
-    pub fn new(email: String, name: UserName, password: String) -> Self {
+    pub fn new(email: String, name: UserName, password: String, terms: bool) -> Self {
         Self {
             email,
             name,
             password,
+            terms,
         }
     }
 }
@@ -65,9 +68,21 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
+        let terms = raw.terms;
+        if terms.is_none() {
+            argentum_violations.insert(
+                "terms".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(email.unwrap(), name.unwrap(), password.unwrap()))
+            Ok(Self::new(
+                email.unwrap(),
+                name.unwrap(),
+                password.unwrap(),
+                terms.unwrap(),
+            ))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordSchema".to_string()],
@@ -85,4 +100,6 @@ pub struct RegistrationWithPasswordSchemaRaw {
     pub name: Option<UserNameRaw>,
     #[serde(rename = "password")]
     pub password: Option<String>,
+    #[serde(rename = "terms")]
+    pub terms: Option<bool>,
 }

@@ -1,5 +1,6 @@
 use crate::route::Route;
 use crate::standard::rsx::ErrorBlock;
+use crate::standard::rsx::LabeledCheckbox;
 use crate::standard::rsx::LabeledInput;
 use crate::standard::rsx::SubmitButton;
 use crate::user_account::rsx::user_name::UserNameComponent;
@@ -14,12 +15,7 @@ struct Values {
     email: Signal<String>,
     password: Signal<String>,
     name: Signal<UserName>,
-}
-
-struct RsxViolations {
-    email: Signal<Option<ViolationsDto>>,
-    password: Signal<Option<ViolationsDto>>,
-    name: Signal<Option<ViolationsDto>>,
+    terms: Signal<bool>,
 }
 
 impl Values {
@@ -28,8 +24,16 @@ impl Values {
             email: use_signal(|| "".to_string()),
             password: use_signal(|| "".to_string()),
             name: use_signal(|| UserName::new("".to_string(), None, None)),
+            terms: use_signal(|| false),
         }
     }
+}
+
+struct RsxViolations {
+    email: Signal<Option<ViolationsDto>>,
+    password: Signal<Option<ViolationsDto>>,
+    name: Signal<Option<ViolationsDto>>,
+    terms: Signal<Option<ViolationsDto>>,
 }
 
 impl RsxViolations {
@@ -38,8 +42,16 @@ impl RsxViolations {
             email: use_signal(|| None),
             password: use_signal(|| None),
             name: use_signal(|| None),
+            terms: use_signal(|| None),
         }
     }
+}
+
+struct UserRegistersWithPasswordFormData {
+    values: Values,
+    violations: RsxViolations,
+    errors: Signal<Vec<String>>,
+    disabled: Signal<bool>,
 }
 
 #[cfg(not(feature = "web"))]
@@ -47,19 +59,23 @@ fn create_form_boilerplate(
     _props: UserRegistersWithPasswordProps,
 ) -> (
     impl FnMut(Event<FormData>),
-    Values,
-    RsxViolations,
-    Signal<Vec<String>>,
-    Signal<bool>,
+    UserRegistersWithPasswordFormData,
 ) {
     let values = Values::new();
-    let rsx_violations = RsxViolations::new();
+    let violations = RsxViolations::new();
     let errors: Signal<Vec<String>> = use_signal(|| vec![]);
-    let submit_disabled = use_signal(|| false);
+    let disabled = use_signal(|| false);
 
-    let on_submit: fn(Event<FormData>) = move |_| {};
+    let on_submit = move |_| {};
 
-    (on_submit, values, rsx_violations, errors, submit_disabled)
+    let data = UserRegistersWithPasswordFormData {
+        values,
+        violations,
+        errors,
+        disabled,
+    };
+
+    (on_submit, data)
 }
 
 #[cfg(feature = "web")]
@@ -67,10 +83,7 @@ fn create_form_boilerplate(
     props: UserRegistersWithPasswordProps,
 ) -> (
     impl FnMut(Event<FormData>),
-    Values,
-    RsxViolations,
-    Signal<Vec<String>>,
-    Signal<bool>,
+    UserRegistersWithPasswordFormData,
 ) {
     use argentum_rest_infrastructure::data_type::{
         AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
@@ -95,12 +108,12 @@ fn create_form_boilerplate(
     let mut values = Values::new();
     let mut rsx_violations = RsxViolations::new();
     let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
-    let mut submit_disabled = use_signal(|| false);
+    let mut disabled = use_signal(|| false);
 
     let on_submit = {
         move |_| {
             spawn(async move {
-                submit_disabled.set(true);
+                disabled.set(true);
                 rsx_violations.email.set(None);
                 rsx_violations.password.set(None);
                 rsx_violations.name.set(None);
@@ -121,6 +134,7 @@ fn create_form_boilerplate(
                         (values.email)(),
                         (values.name)(),
                         (values.password)(),
+                        (values.terms)(),
                     ),
                     UserRegistersWithPasswordParams::new(
                         UserRegistersWithPasswordPathParams::new(),
@@ -137,11 +151,6 @@ fn create_form_boilerplate(
                         UserRegistersWithPasswordOperationResponseEnum::Status201(r) => {
                             props.on_created.call(r);
                         }
-                        // UserRegistersWithPasswordOperationResponseEnum::Status201(r) => match r {
-                        //     UserRegisteredSuccessfullyResponse::ApplicationJson(j) => {
-                        //         props.on_created.call(r);
-                        //     }
-                        // },
                         UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                             Status400Response::ApplicationProblemJson(j) => {
                                 let body_violation = match j.0.body {
@@ -163,14 +172,14 @@ fn create_form_boilerplate(
                                     };
                                 };
 
-                                submit_disabled.set(false);
+                                disabled.set(false);
                             }
                         },
                         UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
                             Status409Response::ApplicationProblemJson(j) => {
                                 errors.set(vec![j.0.title]);
 
-                                submit_disabled.set(false);
+                                disabled.set(false);
                             }
                         },
                     },
@@ -178,14 +187,21 @@ fn create_form_boilerplate(
                         errors.set(vec!["Unexpected error. Please try again latter".to_string()]);
                         error!("Cant register with error: `{:?}`", e);
 
-                        submit_disabled.set(false);
+                        disabled.set(false);
                     }
                 }
             });
         }
     };
 
-    (on_submit, values, rsx_violations, errors, submit_disabled)
+    let data = UserRegistersWithPasswordFormData {
+        values,
+        violations: rsx_violations,
+        errors,
+        disabled,
+    };
+
+    (on_submit, data)
 }
 
 #[derive(Clone, PartialEq, Props)]
@@ -194,8 +210,7 @@ struct UserRegistersWithPasswordProps {
 }
 
 fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Element {
-    let (on_submit, mut values, violations, errors, submit_disabled) =
-        create_form_boilerplate(props);
+    let (on_submit, mut form_data) = create_form_boilerplate(props);
 
     rsx! {
         form {
@@ -205,16 +220,16 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Eleme
             "novalidate": true,
             onsubmit: on_submit,
 
-            ErrorBlock {errors: errors()}
+            ErrorBlock {errors: (form_data.errors)()}
 
             LabeledInput {
                 id: "email".to_string(),
                 name: "email".to_string(),
                 label: "Email address".to_string(),
                 input_type: "email".to_string(),
-                value: values.email,
-                violations: (violations.email)(),
-                oninput: move |event: String| values.email.set(event),
+                value: form_data.values.email,
+                violations: (form_data.violations.email)(),
+                oninput: move |event: String| form_data.values.email.set(event),
             },
 
             LabeledInput {
@@ -222,71 +237,38 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Eleme
                 name: "password".to_string(),
                 label: "Password".to_string(),
                 input_type: "password".to_string(),
-                value: values.password,
-                violations: (violations.password)(),
-                oninput: move |event: String| values.password.set(event),
+                value: form_data.values.password,
+                violations: (form_data.violations.password)(),
+                oninput: move |event: String| form_data.values.password.set(event),
             },
 
             UserNameComponent {
-                user_name: (values.name)(),
-                violations: (violations.name)(),
-                oninput: move |event: UserName| values.name.set(event)
+                user_name: (form_data.values.name)(),
+                violations: (form_data.violations.name)(),
+                oninput: move |event: UserName| form_data.values.name.set(event)
             }
 
-            div { class: "mb-8 flex",
-                label {
-                    "htmlFor": "checkboxLabel",
-                    class: "flex cursor-pointer select-none text-sm font-medium text-body-color",
-                    div { class: "relative",
-                        input { "type":"checkbox", id: "checkboxLabel", value: "agree", class: "sr-only"}
-                        div { class: "box mr-4 mt-1 flex h-5 w-5 items-center justify-center rounded border border-body-color border-opacity-20 dark:border-white dark:border-opacity-10",
-                            span {
-                                class: "opacity-0",
-                                svg {
-                                    width:"11",
-                                    height:"8",
-                                    "viewBox":"0 0 11 8",
-                                    fill:"none",
-                                    xmlns:"http://www.w3.org/2000/svg",
-                                    path {
-                                        d:"M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z",
-                                        fill:"#3056D3",
-                                        stroke:"#3056D3",
-                                        "strokeWidth":"0.4",
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    span {
-                        "By creating account means you agree to the"
-                        a {href:"#0", class:"text-primary hover:underline",
-                            "Terms and Conditions"
-                        }
-                        ", and our"
-                        a {href:"#0", class:"text-primary hover:underline",
-                            "Privacy Policy"
-                        }
-                    }
-                }
+            LabeledCheckbox {
+                id: "terms".to_string(),
+                name: "terms".to_string(),
+                label: "By creating account means you agree to the Terms and Conditions, and our Privacy Policy".to_string(),
+                value: (form_data.values.terms)(),
+                violations: (form_data.violations.terms)(),
+                oninput: move |event: bool| form_data.values.terms.set(event),
             }
 
             div {
                 SubmitButton {
                     title: "Sign Up".to_string(),
-                    disabled: submit_disabled(),
+                    disabled: (form_data.disabled)(),
                 }
             }
-
         }
     }
 }
 
 #[component]
 pub fn Registration() -> Element {
-    // TODO: get daa from this values
-    let agree = use_signal(|| true);
-
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
     let on_created = move |_response: UserRegisteredSuccessfullyResponse| {
@@ -314,14 +296,25 @@ pub fn Registration() -> Element {
                                 }
                             },
                             None => rsx! {
+
                                 UserRegistersWithPasswordForm {
                                     on_created: on_created,
                                 }
 
-
-                                p { class: "text-center text-base font-medium text-body-color py-8 dark:text-body-color-dark",
+                                div { class: "text-center text-base font-medium py-8",
                                     "Already here?"
                                     Link { class: "text-primary hover:underline pl-2", to: Route::Login {}, "Sign In" }
+                                }
+
+                                div { class: "text-left text-base font-medium",
+                                    "Please read our "
+                                    a {href:"#", class:"text-primary hover:underline",
+                                        "Terms and Conditions"
+                                    }
+                                    " and "
+                                    a {href:"#", class:"text-primary hover:underline",
+                                        "Privacy Policy"
+                                    }
                                 }
                             }
                         }

@@ -16,6 +16,7 @@ impl ContentTypeResponseTrait for ApplicationJson {
     }
 }
 
+#[derive(Clone)]
 pub enum AnonymousRegisteredSuccessfullyResponse {
     ApplicationJson(ApplicationJson),
 }
