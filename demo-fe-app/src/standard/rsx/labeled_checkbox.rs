@@ -30,7 +30,7 @@ pub fn LabeledCheckbox(props: CheckboxProps) -> Element {
         div { class: "mb-8 flex",
                 label {
                     "htmlFor": "checkboxLabel",
-                    class: "flex cursor-pointer select-none text-sm font-medium text-body-color",
+                    class: "flex cursor-pointer select-none text-sm font-medium text-body-color {label_class}",
                     div { class: "relative",
                         input {
                             "type":"checkbox",

@@ -1,0 +1,7 @@
+{{#each operations as |operation|}}
+mod {{snake operation.operationId}}_form_data;
+{{/each}}
+
+{{#each operations as |operation|}}
+pub use {{snake operation.operationId}}_form_data::{{upper_camel operation.operationId}}FormData;
+{{/each}}

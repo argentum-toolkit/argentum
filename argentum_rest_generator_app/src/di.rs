@@ -7,6 +7,7 @@ use crate::generator::path_param::regex::{IntegerFactory, RegexFactory, StringFa
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
+use crate::generator::ui::{FormDataGenerator, UiGenerator};
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
@@ -161,6 +162,17 @@ pub fn di_factory() -> DiC {
     reg.register_template_string(".gitignore", include_str!("../template/.gitignore.hbs"))
         .unwrap();
 
+    reg.register_template_string(
+        "ui/form_data.item",
+        include_str!("../template/ui/form_data.item.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/form_data.mod",
+        include_str!("../template/ui/form_data.mod.hbs"),
+    )
+    .unwrap();
+
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
@@ -201,7 +213,9 @@ pub fn di_factory() -> DiC {
     let schema_generator = Arc::new(SchemaGenerator::new(renderer.clone()));
     let loader = Arc::new(OasLoader::new(logger.clone()));
     let combiner = Arc::new(Combiner::new(logger.clone(), loader));
-    let client_generator = Arc::new(ClientGenerator::new(renderer));
+    let client_generator = Arc::new(ClientGenerator::new(renderer.clone()));
+
+    let ui_generator = Arc::new(UiGenerator::new(Arc::new(FormDataGenerator::new(renderer))));
 
     let openapi_generator = Arc::new(OpenApiGenerator::new(
         logger.clone(),
@@ -224,6 +238,7 @@ pub fn di_factory() -> DiC {
         gitignore_generator,
         schema_generator,
         client_generator,
+        ui_generator,
     ));
 
     DiC::new(openapi_generator)

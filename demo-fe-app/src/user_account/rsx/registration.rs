@@ -105,7 +105,7 @@ fn create_form_boilerplate(
 
     use dioxus_logger::tracing::error;
 
-    let mut values = Values::new();
+    let values = Values::new();
     let mut rsx_violations = RsxViolations::new();
     let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
     let mut disabled = use_signal(|| false);
