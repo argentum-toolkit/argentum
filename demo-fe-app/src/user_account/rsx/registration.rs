@@ -7,46 +7,11 @@ use crate::user_account::rsx::user_name::UserNameComponent;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::UserName;
-use argentum_user_account_rest::ui::form_data::UserRegistersWithPasswordFormData;
+use argentum_user_account_rest::ui::form_data::{
+    UserRegistersWithPasswordFormData, UserRegistersWithPasswordProps,
+};
 use dioxus::prelude::*;
 use std::string::ToString;
-use std::vec;
-
-struct Values {
-    email: Signal<String>,
-    password: Signal<String>,
-    name: Signal<UserName>,
-    terms: Signal<bool>,
-}
-
-impl Values {
-    pub fn new() -> Self {
-        Self {
-            email: use_signal(|| "".to_string()),
-            password: use_signal(|| "".to_string()),
-            name: use_signal(|| UserName::new("".to_string(), None, None)),
-            terms: use_signal(|| false),
-        }
-    }
-}
-
-struct RsxViolations {
-    email: Signal<Option<ViolationsDto>>,
-    password: Signal<Option<ViolationsDto>>,
-    name: Signal<Option<ViolationsDto>>,
-    terms: Signal<Option<ViolationsDto>>,
-}
-
-impl RsxViolations {
-    pub fn new() -> Self {
-        Self {
-            email: use_signal(|| None),
-            password: use_signal(|| None),
-            name: use_signal(|| None),
-            terms: use_signal(|| None),
-        }
-    }
-}
 
 #[cfg(not(feature = "web"))]
 fn create_form_boilerplate(
@@ -130,7 +95,7 @@ fn create_form_boilerplate(
                 match res {
                     Ok(data) => match data {
                         UserRegistersWithPasswordOperationResponseEnum::Status201(r) => {
-                            props.on_created.call(r);
+                            props.on_user_registered_successfully.call(r);
                         }
                         UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                             Status400Response::ApplicationProblemJson(j) => {
@@ -181,11 +146,6 @@ fn create_form_boilerplate(
     };
 
     (on_submit, form_data)
-}
-
-#[derive(Clone, PartialEq, Props)]
-struct UserRegistersWithPasswordProps {
-    on_created: EventHandler<UserRegisteredSuccessfullyResponse>,
 }
 
 fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Element {
@@ -250,7 +210,7 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Eleme
 pub fn Registration() -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
-    let on_created = move |_response: UserRegisteredSuccessfullyResponse| {
+    let on_user_registered_successfully = move |_response: UserRegisteredSuccessfullyResponse| {
         success.set(Some("Congratulations! Your account has been created."));
     };
 
@@ -277,7 +237,7 @@ pub fn Registration() -> Element {
                             None => rsx! {
 
                                 UserRegistersWithPasswordForm {
-                                    on_created: on_created,
+                                    on_user_registered_successfully,
                                 }
 
                                 div { class: "text-center text-base font-medium py-8",

@@ -1,12 +1,12 @@
 use crate::standard::rsx::{ErrorBlock, LabeledInput, SubmitButton};
 
+use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordProps;
 use dioxus::prelude::*;
 
 use super::create_form_boilerplate;
-use super::form_data::LoginWithPasswordProps;
 
 #[component]
-pub fn LoginWithPasswordForm(props: LoginWithPasswordProps) -> Element {
+pub fn LoginWithPasswordForm(props: UserLoginsWithPasswordProps) -> Element {
     let (on_submit, mut form_data) = create_form_boilerplate(props);
 
     rsx! {

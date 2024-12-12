@@ -48,7 +48,7 @@ impl AnonymousRequestsRestoreTokenFormData {
 }
 
 #[derive(Clone, PartialEq, Props)]
-pub struct LoginWithPasswordProps {
+pub struct AnonymousRequestsRestoreTokenProps {
     #[props(default = "".to_string())]
     pub id_prefix: String,
     #[props(default = EventHandler::new(move |e: String| {dioxus_logger::tracing::error!("API error: `{:?}`", e);}))]

@@ -1,4 +1,3 @@
-pub(crate) mod form_data;
 pub(crate) mod login_form;
 #[cfg(not(feature = "web"))]
 mod server_side;
