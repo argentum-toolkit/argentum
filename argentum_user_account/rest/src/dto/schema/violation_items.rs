@@ -7,7 +7,7 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ViolationItems(HashMap<String, Violation>);
 
 impl ViolationItems {

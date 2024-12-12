@@ -117,6 +117,7 @@ impl RequestGenerator {
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
+            //TODO: RequestBodyExtractor::extract
             if operation.request_body.is_some() {
                 let request_body = match operation.clone().request_body.unwrap() {
                     RefOrObject::Ref(r) => {

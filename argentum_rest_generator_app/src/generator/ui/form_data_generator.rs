@@ -1,44 +1,83 @@
+use crate::dto::TypeDescription;
+use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::{
-    Operation, RefOrObject, Response, SpecificationRoot,
-};
+use crate::transformer::SchemaToTypeDescriptionTransformer;
+use argentum_openapi_infrastructure::data_type::{Operation, RefOrObject, SpecificationRoot};
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::sync::Arc;
 
+const MOD_PATH: &str = "/src/ui/form_data/mod.rs";
+const MOD_TEMPLATE: &str = "ui/form_data.mod";
+const ITEM_TEMPLATE: &str = "ui/form_data.item";
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data<'a> {
     operation: &'a Operation,
     response_names: BTreeMap<String, String>,
+    properties: BTreeMap<String, TypeDescription>,
+    dependencies: Vec<String>,
 }
 
 pub(crate) struct FormDataGenerator {
     renderer: Arc<Renderer>,
+    schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
+    request_body_extractor: Arc<RequestBodyExtractor>,
+    schema_extractor: Arc<SchemaExtractor>,
 }
 
-const MOD_PATH: &str = "/src/ui/form_data/mod.rs";
-const MOD_TEMPLATE: &str = "ui/form_data.mod";
-const ITEM_TEMPLATE: &str = "ui/form_data.item";
-
 impl FormDataGenerator {
-    pub fn new(renderer: Arc<Renderer>) -> Self {
-        Self { renderer }
+    pub fn new(
+        renderer: Arc<Renderer>,
+        schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
+        request_body_extractor: Arc<RequestBodyExtractor>,
+        schema_extractor: Arc<SchemaExtractor>,
+    ) -> Self {
+        Self {
+            renderer,
+            schema_to_type_description_transformer,
+            request_body_extractor,
+            schema_extractor,
+        }
     }
 
     fn generate_item(
         &self,
         base_output_path: &str,
         operation: &Operation,
+        spec: &SpecificationRoot,
     ) -> Result<(), Box<dyn Error>> {
         let file_path = format!(
             "/src/ui/form_data/{}_form_data.rs",
             operation.operation_id.to_case(Case::Snake)
         );
 
+        let mut properties = BTreeMap::new();
         let mut response_names: BTreeMap<String, String> = BTreeMap::new();
+
+        let mut dependencies: Vec<String> = vec![];
+
+        if let Some(request_body) = self.request_body_extractor.extract(operation, &spec) {
+            //TODO copypasted from request_generator.rs
+            let body = request_body
+                .content
+                .get("application/json")
+                .expect("Request body should contain `application/json` mime type");
+
+            let schema = self.schema_extractor.extract(&body.schema, spec);
+
+            //TODO: schema.additional_properties
+            for (name, property) in schema.properties.unwrap_or_default() {
+                properties.insert(
+                    name,
+                    self.schema_to_type_description_transformer
+                        .transform(property, &mut dependencies),
+                );
+            }
+        };
 
         for (code, resp_or_ref) in &operation.responses {
             let response_name = match resp_or_ref {
@@ -63,8 +102,10 @@ impl FormDataGenerator {
         }
 
         let data = Data {
-            operation: &operation,
+            operation,
             response_names,
+            properties,
+            dependencies,
         };
 
         self.renderer
@@ -101,7 +142,7 @@ impl FormDataGenerator {
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            self.generate_item(base_output_path, &operation)?;
+            self.generate_item(base_output_path, &operation, spec)?;
         }
 
         Ok(())

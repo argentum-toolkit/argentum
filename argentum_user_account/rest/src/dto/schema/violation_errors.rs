@@ -4,7 +4,7 @@ use argentum_standard_business::invariant_violation::{
     InvariantResult, ViolationArray, ViolationItem, Violations,
 };
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ViolationErrors(Vec<String>);
 
 impl ViolationErrors {

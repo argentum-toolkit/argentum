@@ -7,6 +7,7 @@ use crate::user_account::rsx::user_name::UserNameComponent;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::UserName;
+use argentum_user_account_rest::ui::form_data::UserRegistersWithPasswordFormData;
 use dioxus::prelude::*;
 use std::string::ToString;
 use std::vec;
@@ -47,13 +48,6 @@ impl RsxViolations {
     }
 }
 
-struct UserRegistersWithPasswordFormData {
-    values: Values,
-    violations: RsxViolations,
-    errors: Signal<Vec<String>>,
-    disabled: Signal<bool>,
-}
-
 #[cfg(not(feature = "web"))]
 fn create_form_boilerplate(
     _props: UserRegistersWithPasswordProps,
@@ -61,19 +55,9 @@ fn create_form_boilerplate(
     impl FnMut(Event<FormData>),
     UserRegistersWithPasswordFormData,
 ) {
-    let values = Values::new();
-    let violations = RsxViolations::new();
-    let errors: Signal<Vec<String>> = use_signal(|| vec![]);
-    let disabled = use_signal(|| false);
-
     let on_submit = move |_| {};
 
-    let data = UserRegistersWithPasswordFormData {
-        values,
-        violations,
-        errors,
-        disabled,
-    };
+    let data = UserRegistersWithPasswordFormData::new();
 
     (on_submit, data)
 }
@@ -105,19 +89,16 @@ fn create_form_boilerplate(
 
     use dioxus_logger::tracing::error;
 
-    let values = Values::new();
-    let mut rsx_violations = RsxViolations::new();
-    let mut errors: Signal<Vec<String>> = use_signal(|| vec![]);
-    let mut disabled = use_signal(|| false);
+    let mut form_data = UserRegistersWithPasswordFormData::new();
 
     let on_submit = {
         move |_| {
             spawn(async move {
-                disabled.set(true);
-                rsx_violations.email.set(None);
-                rsx_violations.password.set(None);
-                rsx_violations.name.set(None);
-                errors.set(vec![]);
+                form_data.disabled.set(true);
+                form_data.violations.email.set(None);
+                form_data.violations.password.set(None);
+                form_data.violations.name.set(None);
+                form_data.errors.set(vec![]);
                 // success.set(None);todo: remove or ...?
 
                 let client =
@@ -131,10 +112,10 @@ fn create_form_boilerplate(
 
                 let req = UserRegistersWithPasswordRequest::new(
                     RegistrationWithPasswordSchema::new(
-                        (values.email)(),
-                        (values.name)(),
-                        (values.password)(),
-                        (values.terms)(),
+                        (form_data.values.email)(),
+                        (form_data.values.name)(),
+                        (form_data.values.password)(),
+                        (form_data.values.terms)(),
                     ),
                     UserRegistersWithPasswordParams::new(
                         UserRegistersWithPasswordPathParams::new(),
@@ -166,42 +147,40 @@ fn create_form_boilerplate(
                                 if let Some(violations) = body_violation {
                                     if let Some(ViolationItemDto::Object(items)) = violations.items
                                     {
-                                        rsx_violations.email.set(items.get("email").cloned());
-                                        rsx_violations.password.set(items.get("password").cloned());
-                                        rsx_violations.name.set(items.get("name").cloned());
+                                        form_data.violations.email.set(items.get("email").cloned());
+                                        form_data
+                                            .violations
+                                            .password
+                                            .set(items.get("password").cloned());
+                                        form_data.violations.name.set(items.get("name").cloned());
                                     };
                                 };
 
-                                disabled.set(false);
+                                form_data.disabled.set(false);
                             }
                         },
                         UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
                             Status409Response::ApplicationProblemJson(j) => {
-                                errors.set(vec![j.0.title]);
+                                form_data.errors.set(vec![j.0.title]);
 
-                                disabled.set(false);
+                                form_data.disabled.set(false);
                             }
                         },
                     },
                     Err(e) => {
-                        errors.set(vec!["Unexpected error. Please try again latter".to_string()]);
+                        form_data
+                            .errors
+                            .set(vec!["Unexpected error. Please try again latter".to_string()]);
                         error!("Cant register with error: `{:?}`", e);
 
-                        disabled.set(false);
+                        form_data.disabled.set(false);
                     }
                 }
             });
         }
     };
 
-    let data = UserRegistersWithPasswordFormData {
-        values,
-        violations: rsx_violations,
-        errors,
-        disabled,
-    };
-
-    (on_submit, data)
+    (on_submit, form_data)
 }
 
 #[derive(Clone, PartialEq, Props)]

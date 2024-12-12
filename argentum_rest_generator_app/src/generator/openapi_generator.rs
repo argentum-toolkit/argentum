@@ -106,43 +106,43 @@ impl OpenApiGenerator {
         self.oas_yaml_generator.generate(output, &spec)?;
 
         self.logger.info("Generate sources files ".to_string());
-        // self.dto_generator.generate(output)?;
-        // self.path_param_generator.generate(output, &spec)?;
-        // self.schema_param_generator.generate(output, &spec)?;
-        // self.operation_response_enum_generator
-        //     .generate(output, &spec)?;
-        // self.response_generator.generate(output, &spec)?;
-        // self.request_generator.generate(output, &spec)?;
-        // self.handler_generator.generate(output, &spec)?;
-        // self.pre_handler_generator.generate(output, &spec)?;
-        // self.router_generator.generate(output, &spec)?;
+        self.dto_generator.generate(output)?;
+        self.path_param_generator.generate(output, &spec)?;
+        self.schema_param_generator.generate(output, &spec)?;
+        self.operation_response_enum_generator
+            .generate(output, &spec)?;
+        self.response_generator.generate(output, &spec)?;
+        self.request_generator.generate(output, &spec)?;
+        self.handler_generator.generate(output, &spec)?;
+        self.pre_handler_generator.generate(output, &spec)?;
+        self.router_generator.generate(output, &spec)?;
 
-        // self.client_generator.generate(output, &spec)?;
+        self.client_generator.generate(output, &spec)?;
 
-        // self.server_generator.generate(output)?;
-        // self.di_generator.generate(output, &spec)?;
-        // self.lib_generator.generate(output)?;
-        // self.cargo_toml_generator.generate(
-        //     output,
-        //     &spec,
-        //     cli.package_name.clone(),
-        //     cli.homepage.clone(),
-        //     cli.repository.clone(),
-        //     cli.documentation.clone(),
-        //     cli.argentum_path.clone(),
-        // )?;
+        self.server_generator.generate(output)?;
+        self.di_generator.generate(output, &spec)?;
+        self.lib_generator.generate(output)?;
+        self.cargo_toml_generator.generate(
+            output,
+            &spec,
+            cli.package_name.clone(),
+            cli.homepage.clone(),
+            cli.repository.clone(),
+            cli.documentation.clone(),
+            cli.argentum_path.clone(),
+        )?;
 
-        // self.readme_adoc_generator.generate(
-        //     output,
-        //     &spec,
-        //     cli.package_name,
-        //     cli.homepage,
-        //     cli.repository,
-        //     cli.documentation,
-        //     cli.argentum_path,
-        // )?;
-        // self.gitignore_generator.generate(output)?;
-        // self.schema_generator.generate(output, &spec)?;
+        self.readme_adoc_generator.generate(
+            output,
+            &spec,
+            cli.package_name,
+            cli.homepage,
+            cli.repository,
+            cli.documentation,
+            cli.argentum_path,
+        )?;
+        self.gitignore_generator.generate(output)?;
+        self.schema_generator.generate(output, &spec)?;
 
         self.ui_generator.generate(output, &spec)?;
 

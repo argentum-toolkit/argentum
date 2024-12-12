@@ -1,54 +1,39 @@
+use crate::dto::response::AnonymousRegisteredSuccessfullyResponse;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
-use argentum_user_account_rest::dto::response::{
-        AnonymousRegisteredSuccessfullyResponse,
-    Status400Response, Status401Response, UserLoggedInSuccessfullyResponse,
-};
 
 use dioxus::prelude::*;
 
 #[derive(Clone)]
-pub struct Values {
-    pub email: Signal<String>,
-    pub password: Signal<String>,
-}
+pub struct Values {}
 
 impl Values {
     pub fn new() -> Self {
-        Self {
-            email: use_signal(|| "".to_string()),
-            password: use_signal(|| "".to_string()),
-        }
+        Self {}
     }
 }
 
 #[derive(Clone)]
-pub struct RsxViolations {
-    pub email: Signal<Option<ViolationsDto>>,
-    pub password: Signal<Option<ViolationsDto>>,
-}
+pub struct RsxViolations {}
 
 impl RsxViolations {
     pub fn new() -> Self {
-        Self {
-            email: use_signal(|| None),
-            password: use_signal(|| None),
-        }
+        Self {}
     }
 }
 
-pub struct LoginWithPasswordFormData {
+pub struct AnonymousRegistersFormData {
     pub values: Values,
     pub violations: RsxViolations,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
 
-impl LoginWithPasswordFormData {
+impl AnonymousRegistersFormData {
     pub fn new() -> Self {
         Self {
             values: Values::new(),
             violations: RsxViolations::new(),
-            errors:use_signal(|| vec![]),
+            errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }
     }
@@ -61,10 +46,6 @@ pub struct LoginWithPasswordProps {
     #[props(default = EventHandler::new(move |e: String| {dioxus_logger::tracing::error!("API error: `{:?}`", e);}))]
     pub on_error: EventHandler<String>,
 
-    #[props(default = EventHandler::new(move |_response: UserLoggedInSuccessfullyResponse| {}))]
-    pub on_user_logged_in_successfully: EventHandler<UserLoggedInSuccessfullyResponse>,
-    #[props(default = EventHandler::new(move |_response: Status400Response| {}))]
-    pub on_status_400: EventHandler<Status400Response>,
-    #[props(default = EventHandler::new(move |_response: Status401Response| {}))]
-    pub on_status_401: EventHandler<Status401Response>,
+    #[props(default = EventHandler::new(move |_response: AnonymousRegisteredSuccessfullyResponse| {}))]
+    pub on_anonymous_registered_successfully: EventHandler<AnonymousRegisteredSuccessfullyResponse>,
 }

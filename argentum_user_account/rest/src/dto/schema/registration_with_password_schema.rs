@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use crate::dto::schema::UserName;
 use crate::dto::schema::UserNameRaw;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct RegistrationWithPasswordSchema {
     pub email: String,
 

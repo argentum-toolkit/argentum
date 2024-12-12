@@ -1,10 +1,7 @@
-use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
-use argentum_user_account_rest::dto::response::{
-        UserLoggedInSuccessfullyResponse,
-        Status400Response,
-        Status401Response,
+use crate::dto::response::{
     Status400Response, Status401Response, UserLoggedInSuccessfullyResponse,
 };
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use dioxus::prelude::*;
 
@@ -17,8 +14,8 @@ pub struct Values {
 impl Values {
     pub fn new() -> Self {
         Self {
-            email: use_signal(|| "".to_string()),
-            password: use_signal(|| "".to_string()),
+            email: use_signal(|| String::default()),
+            password: use_signal(|| String::default()),
         }
     }
 }
@@ -38,19 +35,19 @@ impl RsxViolations {
     }
 }
 
-pub struct LoginWithPasswordFormData {
+pub struct UserLoginsWithPasswordFormData {
     pub values: Values,
     pub violations: RsxViolations,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
 
-impl LoginWithPasswordFormData {
+impl UserLoginsWithPasswordFormData {
     pub fn new() -> Self {
         Self {
             values: Values::new(),
             violations: RsxViolations::new(),
-            errors:use_signal(|| vec![]),
+            errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }
     }

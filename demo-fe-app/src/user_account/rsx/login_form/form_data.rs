@@ -35,24 +35,6 @@ impl RsxViolations {
     }
 }
 
-pub struct LoginWithPasswordFormData {
-    pub values: Values,
-    pub violations: RsxViolations,
-    pub errors: Signal<Vec<String>>,
-    pub disabled: Signal<bool>,
-}
-
-impl LoginWithPasswordFormData {
-    pub fn new() -> Self {
-        Self {
-            values: Values::new(),
-            violations: RsxViolations::new(),
-            errors: use_signal(|| vec![]),
-            disabled: use_signal(|| false),
-        }
-    }
-}
-
 #[derive(Clone, PartialEq, Props)]
 pub struct LoginWithPasswordProps {
     #[props(default = "".to_string())]

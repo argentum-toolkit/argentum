@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use {{dep}};
 {{/each}}
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct {{ name }} (HashMap<String, {{{ itemsType.dataType }}}>);
 
 impl {{ name }} {

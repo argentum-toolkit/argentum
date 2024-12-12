@@ -163,9 +163,12 @@ version = "0.3.0-dev"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
+ "argentum_standard_infrastructure",
  "argentum_user_business",
  "async-trait",
  "chrono",
+ "dioxus",
+ "dioxus-logger",
  "erased-serde",
  "hyper 1.4.1",
  "regex",

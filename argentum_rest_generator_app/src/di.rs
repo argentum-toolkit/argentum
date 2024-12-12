@@ -1,3 +1,4 @@
+use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::generator::client::ClientGenerator;
 use crate::generator::dto::{
     DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
@@ -17,6 +18,7 @@ use crate::template::helper::{
     snake_helper, trim_mod_helper, upper_camel_helper,
 };
 use crate::template::Renderer;
+use crate::transformer::SchemaToTypeDescriptionTransformer;
 use argentum_log_business::{DefaultLogger, Level};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use handlebars::Handlebars;
@@ -162,6 +164,8 @@ pub fn di_factory() -> DiC {
     reg.register_template_string(".gitignore", include_str!("../template/.gitignore.hbs"))
         .unwrap();
 
+    reg.register_template_string("ui/mod", include_str!("../template/ui/mod.hbs"))
+        .unwrap();
     reg.register_template_string(
         "ui/form_data.item",
         include_str!("../template/ui/form_data.item.hbs"),
@@ -215,7 +219,19 @@ pub fn di_factory() -> DiC {
     let combiner = Arc::new(Combiner::new(logger.clone(), loader));
     let client_generator = Arc::new(ClientGenerator::new(renderer.clone()));
 
-    let ui_generator = Arc::new(UiGenerator::new(Arc::new(FormDataGenerator::new(renderer))));
+    let schema_to_type_description_transformer =
+        Arc::new(SchemaToTypeDescriptionTransformer::new());
+    let request_body_extractor = Arc::new(RequestBodyExtractor::new());
+    let schema_extractor = Arc::new(SchemaExtractor::new());
+
+    let form_data_generator = Arc::new(FormDataGenerator::new(
+        renderer.clone(),
+        schema_to_type_description_transformer,
+        request_body_extractor,
+        schema_extractor,
+    ));
+
+    let ui_generator = Arc::new(UiGenerator::new(renderer, form_data_generator));
 
     let openapi_generator = Arc::new(OpenApiGenerator::new(
         logger.clone(),

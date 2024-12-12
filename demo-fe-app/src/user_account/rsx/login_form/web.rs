@@ -14,8 +14,8 @@ use argentum_user_account_rest::dto::response::Status401Response;
 use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
 use argentum_user_account_rest::dto::schema::ProblemDetail;
 
-use super::form_data::LoginWithPasswordFormData;
 use super::form_data::LoginWithPasswordProps;
+use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordFormData;
 
 use dioxus::prelude::*;
 
@@ -34,8 +34,8 @@ fn extract_body_violations_open_api_problem_details(
 
 pub fn create_form_boilerplate(
     props: LoginWithPasswordProps,
-) -> (impl FnMut(Event<FormData>), LoginWithPasswordFormData) {
-    let mut form_data = LoginWithPasswordFormData::new();
+) -> (impl FnMut(Event<FormData>), UserLoginsWithPasswordFormData) {
+    let mut form_data = UserLoginsWithPasswordFormData::new();
 
     let on_submit = {
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
