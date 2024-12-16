@@ -37,6 +37,7 @@ fn create_form_boilerplate(
         AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
     };
     use argentum_standard_infrastructure::invariant_violation::ViolationItemDto;
+    use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
     use argentum_user_account_rest::client::Client;
 
     use argentum_user_account_rest::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
@@ -47,11 +48,9 @@ fn create_form_boilerplate(
     use argentum_user_account_rest::dto::response::Status409Response;
     use argentum_user_account_rest::dto::schema::RegistrationWithPasswordSchema;
 
-    use dioxus_sdk::storage::use_synced_storage;
-
-    use dioxus_sdk::storage::LocalStorage;
-
     use dioxus_logger::tracing::error;
+
+    use crate::user_account::service::ClientSideAuthenticator;
 
     let mut form_data = UserRegistersWithPasswordFormData::new();
 
@@ -63,16 +62,26 @@ fn create_form_boilerplate(
                 form_data.violations.password.set(None);
                 form_data.violations.name.set(None);
                 form_data.errors.set(vec![]);
-                // success.set(None);todo: remove or ...?
 
                 let client =
                     Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
-                let local_storage_token = use_synced_storage::<LocalStorage, Option<String>>(
-                    "x_auth_token".to_string(),
-                    || None,
-                )
-                .unwrap();
+                
+                let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+
+                let local_storage_token = match authenticator().anonymous_token() {
+                    Some(t) => t,
+                    None => {
+                        form_data
+                            .errors
+                            .set(vec!["Can't get authentication token".to_string()]);
+                        error!("Can't get authentication token");
+
+                        form_data.disabled.set(false);
+
+                        return;
+                    }
+                };
 
                 let req = UserRegistersWithPasswordRequest::new(
                     RegistrationWithPasswordSchema::new(

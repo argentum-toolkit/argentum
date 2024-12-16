@@ -1,17 +1,29 @@
 use dioxus::prelude::*;
 
+const STORAGE_KEY: &str = "dark_mode_enabled";
+
 #[derive(Clone, Copy)]
 #[cfg(feature = "web")]
 pub(crate) struct DarkMode(pub bool);
+
+#[cfg(feature = "web")]
+fn extract_bool_or_false(key: &str) -> bool {
+    let local_storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
+
+    match local_storage.get_item(STORAGE_KEY) {
+        Ok(Some(s)) => s.len() > 0 && s != "false",
+        Ok(None) => false,
+        Err(_) => false,
+    }
+}
 
 pub fn use_dark_mode() {
     #[cfg(feature = "web")]
     {
         use crate::rsx::dark_mode::DarkMode;
-        use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
-        let is_dark =
-            use_synced_storage::<LocalStorage, bool>("dark_mode_enabled".to_string(), || false);
+        let is_dark = use_signal(|| extract_bool_or_false(STORAGE_KEY));
+
         use_context_provider(|| Signal::new(DarkMode(is_dark())));
     }
 }
@@ -23,14 +35,19 @@ pub fn DarkModeToggle() -> Element {
             onclick: move |_event| {
                 #[cfg(feature = "web")]
                 {
-                    use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
-
                     let mut dark_mode_context = use_context::<Signal<DarkMode>>();
                     let is_dark = !dark_mode_context().0;
-                    let mut is_dark_signal = use_synced_storage::<LocalStorage, bool>("dark_mode_enabled".to_string(), || false);
+                    // let mut is_dark_signal = use_synced_storage::<LocalStorage, bool>("dark_mode_enabled".to_string(), || false);
 
                     dark_mode_context.set(DarkMode(is_dark));
-                    is_dark_signal.set(is_dark);
+                    let local_storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
+                    let s = if is_dark {
+                        "true"
+                    } else {
+                        "false"
+                    };
+
+                    local_storage.set_item(STORAGE_KEY, s);
                 }
             },
             svg {

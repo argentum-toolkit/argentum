@@ -1,6 +1,6 @@
 [package]
-name = "argentum_standard_business"
-description = "The business layer of standard component"
+name = "argentum_standard_ui"
+description = "The ui layer of standard component"
 version = "0.3.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"
@@ -11,7 +11,8 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
-chrono = { version = "0.4.*", features = ["serde"] }
-regex = "1.10.*"
-thiserror = "1.0.*"
-rand = "0.8.*"
+dioxus = { version = "0.6", features = ["fullstack"]}
+web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
+
+[features]
+web = []

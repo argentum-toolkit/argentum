@@ -15,7 +15,6 @@ use argentum_user_account_rest::dto::response::AnonymousRegisteredSuccessfullyRe
 use dioxus::hooks::use_signal;
 use dioxus::prelude::*;
 use dioxus_logger::tracing::error;
-use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 #[derive(Clone)]
 #[cfg(feature = "web")]
