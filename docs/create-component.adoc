@@ -47,7 +47,7 @@ E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
 ** `dotenv = "0.15.0"`
 ** `chrono = { version = "0.4.19", features = ["serde"] }`
 ** `serde = { version = "1.0", features = ["derive"] }`
-** `uuid = { version = "1.4", features = ["serde", "v4"] }`
+** `uuid = { version = "1.11, features = ["serde", "v4"] }`
 
 * Create DB module
 ** Create folder `src/db`

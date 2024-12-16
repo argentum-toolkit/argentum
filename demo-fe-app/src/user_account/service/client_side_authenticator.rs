@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use argentum_rest_infrastructure::data_type::HttpParams;
 use argentum_rest_infrastructure::data_type::HttpRequest;
 use argentum_rest_infrastructure::data_type::{
@@ -26,22 +28,13 @@ pub struct ClientSideAuthenticator {
 #[cfg(feature = "web")]
 impl ClientSideAuthenticator {
     pub fn new() -> Self {
-        let mut local_storage_anonymous_token =
-            use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
+        let local_storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
 
-        let mut local_storage_user_token = use_synced_storage::<LocalStorage, Option<String>>(
-            "x_auth_user_token".to_string(),
-            || None,
-        );
-
-        let mut local_storage_user_id = use_synced_storage::<LocalStorage, Option<uuid::Uuid>>(
-            "x_auth_user_id".to_string(),
-            || None,
-        );
-
-        let mut anonymous_token = use_signal(|| local_storage_anonymous_token());
-        let mut user_token = use_signal(|| local_storage_user_token());
-        let mut user_id = use_signal(|| local_storage_user_id());
+        let mut anonymous_token =
+            use_signal(|| local_storage.get_item("x_auth_token").unwrap_or(None));
+        let mut user_token =
+            use_signal(|| local_storage.get_item("x_auth_user_token").unwrap_or(None));
+        let mut user_id = use_signal(|| local_storage.get_item("x_auth_user_id").unwrap_or(None));
 
         if anonymous_token().is_some() && user_token().is_some() {
             //Invalid state. Clearing.
@@ -49,14 +42,12 @@ impl ClientSideAuthenticator {
             anonymous_token.set(None);
             user_token.set(None);
             user_id.set(None);
-            local_storage_anonymous_token.set(None);
-            local_storage_user_token.set(None);
-            local_storage_user_id.set(None);
         }
 
         spawn(async move {
             if user_token().is_some() {
             } else if anonymous_token().is_none() {
+                //TODO: remove hardcode
                 let client =
                     Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
@@ -69,14 +60,15 @@ impl ClientSideAuthenticator {
                     ),
                 );
 
-                let res = client.anonymous_registers(req).await;
+                let res: Result<AnonymousRegistersOperationResponseEnum, String> =
+                    client.anonymous_registers(req).await;
 
                 match res {
                     Ok(data) => match data {
                         AnonymousRegistersOperationResponseEnum::Status201(r) => match r {
                             ApplicationJson(j) => {
-                                local_storage_anonymous_token.set(Some(j.0.token));
-                                anonymous_token.set(local_storage_anonymous_token());
+                                anonymous_token.set(Some(j.0.token.clone()));
+                                local_storage.set_item("x_auth_token", j.0.token.clone().as_str());
                             }
                         },
                     },
@@ -87,10 +79,15 @@ impl ClientSideAuthenticator {
             }
         });
 
+        let id = match user_id() {
+            Some(s) => Some(uuid::Uuid::from_str(s.as_str()).unwrap()),
+            None => None,
+        };
+
         Self {
             anonymous_token: anonymous_token(),
             user_token: user_token(),
-            user_id: user_id(),
+            user_id: id,
         }
     }
 
@@ -101,53 +98,26 @@ impl ClientSideAuthenticator {
     }
 
     pub fn auth_user(&mut self, token: String, user_id: uuid::Uuid) {
+        let local_storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
+
         self.anonymous_token = None;
         self.user_token = Some(token.clone());
         self.user_id = Some(user_id.clone());
 
-        let mut local_storage_anonymous_token =
-            use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
-
-        local_storage_anonymous_token.set(None);
-
-        let mut local_storage_user_token = use_synced_storage::<LocalStorage, Option<String>>(
-            "x_auth_user_token".to_string(),
-            || None,
-        );
-
-        local_storage_user_token.set(Some(token));
-
-        let mut local_storage_user_id = use_synced_storage::<LocalStorage, Option<uuid::Uuid>>(
-            "x_auth_user_id".to_string(),
-            || None,
-        );
-
-        local_storage_user_id.set(Some(user_id.clone()));
+        local_storage.delete("x_auth_token");
+        local_storage.set_item("x_auth_user_token", token.as_str());
+        local_storage.set_item("x_auth_user_id", user_id.to_string().as_str());
     }
 
     pub fn logout(&mut self) {
+        let local_storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
         self.anonymous_token = None;
         self.user_token = None;
         self.user_id = None;
 
-        let mut local_storage_anonymous_token =
-            use_synced_storage::<LocalStorage, Option<String>>("x_auth_token".to_string(), || None);
-
-        local_storage_anonymous_token.set(None);
-
-        let mut local_storage_user_token = use_synced_storage::<LocalStorage, Option<String>>(
-            "x_auth_user_token".to_string(),
-            || None,
-        );
-
-        local_storage_user_token.set(None);
-
-        let mut local_storage_user_id = use_synced_storage::<LocalStorage, Option<uuid::Uuid>>(
-            "x_auth_user_id".to_string(),
-            || None,
-        );
-
-        local_storage_user_id.set(None);
+        local_storage.delete("x_auth_token");
+        local_storage.delete("x_auth_user_token");
+        local_storage.delete("x_auth_user_id");
     }
 
     pub fn anonymous_token(&self) -> Option<String> {
@@ -168,5 +138,11 @@ impl ClientSideAuthenticator {
 
     pub fn is_anonymous_authenticated(&self) -> bool {
         self.anonymous_token.is_some()
+    }
+}
+
+impl Default for ClientSideAuthenticator {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -23,10 +23,10 @@ servers:
     basePath:
       default: api/v1
     port:
-      default: '8080'
+      default: '8088'
       enum:
       - '80'
-      - '8080'
+      - '8088'
 tags:
 - description: Managing of the users
   name: user

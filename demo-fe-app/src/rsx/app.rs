@@ -11,6 +11,9 @@ pub(crate) fn App() -> Element {
     use_dark_mode();
 
     rsx! {
+        document::Stylesheet {
+            href: asset!("/public/tailwind.css")
+        }
         Router::<Route> {}
     }
 }

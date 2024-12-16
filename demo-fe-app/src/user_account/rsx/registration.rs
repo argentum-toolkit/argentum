@@ -4,7 +4,6 @@ use crate::standard::rsx::LabeledCheckbox;
 use crate::standard::rsx::LabeledInput;
 use crate::standard::rsx::SubmitButton;
 use crate::user_account::rsx::user_name::UserNameComponent;
-use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::UserName;
 use argentum_user_account_rest::ui::form_data::{

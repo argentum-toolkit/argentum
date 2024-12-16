@@ -1,6 +1,6 @@
 [package]
 name = "demo-fe-app"
-version = "0.1.0"
+version = "0.3.0"
 authors = ["Vital Leshchyk <vitalleshchyk@gmail.com>"]
 edition = "2021"
 
@@ -13,19 +13,28 @@ argentum_user_rest = { path = "../argentum_user/rest", version = ">=0.3.0-dev,<0
 serde = { version = "1.0.*", features = ["derive"] }
 serde_json = "1.0.*"
 
-dioxus = { version = "0.5", features = ["fullstack", "router"] }
+dioxus = { version = "0.6", features = ["fullstack"]}
+dioxus-logger = "0.6.*"
 
-# Debug
-dioxus-logger = "0.5.*"
-dioxus-sdk = { version = "0.5.*", features = ["storage"] }
-manganis = "^0.2"
-
-uuid = { version = "1.5.*", features = ["serde", "v4"] }
+uuid = { version = "1.11.*", features = ["serde", "v4", "js"] }
 log = "0.4.22"
 
-web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
+web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
+
 
 [features]
 default = []
-server = ["dioxus/axum"]
+server = ["dioxus/server"]
 web = ["dioxus/web"]
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
