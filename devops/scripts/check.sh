@@ -18,6 +18,7 @@ packages=(
   'argentum_rest_generator_app'
   'argentum_standard/business'
   'argentum_standard/infrastructure'
+  'argentum_standard/ui'
   'argentum_user/business'
   'argentum_user/infrastructure'
   'argentum_user_account/business'

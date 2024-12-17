@@ -1,13 +1,20 @@
-#[cfg(feature = "web")]
-use crate::route::Route;
+use dioxus::prelude::*;
 
-#[cfg(feature = "web")]
-pub fn redirect(r: Route) -> Result<(), Err> {
-    let window = web_sys::window().expect("Missing Window object");
-    let document = window.document().expect("Could not get document");
-    let location = document.location().expect("Could not get location");
+pub fn redirect(r: impl Routable) -> Result<(), String> {
+    let Some(window) = web_sys::window() else {
+        return Err("Could not get Window object".to_string());
+    };
 
-    _ = location.set_href(r.to_string().as_str());
+    let Some(document) = window.document() else {
+        return Err("Could not get Document object".to_string());
+    };
 
-    Ok(())
+    let Some(location) = document.location() else {
+        return Err("Could not get location".to_string());
+    };
+
+    match location.set_href(r.to_string().as_str()) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("Can't redirect. Error: {:?}", e)),
+    }
 }

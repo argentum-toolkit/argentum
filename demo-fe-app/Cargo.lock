@@ -113,6 +113,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "argentum_standard_ui"
+version = "0.3.0-dev"
+dependencies = [
+ "dioxus",
+ "web-sys",
+]
+
+[[package]]
 name = "argentum_user_account_business"
 version = "0.3.0-dev"
 dependencies = [
@@ -553,6 +561,7 @@ dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
  "argentum_standard_infrastructure",
+ "argentum_standard_ui",
  "argentum_user_account_rest",
  "argentum_user_rest",
  "dioxus",
