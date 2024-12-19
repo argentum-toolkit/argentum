@@ -4,14 +4,14 @@
 
 [source,bash]
 ----
-npx tailwindcss -i ./input.css -o ./public/tailwind.css --watch
+npx tailwindcss -i ./input.css -o ./assets/tailwind.css --watch
 ----
 
 Launch the Dioxus Fullstack app:
 
 [source,bash]
 ----
-dx serve --platform fullstack
+dx serve --platform web
 ----
 
 theme:

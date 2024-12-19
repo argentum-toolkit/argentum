@@ -1,4 +1,5 @@
-use crate::standard::rsx::{ErrorBlock, LabeledInput, SubmitButton};
+use argentum_standard_ui::rsx::form::{LabeledInput, Submit};
+use argentum_standard_ui::rsx::ErrorBlock;
 
 use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordProps;
 use dioxus::prelude::*;
@@ -37,7 +38,7 @@ pub fn LoginWithPasswordForm(props: UserLoginsWithPasswordProps) -> Element {
                 oninput: move |event: String| (form_data.values.password).set(event),
             },
 
-            SubmitButton {
+            Submit {
                 title: "Sign In".to_string(),
                 disabled: (form_data.disabled)(),
             }

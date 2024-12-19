@@ -11,6 +11,7 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 [dependencies]
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 dioxus = { version = "0.6", features = ["fullstack"]}
 web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
 

@@ -1,9 +1,7 @@
 use crate::route::Route;
-use crate::standard::rsx::ErrorBlock;
-use crate::standard::rsx::LabeledCheckbox;
-use crate::standard::rsx::LabeledInput;
-use crate::standard::rsx::SubmitButton;
 use crate::user_account::rsx::user_name::UserNameComponent;
+use argentum_standard_ui::rsx::form::{LabeledCheckbox, LabeledInput, Submit};
+use argentum_standard_ui::rsx::ErrorBlock;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::UserName;
 use argentum_user_account_rest::ui::form_data::{
@@ -66,7 +64,6 @@ fn create_form_boilerplate(
                 let client =
                     Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
-                
                 let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
                 let local_storage_token = match authenticator().anonymous_token() {
@@ -205,7 +202,7 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Eleme
             }
 
             div {
-                SubmitButton {
+                Submit {
                     title: "Sign Up".to_string(),
                     disabled: (form_data.disabled)(),
                 }

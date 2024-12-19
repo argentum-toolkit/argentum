@@ -1,4 +1,4 @@
-use crate::standard::rsx::ErrorBlock;
+use crate::rsx::ErrorBlock;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
@@ -24,7 +24,7 @@ pub fn LabeledInput(props: InputTextProps) -> Element {
 
     let input_bg = match props.violations {
         Some(_) => "bg-red-100 dark:bg-red-950 border-red-700 dark:border-red-500",
-        None => "bg-gray-50 dark:bg-gray-700",
+        None => "bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600",
     };
 
     rsx! {

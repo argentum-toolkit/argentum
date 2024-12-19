@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
-use crate::standard::rsx::LabeledInput;
 use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
+use argentum_standard_ui::rsx::form::LabeledInput;
 use argentum_user_account_rest::dto::schema::UserName;
 use dioxus::prelude::*;
 

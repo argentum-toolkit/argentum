@@ -5,8 +5,8 @@ use dioxus::prelude::*;
 #[component]
 #[cfg(feature = "web")]
 fn Menu(name: String) -> Element {
-    use argentum_standard_ui::service::redirect;
     use crate::user_account::service::ClientSideAuthenticator;
+    use argentum_standard_ui::service::redirect;
     let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
     let mut hidden = use_signal(|| "hidden");

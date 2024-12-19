@@ -8,8 +8,8 @@ use dioxus::prelude::*;
 pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let on_user_logged_in_successfully = {
-        use argentum_standard_ui::service::redirect;
         use crate::user_account::service::ClientSideAuthenticator;
+        use argentum_standard_ui::service::redirect;
 
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 

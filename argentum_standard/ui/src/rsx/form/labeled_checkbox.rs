@@ -1,4 +1,4 @@
-use crate::standard::rsx::ErrorBlock;
+use crate::rsx::ErrorBlock;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
@@ -23,7 +23,7 @@ pub fn LabeledCheckbox(props: CheckboxProps) -> Element {
 
     let input_bg = match props.violations {
         Some(_) => "bg-red-100 dark:bg-red-950 border-red-700 dark:border-red-500",
-        None => "bg-gray-50 dark:bg-gray-700",
+        None => "bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600",
     };
 
     rsx! {
@@ -35,13 +35,11 @@ pub fn LabeledCheckbox(props: CheckboxProps) -> Element {
                         input {
                             "type":"checkbox",
                             id: "checkboxLabel",
-                            // checked: "false",
                             checked: "{props.value}",
                             class: "sr-only",
                             oninput: move |event| props.oninput.call(event.value() == *"true")
-
                         }
-                        div { class: "{input_bg} box mr-4 mt-1 flex h-5 w-5 items-center justify-center rounded border border-opacity-20 dark:border-opacity-10",
+                        div { class: "{input_bg} box mr-3 flex h-5 w-5 items-center justify-center border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:focus:border-primary dark:focus:shadow-none",
                             span {
                                 class: "opacity-0",
                                 svg {
