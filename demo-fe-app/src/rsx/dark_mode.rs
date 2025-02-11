@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 
+#[cfg(feature = "web")]
 const STORAGE_KEY: &str = "dark_mode_enabled";
 
 #[derive(Clone, Copy)]

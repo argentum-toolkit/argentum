@@ -1,0 +1,7 @@
+{{#each operations as |operation|}}
+mod {{snake operation.operationId}}_web_boilerplate;
+{{/each}}
+
+{{#each operations as |operation|}}
+pub use {{snake operation.operationId}}_web_boilerplate::create_{{snake operation.operationId}}_web_boilerplate;
+{{/each}}

@@ -4,11 +4,21 @@ use argentum_standard_ui::rsx::ErrorBlock;
 use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordProps;
 use dioxus::prelude::*;
 
-use super::create_form_boilerplate;
-
 #[component]
 pub fn LoginWithPasswordForm(props: UserLoginsWithPasswordProps) -> Element {
-    let (on_submit, mut form_data) = create_form_boilerplate(props);
+    #[cfg(not(feature = "web"))]
+    let (on_submit, mut form_data) = {
+        use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordFormData;
+
+        (move |_| {}, UserLoginsWithPasswordFormData::new())
+    };
+
+    #[cfg(feature = "web")]
+    let (on_submit, mut form_data) = {
+        use super::web_boilerplate::create_form_boilerplate;
+
+        create_form_boilerplate(props)
+    };
 
     rsx! {
         form {

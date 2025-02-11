@@ -8,7 +8,7 @@ use crate::generator::path_param::regex::{IntegerFactory, RegexFactory, StringFa
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
-use crate::generator::ui::{FormDataGenerator, UiGenerator};
+use crate::generator::ui::{FormDataGenerator, UiGenerator, WebBoilerplateGenerator};
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
@@ -176,6 +176,16 @@ pub fn di_factory() -> DiC {
         include_str!("../template/ui/form_data.mod.hbs"),
     )
     .unwrap();
+    reg.register_template_string(
+        "ui/web_boilerplate.item",
+        include_str!("../template/ui/web_boilerplate.item.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/web_boilerplate.mod",
+        include_str!("../template/ui/web_boilerplate.mod.hbs"),
+    )
+    .unwrap();
 
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("camel", Box::new(camel_helper));
@@ -226,12 +236,23 @@ pub fn di_factory() -> DiC {
 
     let form_data_generator = Arc::new(FormDataGenerator::new(
         renderer.clone(),
+        schema_to_type_description_transformer.clone(),
+        request_body_extractor.clone(),
+        schema_extractor.clone(),
+    ));
+
+    let web_boilerplate_generator = Arc::new(WebBoilerplateGenerator::new(
+        renderer.clone(),
         schema_to_type_description_transformer,
         request_body_extractor,
         schema_extractor,
     ));
 
-    let ui_generator = Arc::new(UiGenerator::new(renderer, form_data_generator));
+    let ui_generator = Arc::new(UiGenerator::new(
+        renderer,
+        form_data_generator,
+        web_boilerplate_generator,
+    ));
 
     let openapi_generator = Arc::new(OpenApiGenerator::new(
         logger.clone(),

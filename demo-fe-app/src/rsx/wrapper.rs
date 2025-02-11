@@ -22,7 +22,9 @@ pub(crate) fn Wrapper() -> Element {
     });
 
     #[cfg(not(feature = "web"))]
-    theme_class.set("");
+    use_effect(move || {
+        theme_class.set("");
+    });
 
     rsx! {
         div {

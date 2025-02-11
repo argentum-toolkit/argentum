@@ -11,11 +11,13 @@ argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure
 argentum_standard_ui = { path = "../argentum_standard/ui", version = ">=0.3.0-dev,<0.4.0", features = ["web"] }
 argentum_user_account_rest = { path = "../argentum_user_account/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client", "ui"] }
 argentum_user_rest = { path = "../argentum_user/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client"] }
+async-trait = "0.1.*"
 serde = { version = "1.0.*", features = ["derive"] }
 serde_json = "1.0.*"
 
 dioxus = { version = "0.6", features = ["fullstack"]}
 dioxus-logger = "0.6.*"
+futures = "0.3.*"
 
 uuid = { version = "1.11.*", features = ["serde", "v4", "js"] }
 log = "0.4.22"
