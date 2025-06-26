@@ -1,5 +1,6 @@
-use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
-use hyper::StatusCode;
+use argentum_rest_infrastructure::data_type::{
+    http_response::ContentTypeResponseTrait, http_status, http_status::StatusCode,
+};
 
 use crate::dto::response::AnonymousRegisteredSuccessfullyResponse;
 
@@ -10,9 +11,7 @@ pub enum AnonymousRegistersOperationResponseEnum {
 impl AnonymousRegistersOperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
-            Self::Status201(_) => {
-                StatusCode::from_u16(201).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-            }
+            Self::Status201(_) => http_status::CREATED,
         }
     }
 

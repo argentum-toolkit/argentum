@@ -1,5 +1,5 @@
+use crate::data_type::http_status::StatusCode;
 use crate::data_type::SerializableBody;
-use hyper::StatusCode;
 use serde::Serialize;
 
 pub trait ProblemDetailExtension: erased_serde::Serialize {}
@@ -37,7 +37,7 @@ impl ProblemDetail {
         Self {
             problem_type,
             title,
-            status: status.as_u16(),
+            status: status.code,
             detail,
             extension,
         }

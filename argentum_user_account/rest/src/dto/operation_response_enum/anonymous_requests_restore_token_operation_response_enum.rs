@@ -1,5 +1,6 @@
-use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
-use hyper::StatusCode;
+use argentum_rest_infrastructure::data_type::{
+    http_response::ContentTypeResponseTrait, http_status, http_status::StatusCode,
+};
 
 use crate::dto::response::EmptyOkResponse;
 use crate::dto::response::Status400Response;
@@ -14,15 +15,9 @@ pub enum AnonymousRequestsRestoreTokenOperationResponseEnum {
 impl AnonymousRequestsRestoreTokenOperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
-            Self::Status200(_) => {
-                StatusCode::from_u16(200).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-            }
-            Self::Status400(_) => {
-                StatusCode::from_u16(400).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-            }
-            Self::Status401(_) => {
-                StatusCode::from_u16(401).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-            }
+            Self::Status200(_) => http_status::OK,
+            Self::Status400(_) => http_status::BAD_REQUEST,
+            Self::Status401(_) => http_status::UNAUTHORIZED,
         }
     }
 

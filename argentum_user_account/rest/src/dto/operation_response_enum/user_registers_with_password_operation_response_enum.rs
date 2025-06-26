@@ -1,5 +1,6 @@
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
-use hyper::StatusCode;
+use argentum_rest_infrastructure::data_type::http_status;
+use argentum_rest_infrastructure::data_type::http_status::StatusCode;
 
 use crate::dto::response::Status400Response;
 use crate::dto::response::Status409Response;
@@ -14,15 +15,9 @@ pub enum UserRegistersWithPasswordOperationResponseEnum {
 impl UserRegistersWithPasswordOperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
-            Self::Status201(_) => {
-                StatusCode::from_u16(201).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-            }
-            Self::Status400(_) => {
-                StatusCode::from_u16(400).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-            }
-            Self::Status409(_) => {
-                StatusCode::from_u16(409).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-            }
+            Self::Status201(_) => http_status::CREATED,
+            Self::Status400(_) => http_status::BAD_REQUEST,
+            Self::Status409(_) => http_status::CONFLICT,
         }
     }
 

@@ -25,6 +25,7 @@ NOTE:    As examples you can look at `argentum_user` and `argentum_user_account`
 
 * Create a package folder
 * Add check item to file `link:devops/scripts/check.sh[devops/scripts/check.sh]`
+* Add workspace member into file `link:/Cargo.toml`
 * Create cargo package
 ** `cargo init`
 ** configure `Cargo.toml` parameters
@@ -47,7 +48,7 @@ E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
 ** `dotenv = "0.15.0"`
 ** `chrono = { version = "0.4.19", features = ["serde"] }`
 ** `serde = { version = "1.0", features = ["derive"] }`
-** `uuid = { version = "1.11, features = ["serde", "v4"] }`
+** `uuid = { version = "1.*, features = ["serde", "v4"] }`
 
 * Create DB module
 ** Create folder `src/db`

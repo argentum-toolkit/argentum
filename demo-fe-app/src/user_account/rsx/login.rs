@@ -10,12 +10,13 @@ pub fn Login() -> Element {
     let on_user_logged_in_successfully = {
         use crate::user_account::service::ClientSideAuthenticator;
         use argentum_standard_ui::service::redirect;
+        use std::sync::Arc;
 
-        let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+        let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>()();
 
         move |response: UserLoggedInSuccessfullyResponse| match response {
             UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
-                authenticator().auth_user(j.0.token, j.0.user_id);
+                authenticator.auth_user(j.0.token, j.0.user_id);
 
                 redirect(Route::Home {});
             }

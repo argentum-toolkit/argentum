@@ -3,9 +3,10 @@ name = "demo-fe-app"
 version = "0.3.0"
 authors = ["Vital Leshchyk <vitalleshchyk@gmail.com>"]
 edition = "2021"
+resolver = "2"
 
 [dependencies]
-argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
+argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0"}
 argentum_standard_business = { path = "../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_standard_ui = { path = "../argentum_standard/ui", version = ">=0.3.0-dev,<0.4.0", features = ["web"] }
@@ -15,29 +16,16 @@ async-trait = "0.1.*"
 serde = { version = "1.0.*", features = ["derive"] }
 serde_json = "1.0.*"
 
-dioxus = { version = "0.6", features = ["fullstack"]}
+dioxus = { version = "0.6.*", features = ["fullstack", "router"]}
 dioxus-logger = "0.6.*"
-futures = "0.3.*"
 
-uuid = { version = "1.11.*", features = ["serde", "v4", "js"] }
-log = "0.4.22"
+uuid = { version = "1.*", features = ["serde", "v4", "js"] }
+log = "0.4.*"
 
 web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
 
 
 [features]
-default = []
+default = ["web"]
 server = ["dioxus/server"]
-web = ["dioxus/web", "argentum_standard_ui/web"]
-
-[profile]
-
-[profile.wasm-dev]
-inherits = "dev"
-opt-level = 1
-
-[profile.server-dev]
-inherits = "dev"
-
-[profile.android-dev]
-inherits = "dev"
+web = ["dioxus/web", "argentum_standard_ui/web", "argentum_user_account_rest/client"]

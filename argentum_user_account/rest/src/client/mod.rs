@@ -1,3 +1,7 @@
+// use argentum_rest_infrastructure::data_type::http_status;
+// use argentum_rest_infrastructure::data_type::http_status::StatusCode;
+use reqwest::StatusCode;
+
 use crate::dto::response::AnonymousRegisteredSuccessfullyResponse;
 use crate::dto::response::EmptyOkResponse;
 use crate::dto::response::Status400Response;
@@ -21,7 +25,7 @@ use crate::dto::request::AnonymousRequestsRestoreTokenRequest;
 use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use crate::dto::request::UserLoginsWithPasswordRequest;
 use crate::dto::request::UserRegistersWithPasswordRequest;
-use reqwest::StatusCode;
+// use reqwest::StatusCode;
 
 pub struct Client {
     server_url: String,
@@ -49,8 +53,11 @@ impl Client {
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
         //TODO: params: header, query
 
-        let client = reqwest::Client::new();
         //TODO: transform AnonymousRegistersRequest into reqwest object
+
+        // use reqwest::StatusCode;
+
+        let client = reqwest::Client::new();
         let res = client
             .post(url)
             .header("Accept", "application/json")
@@ -60,7 +67,8 @@ impl Client {
 
         match res {
             Ok(response) => match response.status() {
-                StatusCode::CREATED => {
+                // 201u16 => {
+                reqwest::StatusCode::CREATED => {
                     match response.json::<AnonymousRegistrationResultSchema>().await {
                         Ok(data) => Ok(AnonymousRegistersOperationResponseEnum::Status201(
                             AnonymousRegisteredSuccessfullyResponse::new_application_json(data),
@@ -87,7 +95,7 @@ impl Client {
 
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
         //TODO: params: header, query
-
+        // todo!()
         let client = reqwest::Client::new();
         //TODO: transform UserLoginsWithPasswordRequest into reqwest object
         let res = client
@@ -104,24 +112,28 @@ impl Client {
 
         match res {
             Ok(response) => match response.status() {
-                StatusCode::OK => match response.json::<LoginResultSchema>().await {
+                reqwest::StatusCode::OK => match response.json::<LoginResultSchema>().await {
                     Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status200(
                         UserLoggedInSuccessfullyResponse::new_application_json(data),
                     )),
                     Err(e) => Err(e.to_string()),
                 },
-                StatusCode::BAD_REQUEST => match response.json::<ProblemDetailSchema>().await {
-                    Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status400(
-                        Status400Response::new_application_problem_json(data),
-                    )),
-                    Err(e) => Err(e.to_string()),
-                },
-                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetailSchema>().await {
-                    Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status401(
-                        Status401Response::new_application_problem_json(data),
-                    )),
-                    Err(e) => Err(e.to_string()),
-                },
+                reqwest::StatusCode::BAD_REQUEST => {
+                    match response.json::<ProblemDetailSchema>().await {
+                        Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status400(
+                            Status400Response::new_application_problem_json(data),
+                        )),
+                        Err(e) => Err(e.to_string()),
+                    }
+                }
+                reqwest::StatusCode::UNAUTHORIZED => {
+                    match response.json::<ProblemDetailSchema>().await {
+                        Ok(data) => Ok(UserLoginsWithPasswordOperationResponseEnum::Status401(
+                            Status401Response::new_application_problem_json(data),
+                        )),
+                        Err(e) => Err(e.to_string()),
+                    }
+                }
 
                 _ => Err("Wrong status code".to_string()),
             },
@@ -201,6 +213,7 @@ impl Client {
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
         //TODO: params: header, query
 
+        // todo!()
         let client = reqwest::Client::new();
         //TODO: transform AnonymousRequestsRestoreTokenRequest into reqwest object
         let res = client
@@ -261,6 +274,7 @@ impl Client {
         let body = serde_json::to_vec_pretty(&req.body).unwrap();
         //TODO: params: header, query
 
+        // todo!()
         let client = reqwest::Client::new();
         //TODO: transform AnonymousWithTokenChangesPasswordRequest into reqwest object
         let res = client
