@@ -4,6 +4,7 @@
 .asciidoctor
 **/.asciidoctor
 **/dist
+target
 /*/target
 /*/*/target
 *.pem
