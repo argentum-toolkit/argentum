@@ -1,6 +1,5 @@
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
-use argentum_rest_infrastructure::data_type::http_status;
-use argentum_rest_infrastructure::data_type::http_status::StatusCode;
+use http::StatusCode;
 
 {{#each responseNames as |name|}}
 use crate::dto::response::{{upper_camel name}}Response;
@@ -19,7 +18,7 @@ impl {{ upper_camel operation.operationId }}OperationResponseEnum {
             {{#if (eq @key "default") }}
                 Self::Status{{upper_camel @key}}(_) => StatusCode::INTERNAL_SERVER_ERROR,
             {{else}}
-                Self::Status{{upper_camel @key}}(_) => http_status::{{upper_camel @key}},
+                Self::Status{{upper_camel @key}}(_) => StatusCode::{{upper_camel @key}},
             {{/if}}
         {{/each}}
         }

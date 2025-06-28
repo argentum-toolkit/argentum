@@ -1,5 +1,3 @@
-// use argentum_rest_infrastructure::data_type::http_status;
-// use argentum_rest_infrastructure::data_type::http_status::StatusCode;
 use reqwest::StatusCode;
 
 use crate::dto::response::AnonymousRegisteredSuccessfullyResponse;
@@ -25,7 +23,6 @@ use crate::dto::request::AnonymousRequestsRestoreTokenRequest;
 use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
 use crate::dto::request::UserLoginsWithPasswordRequest;
 use crate::dto::request::UserRegistersWithPasswordRequest;
-// use reqwest::StatusCode;
 
 pub struct Client {
     server_url: String,

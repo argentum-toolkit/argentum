@@ -1,7 +1,7 @@
 use crate::data_type::error::HttpError;
-use crate::data_type::http_status;
 use crate::data_type::{HttpResponse, ProblemDetail};
 use argentum_log_business::LoggerTrait;
+use http::StatusCode;
 use std::sync::Arc;
 
 pub struct ErrorHandler {
@@ -18,12 +18,12 @@ impl ErrorHandler {
             HttpError::NotImplemented(e) => {
                 self.logger.info(format!("{:?}", e));
 
-                let code = http_status::NOT_IMPLEMENTED;
+                let code = StatusCode::NOT_IMPLEMENTED;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(
                         None,
-                        code.reason.to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         None,
                         None,
@@ -33,12 +33,12 @@ impl ErrorHandler {
             HttpError::BadRequest(e) => {
                 self.logger.info(format!("{:?}", e));
 
-                let code = http_status::BAD_REQUEST;
+                let code = StatusCode::BAD_REQUEST;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(
                         None,
-                        "Bad Request".to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         None,
                         Some(Box::new(e)),
@@ -48,12 +48,12 @@ impl ErrorHandler {
             HttpError::Unauthorized(e) => {
                 self.logger.info(format!("{:?}", e));
 
-                let code = http_status::UNAUTHORIZED;
+                let code = StatusCode::UNAUTHORIZED;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(
                         None,
-                        "Unauthorized".to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         Some(e.msg),
                         None,
@@ -63,7 +63,7 @@ impl ErrorHandler {
             HttpError::NotFound(e) | HttpError::RouteNotFound(e) => {
                 self.logger.warning(format!("{:?}", e));
 
-                let code = http_status::NOT_FOUND;
+                let code = StatusCode::NOT_FOUND;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(None, e.msg, code, None, None)),
@@ -72,7 +72,7 @@ impl ErrorHandler {
             HttpError::MethodNotAllowed(e) => {
                 self.logger.warning(format!("{:?}", e));
 
-                let code = http_status::METHOD_NOT_ALLOWED;
+                let code = StatusCode::METHOD_NOT_ALLOWED;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
@@ -81,7 +81,7 @@ impl ErrorHandler {
             HttpError::Conflict(e) => {
                 self.logger.info(format!("{:?}", e));
 
-                let code = http_status::CONFLICT;
+                let code = StatusCode::CONFLICT;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(
@@ -96,7 +96,7 @@ impl ErrorHandler {
             HttpError::UnprocessableEntity(e) => {
                 self.logger.info(format!("{:?}", e));
 
-                let code = http_status::UNPROCESSABLE_CONTENT;
+                let code = StatusCode::UNPROCESSABLE_ENTITY;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
@@ -105,12 +105,12 @@ impl ErrorHandler {
             HttpError::InternalServerError(e) => {
                 self.logger.error(format!("Internal server error {:?}", e));
 
-                let code = http_status::INTERNAL_SERVER_ERROR;
+                let code = StatusCode::INTERNAL_SERVER_ERROR;
                 HttpResponse::new(
                     code.clone(),
                     Box::new(ProblemDetail::new(
                         None,
-                        code.reason.to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         None,
                         None,
@@ -127,10 +127,11 @@ mod tests {
         BadRequestError, HttpError, InternalServerError, MethodNotAllowedError, NotFoundError,
         NotImplementedError,
     };
-    use crate::data_type::http_status;
+
     use crate::service::ErrorHandler;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::invariant_violation::Violations;
+    use http::StatusCode;
     use hyper::Method;
     use serde_json::json;
     use std::sync::Arc;
@@ -142,13 +143,13 @@ mod tests {
         let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::NotImplemented(NotImplementedError::new()));
-        assert_eq!(response.code.code, http_status::NOT_IMPLEMENTED.code);
+        assert_eq!(response.code, StatusCode::NOT_IMPLEMENTED);
 
         let str = serde_json::to_value(&response.body).unwrap();
 
         let expected = json!({
             "type": "about:blank",
-            "title": "501 Not Implemented",
+            "title": "Not Implemented",
             "status": 501,
             "detail": null
         });
@@ -168,7 +169,7 @@ mod tests {
             Violations::new(vec![], None),
             Violations::new(vec![], None),
         )));
-        assert_eq!(response.code.code, http_status::BAD_REQUEST.code);
+        assert_eq!(response.code, StatusCode::BAD_REQUEST);
 
         let str = serde_json::to_value(&response.body).unwrap();
 
@@ -191,7 +192,7 @@ mod tests {
         let response = handler.handle(HttpError::NotFound(NotFoundError::new(
             "Entity Not Found".to_string(),
         )));
-        assert_eq!(response.code.code, http_status::NOT_FOUND.code);
+        assert_eq!(response.code, StatusCode::NOT_FOUND);
 
         let str = serde_json::to_value(&response.body).unwrap();
 
@@ -214,7 +215,7 @@ mod tests {
         let response = handler.handle(HttpError::MethodNotAllowed(MethodNotAllowedError::new(
             Method::DELETE,
         )));
-        assert_eq!(response.code.code, http_status::METHOD_NOT_ALLOWED.code); //TODO fix .code. replace it to something more clear
+        assert_eq!(response.code, StatusCode::METHOD_NOT_ALLOWED);
 
         let str = serde_json::to_value(&response.body).unwrap();
 
@@ -237,13 +238,13 @@ mod tests {
         let response = handler.handle(HttpError::InternalServerError(InternalServerError::new(
             Box::new(ErrorMock {}),
         )));
-        assert_eq!(response.code.code, http_status::INTERNAL_SERVER_ERROR.code);
+        assert_eq!(response.code, StatusCode::INTERNAL_SERVER_ERROR);
 
         let str = serde_json::to_value(&response.body).unwrap();
 
         let expected = json!({
             "type": "about:blank",
-            "title": "500 Internal Server Error",
+            "title": "Internal Server Error",
             "status": 500,
             "detail": null
         });

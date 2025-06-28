@@ -18,6 +18,7 @@ async-trait = "0.1.*"
 
 bytes = "1.5.*"
 erased-serde = "0.4.*"
+http = "1.*"
 http-body-util = "0.1.*"
 hyper = { version = "1.*", features = ["full"] }
 phf = { version = "0.11", features = ["macros"] }

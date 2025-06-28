@@ -15,10 +15,7 @@ impl ResponseToJsonTransformer {
         let body = Full::new(Bytes::from(body));
 
         hyper::Response::builder()
-            .status(
-                hyper::StatusCode::from_u16(response.code.code)
-                    .unwrap_or(hyper::StatusCode::INTERNAL_SERVER_ERROR),
-            )
+            .status(response.code)
             .header(hyper::header::CONTENT_TYPE, "application/json")
             // .header(hyper::header::CONTENT_ENCODING, "deflate")
             .body(body)
@@ -28,7 +25,8 @@ impl ResponseToJsonTransformer {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::http_status;
+    use http::StatusCode;
+
     use crate::data_type::{EmptyBody, HttpResponse};
     use crate::service::ResponseToJsonTransformer;
 
@@ -36,11 +34,11 @@ mod tests {
     fn test_transform() {
         let transformer = ResponseToJsonTransformer::new();
 
-        let response = HttpResponse::new(http_status::CREATED, EmptyBody::new_boxed());
+        let response = HttpResponse::new(StatusCode::CREATED, EmptyBody::new_boxed());
 
         let hyper_response = transformer.transform(response);
 
-        assert_eq!(hyper_response.status().as_u16(), http_status::CREATED.code);
+        assert_eq!(hyper_response.status().as_u16(), StatusCode::CREATED);
         assert_eq!(
             hyper_response
                 .headers()

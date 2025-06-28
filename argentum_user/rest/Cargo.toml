@@ -21,6 +21,7 @@ argentum_user_business = { path = "../../argentum_user/business", version = ">=0
 async-trait = "0.1.*"
 chrono = "0.4.*"
 erased-serde = "0.4.*"
+http = "1.*"
 hyper = { version = "1.*", features = ["full"] }
 regex = "1.10.*"
 reqwest = { version = "0.12.*", features = ["json"], optional = true }

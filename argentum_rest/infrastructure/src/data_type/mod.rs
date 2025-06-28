@@ -2,7 +2,6 @@ mod deserializable_schema_raw;
 pub mod error;
 mod http_request;
 pub mod http_response;
-pub mod http_status;
 mod problem_detail;
 
 use bytes::Bytes;

@@ -1,6 +1,5 @@
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
-use argentum_rest_infrastructure::data_type::http_status;
-use argentum_rest_infrastructure::data_type::http_status::StatusCode;
+use http::StatusCode;
 
 use crate::dto::response::Status400Response;
 use crate::dto::response::Status401Response;
@@ -15,9 +14,9 @@ pub enum UserLoginsWithPasswordOperationResponseEnum {
 impl UserLoginsWithPasswordOperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
-            Self::Status200(_) => http_status::OK,
-            Self::Status400(_) => http_status::BAD_REQUEST,
-            Self::Status401(_) => http_status::UNAUTHORIZED,
+            Self::Status200(_) => StatusCode::OK,
+            Self::Status400(_) => StatusCode::BAD_REQUEST,
+            Self::Status401(_) => StatusCode::UNAUTHORIZED,
         }
     }
 

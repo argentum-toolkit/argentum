@@ -1,4 +1,4 @@
-use crate::data_type::http_status::StatusCode;
+use http::StatusCode;
 use serde::Serialize;
 
 pub trait SerializableBody: erased_serde::Serialize {}
@@ -56,16 +56,16 @@ impl EmptyBody {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::http_status;
-    use crate::data_type::http_status::StatusCode;
+    use http::StatusCode;
+
     use crate::data_type::{EmptyBody, HttpResponse};
 
     #[test]
     fn test_constructor() {
-        let teapot_response = HttpResponse::new(http_status::IM_A_TEAPOT, EmptyBody::new_boxed());
-        assert_eq!(http_status::IM_A_TEAPOT, teapot_response.code);
+        let teapot_response = HttpResponse::new(StatusCode::IM_A_TEAPOT, EmptyBody::new_boxed());
+        assert_eq!(StatusCode::IM_A_TEAPOT, teapot_response.code);
 
-        let ok_response = HttpResponse::new(http_status::OK, EmptyBody::new_boxed());
-        assert_eq!(http_status::OK, ok_response.code);
+        let ok_response = HttpResponse::new(StatusCode::OK, EmptyBody::new_boxed());
+        assert_eq!(StatusCode::OK, ok_response.code);
     }
 }
