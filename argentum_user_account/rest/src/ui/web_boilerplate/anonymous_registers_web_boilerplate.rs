@@ -1,4 +1,5 @@
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use crate::dto::response;
 use crate::dto::response::{
     AnonymousRegisteredSuccessfullyResponse,
 };
@@ -77,7 +78,7 @@ pub fn create_anonymous_registers_web_boilerplate(
                         }
                         AnonymousRegistersOperationResponseEnum::Status400(r) => {
                             match r.clone() {
-                                Status400Response::ApplicationProblemJson(j) => {
+                                response::Status400Response::ApplicationProblemJson(j) => {
                                     let body_violations =
                                         extract_body_violations_open_api_problem_details(j.0);
 
@@ -105,7 +106,7 @@ pub fn create_anonymous_registers_web_boilerplate(
 
                         AnonymousRegistersOperationResponseEnum::Status401(r) => {
                             match r.clone() {
-                                Status401Response::ApplicationProblemJson(j) => {
+                                response::Status401Response::ApplicationProblemJson(j) => {
                                     let body_violations =
                                         extract_body_violations_open_api_problem_details(j.0);
 

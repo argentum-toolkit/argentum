@@ -18,7 +18,7 @@ impl {{ upper_camel operation.operationId }}OperationResponseEnum {
             {{#if (eq @key "default") }}
                 Self::Status{{upper_camel @key}}(_) => StatusCode::INTERNAL_SERVER_ERROR,
             {{else}}
-                Self::Status{{upper_camel @key}}(_) => StatusCode::{{upper_camel @key}},
+                Self::Status{{upper_camel @key}}(_) => StatusCode::from_u16({{upper_camel @key}}).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
             {{/if}}
         {{/each}}
         }

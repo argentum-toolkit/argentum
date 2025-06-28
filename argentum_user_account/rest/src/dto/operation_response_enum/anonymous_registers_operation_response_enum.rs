@@ -10,7 +10,9 @@ pub enum AnonymousRegistersOperationResponseEnum {
 impl AnonymousRegistersOperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
-            Self::Status201(_) => StatusCode::CREATED,
+            Self::Status201(_) => {
+                StatusCode::from_u16(201).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
         }
     }
 

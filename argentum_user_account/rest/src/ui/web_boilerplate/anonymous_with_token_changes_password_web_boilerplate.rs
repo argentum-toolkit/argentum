@@ -1,4 +1,5 @@
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use crate::dto::response;
 use crate::dto::response::{
     EmptyOkResponse,
     Status400Response,
@@ -79,7 +80,7 @@ pub fn create_anonymous_with_token_changes_password_web_boilerplate(
                         }
                         AnonymousWithTokenChangesPasswordOperationResponseEnum::Status400(r) => {
                             match r.clone() {
-                                Status400Response::ApplicationProblemJson(j) => {
+                                response::Status400Response::ApplicationProblemJson(j) => {
                                     let body_violations =
                                         extract_body_violations_open_api_problem_details(j.0);
 
@@ -107,7 +108,7 @@ pub fn create_anonymous_with_token_changes_password_web_boilerplate(
 
                         AnonymousWithTokenChangesPasswordOperationResponseEnum::Status401(r) => {
                             match r.clone() {
-                                Status401Response::ApplicationProblemJson(j) => {
+                                response::Status401Response::ApplicationProblemJson(j) => {
                                     let body_violations =
                                         extract_body_violations_open_api_problem_details(j.0);
 

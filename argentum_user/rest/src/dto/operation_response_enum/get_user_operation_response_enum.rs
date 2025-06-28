@@ -16,10 +16,18 @@ pub enum GetUserOperationResponseEnum {
 impl GetUserOperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
-            Self::Status200(_) => StatusCode::OK,
-            Self::Status401(_) => StatusCode::UNAUTHORIZED,
-            Self::Status403(_) => StatusCode::FORBIDDEN,
-            Self::Status404(_) => StatusCode::NOT_FOUND,
+            Self::Status200(_) => {
+                StatusCode::from_u16(200).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+            Self::Status401(_) => {
+                StatusCode::from_u16(401).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+            Self::Status403(_) => {
+                StatusCode::from_u16(403).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+            Self::Status404(_) => {
+                StatusCode::from_u16(404).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
         }
     }
 

@@ -11,3 +11,6 @@ pub mod server;
 
 #[cfg(feature = "server")]
 pub use di::ApiDiC;
+
+#[cfg(feature = "ui")]
+pub mod ui;

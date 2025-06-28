@@ -1,9 +1,10 @@
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use crate::dto::response;
 use crate::dto::response::{
-    EmptyOkResponse,
-    Status400Response,
+    GetUserOkResponse,
     Status401Response,
+    Status403Response,
+    Status404Response,
 };
 
 
@@ -14,16 +15,16 @@ use argentum_rest_infrastructure::data_type::{
 };
 use argentum_standard_infrastructure::invariant_violation::ViolationItemDto;
 use crate::client::Client;
-use crate::dto::operation_response_enum::AnonymousRequestsRestoreTokenOperationResponseEnum;
-use crate::dto::params::AnonymousRequestsRestoreTokenParams;
-use crate::dto::path_params::AnonymousRequestsRestoreTokenPathParams;
-use crate::dto::request::AnonymousRequestsRestoreTokenRequest;
+use crate::dto::operation_response_enum::GetUserOperationResponseEnum;
+use crate::dto::params::GetUserParams;
+use crate::dto::path_params::GetUserPathParams;
+use crate::dto::request::GetUserRequest;
 use crate::dto::schema::LoginWithPasswordSchema;
 use crate::dto::schema::ProblemDetail;
 
-use crate::ui::form_data::AnonymousRequestsRestoreTokenFormData;
+use crate::ui::form_data::GetUserFormData;
 
-use crate::ui::form_data::AnonymousRequestsRestoreTokenProps;
+use crate::ui::form_data::GetUserProps;
 use dioxus::prelude::*;
 
 fn extract_body_violations_open_api_problem_details(
@@ -39,11 +40,11 @@ fn extract_body_violations_open_api_problem_details(
     }
 }
 
-pub fn create_anonymous_requests_restore_token_web_boilerplate(
+pub fn create_get_user_web_boilerplate(
     server_url: String,
-    props: AnonymousRequestsRestoreTokenProps,
-) -> (impl FnMut(Event<FormData>), AnonymousRequestsRestoreTokenFormData) {
-    let mut form_data = AnonymousRequestsRestoreTokenFormData::new();
+    props: GetUserProps,
+) -> (impl FnMut(Event<FormData>), GetUserFormData) {
+    let mut form_data = GetUserFormData::new();
 
     let on_submit = {
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
@@ -59,13 +60,13 @@ pub fn create_anonymous_requests_restore_token_web_boilerplate(
                 let client =
                     Client::new(server_url, "/api/v1".to_string());
 
-                let req = AnonymousRequestsRestoreTokenRequest::new(
+                let req = GetUserRequest::new(
                     LoginWithPasswordSchema::new(
                         (form_data.values.email)(),
                         (form_data.values.password)(),
                     ),
-                    AnonymousRequestsRestoreTokenParams::new(
-                        AnonymousRequestsRestoreTokenPathParams::new(),
+                    GetUserParams::new(
+                        GetUserPathParams::new(),
                         EmptyQueryParams {},
                         AuthHeaderParams::new(authenticator().anonymous_token().unwrap()),
                     ),
@@ -75,10 +76,10 @@ pub fn create_anonymous_requests_restore_token_web_boilerplate(
 
                 match res {
                     Ok(data) => match data {
-                        AnonymousRequestsRestoreTokenOperationResponseEnum::Status200(r) => {
+                        GetUserOperationResponseEnum::Status200(r) => {
                             props.on_user_logged_in_successfully.call(r);
                         }
-                        AnonymousRequestsRestoreTokenOperationResponseEnum::Status400(r) => {
+                        GetUserOperationResponseEnum::Status400(r) => {
                             match r.clone() {
                                 response::Status400Response::ApplicationProblemJson(j) => {
                                     let body_violations =
@@ -106,7 +107,7 @@ pub fn create_anonymous_requests_restore_token_web_boilerplate(
                             props.on_status_400.call(r);
                         }
 
-                        AnonymousRequestsRestoreTokenOperationResponseEnum::Status401(r) => {
+                        GetUserOperationResponseEnum::Status401(r) => {
                             match r.clone() {
                                 response::Status401Response::ApplicationProblemJson(j) => {
                                     let body_violations =

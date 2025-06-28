@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use crate::dto::schema::Violation;
 use crate::dto::schema::ViolationRaw;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ProblemDetail {
     pub body: Option<Violation>,
 

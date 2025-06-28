@@ -14,9 +14,15 @@ pub enum AnonymousWithTokenChangesPasswordOperationResponseEnum {
 impl AnonymousWithTokenChangesPasswordOperationResponseEnum {
     pub fn to_status_code(&self) -> StatusCode {
         match self {
-            Self::Status200(_) => StatusCode::OK,
-            Self::Status400(_) => StatusCode::BAD_REQUEST,
-            Self::Status401(_) => StatusCode::UNAUTHORIZED,
+            Self::Status200(_) => {
+                StatusCode::from_u16(200).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+            Self::Status400(_) => {
+                StatusCode::from_u16(400).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+            Self::Status401(_) => {
+                StatusCode::from_u16(401).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+            }
         }
     }
 

@@ -1,4 +1,5 @@
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use crate::dto::response;
 use crate::dto::response::{
     UserLoggedInSuccessfullyResponse,
     Status400Response,
@@ -79,7 +80,7 @@ pub fn create_user_logins_with_password_web_boilerplate(
                         }
                         UserLoginsWithPasswordOperationResponseEnum::Status400(r) => {
                             match r.clone() {
-                                Status400Response::ApplicationProblemJson(j) => {
+                                response::Status400Response::ApplicationProblemJson(j) => {
                                     let body_violations =
                                         extract_body_violations_open_api_problem_details(j.0);
 
@@ -107,7 +108,7 @@ pub fn create_user_logins_with_password_web_boilerplate(
 
                         UserLoginsWithPasswordOperationResponseEnum::Status401(r) => {
                             match r.clone() {
-                                Status401Response::ApplicationProblemJson(j) => {
+                                response::Status401Response::ApplicationProblemJson(j) => {
                                     let body_violations =
                                         extract_body_violations_open_api_problem_details(j.0);
 
