@@ -36,4 +36,17 @@ impl Renderer {
 
         Ok(())
     }
+
+    pub fn render_to_result<T>(
+        &self,
+        template_name: &str,
+        data: T,
+    ) -> Result<String, Box<dyn Error>>
+    where
+        T: Serialize,
+    {
+        let res = self.handlebars.render(template_name, &data)?;
+
+        Ok(res)
+    }
 }

@@ -1,0 +1,7 @@
+{{#each inputs as |input|}}
+mod {{snake  @key}}_input;
+{{/each}}
+
+{{#each inputs as |input|}}
+pub use {{snake @key}}_input::{{upper_camel @key}}Input;
+{{/each}}

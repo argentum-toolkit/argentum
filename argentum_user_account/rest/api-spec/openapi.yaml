@@ -263,6 +263,10 @@ components:
           example: 'false'
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
           type: boolean
+          x-ag-ui:
+            id: terms
+            name: terms
+            label: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
       type: object
     RequestRestoreTokenSchema:
       required:
@@ -282,15 +286,27 @@ components:
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_first_name
+            name: user_first_name
+            label: First Name
         last:
           example: Marko
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_last_name
+            name: user_last_name
+            label: First Name
         patronymic:
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_patronymic
+            name: user_patronymic
+            label: Patronymic
       type: object
     Violation:
       properties:

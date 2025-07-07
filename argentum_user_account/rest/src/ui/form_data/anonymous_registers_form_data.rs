@@ -3,7 +3,7 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use dioxus::prelude::*;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct Values {}
 
 impl Values {
@@ -12,15 +12,18 @@ impl Values {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct RsxViolations {}
 
 impl RsxViolations {
     pub fn new() -> Self {
         Self {}
     }
+
+    pub fn clear(&mut self) {}
 }
 
+#[derive(Clone, PartialEq, Props)]
 pub struct AnonymousRegistersFormData {
     pub values: Values,
     pub violations: RsxViolations,
@@ -48,4 +51,10 @@ pub struct AnonymousRegistersProps {
 
     #[props(default = EventHandler::new(move |_response: AnonymousRegisteredSuccessfullyResponse| {}))]
     pub on_anonymous_registered_successfully: EventHandler<AnonymousRegisteredSuccessfullyResponse>,
+}
+
+#[derive(Clone, PartialEq, Props)]
+pub struct AnonymousRegistersFormProps {
+    pub on_submit: EventHandler<FormEvent>,
+    pub form_data: AnonymousRegistersFormData,
 }

@@ -64,7 +64,7 @@ E.g. for component with name `User` we will create db with name `argentum_user`
 
 == How we work with OpenAPI
 
-=== Create OpenAPI documentation (
+=== Create OpenAPI documentation
 
 Basically we use that path `api-doc/openapi.yaml`
 

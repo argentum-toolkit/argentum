@@ -8,7 +8,9 @@ use crate::generator::path_param::regex::{IntegerFactory, RegexFactory, StringFa
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
-use crate::generator::ui::{FormDataGenerator, UiGenerator, WebBoilerplateGenerator};
+use crate::generator::ui::{
+    FormDataGenerator, InputGenerator, UiGenerator, WebBoilerplateGenerator,
+};
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
@@ -177,6 +179,30 @@ pub fn di_factory() -> DiC {
     )
     .unwrap();
     reg.register_template_string(
+        "ui/input.item",
+        include_str!("../template/ui/input.item.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string("ui/input.mod", include_str!("../template/ui/input.mod.hbs"))
+        .unwrap();
+
+    reg.register_template_string(
+        "ui/input/labeled_checkbox",
+        include_str!("../template/ui/input/labeled_checkbox.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/input/labeled_input",
+        include_str!("../template/ui/input/labeled_input.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/input/object",
+        include_str!("../template/ui/input/object.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
         "ui/web_boilerplate.item",
         include_str!("../template/ui/web_boilerplate.item.hbs"),
     )
@@ -241,6 +267,13 @@ pub fn di_factory() -> DiC {
         schema_extractor.clone(),
     ));
 
+    let input_generator = Arc::new(InputGenerator::new(
+        renderer.clone(),
+        schema_to_type_description_transformer.clone(),
+        request_body_extractor.clone(),
+        schema_extractor.clone(),
+    ));
+
     let web_boilerplate_generator = Arc::new(WebBoilerplateGenerator::new(
         renderer.clone(),
         schema_to_type_description_transformer,
@@ -251,6 +284,7 @@ pub fn di_factory() -> DiC {
     let ui_generator = Arc::new(UiGenerator::new(
         renderer,
         form_data_generator,
+        input_generator,
         web_boilerplate_generator,
     ));
 

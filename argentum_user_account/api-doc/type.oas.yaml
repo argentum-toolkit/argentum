@@ -26,6 +26,10 @@ components:
           type: boolean
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
           example: "false"
+          x-ag-ui:
+            id: terms
+            name: terms
+            label: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
       required:
         - email
         - name

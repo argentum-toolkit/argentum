@@ -7,7 +7,7 @@ use crate::dto::schema::UserName;
 
 use dioxus::prelude::*;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct Values {
     pub email: Signal<String>,
     pub name: Signal<UserName>,
@@ -26,7 +26,7 @@ impl Values {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct RsxViolations {
     pub email: Signal<Option<ViolationsDto>>,
     pub name: Signal<Option<ViolationsDto>>,
@@ -43,8 +43,16 @@ impl RsxViolations {
             terms: use_signal(|| None),
         }
     }
+
+    pub fn clear(&mut self) {
+        self.email.set(None);
+        self.name.set(None);
+        self.password.set(None);
+        self.terms.set(None);
+    }
 }
 
+#[derive(Clone, PartialEq, Props)]
 pub struct UserRegistersWithPasswordFormData {
     pub values: Values,
     pub violations: RsxViolations,
@@ -76,4 +84,10 @@ pub struct UserRegistersWithPasswordProps {
     pub on_status_400: EventHandler<Status400Response>,
     #[props(default = EventHandler::new(move |_response: Status409Response| {}))]
     pub on_status_409: EventHandler<Status409Response>,
+}
+
+#[derive(Clone, PartialEq, Props)]
+pub struct UserRegistersWithPasswordFormProps {
+    pub on_submit: EventHandler<FormEvent>,
+    pub form_data: UserRegistersWithPasswordFormData,
 }

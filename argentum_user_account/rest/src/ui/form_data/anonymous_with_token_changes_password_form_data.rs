@@ -3,7 +3,7 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use dioxus::prelude::*;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct Values {
     pub password: Signal<String>,
     pub token: Signal<String>,
@@ -18,7 +18,7 @@ impl Values {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct RsxViolations {
     pub password: Signal<Option<ViolationsDto>>,
     pub token: Signal<Option<ViolationsDto>>,
@@ -31,8 +31,14 @@ impl RsxViolations {
             token: use_signal(|| None),
         }
     }
+
+    pub fn clear(&mut self) {
+        self.password.set(None);
+        self.token.set(None);
+    }
 }
 
+#[derive(Clone, PartialEq, Props)]
 pub struct AnonymousWithTokenChangesPasswordFormData {
     pub values: Values,
     pub violations: RsxViolations,
@@ -64,4 +70,10 @@ pub struct AnonymousWithTokenChangesPasswordProps {
     pub on_status_400: EventHandler<Status400Response>,
     #[props(default = EventHandler::new(move |_response: Status401Response| {}))]
     pub on_status_401: EventHandler<Status401Response>,
+}
+
+#[derive(Clone, PartialEq, Props)]
+pub struct AnonymousWithTokenChangesPasswordFormProps {
+    pub on_submit: EventHandler<FormEvent>,
+    pub form_data: AnonymousWithTokenChangesPasswordFormData,
 }

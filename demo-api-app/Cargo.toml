@@ -1,6 +1,6 @@
 [package]
-name = "argentum_demo_web_app_migration"
-description = "Demo web app of argentum toolkit"
+name = "argentum_demo_api_app"
+description = "Demo API app of argentum toolkit"
 version = "0.3.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "BSD-3-Clause"

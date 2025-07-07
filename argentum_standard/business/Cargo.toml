@@ -12,6 +12,6 @@ readme = "readme.adoc"
 
 [dependencies]
 chrono = { version = "0.4.*", features = ["serde"] }
+fastrand = "2.*"
 regex = "1.10.*"
 thiserror = "1.0.*"
-rand = "0.8.*"

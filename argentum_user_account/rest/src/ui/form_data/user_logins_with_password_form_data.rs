@@ -5,7 +5,7 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use dioxus::prelude::*;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct Values {
     pub email: Signal<String>,
     pub password: Signal<String>,
@@ -20,7 +20,7 @@ impl Values {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Props)]
 pub struct RsxViolations {
     pub email: Signal<Option<ViolationsDto>>,
     pub password: Signal<Option<ViolationsDto>>,
@@ -33,8 +33,14 @@ impl RsxViolations {
             password: use_signal(|| None),
         }
     }
+
+    pub fn clear(&mut self) {
+        self.email.set(None);
+        self.password.set(None);
+    }
 }
 
+#[derive(Clone, PartialEq, Props)]
 pub struct UserLoginsWithPasswordFormData {
     pub values: Values,
     pub violations: RsxViolations,
@@ -66,4 +72,10 @@ pub struct UserLoginsWithPasswordProps {
     pub on_status_400: EventHandler<Status400Response>,
     #[props(default = EventHandler::new(move |_response: Status401Response| {}))]
     pub on_status_401: EventHandler<Status401Response>,
+}
+
+#[derive(Clone, PartialEq, Props)]
+pub struct UserLoginsWithPasswordFormProps {
+    pub on_submit: EventHandler<FormEvent>,
+    pub form_data: UserLoginsWithPasswordFormData,
 }

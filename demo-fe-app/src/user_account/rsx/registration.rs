@@ -1,12 +1,13 @@
 use crate::route::Route;
-use crate::user_account::rsx::user_name::UserNameComponent;
 use argentum_standard_ui::rsx::form::{LabeledCheckbox, LabeledInput, Submit};
 use argentum_standard_ui::rsx::ErrorBlock;
 use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::UserName;
 use argentum_user_account_rest::ui::form_data::{
-    UserRegistersWithPasswordFormData, UserRegistersWithPasswordProps,
+    UserRegistersWithPasswordFormData, UserRegistersWithPasswordFormProps,
+    UserRegistersWithPasswordProps,
 };
+use argentum_user_account_rest::ui::input::UserNameInput;
 use dioxus::prelude::*;
 use std::string::ToString;
 
@@ -52,109 +53,103 @@ fn create_form_boilerplate(
 
     let mut form_data = UserRegistersWithPasswordFormData::new();
 
-    let on_submit = {
-        move |_| {
-            spawn(async move {
-                form_data.disabled.set(true);
-                form_data.violations.email.set(None);
-                form_data.violations.password.set(None);
-                form_data.violations.name.set(None);
-                form_data.errors.set(vec![]);
+    let on_submit = move |_| {
+        spawn(async move {
+            form_data.disabled.set(true);
+            form_data.violations.name.set(None);
+            form_data.errors.set(vec![]);
 
-                let client =
-                    Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
+            let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
-                let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+            let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-                let local_storage_token = match authenticator().anonymous_token() {
-                    Some(t) => t,
-                    None => {
-                        form_data
-                            .errors
-                            .set(vec!["Can't get authentication token".to_string()]);
-                        error!("Can't get authentication token");
+            let local_storage_token = match authenticator().anonymous_token() {
+                Some(t) => t,
+                None => {
+                    form_data
+                        .errors
+                        .set(vec!["Can't get authentication token".to_string()]);
+                    error!("Can't get authentication token");
 
-                        form_data.disabled.set(false);
+                    form_data.disabled.set(false);
 
-                        return;
-                    }
-                };
-
-                let req = UserRegistersWithPasswordRequest::new(
-                    RegistrationWithPasswordSchema::new(
-                        (form_data.values.email)(),
-                        (form_data.values.name)(),
-                        (form_data.values.password)(),
-                        (form_data.values.terms)(),
-                    ),
-                    UserRegistersWithPasswordParams::new(
-                        UserRegistersWithPasswordPathParams::new(),
-                        EmptyQueryParams {},
-                        // TODO: get from localstorage
-                        AuthHeaderParams::new(local_storage_token),
-                    ),
-                );
-
-                let res = client.user_registers_with_password(req).await;
-
-                match res {
-                    Ok(data) => match data {
-                        UserRegistersWithPasswordOperationResponseEnum::Status201(r) => {
-                            props.on_user_registered_successfully.call(r);
-                        }
-                        UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
-                            Status400Response::ApplicationProblemJson(j) => {
-                                let body_violation = match j.0.body {
-                                    Some(body_violation) => {
-                                        let pp = serde_json::to_string(&body_violation).unwrap();
-                                        let violations: ViolationsDto =
-                                            serde_json::from_slice(pp.as_ref()).unwrap();
-                                        Some(violations)
-                                    }
-                                    None => None,
-                                };
-
-                                if let Some(violations) = body_violation {
-                                    if let Some(ViolationItemDto::Object(items)) = violations.items
-                                    {
-                                        form_data.violations.email.set(items.get("email").cloned());
-                                        form_data
-                                            .violations
-                                            .password
-                                            .set(items.get("password").cloned());
-                                        form_data.violations.name.set(items.get("name").cloned());
-                                    };
-                                };
-
-                                form_data.disabled.set(false);
-                            }
-                        },
-                        UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
-                            Status409Response::ApplicationProblemJson(j) => {
-                                form_data.errors.set(vec![j.0.title]);
-
-                                form_data.disabled.set(false);
-                            }
-                        },
-                    },
-                    Err(e) => {
-                        form_data
-                            .errors
-                            .set(vec!["Unexpected error. Please try again latter".to_string()]);
-                        error!("Cant register with error: `{:?}`", e);
-
-                        form_data.disabled.set(false);
-                    }
+                    return;
                 }
-            });
-        }
+            };
+
+            let req = UserRegistersWithPasswordRequest::new(
+                RegistrationWithPasswordSchema::new(
+                    (form_data.values.email)(),
+                    (form_data.values.name)(),
+                    (form_data.values.password)(),
+                    (form_data.values.terms)(),
+                ),
+                UserRegistersWithPasswordParams::new(
+                    UserRegistersWithPasswordPathParams::new(),
+                    EmptyQueryParams {},
+                    // TODO: get from localstorage
+                    AuthHeaderParams::new(local_storage_token),
+                ),
+            );
+
+            let res = client.user_registers_with_password(req).await;
+
+            match res {
+                Ok(data) => match data {
+                    UserRegistersWithPasswordOperationResponseEnum::Status201(r) => {
+                        props.on_user_registered_successfully.call(r);
+                    }
+                    UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
+                        Status400Response::ApplicationProblemJson(j) => {
+                            let body_violation = match j.0.body {
+                                Some(body_violation) => {
+                                    let pp = serde_json::to_string(&body_violation).unwrap();
+                                    let violations: ViolationsDto =
+                                        serde_json::from_slice(pp.as_ref()).unwrap();
+                                    Some(violations)
+                                }
+                                None => None,
+                            };
+
+                            if let Some(violations) = body_violation {
+                                if let Some(ViolationItemDto::Object(items)) = violations.items {
+                                    form_data.violations.email.set(items.get("email").cloned());
+                                    form_data
+                                        .violations
+                                        .password
+                                        .set(items.get("password").cloned());
+                                    form_data.violations.name.set(items.get("name").cloned());
+                                };
+                            };
+
+                            form_data.disabled.set(false);
+                        }
+                    },
+                    UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
+                        Status409Response::ApplicationProblemJson(j) => {
+                            form_data.errors.set(vec![j.0.title]);
+
+                            form_data.disabled.set(false);
+                        }
+                    },
+                },
+                Err(e) => {
+                    form_data
+                        .errors
+                        .set(vec!["Unexpected error. Please try again latter".to_string()]);
+                    error!("Cant register with error: `{:?}`", e);
+
+                    form_data.disabled.set(false);
+                }
+            }
+        });
     };
 
     (on_submit, form_data)
 }
 
-fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Element {
-    let (on_submit, mut form_data) = create_form_boilerplate(props);
+fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordFormProps) -> Element {
+    let mut form_data = props.form_data;
 
     rsx! {
         form {
@@ -162,7 +157,7 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Eleme
             action:"#",
             method:"POST",
             "novalidate": true,
-            onsubmit: on_submit,
+            onsubmit: props.on_submit,
 
             ErrorBlock {errors: (form_data.errors)()}
 
@@ -186,7 +181,7 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Eleme
                 oninput: move |event: String| form_data.values.password.set(event),
             },
 
-            UserNameComponent {
+            UserNameInput {
                 user_name: (form_data.values.name)(),
                 violations: (form_data.violations.name)(),
                 oninput: move |event: UserName| form_data.values.name.set(event)
@@ -212,12 +207,14 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordProps) -> Eleme
 }
 
 #[component]
-pub fn Registration() -> Element {
+pub fn Registration(props: UserRegistersWithPasswordProps) -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
     let on_user_registered_successfully = move |_response: UserRegisteredSuccessfullyResponse| {
         success.set(Some("Congratulations! Your account has been created."));
     };
+
+    let (on_submit, mut form_data) = create_form_boilerplate(props);
 
     rsx! {
         section {
@@ -242,7 +239,9 @@ pub fn Registration() -> Element {
                             None => rsx! {
 
                                 UserRegistersWithPasswordForm {
-                                    on_user_registered_successfully,
+                                    // on_user_registered_successfully,
+                                    on_submit,
+                                    form_data,
                                 }
 
                                 div { class: "text-center text-base font-medium py-8",

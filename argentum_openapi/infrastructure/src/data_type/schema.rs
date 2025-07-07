@@ -1,4 +1,4 @@
-use crate::data_type::RefOrObject;
+use crate::data_type::{ExtensionUi, RefOrObject};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -43,6 +43,9 @@ pub struct Schema {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub additional_properties: Box<Option<RefOrObject<Self>>>,
+
+    #[serde(skip_serializing_if = "Option::is_none", rename = "x-ag-ui")]
+    pub extension_ui: Option<ExtensionUi>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

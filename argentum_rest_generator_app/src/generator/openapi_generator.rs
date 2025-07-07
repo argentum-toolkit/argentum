@@ -146,7 +146,7 @@ impl OpenApiGenerator {
 
         self.ui_generator.generate(output, &spec)?;
 
-        self.logger.info("Generation is finished".to_string());
+        self.logger.info("Code generation completed".to_string());
 
         Ok(())
     }
