@@ -21,4 +21,4 @@ before_script:
 build:
   stage: build
   script:
-    - docker compose run builder devops/scripts/check.sh
+    - docker compose run --rm --build builder devops/scripts/check.sh
