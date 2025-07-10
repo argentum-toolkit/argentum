@@ -17,6 +17,7 @@ const ITEM_TEMPLATE: &str = "ui/form_data.item";
 #[serde(rename_all = "camelCase")]
 struct Data<'a> {
     operation: &'a Operation,
+    schema_name: Option<String>,
     response_names: BTreeMap<String, String>,
     properties: BTreeMap<String, TypeDescription>,
     dependencies: Vec<String>,
@@ -55,6 +56,8 @@ impl FormDataGenerator {
             operation.operation_id.to_case(Case::Snake)
         );
 
+        let mut schema_name: Option<String> = None;
+
         let mut properties = BTreeMap::new();
         let mut response_names: BTreeMap<String, String> = BTreeMap::new();
 
@@ -67,15 +70,20 @@ impl FormDataGenerator {
                 .get("application/json")
                 .expect("Request body should contain `application/json` mime type");
 
-            let schema = self.schema_extractor.extract(&body.schema, spec);
+            if let Some((s_name, schema)) = self
+                .schema_extractor
+                .extract_ref_with_name(&body.schema, spec)
+            {
+                schema_name = Some(s_name);
 
-            //TODO: schema.additional_properties
-            for (name, property) in schema.properties.unwrap_or_default() {
-                properties.insert(
-                    name,
-                    self.schema_to_type_description_transformer
-                        .transform(property, &mut dependencies),
-                );
+                //TODO: schema.additional_properties
+                for (name, property) in schema.properties.unwrap_or_default() {
+                    properties.insert(
+                        name,
+                        self.schema_to_type_description_transformer
+                            .transform(property, &mut dependencies),
+                    );
+                }
             }
         };
 
@@ -103,6 +111,7 @@ impl FormDataGenerator {
 
         let data = Data {
             operation,
+            schema_name,
             response_names,
             properties,
             dependencies,

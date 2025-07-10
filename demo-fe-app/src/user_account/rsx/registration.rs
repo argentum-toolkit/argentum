@@ -166,12 +166,7 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordFormProps) -> E
             ErrorBlock {errors: (form_data.errors)()}
 
             RegistrationWithPasswordSchemaInput {
-                registration_with_password_schema: RegistrationWithPasswordSchema {
-                    email: (form_data.values.email)(),
-                    name: (form_data.values.name)(),
-                    password: (form_data.values.password)(),
-                    terms: (form_data.values.terms)(),
-                },
+                registration_with_password_schema:form_data.values.clone().into(),
                 violations: form_data.violations,
                 oninput: move |event: RegistrationWithPasswordSchema| {
                     form_data.values.email.set(event.email);

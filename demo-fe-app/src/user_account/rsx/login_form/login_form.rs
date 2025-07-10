@@ -18,10 +18,7 @@ pub fn LoginWithPasswordForm(props: UserLoginsWithPasswordFormProps) -> Element 
             ErrorBlock {errors: (form_data.errors)()}
 
             LoginWithPasswordSchemaInput {
-                login_with_password_schema: LoginWithPasswordSchema {
-                    email: (form_data.values.email)(),
-                    password: (form_data.values.password)(),
-                },//TODO implement into
+                login_with_password_schema: form_data.values.clone().into(),
                 violations: form_data.violations,
                 oninput: move |event: LoginWithPasswordSchema| {
                     form_data.values.email.set(event.email);

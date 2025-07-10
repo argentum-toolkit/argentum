@@ -4,6 +4,9 @@ use crate::dto::response::{
     {{response}}Response,
 {{/each}}
 };
+{{#if schemaName}}
+use crate::dto::schema::{{schemaName}};
+{{/if}}
 
 {{# each dependencies as |dep|}}
 use {{dep}};
@@ -27,6 +30,17 @@ impl Values {
         }
     }
 }
+{{#if schemaName}}
+impl Into<{{schemaName}}> for Values {
+    fn into(self) -> {{schemaName}} {
+        {{schemaName}} {
+            {{#each properties as |property|}}
+            {{@key}}: (self.{{@key}})(),
+            {{/each}}
+        }
+    }
+}
+{{/if}}
 
 {{!-- #[derive(Clone, PartialEq, Props)]
 pub struct RsxViolations {
@@ -69,20 +83,6 @@ impl {{operation.operationId}}FormData {
         }
     }
 }
-
-{{!-- #[deprecated(since="0.3.0", note="please use `*Callbacks` instead")]
-#[derive(Clone, PartialEq, Props)]
-pub struct {{operation.operationId}}Props {
-    #[props(default = "".to_string())]
-    pub id_prefix: String,
-    #[props(default = EventHandler::new(move |e: String| {dioxus_logger::tracing::error!("API error: `{:?}`", e);}))]
-    pub on_error: EventHandler<String>,
-
-    {{#each responseNames as |response|}}
-    #[props(default = EventHandler::new(move |_response: {{response}}Response| {}))]
-    pub on_{{snake response}}: EventHandler<{{response}}Response>,
-    {{/each}}
-} --}}
 
 #[deprecated(since="0.3.0", note="please use `*Callbacks` instead")]
 #[derive(Clone, PartialEq, Props)]

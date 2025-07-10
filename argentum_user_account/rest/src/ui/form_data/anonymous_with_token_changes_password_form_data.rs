@@ -1,4 +1,5 @@
 use crate::dto::response::{EmptyOkResponse, Status400Response, Status401Response};
+use crate::dto::schema::ChangePasswordSchema;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use dioxus::prelude::*;
@@ -14,6 +15,14 @@ impl Values {
         Self {
             password: use_signal(|| String::default()),
             token: use_signal(|| String::default()),
+        }
+    }
+}
+impl Into<ChangePasswordSchema> for Values {
+    fn into(self) -> ChangePasswordSchema {
+        ChangePasswordSchema {
+            password: (self.password)(),
+            token: (self.token)(),
         }
     }
 }

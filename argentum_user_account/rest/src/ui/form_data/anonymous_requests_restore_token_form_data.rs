@@ -1,4 +1,5 @@
 use crate::dto::response::{EmptyOkResponse, Status400Response, Status401Response};
+use crate::dto::schema::RequestRestoreTokenSchema;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use dioxus::prelude::*;
@@ -12,6 +13,13 @@ impl Values {
     pub fn new() -> Self {
         Self {
             email: use_signal(|| String::default()),
+        }
+    }
+}
+impl Into<RequestRestoreTokenSchema> for Values {
+    fn into(self) -> RequestRestoreTokenSchema {
+        RequestRestoreTokenSchema {
+            email: (self.email)(),
         }
     }
 }

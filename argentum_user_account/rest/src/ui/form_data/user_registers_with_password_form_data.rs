@@ -1,6 +1,7 @@
 use crate::dto::response::{
     Status400Response, Status409Response, UserRegisteredSuccessfullyResponse,
 };
+use crate::dto::schema::RegistrationWithPasswordSchema;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use crate::dto::schema::UserName;
@@ -22,6 +23,16 @@ impl Values {
             name: use_signal(|| UserName::default()),
             password: use_signal(|| String::default()),
             terms: use_signal(|| bool::default()),
+        }
+    }
+}
+impl Into<RegistrationWithPasswordSchema> for Values {
+    fn into(self) -> RegistrationWithPasswordSchema {
+        RegistrationWithPasswordSchema {
+            email: (self.email)(),
+            name: (self.name)(),
+            password: (self.password)(),
+            terms: (self.terms)(),
         }
     }
 }

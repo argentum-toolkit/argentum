@@ -1,6 +1,7 @@
 use crate::dto::response::{
     Status400Response, Status401Response, UserLoggedInSuccessfullyResponse,
 };
+use crate::dto::schema::LoginWithPasswordSchema;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 use dioxus::prelude::*;
@@ -16,6 +17,14 @@ impl Values {
         Self {
             email: use_signal(|| String::default()),
             password: use_signal(|| String::default()),
+        }
+    }
+}
+impl Into<LoginWithPasswordSchema> for Values {
+    fn into(self) -> LoginWithPasswordSchema {
+        LoginWithPasswordSchema {
+            email: (self.email)(),
+            password: (self.password)(),
         }
     }
 }
