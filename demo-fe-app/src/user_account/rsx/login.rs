@@ -1,7 +1,9 @@
 use crate::route::Route;
+use crate::user_account::rsx::login_form::boilerplate::create_form_boilerplate;
 use crate::user_account::rsx::login_form::login_form::LoginWithPasswordForm;
 
 use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
+use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordCallbacks;
 use dioxus::prelude::*;
 
 #[component]
@@ -14,17 +16,25 @@ pub fn Login() -> Element {
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>()();
 
-        move |response: UserLoggedInSuccessfullyResponse| match response {
-            UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
-                authenticator.auth_user(j.0.token, j.0.user_id);
+        EventHandler::new(
+            move |response: UserLoggedInSuccessfullyResponse| match response {
+                UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
+                    authenticator.auth_user(j.0.token, j.0.user_id);
 
-                redirect(Route::Home {});
-            }
-        }
+                    redirect(Route::Home {});
+                }
+            },
+        )
     };
 
     #[cfg(not(feature = "web"))]
-    let on_user_logged_in_successfully = move |_response: UserLoggedInSuccessfullyResponse| {};
+    let on_user_logged_in_successfully =
+        EventHandler::new(move |_response: UserLoggedInSuccessfullyResponse| {});
+
+    let (on_submit, mut form_data) = create_form_boilerplate(UserLoginsWithPasswordCallbacks {
+        on_user_logged_in_successfully,
+        ..Default::default()
+    });
 
     rsx! {
         section {
@@ -36,7 +46,8 @@ pub fn Login() -> Element {
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
 
                         LoginWithPasswordForm {
-                            on_user_logged_in_successfully: on_user_logged_in_successfully,
+                            on_submit,
+                            form_data,
                         }
 
                         div { class:"text-center text-base font-medium text-body-color py-4 dark:text-body-color-dark",

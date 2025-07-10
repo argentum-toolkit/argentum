@@ -31,6 +31,7 @@ struct Data<'a> {
 struct Input {
     required: bool,
     name: String,
+    title: String,
     ui: Ui,
 }
 
@@ -159,7 +160,8 @@ impl InputGenerator {
                             Input {
                                 required,
                                 name: name.clone(),
-                                ui: schema.clone().extension_ui.into(),
+                                title: schema.title.clone().unwrap_or(String::new()),
+                                ui: schema.extension_ui.into(),
                             },
                         )
                     }
@@ -172,7 +174,8 @@ impl InputGenerator {
                             Input {
                                 required,
                                 name: name.clone(),
-                                ui: schema.clone().extension_ui.into(),
+                                title: schema.title.clone().unwrap_or(String::new()),
+                                ui: schema.extension_ui.into(),
                             },
                         )
                     }

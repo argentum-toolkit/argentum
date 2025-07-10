@@ -206,6 +206,9 @@ components:
           title: Password
           type: string
           format: password
+          x-ag-ui:
+            id: password
+            name: password
       type: object
     ProblemDetail:
       title: Schema for error response
@@ -249,9 +252,12 @@ components:
       properties:
         email:
           example: test-email@test-email.com
-          title: Email
+          title: Email address
           type: string
           format: email
+          x-ag-ui:
+            id: email
+            name: email
         name:
           $ref: '#/components/schemas/UserName'
         password:
@@ -259,6 +265,9 @@ components:
           title: Password
           type: string
           format: password
+          x-ag-ui:
+            id: password
+            name: password
         terms:
           example: 'false'
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
@@ -266,7 +275,6 @@ components:
           x-ag-ui:
             id: terms
             name: terms
-            label: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
       type: object
     RequestRestoreTokenSchema:
       required:
@@ -283,30 +291,30 @@ components:
       properties:
         first:
           example: Winston
+          title: First Name
           maxLength: 255
           minLength: 1
           type: string
           x-ag-ui:
             id: user_first_name
             name: user_first_name
-            label: First Name
         last:
           example: Marko
+          title: First Name
           maxLength: 255
           minLength: 1
           type: string
           x-ag-ui:
             id: user_last_name
             name: user_last_name
-            label: First Name
         patronymic:
+          title: Patronymic
           maxLength: 255
           minLength: 1
           type: string
           x-ag-ui:
             id: user_patronymic
             name: user_patronymic
-            label: Patronymic
       type: object
     Violation:
       properties:

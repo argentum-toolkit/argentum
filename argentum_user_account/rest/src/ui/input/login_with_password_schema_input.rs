@@ -47,7 +47,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             LabeledInput {
         id: "unknown",
         name: "unknown",
-        label: "unknown",
+        label: "Email",
         input_type: "text".to_string(),
             value: email_value,
 
@@ -59,9 +59,9 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
     }
 
             LabeledInput {
-        id: "unknown",
-        name: "unknown",
-        label: "unknown",
+        id: "password",
+        name: "password",
+        label: "Password",
         input_type: "text".to_string(),
             value: password_value,
 

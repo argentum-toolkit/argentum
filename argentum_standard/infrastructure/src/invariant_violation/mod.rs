@@ -115,6 +115,16 @@ impl ViolationsDto {
 
         self.errors.is_empty() && items_empty
     }
+
+    pub fn get_obj_item(&self, key: String) -> Self {
+        match &self.items {
+            Some(ViolationItemDto::Object(o)) => match o.get(&key) {
+                Some(v) => v.clone(),
+                None => Self::new(vec![], None),
+            },
+            _ => Self::new(vec![], None),
+        }
+    }
 }
 
 #[cfg(test)]

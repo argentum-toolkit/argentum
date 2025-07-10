@@ -28,7 +28,7 @@ impl Values {
     }
 }
 
-#[derive(Clone, PartialEq, Props)]
+{{!-- #[derive(Clone, PartialEq, Props)]
 pub struct RsxViolations {
     {{#each properties}}
     pub {{@key}}: Signal<Option<ViolationsDto>>,
@@ -49,12 +49,12 @@ impl RsxViolations {
         self.{{@key}}.set(None);
         {{/each}}
     }
-}
+} --}}
 
 #[derive(Clone, PartialEq, Props)]
 pub struct {{operation.operationId}}FormData {
     pub values: Values,
-    pub violations: RsxViolations,
+    pub violations: ViolationsDto,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -63,13 +63,14 @@ impl {{operation.operationId}}FormData {
     pub fn new() -> Self {
         Self {
             values: Values::new(),
-            violations: RsxViolations::new(),
+            violations: ViolationsDto::new(vec![], None),
             errors:use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }
     }
 }
 
+{{!-- #[deprecated(since="0.3.0", note="please use `*Callbacks` instead")]
 #[derive(Clone, PartialEq, Props)]
 pub struct {{operation.operationId}}Props {
     #[props(default = "".to_string())]
@@ -81,11 +82,32 @@ pub struct {{operation.operationId}}Props {
     #[props(default = EventHandler::new(move |_response: {{response}}Response| {}))]
     pub on_{{snake response}}: EventHandler<{{response}}Response>,
     {{/each}}
-}
+} --}}
 
-
+#[deprecated(since="0.3.0", note="please use `*Callbacks` instead")]
 #[derive(Clone, PartialEq, Props)]
 pub struct {{operation.operationId}}FormProps {
     pub on_submit: EventHandler<FormEvent>,
     pub form_data: {{operation.operationId}}FormData,
+}
+
+
+pub struct {{upper_camel operation.operationId}}Callbacks {
+    pub on_error: EventHandler<String>,
+
+    {{#each responseNames as |response|}}
+    pub on_{{snake response}}: EventHandler<{{upper_camel response}}Response>,
+    {{/each}}
+}
+
+impl Default for {{upper_camel operation.operationId}}Callbacks {
+    fn default() -> Self {
+        Self {
+            on_error: EventHandler::new(move |e: String| {dioxus_logger::tracing::error!("API error: `{:?}`", e);}),
+
+            {{#each responseNames as |response|}}
+            on_{{snake response}}: EventHandler::new(move |_response: {{upper_camel response}}Response| {}),
+            {{/each}} 
+        }
+    }
 }

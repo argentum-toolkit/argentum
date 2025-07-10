@@ -44,7 +44,7 @@ pub fn RequestRestoreTokenSchemaInput(props: RequestRestoreTokenSchemaProps) -> 
             LabeledInput {
         id: "unknown",
         name: "unknown",
-        label: "unknown",
+        label: "",
         input_type: "text".to_string(),
             value: email_value,
 

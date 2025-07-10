@@ -1,19 +1,24 @@
 use crate::route::Route;
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_standard_ui::rsx::form::{LabeledCheckbox, LabeledInput, Submit};
 use argentum_standard_ui::rsx::ErrorBlock;
-use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
-use argentum_user_account_rest::dto::schema::UserName;
-use argentum_user_account_rest::ui::form_data::{
-    UserRegistersWithPasswordFormData, UserRegistersWithPasswordFormProps,
-    UserRegistersWithPasswordProps,
+use argentum_user_account_rest::dto::response::{
+    Status400Response, Status409Response, UserRegisteredSuccessfullyResponse,
 };
-use argentum_user_account_rest::ui::input::UserNameInput;
+use argentum_user_account_rest::dto::schema::{RegistrationWithPasswordSchema, UserName};
+use argentum_user_account_rest::ui::form_data::{
+    UserRegistersWithPasswordCallbacks, UserRegistersWithPasswordFormData,
+    UserRegistersWithPasswordFormProps,
+};
+
+use argentum_user_account_rest::ui::input::{RegistrationWithPasswordSchemaInput, UserNameInput};
 use dioxus::prelude::*;
+use dioxus_logger::tracing::event;
 use std::string::ToString;
 
 #[cfg(not(feature = "web"))]
 fn create_form_boilerplate(
-    _props: UserRegistersWithPasswordProps,
+    _callbacks: UserRegistersWithPasswordCallbacks,
 ) -> (
     impl FnMut(Event<FormData>),
     UserRegistersWithPasswordFormData,
@@ -27,7 +32,7 @@ fn create_form_boilerplate(
 
 #[cfg(feature = "web")]
 fn create_form_boilerplate(
-    props: UserRegistersWithPasswordProps,
+    callbacks: UserRegistersWithPasswordCallbacks,
 ) -> (
     impl FnMut(Event<FormData>),
     UserRegistersWithPasswordFormData,
@@ -53,10 +58,9 @@ fn create_form_boilerplate(
 
     let mut form_data = UserRegistersWithPasswordFormData::new();
 
-    let on_submit = move |_| {
+    let on_submit = move |_event: Event<FormData>| {
         spawn(async move {
             form_data.disabled.set(true);
-            form_data.violations.name.set(None);
             form_data.errors.set(vec![]);
 
             let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
@@ -97,7 +101,7 @@ fn create_form_boilerplate(
             match res {
                 Ok(data) => match data {
                     UserRegistersWithPasswordOperationResponseEnum::Status201(r) => {
-                        props.on_user_registered_successfully.call(r);
+                        (callbacks.on_user_registered_successfully)(r);
                     }
                     UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                         Status400Response::ApplicationProblemJson(j) => {
@@ -113,12 +117,12 @@ fn create_form_boilerplate(
 
                             if let Some(violations) = body_violation {
                                 if let Some(ViolationItemDto::Object(items)) = violations.items {
-                                    form_data.violations.email.set(items.get("email").cloned());
-                                    form_data
-                                        .violations
-                                        .password
-                                        .set(items.get("password").cloned());
-                                    form_data.violations.name.set(items.get("name").cloned());
+                                    // form_data.violations.email.set(items.get("email").cloned());
+                                    // form_data
+                                    //     .violations
+                                    //     .password
+                                    //     .set(items.get("password").cloned());
+                                    // form_data.violations.name.set(items.get("name").cloned());
                                 };
                             };
 
@@ -161,39 +165,21 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordFormProps) -> E
 
             ErrorBlock {errors: (form_data.errors)()}
 
-            LabeledInput {
-                id: "email".to_string(),
-                name: "email".to_string(),
-                label: "Email address".to_string(),
-                input_type: "email".to_string(),
-                value: form_data.values.email,
-                violations: (form_data.violations.email)(),
-                oninput: move |event: String| form_data.values.email.set(event),
-            },
-
-            LabeledInput {
-                id: "password".to_string(),
-                name: "password".to_string(),
-                label: "Password".to_string(),
-                input_type: "password".to_string(),
-                value: form_data.values.password,
-                violations: (form_data.violations.password)(),
-                oninput: move |event: String| form_data.values.password.set(event),
-            },
-
-            UserNameInput {
-                user_name: (form_data.values.name)(),
-                violations: (form_data.violations.name)(),
-                oninput: move |event: UserName| form_data.values.name.set(event)
-            }
-
-            LabeledCheckbox {
-                id: "terms".to_string(),
-                name: "terms".to_string(),
-                label: "By creating account means you agree to the Terms and Conditions, and our Privacy Policy".to_string(),
-                value: (form_data.values.terms)(),
-                violations: (form_data.violations.terms)(),
-                oninput: move |event: bool| form_data.values.terms.set(event),
+            RegistrationWithPasswordSchemaInput {
+                registration_with_password_schema: RegistrationWithPasswordSchema {
+                    email: (form_data.values.email)(),
+                    name: (form_data.values.name)(),
+                    password: (form_data.values.password)(),
+                    terms: (form_data.values.terms)(),
+                },
+                violations: form_data.violations,
+                oninput: move |event: RegistrationWithPasswordSchema| {
+                    form_data.values.email.set(event.email);
+                    form_data.values.name.set(event.name);
+                    form_data.values.password.set(event.password);
+                    form_data.values.terms.set(event.terms);
+                    //todo: form_fata.violations
+                },
             }
 
             div {
@@ -207,14 +193,18 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordFormProps) -> E
 }
 
 #[component]
-pub fn Registration(props: UserRegistersWithPasswordProps) -> Element {
+pub fn Registration() -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
-    let on_user_registered_successfully = move |_response: UserRegisteredSuccessfullyResponse| {
-        success.set(Some("Congratulations! Your account has been created."));
-    };
+    let on_user_registered_successfully =
+        EventHandler::new(move |_response: UserRegisteredSuccessfullyResponse| {
+            success.set(Some("Congratulations! Your account has been created."));
+        });
 
-    let (on_submit, mut form_data) = create_form_boilerplate(props);
+    let (on_submit, mut form_data) = create_form_boilerplate(UserRegistersWithPasswordCallbacks {
+        on_user_registered_successfully,
+        ..Default::default()
+    });
 
     rsx! {
         section {
@@ -237,9 +227,7 @@ pub fn Registration(props: UserRegistersWithPasswordProps) -> Element {
                                 }
                             },
                             None => rsx! {
-
                                 UserRegistersWithPasswordForm {
-                                    // on_user_registered_successfully,
                                     on_submit,
                                     form_data,
                                 }

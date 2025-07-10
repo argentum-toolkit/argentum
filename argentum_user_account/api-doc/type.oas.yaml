@@ -12,9 +12,12 @@ components:
       properties:
         email:
           type: string
-          title: Email
+          title: Email address
           format: email
           example: test-email@test-email.com
+          x-ag-ui:
+            id: email
+            name: email
         name:
           $ref: '../../argentum_user/api-doc/type.oas.yaml#/components/schemas/UserName'
         password:
@@ -22,6 +25,9 @@ components:
           title: Password
           format: password
           example: secure-password
+          x-ag-ui:
+            id: password
+            name: password
         terms:
           type: boolean
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
@@ -29,7 +35,6 @@ components:
           x-ag-ui:
             id: terms
             name: terms
-            label: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
       required:
         - email
         - name
@@ -87,6 +92,9 @@ components:
           title: Password
           format: password
           example: secure-password
+          x-ag-ui:
+            id: password
+            name: password
       required:
         - email
         - password

@@ -13,20 +13,9 @@ impl Values {
 }
 
 #[derive(Clone, PartialEq, Props)]
-pub struct RsxViolations {}
-
-impl RsxViolations {
-    pub fn new() -> Self {
-        Self {}
-    }
-
-    pub fn clear(&mut self) {}
-}
-
-#[derive(Clone, PartialEq, Props)]
 pub struct AnonymousRegistersFormData {
     pub values: Values,
-    pub violations: RsxViolations,
+    pub violations: ViolationsDto,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -35,26 +24,36 @@ impl AnonymousRegistersFormData {
     pub fn new() -> Self {
         Self {
             values: Values::new(),
-            violations: RsxViolations::new(),
+            violations: ViolationsDto::new(vec![], None),
             errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }
     }
 }
 
-#[derive(Clone, PartialEq, Props)]
-pub struct AnonymousRegistersProps {
-    #[props(default = "".to_string())]
-    pub id_prefix: String,
-    #[props(default = EventHandler::new(move |e: String| {dioxus_logger::tracing::error!("API error: `{:?}`", e);}))]
-    pub on_error: EventHandler<String>,
-
-    #[props(default = EventHandler::new(move |_response: AnonymousRegisteredSuccessfullyResponse| {}))]
-    pub on_anonymous_registered_successfully: EventHandler<AnonymousRegisteredSuccessfullyResponse>,
-}
-
+#[deprecated(since = "0.3.0", note = "please use `*Callbacks` instead")]
 #[derive(Clone, PartialEq, Props)]
 pub struct AnonymousRegistersFormProps {
     pub on_submit: EventHandler<FormEvent>,
     pub form_data: AnonymousRegistersFormData,
+}
+
+pub struct AnonymousRegistersCallbacks {
+    pub on_error: EventHandler<String>,
+
+    pub on_anonymous_registered_successfully: EventHandler<AnonymousRegisteredSuccessfullyResponse>,
+}
+
+impl Default for AnonymousRegistersCallbacks {
+    fn default() -> Self {
+        Self {
+            on_error: EventHandler::new(move |e: String| {
+                dioxus_logger::tracing::error!("API error: `{:?}`", e);
+            }),
+
+            on_anonymous_registered_successfully: EventHandler::new(
+                move |_response: AnonymousRegisteredSuccessfullyResponse| {},
+            ),
+        }
+    }
 }

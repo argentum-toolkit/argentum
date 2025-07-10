@@ -54,9 +54,9 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
 
     rsx! {
             LabeledInput {
-        id: "unknown",
-        name: "unknown",
-        label: "unknown",
+        id: "email",
+        name: "email",
+        label: "Email address",
         input_type: "text".to_string(),
             value: email_value,
 
@@ -70,13 +70,16 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             UserNameInput {
         user_name: name_value(),
         violations: name_violations,
-        oninput: move |event: UserName| name_value.set(event)
+        oninput: move |event: UserName| {
+            name_value.set(event);
+            update();
+        }
     }
 
             LabeledInput {
-        id: "unknown",
-        name: "unknown",
-        label: "unknown",
+        id: "password",
+        name: "password",
+        label: "Password",
         input_type: "text".to_string(),
             value: password_value,
 
@@ -93,7 +96,10 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
         label: "By creating account means you agree to the Terms and Conditions, and our Privacy Policy",
             value: terms_value(),
         violations: terms_violations,
-        oninput: move |event: bool| terms_value.set(event),
+        oninput: move |event: bool| {
+            terms_value.set(event);
+            update();
+        }
     }
 
         }

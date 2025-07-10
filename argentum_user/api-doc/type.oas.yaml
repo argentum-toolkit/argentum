@@ -33,28 +33,31 @@ components:
           minLength: 1
           maxLength: 255
           example: Winston
+          title: "First Name"
           x-ag-ui:
               id: user_first_name
               name: user_first_name
-              label: "First Name"
             #TODO: x-ag-type: 
+
         last:
           type: string
           minLength: 1
           maxLength: 255
           example: Marko
+          title: "First Name"
           x-ag-ui:
               id: user_last_name
               name: user_last_name
-              label: "First Name"
+
+        # TODO rename to Additional name
         patronymic:
           type: string
           minLength: 1
           maxLength: 255
+          title: "Patronymic"
           x-ag-ui:
             id: user_patronymic
             name: user_patronymic
-            label: "Patronymic"
 
       required:
         - first

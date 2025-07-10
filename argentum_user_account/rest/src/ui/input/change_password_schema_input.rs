@@ -46,7 +46,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             LabeledInput {
         id: "unknown",
         name: "unknown",
-        label: "unknown",
+        label: "",
         input_type: "text".to_string(),
             value: password_value,
 
@@ -60,7 +60,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             LabeledInput {
         id: "unknown",
         name: "unknown",
-        label: "unknown",
+        label: "",
         input_type: "text".to_string(),
             value: token_value,
 
