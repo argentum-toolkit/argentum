@@ -300,7 +300,7 @@ components:
             name: user_first_name
         last:
           example: Marko
-          title: First Name
+          title: Last Name
           maxLength: 255
           minLength: 1
           type: string

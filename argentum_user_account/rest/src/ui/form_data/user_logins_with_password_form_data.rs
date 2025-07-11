@@ -7,32 +7,9 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Props)]
-pub struct Values {
-    pub email: Signal<String>,
-    pub password: Signal<String>,
-}
-
-impl Values {
-    pub fn new() -> Self {
-        Self {
-            email: use_signal(|| String::default()),
-            password: use_signal(|| String::default()),
-        }
-    }
-}
-impl Into<LoginWithPasswordSchema> for Values {
-    fn into(self) -> LoginWithPasswordSchema {
-        LoginWithPasswordSchema {
-            email: (self.email)(),
-            password: (self.password)(),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Props)]
 pub struct UserLoginsWithPasswordFormData {
-    pub values: Values,
-    pub violations: ViolationsDto,
+    pub values: Signal<LoginWithPasswordSchema>,
+    pub violations: Signal<ViolationsDto>,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -40,8 +17,8 @@ pub struct UserLoginsWithPasswordFormData {
 impl UserLoginsWithPasswordFormData {
     pub fn new() -> Self {
         Self {
-            values: Values::new(),
-            violations: ViolationsDto::new(vec![], None),
+            values: use_signal(|| Default::default()),
+            violations: use_signal(|| Default::default()),
             errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }

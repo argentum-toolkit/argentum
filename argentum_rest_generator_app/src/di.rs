@@ -269,7 +269,6 @@ pub fn di_factory() -> DiC {
 
     let input_generator = Arc::new(InputGenerator::new(
         renderer.clone(),
-        schema_to_type_description_transformer.clone(),
         request_body_extractor.clone(),
         schema_extractor.clone(),
     ));

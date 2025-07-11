@@ -1,13 +1,10 @@
-use crate::dto::TypeDescription;
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
-use crate::transformer::SchemaToTypeDescriptionTransformer;
 use argentum_openapi_infrastructure::data_type::{
-    ExtensionUi, Operation, RefOrObject, Schema, SchemaType, SpecificationRoot,
+    ExtensionUi, RefOrObject, Schema, SchemaType, SpecificationRoot,
 };
 use convert_case::{Case, Casing};
 use serde::Serialize;
-use std::any::Any;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::sync::Arc;
@@ -46,12 +43,6 @@ struct ObjectInput {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-struct Prop {
-    input: String,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
 struct Ui {
     pub id: String,
     pub name: String,
@@ -78,7 +69,6 @@ impl From<Option<ExtensionUi>> for Ui {
 
 pub(crate) struct InputGenerator {
     renderer: Arc<Renderer>,
-    schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
     request_body_extractor: Arc<RequestBodyExtractor>,
     schema_extractor: Arc<SchemaExtractor>,
 }
@@ -86,13 +76,11 @@ pub(crate) struct InputGenerator {
 impl InputGenerator {
     pub fn new(
         renderer: Arc<Renderer>,
-        schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
         request_body_extractor: Arc<RequestBodyExtractor>,
         schema_extractor: Arc<SchemaExtractor>,
     ) -> Self {
         Self {
             renderer,
-            schema_to_type_description_transformer,
             request_body_extractor,
             schema_extractor,
         }
@@ -200,14 +188,6 @@ impl InputGenerator {
             .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
 
         Ok(())
-    }
-
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
-        } else {
-            name
-        }
     }
 
     fn get_inputs(

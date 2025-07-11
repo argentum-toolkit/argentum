@@ -4,18 +4,8 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Props)]
-pub struct Values {}
-
-impl Values {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-#[derive(Clone, PartialEq, Props)]
 pub struct AnonymousRegistersFormData {
-    pub values: Values,
-    pub violations: ViolationsDto,
+    pub violations: Signal<ViolationsDto>,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -23,8 +13,7 @@ pub struct AnonymousRegistersFormData {
 impl AnonymousRegistersFormData {
     pub fn new() -> Self {
         Self {
-            values: Values::new(),
-            violations: ViolationsDto::new(vec![], None),
+            violations: use_signal(|| Default::default()),
             errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }

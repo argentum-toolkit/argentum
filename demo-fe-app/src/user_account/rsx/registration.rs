@@ -62,6 +62,7 @@ fn create_form_boilerplate(
         spawn(async move {
             form_data.disabled.set(true);
             form_data.errors.set(vec![]);
+            form_data.violations.set(Default::default());
 
             let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
@@ -82,12 +83,7 @@ fn create_form_boilerplate(
             };
 
             let req = UserRegistersWithPasswordRequest::new(
-                RegistrationWithPasswordSchema::new(
-                    (form_data.values.email)(),
-                    (form_data.values.name)(),
-                    (form_data.values.password)(),
-                    (form_data.values.terms)(),
-                ),
+                (form_data.values)().into(),
                 UserRegistersWithPasswordParams::new(
                     UserRegistersWithPasswordPathParams::new(),
                     EmptyQueryParams {},
@@ -116,16 +112,15 @@ fn create_form_boilerplate(
                             };
 
                             if let Some(violations) = body_violation {
-                                if let Some(ViolationItemDto::Object(items)) = violations.items {
-                                    // form_data.violations.email.set(items.get("email").cloned());
-                                    // form_data
-                                    //     .violations
-                                    //     .password
-                                    //     .set(items.get("password").cloned());
-                                    // form_data.violations.name.set(items.get("name").cloned());
+                                if let Some(ViolationItemDto::Object(ref items)) = violations.items
+                                {
+                                    form_data.violations.set(violations.clone());
                                 };
                             };
 
+                            form_data
+                                .errors
+                                .set(vec!["Please fill the form correctly".into()]);
                             form_data.disabled.set(false);
                         }
                     },
@@ -138,12 +133,12 @@ fn create_form_boilerplate(
                     },
                 },
                 Err(e) => {
+                    form_data.disabled.set(false);
                     form_data
                         .errors
                         .set(vec!["Unexpected error. Please try again latter".to_string()]);
-                    error!("Cant register with error: `{:?}`", e);
 
-                    form_data.disabled.set(false);
+                    callbacks.on_error.call(e);
                 }
             }
         });
@@ -166,14 +161,10 @@ fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordFormProps) -> E
             ErrorBlock {errors: (form_data.errors)()}
 
             RegistrationWithPasswordSchemaInput {
-                registration_with_password_schema:form_data.values.clone().into(),
-                violations: form_data.violations,
+                registration_with_password_schema: (form_data.values)().into(),
+                violations: (form_data.violations)(),
                 oninput: move |event: RegistrationWithPasswordSchema| {
-                    form_data.values.email.set(event.email);
-                    form_data.values.name.set(event.name);
-                    form_data.values.password.set(event.password);
-                    form_data.values.terms.set(event.terms);
-                    //todo: form_fata.violations
+                    form_data.values.set(event);
                 },
             }
 

@@ -44,7 +44,7 @@ pub fn create_form_boilerplate(
 
 #[cfg(feature = "web")]
 pub fn create_form_boilerplate(
-    props: UserLoginsWithPasswordCallbacks,
+    callbacks: UserLoginsWithPasswordCallbacks,
 ) -> (impl FnMut(Event<FormData>), UserLoginsWithPasswordFormData) {
     use crate::user_account::service::ClientSideAuthenticator;
 
@@ -54,19 +54,15 @@ pub fn create_form_boilerplate(
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         spawn(async move {
-            //todo:  violations.clear();
-            // form_data.violations.email.set(None);
-            // form_data.violations.password.set(None);
             form_data.disabled.set(true);
             form_data.errors.set(vec![]);
+            form_data.violations.set(Default::default());
 
+            //TODO: inject client
             let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
 
             let req = UserLoginsWithPasswordRequest::new(
-                LoginWithPasswordSchema::new(
-                    (form_data.values.email)(),
-                    (form_data.values.password)(),
-                ),
+                (form_data.values)().into(),
                 UserLoginsWithPasswordParams::new(
                     UserLoginsWithPasswordPathParams::new(),
                     EmptyQueryParams {},
@@ -79,64 +75,60 @@ pub fn create_form_boilerplate(
             match res {
                 Ok(data) => match data {
                     UserLoginsWithPasswordOperationResponseEnum::Status200(r) => {
-                        props.on_user_logged_in_successfully.call(r);
+                        callbacks.on_user_logged_in_successfully.call(r);
                     }
                     UserLoginsWithPasswordOperationResponseEnum::Status400(r) => {
                         match r.clone() {
                             Status400Response::ApplicationProblemJson(j) => {
                                 let body_violations =
-                                    extract_body_violations_open_api_problem_details(j.0);
+                                    extract_body_violations_open_api_problem_details(j.0.clone());
 
                                 if let Some(violations) = body_violations {
-                                    if let Some(ViolationItemDto::Object(items)) = violations.items
+                                    if let Some(ViolationItemDto::Object(ref items)) =
+                                        violations.items
                                     {
-                                        // form_data
-                                        //     .violations
-                                        //     .email
-                                        //     .set(items.get("email").cloned());
-                                        // form_data
-                                        //     .violations
-                                        //     .password
-                                        //     .set(items.get("password").cloned());
+                                        form_data.violations.set(violations.clone());
                                     };
                                 };
 
+                                form_data
+                                    .errors
+                                    .set(vec!["Please fill the form correctly".into()]);
                                 form_data.disabled.set(false);
                             }
                         }
 
-                        props.on_status_400.call(r);
+                        callbacks.on_status_400.call(r);
                     }
 
                     UserLoginsWithPasswordOperationResponseEnum::Status401(r) => {
                         match r.clone() {
                             Status401Response::ApplicationProblemJson(j) => {
                                 let body_violations =
-                                    extract_body_violations_open_api_problem_details(j.0);
+                                    extract_body_violations_open_api_problem_details(j.0.clone());
 
                                 if let Some(violations) = body_violations {
-                                    if let Some(ViolationItemDto::Object(items)) = violations.items
+                                    if let Some(ViolationItemDto::Object(ref items)) =
+                                        violations.items
                                     {
-                                        // form_data
-                                        //     .violations
-                                        //     .email
-                                        //     .set(items.get("email").cloned());
-                                        // form_data
-                                        //     .violations
-                                        //     .password
-                                        //     .set(items.get("password").cloned());
+                                        form_data.violations.set(violations.clone());
                                     };
                                 };
 
+                                form_data.errors.set(vec![j.0.detail.unwrap_or(j.0.title)]);
                                 form_data.disabled.set(false);
                             }
                         }
-                        props.on_status_401.call(r);
+                        callbacks.on_status_401.call(r);
                     }
                 },
                 Err(e) => {
                     form_data.disabled.set(false);
-                    props.on_error.call(e);
+                    form_data
+                        .errors
+                        .set(vec!["Unexpected error. Please try again latter".to_string()]);
+
+                    callbacks.on_error.call(e);
                 }
             }
         });

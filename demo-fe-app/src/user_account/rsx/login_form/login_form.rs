@@ -13,16 +13,16 @@ pub fn LoginWithPasswordForm(props: UserLoginsWithPasswordFormProps) -> Element 
     rsx! {
         form {
             onsubmit: props.on_submit,
-            class:"space-y-6", action:"#", method:"POST",
+            action:"#",
+            class:"space-y-6",
             "novalidate": true,
             ErrorBlock {errors: (form_data.errors)()}
 
             LoginWithPasswordSchemaInput {
-                login_with_password_schema: form_data.values.clone().into(),
-                violations: form_data.violations,
+                login_with_password_schema: (form_data.values)().into(),
+                violations: (form_data.violations)(),
                 oninput: move |event: LoginWithPasswordSchema| {
-                    form_data.values.email.set(event.email);
-                    form_data.values.password.set(event.password);
+                    form_data.values.set(event);
                 },
             }
 

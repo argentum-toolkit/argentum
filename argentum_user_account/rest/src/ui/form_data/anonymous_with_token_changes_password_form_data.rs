@@ -5,32 +5,9 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Props)]
-pub struct Values {
-    pub password: Signal<String>,
-    pub token: Signal<String>,
-}
-
-impl Values {
-    pub fn new() -> Self {
-        Self {
-            password: use_signal(|| String::default()),
-            token: use_signal(|| String::default()),
-        }
-    }
-}
-impl Into<ChangePasswordSchema> for Values {
-    fn into(self) -> ChangePasswordSchema {
-        ChangePasswordSchema {
-            password: (self.password)(),
-            token: (self.token)(),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Props)]
 pub struct AnonymousWithTokenChangesPasswordFormData {
-    pub values: Values,
-    pub violations: ViolationsDto,
+    pub values: Signal<ChangePasswordSchema>,
+    pub violations: Signal<ViolationsDto>,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -38,8 +15,8 @@ pub struct AnonymousWithTokenChangesPasswordFormData {
 impl AnonymousWithTokenChangesPasswordFormData {
     pub fn new() -> Self {
         Self {
-            values: Values::new(),
-            violations: ViolationsDto::new(vec![], None),
+            values: use_signal(|| Default::default()),
+            violations: use_signal(|| Default::default()),
             errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }

@@ -127,6 +127,15 @@ impl ViolationsDto {
     }
 }
 
+impl Default for ViolationsDto {
+    fn default() -> Self {
+        Self {
+            errors: Default::default(),
+            items: Default::default(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::invariant_violation::{ViolationItemDto, ViolationsDto};
@@ -146,6 +155,12 @@ mod tests {
             let v = ViolationsDto::new(vec![], Some(ViolationItemDto::Array(vec![])));
             assert!(v.is_empty());
         }
+    }
+
+    #[test]
+    fn test_violations_default_are_empty() {
+        let v: ViolationsDto = Default::default();
+        assert!(v.is_empty());
     }
 
     #[test]

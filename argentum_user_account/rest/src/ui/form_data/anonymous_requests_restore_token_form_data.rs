@@ -5,29 +5,9 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Props)]
-pub struct Values {
-    pub email: Signal<String>,
-}
-
-impl Values {
-    pub fn new() -> Self {
-        Self {
-            email: use_signal(|| String::default()),
-        }
-    }
-}
-impl Into<RequestRestoreTokenSchema> for Values {
-    fn into(self) -> RequestRestoreTokenSchema {
-        RequestRestoreTokenSchema {
-            email: (self.email)(),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Props)]
 pub struct AnonymousRequestsRestoreTokenFormData {
-    pub values: Values,
-    pub violations: ViolationsDto,
+    pub values: Signal<RequestRestoreTokenSchema>,
+    pub violations: Signal<ViolationsDto>,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -35,8 +15,8 @@ pub struct AnonymousRequestsRestoreTokenFormData {
 impl AnonymousRequestsRestoreTokenFormData {
     pub fn new() -> Self {
         Self {
-            values: Values::new(),
-            violations: ViolationsDto::new(vec![], None),
+            values: use_signal(|| Default::default()),
+            violations: use_signal(|| Default::default()),
             errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }

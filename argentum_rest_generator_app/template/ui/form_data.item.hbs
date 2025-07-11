@@ -14,61 +14,13 @@ use {{dep}};
 
 use dioxus::prelude::*;
 
-#[derive(Clone, PartialEq, Props)]
-pub struct Values {
-    {{#each properties as |property|}}
-    pub {{@key}}: Signal<{{property.dataType}}>,
-    {{/each}}
-}
-
-impl Values {
-    pub fn new() -> Self {
-        Self {
-            {{#each properties as |property|}}
-            {{@key}}: use_signal(|| {{property.defaultInitializer}}),
-            {{/each}}
-        }
-    }
-}
-{{#if schemaName}}
-impl Into<{{schemaName}}> for Values {
-    fn into(self) -> {{schemaName}} {
-        {{schemaName}} {
-            {{#each properties as |property|}}
-            {{@key}}: (self.{{@key}})(),
-            {{/each}}
-        }
-    }
-}
-{{/if}}
-
-{{!-- #[derive(Clone, PartialEq, Props)]
-pub struct RsxViolations {
-    {{#each properties}}
-    pub {{@key}}: Signal<Option<ViolationsDto>>,
-    {{/each}}
-}
-
-impl RsxViolations {
-    pub fn new() -> Self {
-        Self {
-            {{#each properties as |property|}}
-            {{@key}}: use_signal(|| None),
-            {{/each}}
-        }
-    }
-
-    pub fn clear(&mut self) {
-        {{#each properties as |property|}}
-        self.{{@key}}.set(None);
-        {{/each}}
-    }
-} --}}
 
 #[derive(Clone, PartialEq, Props)]
 pub struct {{operation.operationId}}FormData {
-    pub values: Values,
-    pub violations: ViolationsDto,
+    {{#if schemaName}}
+    pub values: Signal<{{schemaName}}>,
+    {{/if}}
+    pub violations: Signal<ViolationsDto>,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -76,8 +28,10 @@ pub struct {{operation.operationId}}FormData {
 impl {{operation.operationId}}FormData {
     pub fn new() -> Self {
         Self {
-            values: Values::new(),
-            violations: ViolationsDto::new(vec![], None),
+            {{#if schemaName}}
+            values: use_signal(|| Default::default()),
+            {{/if}}
+            violations: use_signal(|| Default::default()),
             errors:use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }

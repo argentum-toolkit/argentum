@@ -64,7 +64,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             LabeledInput {
         id: "user_last_name",
         name: "user_last_name",
-        label: "First Name",
+        label: "Last Name",
         input_type: "text".to_string(),
             value: last_value().unwrap_or("".to_string()),
 

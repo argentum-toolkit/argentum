@@ -44,7 +44,7 @@ components:
           minLength: 1
           maxLength: 255
           example: Marko
-          title: "First Name"
+          title: "Last Name"
           x-ag-ui:
               id: user_last_name
               name: user_last_name

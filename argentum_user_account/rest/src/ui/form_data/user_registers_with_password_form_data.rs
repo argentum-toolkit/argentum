@@ -9,38 +9,9 @@ use crate::dto::schema::UserName;
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Props)]
-pub struct Values {
-    pub email: Signal<String>,
-    pub name: Signal<UserName>,
-    pub password: Signal<String>,
-    pub terms: Signal<bool>,
-}
-
-impl Values {
-    pub fn new() -> Self {
-        Self {
-            email: use_signal(|| String::default()),
-            name: use_signal(|| UserName::default()),
-            password: use_signal(|| String::default()),
-            terms: use_signal(|| bool::default()),
-        }
-    }
-}
-impl Into<RegistrationWithPasswordSchema> for Values {
-    fn into(self) -> RegistrationWithPasswordSchema {
-        RegistrationWithPasswordSchema {
-            email: (self.email)(),
-            name: (self.name)(),
-            password: (self.password)(),
-            terms: (self.terms)(),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Props)]
 pub struct UserRegistersWithPasswordFormData {
-    pub values: Values,
-    pub violations: ViolationsDto,
+    pub values: Signal<RegistrationWithPasswordSchema>,
+    pub violations: Signal<ViolationsDto>,
     pub errors: Signal<Vec<String>>,
     pub disabled: Signal<bool>,
 }
@@ -48,8 +19,8 @@ pub struct UserRegistersWithPasswordFormData {
 impl UserRegistersWithPasswordFormData {
     pub fn new() -> Self {
         Self {
-            values: Values::new(),
-            violations: ViolationsDto::new(vec![], None),
+            values: use_signal(|| Default::default()),
+            violations: use_signal(|| Default::default()),
             errors: use_signal(|| vec![]),
             disabled: use_signal(|| false),
         }
