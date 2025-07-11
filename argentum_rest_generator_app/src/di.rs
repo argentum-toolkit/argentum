@@ -9,7 +9,7 @@ use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
 use crate::generator::ui::{
-    FormDataGenerator, InputGenerator, UiGenerator, WebBoilerplateGenerator,
+    FormDataGenerator, FormGenerator, InputGenerator, UiGenerator, WebBoilerplateGenerator,
 };
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
@@ -168,6 +168,10 @@ pub fn di_factory() -> DiC {
 
     reg.register_template_string("ui/mod", include_str!("../template/ui/mod.hbs"))
         .unwrap();
+    reg.register_template_string("ui/form.item", include_str!("../template/ui/form.item.hbs"))
+        .unwrap();
+    reg.register_template_string("ui/form.mod", include_str!("../template/ui/form.mod.hbs"))
+        .unwrap();
     reg.register_template_string(
         "ui/form_data.item",
         include_str!("../template/ui/form_data.item.hbs"),
@@ -260,6 +264,13 @@ pub fn di_factory() -> DiC {
     let request_body_extractor = Arc::new(RequestBodyExtractor::new());
     let schema_extractor = Arc::new(SchemaExtractor::new());
 
+    let form_generator = Arc::new(FormGenerator::new(
+        renderer.clone(),
+        schema_to_type_description_transformer.clone(),
+        request_body_extractor.clone(),
+        schema_extractor.clone(),
+    ));
+
     let form_data_generator = Arc::new(FormDataGenerator::new(
         renderer.clone(),
         schema_to_type_description_transformer.clone(),
@@ -282,6 +293,7 @@ pub fn di_factory() -> DiC {
 
     let ui_generator = Arc::new(UiGenerator::new(
         renderer,
+        form_generator,
         form_data_generator,
         input_generator,
         web_boilerplate_generator,

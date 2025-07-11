@@ -1,21 +1,23 @@
+use crate::dto::schema::LoginWithPasswordSchema;
+use crate::ui::form_data::UserLoginsWithPasswordFormProps;
+use crate::ui::input::LoginWithPasswordSchemaInput;
+
 use argentum_standard_ui::rsx::form::{LabeledInput, Submit};
 use argentum_standard_ui::rsx::ErrorBlock;
 
-use argentum_user_account_rest::dto::schema::LoginWithPasswordSchema;
-use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordFormProps;
-use argentum_user_account_rest::ui::input::LoginWithPasswordSchemaInput;
 use dioxus::prelude::*;
 
 #[component]
-pub fn LoginWithPasswordForm(props: UserLoginsWithPasswordFormProps) -> Element {
+pub fn UserLoginsWithPasswordForm(props: UserLoginsWithPasswordFormProps) -> Element {
     let mut form_data = props.form_data;
 
     rsx! {
         form {
-            onsubmit: props.on_submit,
             action:"#",
             class:"space-y-6",
             "novalidate": true,
+            onsubmit: props.on_submit,
+
             ErrorBlock {errors: (form_data.errors)()}
 
             LoginWithPasswordSchemaInput {

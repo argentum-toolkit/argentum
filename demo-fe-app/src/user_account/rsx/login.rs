@@ -1,8 +1,8 @@
 use crate::route::Route;
 use crate::user_account::rsx::login_form::boilerplate::create_form_boilerplate;
-use crate::user_account::rsx::login_form::login_form::LoginWithPasswordForm;
 
 use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
+use argentum_user_account_rest::ui::form::UserLoginsWithPasswordForm;
 use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordCallbacks;
 use dioxus::prelude::*;
 
@@ -45,7 +45,7 @@ pub fn Login() -> Element {
                     div {
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
 
-                        LoginWithPasswordForm {
+                        UserLoginsWithPasswordForm {
                             on_submit,
                             form_data,
                         }

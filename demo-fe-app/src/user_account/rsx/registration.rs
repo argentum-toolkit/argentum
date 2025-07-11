@@ -6,6 +6,7 @@ use argentum_user_account_rest::dto::response::{
     Status400Response, Status409Response, UserRegisteredSuccessfullyResponse,
 };
 use argentum_user_account_rest::dto::schema::{RegistrationWithPasswordSchema, UserName};
+use argentum_user_account_rest::ui::form::UserRegistersWithPasswordForm;
 use argentum_user_account_rest::ui::form_data::{
     UserRegistersWithPasswordCallbacks, UserRegistersWithPasswordFormData,
     UserRegistersWithPasswordFormProps,
@@ -24,7 +25,6 @@ fn create_form_boilerplate(
     UserRegistersWithPasswordFormData,
 ) {
     let on_submit = move |_| {};
-
     let data = UserRegistersWithPasswordFormData::new();
 
     (on_submit, data)
@@ -145,37 +145,6 @@ fn create_form_boilerplate(
     };
 
     (on_submit, form_data)
-}
-
-fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordFormProps) -> Element {
-    let mut form_data = props.form_data;
-
-    rsx! {
-        form {
-            class:"space-y-6",
-            action:"#",
-            method:"POST",
-            "novalidate": true,
-            onsubmit: props.on_submit,
-
-            ErrorBlock {errors: (form_data.errors)()}
-
-            RegistrationWithPasswordSchemaInput {
-                registration_with_password_schema: (form_data.values)().into(),
-                violations: (form_data.violations)(),
-                oninput: move |event: RegistrationWithPasswordSchema| {
-                    form_data.values.set(event);
-                },
-            }
-
-            div {
-                Submit {
-                    title: "Sign Up".to_string(),
-                    disabled: (form_data.disabled)(),
-                }
-            }
-        }
-    }
 }
 
 #[component]
