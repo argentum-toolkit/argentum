@@ -20,7 +20,7 @@ pub fn AnonymousRegistersForm(props: AnonymousRegistersFormProps) -> Element {
 
 
             Submit {
-                title: "Sign In".to_string(),
+                title: "Submit".to_string(),
                 disabled: (form_data.disabled)(),
             }
         }

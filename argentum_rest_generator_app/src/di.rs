@@ -266,7 +266,6 @@ pub fn di_factory() -> DiC {
 
     let form_generator = Arc::new(FormGenerator::new(
         renderer.clone(),
-        schema_to_type_description_transformer.clone(),
         request_body_extractor.clone(),
         schema_extractor.clone(),
     ));

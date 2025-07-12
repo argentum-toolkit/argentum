@@ -1,11 +1,9 @@
-use crate::dto::TypeDescription;
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
-use crate::transformer::SchemaToTypeDescriptionTransformer;
-use argentum_openapi_infrastructure::data_type::{Operation, RefOrObject, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
 use convert_case::{Case, Casing};
 use serde::Serialize;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
 
@@ -18,14 +16,10 @@ const ITEM_TEMPLATE: &str = "ui/form.item";
 struct Data<'a> {
     operation: &'a Operation,
     schema_name: Option<String>,
-    response_names: BTreeMap<String, String>,
-    properties: BTreeMap<String, TypeDescription>,
-    dependencies: Vec<String>,
 }
 
 pub(crate) struct FormGenerator {
     renderer: Arc<Renderer>,
-    schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
     request_body_extractor: Arc<RequestBodyExtractor>,
     schema_extractor: Arc<SchemaExtractor>,
 }
@@ -33,13 +27,11 @@ pub(crate) struct FormGenerator {
 impl FormGenerator {
     pub fn new(
         renderer: Arc<Renderer>,
-        schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
         request_body_extractor: Arc<RequestBodyExtractor>,
         schema_extractor: Arc<SchemaExtractor>,
     ) -> Self {
         Self {
             renderer,
-            schema_to_type_description_transformer,
             request_body_extractor,
             schema_extractor,
         }
@@ -58,11 +50,6 @@ impl FormGenerator {
 
         let mut schema_name: Option<String> = None;
 
-        let mut properties = BTreeMap::new();
-        let mut response_names: BTreeMap<String, String> = BTreeMap::new();
-
-        let mut dependencies: Vec<String> = vec![];
-
         if let Some(request_body) = self.request_body_extractor.extract(operation, &spec) {
             //TODO copypasted from request_generator.rs
             let body = request_body
@@ -70,65 +57,23 @@ impl FormGenerator {
                 .get("application/json")
                 .expect("Request body should contain `application/json` mime type");
 
-            if let Some((s_name, schema)) = self
+            if let Some((s_name, _)) = self
                 .schema_extractor
                 .extract_ref_with_name(&body.schema, spec)
             {
                 schema_name = Some(s_name);
-
-                //TODO: schema.additional_properties
-                for (name, property) in schema.properties.unwrap_or_default() {
-                    properties.insert(
-                        name,
-                        self.schema_to_type_description_transformer
-                            .transform(property, &mut dependencies),
-                    );
-                }
             }
         };
-
-        for (code, resp_or_ref) in &operation.responses {
-            let response_name = match resp_or_ref {
-                RefOrObject::Ref(r) => r
-                    .reference
-                    .clone()
-                    .split('/')
-                    .last()
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
-                            r.reference
-                        )
-                    })
-                    .to_string(),
-                RefOrObject::Object(_) => {
-                    todo!("Only reference is supported currently. Inline objects in response enum are not supported yet.")
-                }
-            };
-
-            response_names.insert(code.to_string(), self.escape_response_name(response_name));
-        }
 
         let data = Data {
             operation,
             schema_name,
-            response_names,
-            properties,
-            dependencies,
         };
 
         self.renderer
             .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
 
         Ok(())
-    }
-
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
-        } else {
-            name
-        }
     }
 
     fn generate_mod(

@@ -33,7 +33,11 @@ pub fn {{operation.operationId}}Form(props: {{operation.operationId}}FormProps) 
             {{/if}}
 
             Submit {
-                title: "Sign In".to_string(),
+                {{#if operation.x-ag-submit-label}}
+                title: "{{operation.x-ag-submit-label}}".to_string(),
+                {{else}}
+                title: "Submit".to_string(),
+                {{/if}}
                 disabled: (form_data.disabled)(),
             }
         }
