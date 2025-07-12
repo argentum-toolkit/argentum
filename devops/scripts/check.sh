@@ -23,6 +23,7 @@ packages=(
   'argentum_user/infrastructure'
   'argentum_user_account/business'
   'argentum_user_account/infrastructure'
+  'argentum_user_account/ui'
   'demo-app'
   'demo-api-app'
 )

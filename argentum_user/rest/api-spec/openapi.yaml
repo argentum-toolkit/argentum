@@ -109,18 +109,30 @@ components:
       properties:
         first:
           example: Winston
+          title: First Name
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_first_name
+            name: user_first_name
         last:
           example: Marko
+          title: Last Name
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_last_name
+            name: user_last_name
         patronymic:
+          title: Patronymic
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_patronymic
+            name: user_patronymic
       type: object
     Violation:
       properties:

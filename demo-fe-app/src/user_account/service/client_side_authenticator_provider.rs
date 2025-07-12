@@ -1,12 +1,12 @@
 pub fn use_client_side_authenticator_provider() {
     #[cfg(feature = "web")]
     {
-        use crate::user_account::service::client_side_authenticator::Security;
         use argentum_user_account_rest::client::Client;
+        use argentum_user_account_ui::Security;
         use std::sync::Arc;
 
-        use super::ClientSideAuthenticator;
-        use super::SecurityRepository;
+        use argentum_user_account_ui::ClientSideAuthenticator;
+        use argentum_user_account_ui::SecurityRepository;
         use dioxus::prelude::*;
 
         //TODO: configure host and port
@@ -18,7 +18,7 @@ pub fn use_client_side_authenticator_provider() {
         let local_storage = Arc::new(web_sys::window().unwrap().local_storage().unwrap().unwrap());
         let security_repository: Arc<SecurityRepository> =
             Arc::new(SecurityRepository::new(local_storage));
-        let mut auth = ClientSideAuthenticator::new(security_repository.clone());
+        let mut auth = ClientSideAuthenticator::new(client, security_repository.clone());
 
         use_context_provider(|| Signal::new(auth.clone()));
 

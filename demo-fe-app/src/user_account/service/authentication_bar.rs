@@ -5,8 +5,8 @@ use dioxus::prelude::*;
 #[component]
 #[cfg(feature = "web")]
 fn Menu(name: String) -> Element {
-    use crate::user_account::service::ClientSideAuthenticator;
     use argentum_standard_ui::service::redirect;
+    use argentum_user_account_ui::ClientSideAuthenticator;
     let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
     let mut hidden = use_signal(|| "hidden");
@@ -70,7 +70,7 @@ pub fn AuthenticationBar() -> Element {
         let mut first_name: Signal<Option<String>> = use_signal(|| None);
 
         spawn(async move {
-            use crate::user_account::service::ClientSideAuthenticator;
+            use argentum_user_account_ui::ClientSideAuthenticator;
             use dioxus_logger::tracing::error;
 
             if first_name().is_some() {

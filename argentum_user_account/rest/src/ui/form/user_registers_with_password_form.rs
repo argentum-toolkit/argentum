@@ -29,7 +29,7 @@ pub fn UserRegistersWithPasswordForm(props: UserRegistersWithPasswordFormProps) 
             }
 
             Submit {
-                title: "Submit".to_string(),
+                title: "Sign Up".to_string(),
                 disabled: (form_data.disabled)(),
             }
         }

@@ -83,6 +83,7 @@ paths:
           $ref: '#/components/responses/400'
         '409':
           $ref: '#/components/responses/409'
+      x-ag-submit-label: Sign Up
   /user-account/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email

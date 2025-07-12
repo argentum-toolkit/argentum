@@ -54,7 +54,7 @@ fn create_form_boilerplate(
 
     use dioxus_logger::tracing::error;
 
-    use crate::user_account::service::ClientSideAuthenticator;
+    use argentum_user_account_ui::ClientSideAuthenticator;
 
     let mut form_data = UserRegistersWithPasswordFormData::new();
 
