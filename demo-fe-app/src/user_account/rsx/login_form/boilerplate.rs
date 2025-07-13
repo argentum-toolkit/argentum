@@ -46,7 +46,7 @@ pub fn create_form_boilerplate(
 pub fn create_form_boilerplate(
     callbacks: UserLoginsWithPasswordCallbacks,
 ) -> (impl FnMut(Event<FormData>), UserLoginsWithPasswordFormData) {
-    use argentum_user_account_ui::ClientSideAuthenticator;
+    use argentum_user_account_ui::security::ClientSideAuthenticator;
 
     let mut form_data = UserLoginsWithPasswordFormData::new();
 

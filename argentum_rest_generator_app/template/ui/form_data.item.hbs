@@ -38,7 +38,6 @@ impl {{operation.operationId}}FormData {
     }
 }
 
-#[deprecated(since="0.3.0", note="please use `*Callbacks` instead")]
 #[derive(Clone, PartialEq, Props)]
 pub struct {{operation.operationId}}FormProps {
     pub on_submit: EventHandler<FormEvent>,

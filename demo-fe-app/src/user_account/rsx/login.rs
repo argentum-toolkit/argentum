@@ -11,7 +11,7 @@ pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let on_user_logged_in_successfully = {
         use argentum_standard_ui::service::redirect;
-        use argentum_user_account_ui::ClientSideAuthenticator;
+        use argentum_user_account_ui::security::ClientSideAuthenticator;
         use std::sync::Arc;
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>()();

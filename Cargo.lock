@@ -386,9 +386,12 @@ version = "0.3.0-dev"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_infrastructure",
+ "argentum_standard_ui",
  "argentum_user_account_rest",
+ "argentum_user_rest",
  "dioxus",
  "dioxus-logger",
+ "serde",
  "uuid",
  "web-sys",
 ]

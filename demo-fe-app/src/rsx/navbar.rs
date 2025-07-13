@@ -1,8 +1,33 @@
 use crate::route::Route;
 use crate::rsx::dark_mode::DarkModeToggle;
-use crate::user_account::service::AuthenticationBar;
 
 use dioxus::prelude::*;
+
+#[component]
+fn AuthBar() -> Element {
+    let mut mounted = use_signal(|| false);
+
+    #[cfg(feature = "web")]
+    {
+        use_effect(move || {
+            mounted.set(true);
+        });
+
+        return rsx! {
+            if mounted() {
+                argentum_user_account_ui::security::rsx::AuthBar {
+                        login_route: Route::Login {}.into(),
+                        registration_route: Route::Registration {}.into(),
+                }
+            }
+        };
+    }
+
+    #[cfg(not(feature = "web"))]
+    {
+        return rsx! {"Loading..."};
+    }
+}
 
 #[component]
 pub(crate) fn NavBar() -> Element {
@@ -32,8 +57,8 @@ pub(crate) fn NavBar() -> Element {
                     }
                     //right
                     div { class: "flex items-center justify-end pr-16 lg:pr-0",
-                        AuthenticationBar{}
-                        DarkModeToggle{}
+                        AuthBar {}
+                        DarkModeToggle {}
                     }
                 }
             }

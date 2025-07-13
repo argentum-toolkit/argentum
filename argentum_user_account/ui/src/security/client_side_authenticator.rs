@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use crate::AuthHash;
-use crate::Security;
-use crate::SecurityRepository;
-use crate::UserId;
+use super::AuthHash;
+use super::Security;
+use super::SecurityRepository;
+use super::UserId;
 
 use argentum_user_account_rest::client::Client;
 
@@ -22,6 +22,19 @@ impl ClientSideAuthenticator {
         Self {
             client,
             security_repository,
+        }
+    }
+
+    pub async fn init(&self) {
+        if self.security_repository.read().is_none() {
+            let res = self.fetch_new_anonymous_token().await;
+
+            match res.clone() {
+                Ok(token) => {
+                    self.security_repository.save(Security::Anonymous(token));
+                }
+                _ => todo!(),
+            };
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::Security;
+use super::Security;
 use std::str::FromStr;
 use std::sync::Arc;
 use web_sys::Storage;
