@@ -8,11 +8,16 @@ use dioxus::prelude::*;
 
 pub struct DiC {
     pub auth: ClientSideAuthenticator,
+    pub client: Arc<Client>,
 }
 
 impl DiC {
-    pub fn new(auth: ClientSideAuthenticator) -> DiC {
-        DiC { auth }
+    pub fn new(auth: ClientSideAuthenticator, client: Arc<Client>) -> DiC {
+        DiC { auth, client }
+    }
+
+    pub fn use_client_provider(&self) {
+        use_context_provider(|| Signal::new(self.client.clone()));
     }
 
     pub fn use_client_side_authenticator_provider(&self) {
@@ -31,7 +36,7 @@ pub fn di_factory(user_accoutn_server_url: String) -> DiC {
     let local_storage = Arc::new(web_sys::window().unwrap().local_storage().unwrap().unwrap());
     let security_repository: Arc<SecurityRepository> =
         Arc::new(SecurityRepository::new(local_storage));
-    let mut auth = ClientSideAuthenticator::new(client, security_repository.clone());
+    let mut auth = ClientSideAuthenticator::new(client.clone(), security_repository.clone());
 
-    DiC::new(auth)
+    DiC::new(auth, client)
 }

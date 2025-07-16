@@ -15,9 +15,10 @@ fn AuthBar() -> Element {
 
         return rsx! {
             if mounted() {
-                argentum_user_account_ui::security::rsx::AuthBar {
-                        login_route: Route::Login {}.into(),
-                        registration_route: Route::Registration {}.into(),
+                argentum_user_account_ui::security::rsx::AuthBar<Route> {
+                    login_route: Route::Login {},
+                    registration_route: Route::Registration {},
+                    logout_redirect: Route::Home {},
                 }
             }
         };

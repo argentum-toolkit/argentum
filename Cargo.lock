@@ -450,6 +450,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "argentum_user_ui"
+version = "0.3.0-dev"
+dependencies = [
+ "argentum_user_rest",
+ "dioxus",
+ "dioxus-logger",
+ "serde",
+]
+
+[[package]]
 name = "askama_escape"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -942,6 +952,7 @@ dependencies = [
  "argentum_user_account_rest",
  "argentum_user_account_ui",
  "argentum_user_rest",
+ "argentum_user_ui",
  "async-trait",
  "dioxus",
  "dioxus-logger",

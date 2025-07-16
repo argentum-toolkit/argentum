@@ -1,15 +1,32 @@
+use std::sync::Arc;
+
 use dioxus::prelude::*;
 
 use crate::security::rsx::AuthMenu;
+use argentum_rest_infrastructure::data_type::HttpParams;
+use argentum_rest_infrastructure::data_type::HttpRequest;
+use argentum_rest_infrastructure::data_type::{
+    AuthHeaderParams, EmptyQueryParams, EmptyRequestBody,
+};
+use argentum_user_rest::client::Client;
+use argentum_user_rest::dto::operation_response_enum::GetUserOperationResponseEnum;
+use argentum_user_rest::dto::params::GetUserParams;
+use argentum_user_rest::dto::path_params::GetUserPathParams;
+use argentum_user_rest::dto::request::GetUserRequest;
+use argentum_user_rest::dto::response::GetUserOkResponse;
 
 #[derive(Clone, PartialEq, Props)]
-pub struct AuthBarProps {
-    pub login_route: NavigationTarget,
-    pub registration_route: NavigationTarget,
+pub struct AuthBarProps<R>
+where
+    R: Routable + std::cmp::PartialEq,
+{
+    pub login_route: R,
+    pub registration_route: R,
+    pub logout_redirect: R,
 }
 
 #[component]
-pub fn AuthBar(props: AuthBarProps) -> Element {
+pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Element {
     let mut first_name: Signal<Option<String>> = use_signal(|| None);
 
     spawn(async move {
@@ -22,19 +39,7 @@ pub fn AuthBar(props: AuthBarProps) -> Element {
 
         let authenticator: Signal<ClientSideAuthenticator> = use_context();
         if let Some(user) = authenticator().user() {
-            use argentum_rest_infrastructure::data_type::HttpParams;
-            use argentum_rest_infrastructure::data_type::HttpRequest;
-            use argentum_rest_infrastructure::data_type::{
-                AuthHeaderParams, EmptyQueryParams, EmptyRequestBody,
-            };
-            use argentum_user_rest::client::Client;
-            use argentum_user_rest::dto::operation_response_enum::GetUserOperationResponseEnum;
-            use argentum_user_rest::dto::params::GetUserParams;
-            use argentum_user_rest::dto::path_params::GetUserPathParams;
-            use argentum_user_rest::dto::request::GetUserRequest;
-            use argentum_user_rest::dto::response::GetUserOkResponse;
-
-            let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
+            let client = use_context::<Signal<Arc<Client>>>();
             let req = GetUserRequest::new(
                 EmptyRequestBody {},
                 GetUserParams::new(
@@ -44,7 +49,7 @@ pub fn AuthBar(props: AuthBarProps) -> Element {
                 ),
             );
 
-            let result = client.get_user(req).await;
+            let result = client().clone().get_user(req).await;
             let first = match result {
                 Ok(response) => {
                     match response {
@@ -70,12 +75,14 @@ pub fn AuthBar(props: AuthBarProps) -> Element {
 
     if first_name().is_some() {
         return rsx! {
-            AuthMenu {name: first_name().unwrap_or_else(|| "".to_string())}
+            AuthMenu {
+                name: first_name().unwrap_or_else(|| "".to_string()),
+                logout_redirect: props.logout_redirect,
+            }
         };
     }
 
     rsx! {
-        // Link { class: "hidden px-7 py-3 text-base font-medium text-dark hover:opacity-70 dark:text-white md:block", to: "#", "Sign In" }
         Link { class: "hidden px-7 py-3 text-base font-medium text-dark hover:opacity-70 dark:text-white md:block", to: props.login_route, "Sign In" }
         Link { class: "ease-in-up shadow-btn hover:shadow-btn-hover hidden rounded-sm bg-primary px-8 py-3 text-base font-medium text-white transition duration-300 hover:bg-opacity-90 md:block md:px-9 lg:px-6 xl:px-9", to: props.registration_route, "Sign Up" }
     }

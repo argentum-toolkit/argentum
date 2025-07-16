@@ -21,6 +21,7 @@ packages=(
   'argentum_standard/ui'
   'argentum_user/business'
   'argentum_user/infrastructure'
+  'argentum_user/ui'
   'argentum_user_account/business'
   'argentum_user_account/infrastructure'
   'argentum_user_account/ui'

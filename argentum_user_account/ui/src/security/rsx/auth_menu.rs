@@ -1,7 +1,16 @@
 use dioxus::prelude::*;
 
+#[derive(Clone, PartialEq, Props)]
+pub struct AuthMenuProps<R>
+where
+    R: Routable + std::cmp::PartialEq,
+{
+    pub name: String,
+    pub logout_redirect: R,
+}
+
 #[component]
-pub(crate) fn AuthMenu(name: String) -> Element {
+pub(crate) fn AuthMenu<R: Routable + std::cmp::PartialEq>(props: AuthMenuProps<R>) -> Element {
     use crate::security::ClientSideAuthenticator;
     use argentum_standard_ui::service::redirect;
     let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
@@ -25,7 +34,7 @@ pub(crate) fn AuthMenu(name: String) -> Element {
                     "type": "button",
                     class: "flex whitespace-nowrap text-md pe-1 font-medium text-gray-900 hover:text-blue-600 dark:hover:text-blue-400 md:me-0 focus:ring-4 focus:ring-gray-600 dark:focus:ring-gray-400 dark:text-white",
                     id: "menu-button", "aria-expanded": "true", "aria-haspopup": "true",
-                    "Hello, {name}",
+                    "Hello, {props.name}",
                     svg {
                         class:"w-2.5 h-7 ms-3", "aria-hidden": "true", xmlns: "http://www.w3.org/2000/svg", fill: "none", "viewBox": "0 0 10 6",
                         path {
@@ -45,8 +54,7 @@ pub(crate) fn AuthMenu(name: String) -> Element {
                     link {
                         onclick: move |_| {
                             authenticator().logout();
-                            //TODO: enable redirect
-                            // redirect(Route::Home {});
+                            redirect(props.logout_redirect.clone());
                         },
                         href: "javascript:void(0)",
                         class: "whitespace-nowrap block px-4 py-2 text-sm text-gray-700",
