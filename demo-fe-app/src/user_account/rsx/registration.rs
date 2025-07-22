@@ -1,5 +1,5 @@
 use crate::route::Route;
-use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
 use argentum_standard_ui::rsx::form::{LabeledCheckbox, LabeledInput, Submit};
 use argentum_standard_ui::rsx::ErrorBlock;
 use argentum_user_account_rest::dto::response::{
@@ -16,6 +16,31 @@ use argentum_user_account_rest::ui::input::{RegistrationWithPasswordSchemaInput,
 use dioxus::prelude::*;
 use dioxus_logger::tracing::event;
 use std::string::ToString;
+
+use argentum_user_account_rest::dto::schema::ProblemDetail;
+
+fn extract_errors_from_problem_details(
+    problem: ProblemDetail,
+    mut errors: Signal<Vec<String>>,
+    mut violations: Signal<ViolationsDto>,
+    mut inactive: Signal<bool>,
+) {
+    if let Some(body_violation) = problem.body {
+        let pp = serde_json::to_string(&body_violation).unwrap();
+        let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
+        if let Some(ViolationItemDto::Object(ref items)) = v.items {
+            violations.set(v.clone());
+        };
+    };
+
+    if 400 == problem.status {
+        errors.set(vec!["Please fill the form correctly".into()]);
+    } else {
+        errors.set(vec![problem.detail.unwrap_or(problem.title)]);
+    }
+
+    inactive.set(false);
+}
 
 #[cfg(not(feature = "web"))]
 fn create_form_boilerplate(
@@ -101,34 +126,25 @@ fn create_form_boilerplate(
                     }
                     UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                         Status400Response::ApplicationProblemJson(j) => {
-                            let body_violation = match j.0.body {
-                                Some(body_violation) => {
-                                    let pp = serde_json::to_string(&body_violation).unwrap();
-                                    let violations: ViolationsDto =
-                                        serde_json::from_slice(pp.as_ref()).unwrap();
-                                    Some(violations)
-                                }
-                                None => None,
-                            };
-
-                            if let Some(violations) = body_violation {
-                                if let Some(ViolationItemDto::Object(ref items)) = violations.items
-                                {
-                                    form_data.violations.set(violations.clone());
-                                };
-                            };
-
-                            form_data
-                                .errors
-                                .set(vec!["Please fill the form correctly".into()]);
-                            form_data.disabled.set(false);
+                            extract_errors_from_problem_details(
+                                j.0.clone(),
+                                form_data.errors,
+                                form_data.violations,
+                                form_data.disabled,
+                            );
                         }
                     },
                     UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
                         Status409Response::ApplicationProblemJson(j) => {
-                            form_data.errors.set(vec![j.0.title]);
+                            extract_errors_from_problem_details(
+                                j.0.clone(),
+                                form_data.errors,
+                                form_data.violations,
+                                form_data.disabled,
+                            );
+                            // form_data.errors.set(vec![j.0.title]);
 
-                            form_data.disabled.set(false);
+                            // form_data.disabled.set(false);
                         }
                     },
                 },

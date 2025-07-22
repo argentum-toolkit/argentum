@@ -18,17 +18,27 @@ use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordFormData;
 
 use dioxus::prelude::*;
 
-fn extract_body_violations_open_api_problem_details(
+fn extract_errors_from_problem_details(
     problem: ProblemDetail,
-) -> Option<ViolationsDto> {
-    match problem.body {
-        Some(body_violation) => {
-            let pp = serde_json::to_string(&body_violation).unwrap();
-            let violations: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
-            Some(violations)
-        }
-        None => None,
+    mut errors: Signal<Vec<String>>,
+    mut violations: Signal<ViolationsDto>,
+    mut inactive: Signal<bool>,
+) {
+    if let Some(body_violation) = problem.body {
+        let pp = serde_json::to_string(&body_violation).unwrap();
+        let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
+        if let Some(ViolationItemDto::Object(ref items)) = v.items {
+            violations.set(v.clone());
+        };
+    };
+
+    if 400 == problem.status {
+        errors.set(vec!["Please fill the form correctly".into()]);
+    } else {
+        errors.set(vec![problem.detail.unwrap_or(problem.title)]);
     }
+
+    inactive.set(false);
 }
 
 #[cfg(not(feature = "web"))]
@@ -46,6 +56,8 @@ pub fn create_form_boilerplate(
 pub fn create_form_boilerplate(
     callbacks: UserLoginsWithPasswordCallbacks,
 ) -> (impl FnMut(Event<FormData>), UserLoginsWithPasswordFormData) {
+    use std::sync::Arc;
+
     use argentum_user_account_ui::security::ClientSideAuthenticator;
 
     let mut form_data = UserLoginsWithPasswordFormData::new();
@@ -58,8 +70,7 @@ pub fn create_form_boilerplate(
             form_data.errors.set(vec![]);
             form_data.violations.set(Default::default());
 
-            //TODO: inject client
-            let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
+            let client = use_context::<Signal<Arc<Client>>>();
 
             let req = UserLoginsWithPasswordRequest::new(
                 (form_data.values)().into(),
@@ -70,7 +81,7 @@ pub fn create_form_boilerplate(
                 ),
             );
 
-            let res = client.user_logins_with_password(req).await;
+            let res = client().user_logins_with_password(req).await;
 
             match res {
                 Ok(data) => match data {
@@ -80,21 +91,12 @@ pub fn create_form_boilerplate(
                     UserLoginsWithPasswordOperationResponseEnum::Status400(r) => {
                         match r.clone() {
                             Status400Response::ApplicationProblemJson(j) => {
-                                let body_violations =
-                                    extract_body_violations_open_api_problem_details(j.0.clone());
-
-                                if let Some(violations) = body_violations {
-                                    if let Some(ViolationItemDto::Object(ref items)) =
-                                        violations.items
-                                    {
-                                        form_data.violations.set(violations.clone());
-                                    };
-                                };
-
-                                form_data
-                                    .errors
-                                    .set(vec!["Please fill the form correctly".into()]);
-                                form_data.disabled.set(false);
+                                extract_errors_from_problem_details(
+                                    j.0.clone(),
+                                    form_data.errors,
+                                    form_data.violations,
+                                    form_data.disabled,
+                                )
                             }
                         }
 
@@ -104,19 +106,12 @@ pub fn create_form_boilerplate(
                     UserLoginsWithPasswordOperationResponseEnum::Status401(r) => {
                         match r.clone() {
                             Status401Response::ApplicationProblemJson(j) => {
-                                let body_violations =
-                                    extract_body_violations_open_api_problem_details(j.0.clone());
-
-                                if let Some(violations) = body_violations {
-                                    if let Some(ViolationItemDto::Object(ref items)) =
-                                        violations.items
-                                    {
-                                        form_data.violations.set(violations.clone());
-                                    };
-                                };
-
-                                form_data.errors.set(vec![j.0.detail.unwrap_or(j.0.title)]);
-                                form_data.disabled.set(false);
+                                extract_errors_from_problem_details(
+                                    j.0.clone(),
+                                    form_data.errors,
+                                    form_data.violations,
+                                    form_data.disabled,
+                                )
                             }
                         }
                         callbacks.on_status_401.call(r);

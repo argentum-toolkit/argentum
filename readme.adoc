@@ -147,7 +147,6 @@ cargo install dioxus-cli
 === V0.3
 
 * Web APP + UI
-** Show validation errors in form
 ** Client library
 ** Demo Dioxus Web App 
 *** User
@@ -167,8 +166,6 @@ cargo install dioxus-cli
 ** generate inline objects
 ** tests
 ** fix generator for cases when string field parses as integer
-
-* Configure Cargo for local development and for release as described there https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
 
 * Profiling
 
