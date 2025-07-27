@@ -1,36 +1,62 @@
 use crate::dto::schema::RequestRestoreTokenSchema;
-use crate::ui::form_data::AnonymousRequestsRestoreTokenFormProps;
+use crate::ui::form_processor::AnonymousRequestsRestoreTokenFormProcessor;
 use crate::ui::input::RequestRestoreTokenSchemaInput;
+use std::sync::Arc;
 
-use argentum_standard_ui::rsx::form::{LabeledInput, Submit};
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use argentum_standard_ui::rsx::form::Submit;
 use argentum_standard_ui::rsx::ErrorBlock;
 
 use dioxus::prelude::*;
 
 #[component]
-pub fn AnonymousRequestsRestoreTokenForm(props: AnonymousRequestsRestoreTokenFormProps) -> Element {
-    let mut form_data = props.form_data;
+pub fn AnonymousRequestsRestoreTokenForm(
+    processor: Arc<AnonymousRequestsRestoreTokenFormProcessor>,
+    auth_token: String,
+) -> Element {
+    let mut values: Signal<RequestRestoreTokenSchema> = use_signal(|| Default::default());
+    let violations: Signal<ViolationsDto> = use_signal(|| Default::default());
+    let errors = use_signal(|| vec![]);
+    let disabled = use_signal(|| false);
 
     rsx! {
         form {
             action:"#",
             class:"space-y-6",
             "novalidate": true,
-            onsubmit: props.on_submit,
+            onsubmit: move |_| {
+                let processor = processor.clone();
+                let values = values.clone();
+                let violations = violations.clone();
+                let errors = errors.clone();
+                let disabled = disabled.clone();
+                let auth_token = auth_token.clone();
 
-            ErrorBlock {errors: (form_data.errors)()}
+                spawn(async move {
+                    processor.submit(
+                        auth_token,
+                        values,
+
+                        violations,
+                        errors,
+                        disabled
+                    ).await;
+                });
+            },
+
+            ErrorBlock {errors: errors()}
 
             RequestRestoreTokenSchemaInput {
-                request_restore_token_schema: (form_data.values)().into(),
-                violations: (form_data.violations)(),
+                request_restore_token_schema: values().into(),
+                violations: violations(),
                 oninput: move |event: RequestRestoreTokenSchema| {
-                    form_data.values.set(event);
+                    values.set(event);
                 },
             }
 
             Submit {
                 title: "Submit".to_string(),
-                disabled: (form_data.disabled)(),
+                disabled: disabled(),
             }
         }
     }

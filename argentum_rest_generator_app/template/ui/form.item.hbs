@@ -1,33 +1,72 @@
+use std::sync::Arc;
+{{#if needPathParams}}
+use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
+{{/if}}
 {{#if schemaName}}
 use crate::dto::schema::{{ upper_camel schemaName}};
 use crate::ui::input::{{ upper_camel schemaName}}Input;
 {{/if}}
-use crate::ui::form_data::{{operation.operationId}}FormProps;
+use crate::ui::form_processor::{{ upper_camel operation.operationId}}FormProcessor;
 
-use argentum_standard_ui::rsx::form::{LabeledInput, Submit};
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use argentum_standard_ui::rsx::form::Submit;
 use argentum_standard_ui::rsx::ErrorBlock;
 
 use dioxus::prelude::*;
 
 #[component]
-pub fn {{operation.operationId}}Form(props: {{operation.operationId}}FormProps) -> Element {
-    let mut form_data = props.form_data;
+pub fn {{upper_camel operation.operationId}}Form(
+        processor: Arc<{{upper_camel operation.operationId}}FormProcessor>, 
+        auth_token: String,
+        {{#if needPathParams}}
+        path_params: {{upper_camel operation.operationId}}PathParams,
+        {{/if}}
+    ) -> Element {
+    {{#if schemaName}}
+    let mut values: Signal<{{ upper_camel schemaName}}> = use_signal(|| Default::default());
+    {{/if}}
+    let violations: Signal<ViolationsDto>= use_signal(|| Default::default());
+    let errors = use_signal(|| vec![]);
+    let disabled = use_signal(|| false);
 
     rsx! {
         form {
             action:"#",
             class:"space-y-6",
             "novalidate": true,
-            onsubmit: props.on_submit,
+            onsubmit: move |_| {
+                let processor = processor.clone();
+                {{#if schemaName}}
+                let values = values.clone();
+                {{/if}}
+                {{#if needPathParams}}
+                let path_params = path_params.clone();
+                {{/if}}
+                let violations = violations.clone();
+                let errors = errors.clone();
+                let disabled = disabled.clone();
+                let auth_token = auth_token.clone();
 
-            ErrorBlock {errors: (form_data.errors)()}
+                spawn(async move {
+                    processor.submit(
+                        {{#if operation.security}}auth_token,{{/if}}
+                        {{#if schemaName}}values,{{/if}}
+                        {{#if needPathParams}}path_params,{{/if}}
+                        violations, 
+                        errors, 
+                        disabled
+                    ).await;
+                });
+            },
+
+            ErrorBlock {errors: errors()}
 
             {{#if schemaName}}
             {{ upper_camel schemaName}}Input {
-                {{ snake schemaName}}: (form_data.values)().into(),
-                violations: (form_data.violations)(),
+                {{ snake schemaName}}: values().into(),
+                violations: violations(),
                 oninput: move |event: {{ upper_camel schemaName}}| {
-                    form_data.values.set(event);
+                    values.set(event);
                 },
             }
             {{/if}}
@@ -38,7 +77,7 @@ pub fn {{operation.operationId}}Form(props: {{operation.operationId}}FormProps) 
                 {{else}}
                 title: "Submit".to_string(),
                 {{/if}}
-                disabled: (form_data.disabled)(),
+                disabled: disabled(),
             }
         }
     }

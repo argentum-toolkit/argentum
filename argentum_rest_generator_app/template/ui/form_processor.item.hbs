@@ -1,0 +1,167 @@
+use std::sync::Arc;
+
+use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
+
+use crate::dto::schema::ProblemDetail;
+use crate::ui::callbacks::{{upper_camel operation.operationId}}Callbacks;
+use dioxus::prelude::*;
+{{#if schemaName }}
+use crate::dto::schema::{{upper_camel schemaName}};
+{{/if}}
+
+{{#if needPathParams}}
+use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
+{{/if}}
+
+#[derive(PartialEq)]
+pub struct {{upper_camel operation.operationId}}FormProcessor {
+    callbacks: Arc<{{upper_camel operation.operationId}}Callbacks>,
+}
+
+impl {{upper_camel operation.operationId}}FormProcessor {
+    pub fn new(callbacks: Arc<{{upper_camel operation.operationId}}Callbacks>) -> Self {
+        Self { callbacks }
+    }
+
+    fn extract_errors_from_problem_details(
+        &self,
+        problem: ProblemDetail,
+        mut errors: Signal<Vec<String>>,
+        mut violations: Signal<ViolationsDto>,
+        mut inactive: Signal<bool>,
+    ) {
+        if let Some(body_violation) = problem.body {
+            let pp = serde_json::to_string(&body_violation).unwrap();
+            let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
+            if let Some(ViolationItemDto::Object(ref items)) = v.items {
+                violations.set(v.clone());
+            };
+        };
+
+        if 400 == problem.status {
+            errors.set(vec!["Please fill the form correctly".into()]);
+        } else {
+            errors.set(vec![problem.detail.unwrap_or(problem.title)]);
+        }
+
+        inactive.set(false);
+    }
+
+    #[cfg(not(feature = "web"))]
+    pub async fn submit(
+        &self,
+        {{#if operation.security }}
+        auth_token: String,
+        {{/if}}
+        {{#if needPathParams}}
+        path_params: {{upper_camel operation.operationId}}PathParams,
+        {{/if}}
+        {{#if schemaName}}
+        values: Signal<{{upper_camel schemaName}}>,
+        {{/if}}
+        mut violations: Signal<ViolationsDto>,
+        mut errors: Signal<Vec<String>>,
+        mut disabled: Signal<bool>,
+    ) {
+
+    }
+
+    #[cfg(feature = "web")]
+    pub async fn submit(
+        &self,
+        {{#if operation.security }}
+        auth_token: String,
+        {{/if}}
+        {{#if needPathParams}}
+        path_params: {{upper_camel operation.operationId}}PathParams,
+        {{/if}}
+        {{#if schemaName}}
+        values: Signal<{{upper_camel schemaName}}>,
+        {{/if}}
+        mut violations: Signal<ViolationsDto>,
+        mut errors: Signal<Vec<String>>,
+        mut disabled: Signal<bool>,
+    ) {
+        use std::sync::Arc;
+
+        {{#unless schemaName}}
+        use argentum_rest_infrastructure::data_type::EmptyRequestBody;
+        {{/unless}}
+        use argentum_rest_infrastructure::data_type::{
+            EmptyQueryParams, HttpParams, HttpRequest,
+        };
+        {{~#if operation.security ~}}
+            use argentum_rest_infrastructure::data_type::AuthHeaderParams;
+        {{else}}
+            use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
+        {{/if}}
+        use crate::client::Client;
+
+        use crate::dto::operation_response_enum::{{upper_camel operation.operationId}}OperationResponseEnum;
+        use crate::dto::params::{{upper_camel operation.operationId}}Params;
+        {{#unless needPathParams}}
+        use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
+        {{/unless}}
+        use crate::dto::request::{{upper_camel operation.operationId}}Request;
+        
+        {{#each responseNames as |name|}}
+        {{#if (and (gte @key 400) (lt @key 500))}}
+        use crate::dto::response::{{upper_camel name}}Response;
+        {{/if}}
+        {{/each}}
+        
+        disabled.set(true);
+        errors.set(vec![]);
+        violations.set(Default::default());
+
+        let client = use_context::<Signal<Arc<Client>>>();
+
+        let req = {{upper_camel operation.operationId}}Request::new(
+            {{#if schemaName}}
+            values().into(),
+            {{else}}
+            EmptyRequestBody {},
+            {{/if}}
+            {{upper_camel operation.operationId}}Params::new(
+                {{#if needPathParams}}
+                path_params,
+                {{else}}
+                {{upper_camel operation.operationId}}PathParams::new(),
+                {{/if}}
+                EmptyQueryParams {},
+                {{#if operation.security }}AuthHeaderParams::new(auth_token){{else}}EmptyHeaderParams {}{{/if}},
+            ),
+        );
+
+        let res = client().{{snake operation.operationId}}(req).await;
+
+        match res {
+            Ok(data) => match data {
+            {{#each responseNames as |name|}}
+                {{#if (and (gte @key 400) (lt @key 500))}}
+                {{upper_camel ../operation.operationId}}OperationResponseEnum::Status{{@key}}(r) => match r {
+                    Status{{@key}}Response::ApplicationProblemJson(j) => {
+                        self.extract_errors_from_problem_details(
+                            j.0.clone(),
+                            errors,
+                            violations,
+                            disabled,
+                        );
+                    }
+                },
+                {{else}}
+                {{upper_camel ../operation.operationId}}OperationResponseEnum::Status{{@key}}(r) => {
+                    (self.callbacks.on_{{snake name}})(r);
+                }
+                {{/if}}
+            {{/each}} 
+            },
+            Err(e) => {
+                disabled.set(false);
+                errors.set(vec!["Unexpected error. Please try again latter".to_string()]);
+
+                self.callbacks.on_error.call(e);
+            }
+        }
+    }
+}

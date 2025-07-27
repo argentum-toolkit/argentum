@@ -38,7 +38,7 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
         }
 
         let authenticator: Signal<ClientSideAuthenticator> = use_context();
-        if let Some(user) = authenticator().user() {
+        if let Some(user) = authenticator().get_user() {
             let client = use_context::<Signal<Arc<Client>>>();
             let req = GetUserRequest::new(
                 EmptyRequestBody {},

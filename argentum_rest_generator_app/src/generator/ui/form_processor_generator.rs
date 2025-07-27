@@ -1,45 +1,41 @@
-use crate::dto::TypeDescription;
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
-use crate::transformer::SchemaToTypeDescriptionTransformer;
-use argentum_openapi_infrastructure::data_type::{Operation, RefOrObject, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::{
+    InPlace, Operation, RefOrObject, SpecificationRoot,
+};
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::sync::Arc;
 
-const MOD_PATH: &str = "/src/ui/form_data/mod.rs";
-const MOD_TEMPLATE: &str = "ui/form_data.mod";
-const ITEM_TEMPLATE: &str = "ui/form_data.item";
+const MOD_PATH: &str = "/src/ui/form_processor/mod.rs";
+const MOD_TEMPLATE: &str = "ui/form_processor.mod";
+const ITEM_TEMPLATE: &str = "ui/form_processor.item";
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data<'a> {
     operation: &'a Operation,
     schema_name: Option<String>,
+    need_path_params: bool,
     response_names: BTreeMap<String, String>,
-    properties: BTreeMap<String, TypeDescription>,
-    dependencies: Vec<String>,
 }
 
-pub(crate) struct FormDataGenerator {
+pub(crate) struct FormProcessorGenerator {
     renderer: Arc<Renderer>,
-    schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
     request_body_extractor: Arc<RequestBodyExtractor>,
     schema_extractor: Arc<SchemaExtractor>,
 }
 
-impl FormDataGenerator {
+impl FormProcessorGenerator {
     pub fn new(
         renderer: Arc<Renderer>,
-        schema_to_type_description_transformer: Arc<SchemaToTypeDescriptionTransformer>,
         request_body_extractor: Arc<RequestBodyExtractor>,
         schema_extractor: Arc<SchemaExtractor>,
     ) -> Self {
         Self {
             renderer,
-            schema_to_type_description_transformer,
             request_body_extractor,
             schema_extractor,
         }
@@ -52,39 +48,18 @@ impl FormDataGenerator {
         spec: &SpecificationRoot,
     ) -> Result<(), Box<dyn Error>> {
         let file_path = format!(
-            "/src/ui/form_data/{}_form_data.rs",
+            "/src/ui/form_processor/{}_form_processor.rs",
             operation.operation_id.to_case(Case::Snake)
         );
 
-        let mut schema_name: Option<String> = None;
-
-        let mut properties = BTreeMap::new();
         let mut response_names: BTreeMap<String, String> = BTreeMap::new();
 
-        let mut dependencies: Vec<String> = vec![];
-
-        if let Some(request_body) = self.request_body_extractor.extract(operation, &spec) {
-            //TODO copypasted from request_generator.rs
-            let body = request_body
-                .content
-                .get("application/json")
-                .expect("Request body should contain `application/json` mime type");
-
-            if let Some((s_name, schema)) = self
-                .schema_extractor
-                .extract_ref_with_name(&body.schema, spec)
-            {
-                schema_name = Some(s_name);
-
-                //TODO: schema.additional_properties
-                for (name, property) in schema.properties.unwrap_or_default() {
-                    properties.insert(
-                        name,
-                        self.schema_to_type_description_transformer
-                            .transform(property, &mut dependencies),
-                    );
-                }
-            }
+        let need_path_params = match &operation.parameters {
+            Some(params) => match params.iter().find(|&x| x.in_place == InPlace::Path) {
+                Some(_) => true,
+                None => false,
+            },
+            None => false,
         };
 
         for (code, resp_or_ref) in &operation.responses {
@@ -109,12 +84,28 @@ impl FormDataGenerator {
             response_names.insert(code.to_string(), self.escape_response_name(response_name));
         }
 
+        let mut schema_name: Option<String> = None;
+
+        if let Some(request_body) = self.request_body_extractor.extract(operation, &spec) {
+            //TODO copypasted from request_generator.rs
+            let body = request_body
+                .content
+                .get("application/json")
+                .expect("Request body should contain `application/json` mime type");
+
+            if let Some((s_name, _)) = self
+                .schema_extractor
+                .extract_ref_with_name(&body.schema, spec)
+            {
+                schema_name = Some(s_name);
+            }
+        };
+
         let data = Data {
             operation,
             schema_name,
+            need_path_params,
             response_names,
-            properties,
-            dependencies,
         };
 
         self.renderer

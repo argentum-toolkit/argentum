@@ -1,27 +1,51 @@
-use crate::ui::form_data::AnonymousRegistersFormProps;
+use crate::ui::form_processor::AnonymousRegistersFormProcessor;
+use std::sync::Arc;
 
-use argentum_standard_ui::rsx::form::{LabeledInput, Submit};
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use argentum_standard_ui::rsx::form::Submit;
 use argentum_standard_ui::rsx::ErrorBlock;
 
 use dioxus::prelude::*;
 
 #[component]
-pub fn AnonymousRegistersForm(props: AnonymousRegistersFormProps) -> Element {
-    let mut form_data = props.form_data;
+pub fn AnonymousRegistersForm(
+    processor: Arc<AnonymousRegistersFormProcessor>,
+    auth_token: String,
+) -> Element {
+    let violations: Signal<ViolationsDto> = use_signal(|| Default::default());
+    let errors = use_signal(|| vec![]);
+    let disabled = use_signal(|| false);
 
     rsx! {
         form {
             action:"#",
             class:"space-y-6",
             "novalidate": true,
-            onsubmit: props.on_submit,
+            onsubmit: move |_| {
+                let processor = processor.clone();
+                let violations = violations.clone();
+                let errors = errors.clone();
+                let disabled = disabled.clone();
+                let auth_token = auth_token.clone();
 
-            ErrorBlock {errors: (form_data.errors)()}
+                spawn(async move {
+                    processor.submit(
+
+
+
+                        violations,
+                        errors,
+                        disabled
+                    ).await;
+                });
+            },
+
+            ErrorBlock {errors: errors()}
 
 
             Submit {
                 title: "Submit".to_string(),
-                disabled: (form_data.disabled)(),
+                disabled: disabled(),
             }
         }
     }

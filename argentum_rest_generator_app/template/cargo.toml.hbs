@@ -27,6 +27,7 @@ readme = "readme.adoc"
 client = ["dep:reqwest"]
 server = ["dep:hyper"]
 ui = ["dep:dioxus", "dep:dioxus-logger", "dep:argentum_standard_infrastructure", "dep:argentum_standard_ui"]
+web = ["dioxus/web", "argentum_standard_ui/web"]
 
 [dependencies]
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0" }

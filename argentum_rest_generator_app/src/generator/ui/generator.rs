@@ -6,8 +6,8 @@ use crate::generator::ui::FormGenerator;
 use crate::generator::ui::InputGenerator;
 use crate::template::Renderer;
 
-use super::FormDataGenerator;
-use super::WebBoilerplateGenerator;
+use super::CallbacksGenerator;
+use super::FormProcessorGenerator;
 
 const MOD_PATH: &str = "/src/ui/mod.rs";
 const MOD_TEMPLATE: &str = "ui/mod";
@@ -15,18 +15,18 @@ const MOD_TEMPLATE: &str = "ui/mod";
 pub struct UiGenerator {
     renderer: Arc<Renderer>,
     form_generator: Arc<FormGenerator>,
-    form_data_generator: Arc<FormDataGenerator>,
+    form_data_generator: Arc<CallbacksGenerator>,
     input_generator: Arc<InputGenerator>,
-    web_boilerplate_generator: Arc<WebBoilerplateGenerator>,
+    web_boilerplate_generator: Arc<FormProcessorGenerator>,
 }
 
 impl UiGenerator {
     pub fn new(
         renderer: Arc<Renderer>,
         form_generator: Arc<FormGenerator>,
-        form_data_generator: Arc<FormDataGenerator>,
+        form_data_generator: Arc<CallbacksGenerator>,
         input_generator: Arc<InputGenerator>,
-        web_boilerplate_generator: Arc<WebBoilerplateGenerator>,
+        web_boilerplate_generator: Arc<FormProcessorGenerator>,
     ) -> Self {
         Self {
             renderer,

@@ -1,18 +1,38 @@
+use std::sync::Arc;
+
 use crate::route::Route;
-use crate::user_account::rsx::login_form::boilerplate::create_form_boilerplate;
 
 use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
+use argentum_user_account_rest::ui::callbacks::UserLoginsWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::UserLoginsWithPasswordForm;
-use argentum_user_account_rest::ui::form_data::UserLoginsWithPasswordCallbacks;
+use argentum_user_account_rest::ui::form_processor::UserLoginsWithPasswordFormProcessor;
+use argentum_user_account_ui::security::ClientSideAuthenticator;
 use dioxus::prelude::*;
+use dioxus_logger::tracing::error;
 
 #[component]
 pub fn Login() -> Element {
     #[cfg(feature = "web")]
+    let auth_token = {
+        let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+
+        match authenticator().get_token() {
+            Some(t) => t,
+            None => {
+                error!("Can't get authentication token");
+
+                return rsx! {"Can't get authentication token"};
+            }
+        }
+    };
+
+    #[cfg(not(feature = "web"))]
+    let auth_token = "Server side rendering cant't work with authentication tokens".to_string();
+
+    #[cfg(feature = "web")]
     let on_user_logged_in_successfully = {
         use argentum_standard_ui::service::redirect;
         use argentum_user_account_ui::security::ClientSideAuthenticator;
-        use std::sync::Arc;
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>()();
 
@@ -31,10 +51,12 @@ pub fn Login() -> Element {
     let on_user_logged_in_successfully =
         EventHandler::new(move |_response: UserLoggedInSuccessfullyResponse| {});
 
-    let (on_submit, mut form_data) = create_form_boilerplate(UserLoginsWithPasswordCallbacks {
+    let callbacks = Arc::new(UserLoginsWithPasswordCallbacks {
         on_user_logged_in_successfully,
         ..Default::default()
     });
+
+    let processor = Arc::new(UserLoginsWithPasswordFormProcessor::new(callbacks.clone()));
 
     rsx! {
         section {
@@ -46,8 +68,8 @@ pub fn Login() -> Element {
                         class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
 
                         UserLoginsWithPasswordForm {
-                            on_submit,
-                            form_data,
+                            processor,
+                            auth_token,
                         }
 
                         div { class:"text-center text-base font-medium text-body-color py-4 dark:text-body-color-dark",

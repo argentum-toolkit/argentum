@@ -7,10 +7,6 @@ use super::UserId;
 
 use argentum_user_account_rest::client::Client;
 
-use dioxus::hooks::use_signal;
-use dioxus::prelude::*;
-use dioxus_logger::tracing::error;
-
 #[derive(Clone)]
 pub struct ClientSideAuthenticator {
     client: Arc<Client>,
@@ -47,7 +43,6 @@ impl ClientSideAuthenticator {
             EmptyHeaderParams, EmptyQueryParams, EmptyRequestBody,
         };
 
-        use argentum_user_account_rest::client::Client;
         use argentum_user_account_rest::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
         use argentum_user_account_rest::dto::params::AnonymousRegistersParams;
         use argentum_user_account_rest::dto::path_params::AnonymousRegistersPathParams;
@@ -85,14 +80,15 @@ impl ClientSideAuthenticator {
         self.security_repository.clear();
     }
 
-    pub fn anonymous_token(&self) -> Option<AuthHash> {
+    pub fn get_token(&self) -> Option<AuthHash> {
         match self.security_repository.read() {
+            Some(Security::Authenticated(token, _)) => Some(token),
             Some(Security::Anonymous(token)) => Some(token),
             _ => None,
         }
     }
 
-    pub fn user(&self) -> Option<(AuthHash, UserId)> {
+    pub fn get_user(&self) -> Option<(AuthHash, UserId)> {
         match self.security_repository.read() {
             Some(Security::Authenticated(token, id)) => Some((token, id)),
             _ => None,

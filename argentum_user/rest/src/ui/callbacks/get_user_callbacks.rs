@@ -1,34 +1,11 @@
-use crate::dto::response::{
-    GetUserOkResponse, Status401Response, Status403Response, Status404Response,
-};
-use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use crate::dto::response::GetUserOkResponse;
+use crate::dto::response::Status401Response;
+use crate::dto::response::Status403Response;
+use crate::dto::response::Status404Response;
 
 use dioxus::prelude::*;
 
-#[derive(Clone, PartialEq, Props)]
-pub struct GetUserFormData {
-    pub violations: Signal<ViolationsDto>,
-    pub errors: Signal<Vec<String>>,
-    pub disabled: Signal<bool>,
-}
-
-impl GetUserFormData {
-    pub fn new() -> Self {
-        Self {
-            violations: use_signal(|| Default::default()),
-            errors: use_signal(|| vec![]),
-            disabled: use_signal(|| false),
-        }
-    }
-}
-
-#[deprecated(since = "0.3.0", note = "please use `*Callbacks` instead")]
-#[derive(Clone, PartialEq, Props)]
-pub struct GetUserFormProps {
-    pub on_submit: EventHandler<FormEvent>,
-    pub form_data: GetUserFormData,
-}
-
+#[derive(Clone, PartialEq)]
 pub struct GetUserCallbacks {
     pub on_error: EventHandler<String>,
 

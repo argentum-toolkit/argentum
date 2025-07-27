@@ -1,6 +1,6 @@
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::{InPlace, Operation, SpecificationRoot};
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -14,6 +14,7 @@ const ITEM_TEMPLATE: &str = "ui/form.item";
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data<'a> {
+    need_path_params: bool,
     operation: &'a Operation,
     schema_name: Option<String>,
 }
@@ -48,6 +49,14 @@ impl FormGenerator {
             operation.operation_id.to_case(Case::Snake)
         );
 
+        let need_path_params = match &operation.parameters {
+            Some(params) => match params.iter().find(|&x| x.in_place == InPlace::Path) {
+                Some(_) => true,
+                None => false,
+            },
+            None => false,
+        };
+
         let mut schema_name: Option<String> = None;
 
         if let Some(request_body) = self.request_body_extractor.extract(operation, &spec) {
@@ -66,6 +75,7 @@ impl FormGenerator {
         };
 
         let data = Data {
+            need_path_params,
             operation,
             schema_name,
         };

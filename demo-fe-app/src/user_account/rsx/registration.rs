@@ -1,181 +1,49 @@
 use crate::route::Route;
-use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
-use argentum_standard_ui::rsx::form::{LabeledCheckbox, LabeledInput, Submit};
-use argentum_standard_ui::rsx::ErrorBlock;
-use argentum_user_account_rest::dto::response::{
-    Status400Response, Status409Response, UserRegisteredSuccessfullyResponse,
-};
-use argentum_user_account_rest::dto::schema::{RegistrationWithPasswordSchema, UserName};
+use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
+use argentum_user_account_rest::ui::callbacks::UserRegistersWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::UserRegistersWithPasswordForm;
-use argentum_user_account_rest::ui::form_data::{
-    UserRegistersWithPasswordCallbacks, UserRegistersWithPasswordFormData,
-    UserRegistersWithPasswordFormProps,
-};
 
-use argentum_user_account_rest::ui::input::{RegistrationWithPasswordSchemaInput, UserNameInput};
+use argentum_user_account_rest::ui::form_processor::UserRegistersWithPasswordFormProcessor;
+use argentum_user_account_ui::security::ClientSideAuthenticator;
 use dioxus::prelude::*;
-use dioxus_logger::tracing::event;
+use dioxus_logger::tracing::error;
 use std::string::ToString;
-
-use argentum_user_account_rest::dto::schema::ProblemDetail;
-
-fn extract_errors_from_problem_details(
-    problem: ProblemDetail,
-    mut errors: Signal<Vec<String>>,
-    mut violations: Signal<ViolationsDto>,
-    mut inactive: Signal<bool>,
-) {
-    if let Some(body_violation) = problem.body {
-        let pp = serde_json::to_string(&body_violation).unwrap();
-        let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
-        if let Some(ViolationItemDto::Object(ref items)) = v.items {
-            violations.set(v.clone());
-        };
-    };
-
-    if 400 == problem.status {
-        errors.set(vec!["Please fill the form correctly".into()]);
-    } else {
-        errors.set(vec![problem.detail.unwrap_or(problem.title)]);
-    }
-
-    inactive.set(false);
-}
-
-#[cfg(not(feature = "web"))]
-fn create_form_boilerplate(
-    _callbacks: UserRegistersWithPasswordCallbacks,
-) -> (
-    impl FnMut(Event<FormData>),
-    UserRegistersWithPasswordFormData,
-) {
-    let on_submit = move |_| {};
-    let data = UserRegistersWithPasswordFormData::new();
-
-    (on_submit, data)
-}
-
-#[cfg(feature = "web")]
-fn create_form_boilerplate(
-    callbacks: UserRegistersWithPasswordCallbacks,
-) -> (
-    impl FnMut(Event<FormData>),
-    UserRegistersWithPasswordFormData,
-) {
-    use argentum_rest_infrastructure::data_type::{
-        AuthHeaderParams, EmptyQueryParams, HttpParams, HttpRequest,
-    };
-    use argentum_standard_infrastructure::invariant_violation::ViolationItemDto;
-    use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
-    use argentum_user_account_rest::client::Client;
-
-    use argentum_user_account_rest::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
-    use argentum_user_account_rest::dto::params::UserRegistersWithPasswordParams;
-    use argentum_user_account_rest::dto::path_params::UserRegistersWithPasswordPathParams;
-    use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
-    use argentum_user_account_rest::dto::response::Status400Response;
-    use argentum_user_account_rest::dto::response::Status409Response;
-    use argentum_user_account_rest::dto::schema::RegistrationWithPasswordSchema;
-
-    use dioxus_logger::tracing::error;
-
-    use argentum_user_account_ui::security::ClientSideAuthenticator;
-
-    let mut form_data = UserRegistersWithPasswordFormData::new();
-
-    let on_submit = move |_event: Event<FormData>| {
-        spawn(async move {
-            form_data.disabled.set(true);
-            form_data.errors.set(vec![]);
-            form_data.violations.set(Default::default());
-
-            let client = Client::new("http://localhost:8082".to_string(), "/api/v1".to_string());
-
-            let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
-
-            let local_storage_token = match authenticator().anonymous_token() {
-                Some(t) => t,
-                None => {
-                    form_data
-                        .errors
-                        .set(vec!["Can't get authentication token".to_string()]);
-                    error!("Can't get authentication token");
-
-                    form_data.disabled.set(false);
-
-                    return;
-                }
-            };
-
-            let req = UserRegistersWithPasswordRequest::new(
-                (form_data.values)().into(),
-                UserRegistersWithPasswordParams::new(
-                    UserRegistersWithPasswordPathParams::new(),
-                    EmptyQueryParams {},
-                    // TODO: get from localstorage
-                    AuthHeaderParams::new(local_storage_token),
-                ),
-            );
-
-            let res = client.user_registers_with_password(req).await;
-
-            match res {
-                Ok(data) => match data {
-                    UserRegistersWithPasswordOperationResponseEnum::Status201(r) => {
-                        (callbacks.on_user_registered_successfully)(r);
-                    }
-                    UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
-                        Status400Response::ApplicationProblemJson(j) => {
-                            extract_errors_from_problem_details(
-                                j.0.clone(),
-                                form_data.errors,
-                                form_data.violations,
-                                form_data.disabled,
-                            );
-                        }
-                    },
-                    UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
-                        Status409Response::ApplicationProblemJson(j) => {
-                            extract_errors_from_problem_details(
-                                j.0.clone(),
-                                form_data.errors,
-                                form_data.violations,
-                                form_data.disabled,
-                            );
-                            // form_data.errors.set(vec![j.0.title]);
-
-                            // form_data.disabled.set(false);
-                        }
-                    },
-                },
-                Err(e) => {
-                    form_data.disabled.set(false);
-                    form_data
-                        .errors
-                        .set(vec!["Unexpected error. Please try again latter".to_string()]);
-
-                    callbacks.on_error.call(e);
-                }
-            }
-        });
-    };
-
-    (on_submit, form_data)
-}
+use std::sync::Arc;
 
 #[component]
 pub fn Registration() -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
+
+    #[cfg(feature = "web")]
+    let auth_token = {
+        let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+
+        match authenticator().get_token() {
+            Some(t) => t,
+            None => {
+                error!("Can't get authentication token");
+
+                return rsx! {"Can't get authentication token"};
+            }
+        }
+    };
+
+    #[cfg(not(feature = "web"))]
+    let auth_token = "Server side rendering cant't work with authentication tokens".to_string();
 
     let on_user_registered_successfully =
         EventHandler::new(move |_response: UserRegisteredSuccessfullyResponse| {
             success.set(Some("Congratulations! Your account has been created."));
         });
 
-    let (on_submit, mut form_data) = create_form_boilerplate(UserRegistersWithPasswordCallbacks {
+    let callbacks = Arc::new(UserRegistersWithPasswordCallbacks {
         on_user_registered_successfully,
         ..Default::default()
     });
+
+    let processor = Arc::new(UserRegistersWithPasswordFormProcessor::new(
+        callbacks.clone(),
+    ));
 
     rsx! {
         section {
@@ -199,8 +67,8 @@ pub fn Registration() -> Element {
                             },
                             None => rsx! {
                                 UserRegistersWithPasswordForm {
-                                    on_submit,
-                                    form_data,
+                                    processor,
+                                    auth_token,
                                 }
 
                                 div { class: "text-center text-base font-medium py-8",

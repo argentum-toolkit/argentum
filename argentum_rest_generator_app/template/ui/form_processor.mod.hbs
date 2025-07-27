@@ -1,0 +1,7 @@
+{{#each operations as |operation|}}
+mod {{snake operation.operationId}}_form_processor;
+{{/each}}
+
+{{#each operations as |operation|}}
+pub use {{snake operation.operationId}}_form_processor::{{upper_camel operation.operationId}}FormProcessor;
+{{/each}}

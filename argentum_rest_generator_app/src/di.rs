@@ -9,7 +9,7 @@ use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
 use crate::generator::ui::{
-    FormDataGenerator, FormGenerator, InputGenerator, UiGenerator, WebBoilerplateGenerator,
+    CallbacksGenerator, FormGenerator, FormProcessorGenerator, InputGenerator, UiGenerator,
 };
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
@@ -20,7 +20,6 @@ use crate::template::helper::{
     snake_helper, trim_mod_helper, upper_camel_helper,
 };
 use crate::template::Renderer;
-use crate::transformer::SchemaToTypeDescriptionTransformer;
 use argentum_log_business::{DefaultLogger, Level};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use handlebars::Handlebars;
@@ -173,13 +172,13 @@ pub fn di_factory() -> DiC {
     reg.register_template_string("ui/form.mod", include_str!("../template/ui/form.mod.hbs"))
         .unwrap();
     reg.register_template_string(
-        "ui/form_data.item",
-        include_str!("../template/ui/form_data.item.hbs"),
+        "ui/callbacks.item",
+        include_str!("../template/ui/callbacks.item.hbs"),
     )
     .unwrap();
     reg.register_template_string(
-        "ui/form_data.mod",
-        include_str!("../template/ui/form_data.mod.hbs"),
+        "ui/callbacks.mod",
+        include_str!("../template/ui/callbacks.mod.hbs"),
     )
     .unwrap();
     reg.register_template_string(
@@ -207,13 +206,13 @@ pub fn di_factory() -> DiC {
     .unwrap();
 
     reg.register_template_string(
-        "ui/web_boilerplate.item",
-        include_str!("../template/ui/web_boilerplate.item.hbs"),
+        "ui/form_processor.item",
+        include_str!("../template/ui/form_processor.item.hbs"),
     )
     .unwrap();
     reg.register_template_string(
-        "ui/web_boilerplate.mod",
-        include_str!("../template/ui/web_boilerplate.mod.hbs"),
+        "ui/form_processor.mod",
+        include_str!("../template/ui/form_processor.mod.hbs"),
     )
     .unwrap();
 
@@ -259,8 +258,6 @@ pub fn di_factory() -> DiC {
     let combiner = Arc::new(Combiner::new(logger.clone(), loader));
     let client_generator = Arc::new(ClientGenerator::new(renderer.clone()));
 
-    let schema_to_type_description_transformer =
-        Arc::new(SchemaToTypeDescriptionTransformer::new());
     let request_body_extractor = Arc::new(RequestBodyExtractor::new());
     let schema_extractor = Arc::new(SchemaExtractor::new());
 
@@ -270,12 +267,7 @@ pub fn di_factory() -> DiC {
         schema_extractor.clone(),
     ));
 
-    let form_data_generator = Arc::new(FormDataGenerator::new(
-        renderer.clone(),
-        schema_to_type_description_transformer.clone(),
-        request_body_extractor.clone(),
-        schema_extractor.clone(),
-    ));
+    let form_data_generator = Arc::new(CallbacksGenerator::new(renderer.clone()));
 
     let input_generator = Arc::new(InputGenerator::new(
         renderer.clone(),
@@ -283,9 +275,8 @@ pub fn di_factory() -> DiC {
         schema_extractor.clone(),
     ));
 
-    let web_boilerplate_generator = Arc::new(WebBoilerplateGenerator::new(
+    let web_boilerplate_generator = Arc::new(FormProcessorGenerator::new(
         renderer.clone(),
-        schema_to_type_description_transformer,
         request_body_extractor,
         schema_extractor,
     ));
