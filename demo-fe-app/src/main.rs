@@ -2,8 +2,6 @@
 
 pub(crate) mod route;
 pub(crate) mod rsx;
-pub(crate) mod user;
-pub(crate) mod user_account;
 
 fn main() {
     use crate::rsx::app::App;

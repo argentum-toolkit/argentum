@@ -1,6 +1,6 @@
 use crate::route::Route;
-use crate::rsx::footer::Footer;
-use crate::rsx::navbar::NavBar;
+use crate::rsx::component::Footer;
+use crate::rsx::component::NavBar;
 use dioxus::prelude::*;
 
 #[component]

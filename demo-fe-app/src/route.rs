@@ -1,9 +1,7 @@
-use crate::rsx::blog::Blog;
-use crate::rsx::home::Home;
-use crate::rsx::page_not_found::PageNotFound;
+use crate::rsx::page::user_account::{Login, Registration};
+use crate::rsx::page::{Blog, Home};
 use crate::rsx::wrapper::Wrapper;
-use crate::user_account::rsx::login::Login;
-use crate::user_account::rsx::registration::Registration;
+use argentum_standard_ui::rsx::page::NotFound;
 use dioxus::prelude::*;
 
 #[derive(Clone, Routable, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -22,5 +20,5 @@ pub enum Route {
         Blog { id: i32 },
     #[end_layout]
     #[route("/:..route")]
-    PageNotFound { route: Vec<String> },
+    NotFound { route: Vec<String> },
 }
