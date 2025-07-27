@@ -6,7 +6,6 @@ use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
 use argentum_user_account_rest::ui::callbacks::UserLoginsWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::UserLoginsWithPasswordForm;
 use argentum_user_account_rest::ui::form_processor::UserLoginsWithPasswordFormProcessor;
-use argentum_user_account_ui::security::ClientSideAuthenticator;
 use dioxus::prelude::*;
 use dioxus_logger::tracing::error;
 
@@ -14,6 +13,7 @@ use dioxus_logger::tracing::error;
 pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let auth_token = {
+        use argentum_user_account_ui::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         match authenticator().get_token() {

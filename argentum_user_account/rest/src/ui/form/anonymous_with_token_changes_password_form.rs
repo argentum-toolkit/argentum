@@ -4,8 +4,8 @@ use crate::ui::input::ChangePasswordSchemaInput;
 use std::sync::Arc;
 
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+use argentum_standard_ui::rsx::component::ErrorBlock;
 use argentum_standard_ui::rsx::form::Submit;
-use argentum_standard_ui::rsx::ErrorBlock;
 
 use dioxus::prelude::*;
 

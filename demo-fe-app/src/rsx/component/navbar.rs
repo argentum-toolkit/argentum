@@ -1,6 +1,6 @@
 use crate::route::Route;
-use crate::rsx::dark_mode::DarkModeToggle;
 
+use argentum_standard_ui::rsx::component::dark_mode::DarkModeToggle;
 use dioxus::prelude::*;
 
 #[component]

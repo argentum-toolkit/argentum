@@ -1,5 +1,6 @@
-use crate::{route::Route, rsx::dark_mode::use_dark_mode};
+use crate::route::Route;
 
+use argentum_standard_ui::rsx::component::dark_mode::use_dark_mode;
 use dioxus::prelude::*;
 
 pub(crate) fn App() -> Element {

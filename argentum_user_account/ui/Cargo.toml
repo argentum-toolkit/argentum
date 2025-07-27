@@ -10,7 +10,7 @@ readme = "readme.adoc"
 [dependencies]
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0"}
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_ui = { path = "../../argentum_standard/ui", version = ">=0.3.0-dev,<0.4.0" }
+argentum_standard_ui = { path = "../../argentum_standard/ui", version = ">=0.3.0-dev,<0.4.0", default-features = false }
 argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client"] }
 argentum_user_account_rest = { path = "../../argentum_user_account/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client", "ui"] }
 dioxus = { version = "0.6.*", features = ["fullstack"]}
@@ -20,4 +20,5 @@ uuid = { version = "1.*", features = ["serde", "v4", "js"] }
 web-sys = { version = "0.3.*", features = [ "Navigator", "Window", "Storage"] }
 
 [features]
-web=[]
+default=[]
+web=["argentum_standard_ui/web"]

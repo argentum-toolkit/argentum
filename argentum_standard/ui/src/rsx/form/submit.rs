@@ -1,4 +1,4 @@
-use crate::rsx::Spinner;
+use crate::rsx::component::Spinner;
 use dioxus::prelude::*;
 
 #[component]

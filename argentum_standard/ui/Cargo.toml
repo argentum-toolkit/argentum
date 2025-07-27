@@ -16,4 +16,5 @@ dioxus = { version = "0.6", features = ["fullstack"]}
 web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
 
 [features]
+default = []
 web = []

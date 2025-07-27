@@ -1,4 +1,4 @@
-use crate::rsx::ErrorBlock;
+use crate::rsx::component::ErrorBlock;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 

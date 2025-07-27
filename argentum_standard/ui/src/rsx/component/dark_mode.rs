@@ -4,14 +4,23 @@ use dioxus::prelude::*;
 const STORAGE_KEY: &str = "dark_mode_enabled";
 
 #[derive(Clone, Copy)]
-#[cfg(feature = "web")]
-pub(crate) struct DarkMode(pub bool);
+pub struct DarkMode(pub bool);
+
+impl ToString for DarkMode {
+    fn to_string(&self) -> String {
+        if self.0 {
+            "dark".into()
+        } else {
+            "".into()
+        }
+    }
+}
 
 #[cfg(feature = "web")]
 fn extract_bool_or_false(key: &str) -> bool {
     let local_storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
 
-    match local_storage.get_item(STORAGE_KEY) {
+    match local_storage.get_item(key) {
         Ok(Some(s)) => s.len() > 0 && s != "false",
         Ok(None) => false,
         Err(_) => false,
@@ -21,8 +30,6 @@ fn extract_bool_or_false(key: &str) -> bool {
 pub fn use_dark_mode() {
     #[cfg(feature = "web")]
     {
-        use crate::rsx::dark_mode::DarkMode;
-
         let is_dark = use_signal(|| extract_bool_or_false(STORAGE_KEY));
 
         use_context_provider(|| Signal::new(DarkMode(is_dark())));
@@ -38,7 +45,6 @@ pub fn DarkModeToggle() -> Element {
                 {
                     let mut dark_mode_context = use_context::<Signal<DarkMode>>();
                     let is_dark = !dark_mode_context().0;
-                    // let mut is_dark_signal = use_synced_storage::<LocalStorage, bool>("dark_mode_enabled".to_string(), || false);
 
                     dark_mode_context.set(DarkMode(is_dark));
                     let local_storage = web_sys::window().unwrap().local_storage().unwrap().unwrap();
