@@ -1,7 +1,10 @@
 /.asciidoctor
 /.idea
+/.vscode
 .asciidoctor
 **/.asciidoctor
+**/dist
+target
 /*/target
 /*/*/target
 *.pem

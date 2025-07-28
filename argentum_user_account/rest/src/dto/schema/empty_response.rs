@@ -2,7 +2,7 @@ use argentum_rest_infrastructure::data_type::DeserializableSchemaRaw;
 use argentum_rest_infrastructure::data_type::SerializableBody;
 use argentum_standard_business::invariant_violation::InvariantResult;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EmptyResponse {}
 
 impl EmptyResponse {

@@ -30,6 +30,9 @@ pub struct Operation {
 
     #[serde(default)]
     pub responses: BTreeMap<StatusCode, RefOrObject<Response>>,
+
+    #[serde(skip_serializing_if = "Option::is_none", rename = "x-ag-submit-label")]
+    pub extension_submit_label: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]

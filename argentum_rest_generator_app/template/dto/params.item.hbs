@@ -6,6 +6,7 @@
 use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams};
 use crate::dto::path_params::{{upper_camel operation.operationId }}PathParams;
 
+//TODO: query params generator
 pub struct {{upper_camel operation.operationId }}Params {
     pub headers: {{#if operation.security }}AuthHeaderParams{{else}}EmptyHeaderParams{{/if}},
     pub path: {{upper_camel  operation.operationId }}PathParams,

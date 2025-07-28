@@ -1,8 +1,8 @@
 use crate::db::dto::AnonymousUserDto;
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, ExternalUserError,

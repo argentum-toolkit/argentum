@@ -6,3 +6,11 @@ pub trait DeserializableSchemaRaw<'a>: Sized {
 
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self>;
 }
+
+impl DeserializableSchemaRaw<'_> for String {
+    type Raw = String;
+
+    fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
+        Ok(raw.clone())
+    }
+}

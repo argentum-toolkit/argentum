@@ -70,6 +70,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "argentum_db_infrastructure"
+version = "0.3.0-dev"
+dependencies = [
+ "argentum_log_business",
+ "futures",
+ "sqlx",
+ "sqlx-postgres",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "argentum_demo_app"
 version = "0.3.0-dev"
 dependencies = [
@@ -183,12 +196,8 @@ version = "0.3.0-dev"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
- "futures",
  "serde",
- "sqlx",
- "sqlx-postgres",
  "thiserror",
- "tokio",
  "uuid",
 ]
 
@@ -211,6 +220,7 @@ dependencies = [
 name = "argentum_user_account_infrastructure"
 version = "0.3.0-dev"
 dependencies = [
+ "argentum_db_infrastructure",
  "argentum_encryption_business",
  "argentum_log_business",
  "argentum_notification_business",
@@ -245,6 +255,7 @@ dependencies = [
  "hyper",
  "regex",
  "serde",
+ "serde_json",
  "serde_valid",
  "uuid",
 ]
@@ -263,6 +274,7 @@ dependencies = [
 name = "argentum_user_infrastructure"
 version = "0.3.0-dev"
 dependencies = [
+ "argentum_db_infrastructure",
  "argentum_log_business",
  "argentum_rest_infrastructure",
  "argentum_standard_business",
@@ -291,6 +303,7 @@ dependencies = [
  "hyper",
  "regex",
  "serde",
+ "serde_json",
  "serde_valid",
  "uuid",
 ]
@@ -868,12 +881,9 @@ dependencies = [
 
 [[package]]
 name = "hermit-abi"
-version = "0.1.19"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62b467343b94ba476dcb2500d242dadbb39557df889310ac77c5d99100aaac33"
-dependencies = [
- "libc",
-]
+checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
 
 [[package]]
 name = "hex"
@@ -1195,13 +1205,14 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.8.9"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3dce281c5e46beae905d4de1870d8b1509a9142b62eedf18b443b011ca8343d0"
+checksum = "80e04d1dcff3aae0704555fe5fee3bcfaf3d1fdf8a7e521d5b9d2b42acb52cec"
 dependencies = [
+ "hermit-abi",
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1290,16 +1301,6 @@ checksum = "9a64b1ec5cda2586e284722486d802acf1f7dbdc623e2bfc57e65ca1cd099290"
 dependencies = [
  "autocfg",
  "libm",
-]
-
-[[package]]
-name = "num_cpus"
-version = "1.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05499f3756671c15885fee9034446956fff3f243d6077b91e5767df161f766b3"
-dependencies = [
- "hermit-abi",
- "libc",
 ]
 
 [[package]]
@@ -2193,28 +2194,27 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.34.0"
+version = "1.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0c014766411e834f7af5b8f4cf46257aab4036ca95e9d2c144a10f59ad6f5b9"
+checksum = "e2b070231665d27ad9ec9b8df639893f46727666c6767db40317fbe920a5d998"
 dependencies = [
  "backtrace",
  "bytes",
  "libc",
  "mio",
- "num_cpus",
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
 name = "tokio-macros"
-version = "2.2.0"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
+checksum = "693d596312e88961bc67d7f1f97af8a70227d9f90c31bba5806eec004978d752"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2348,9 +2348,9 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "uuid"
-version = "1.5.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88ad59a7560b41a70d191093a945f0b87bc1deeda46fb237479708a1d6b6cdfc"
+checksum = "f8c5f0a0af699448548ad1a2fbf920fb4bee257eae39953ba95cb84891a0446a"
 dependencies = [
  "getrandom",
  "serde",

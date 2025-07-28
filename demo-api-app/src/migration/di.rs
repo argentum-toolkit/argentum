@@ -1,11 +1,9 @@
 use std::env;
 
+use argentum_db_infrastructure::slqx_postgres::migration::{MigrationCollection, Migrator};
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
-use argentum_standard_infrastructure::db::slqx_postgres::migration::{
-    MigrationCollection, Migrator,
-};
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_account_infrastructure::db::migration as user_account_migration;
 use argentum_user_infrastructure::db::migration as user_migration;
 use dotenv::dotenv;

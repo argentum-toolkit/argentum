@@ -91,6 +91,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "server")]
     #[tokio::test]
     pub async fn test_extract() {
         let extractor = SchemaExtractor::new();
@@ -101,6 +102,8 @@ mod tests {
         assert!(result.is_ok());
     }
 
+    //TODO: find the option to test it without tokio
+    #[cfg(feature = "server")]
     #[tokio::test]
     pub async fn test_extract_bad_json() {
         let extractor = SchemaExtractor::new();

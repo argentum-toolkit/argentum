@@ -93,7 +93,7 @@ impl App {
 
         let res = self
             .user_registers_with_pw
-            .execute(user_id, name, email, password);
+            .execute(user_id, name, email, password, true);
         match res {
             Ok(_) => {
                 println!("Registered")

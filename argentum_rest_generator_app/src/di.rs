@@ -1,3 +1,5 @@
+use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
+use crate::generator::client::ClientGenerator;
 use crate::generator::dto::{
     DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
     RequestGenerator, ResponseGenerator, SchemaGenerator,
@@ -6,13 +8,16 @@ use crate::generator::path_param::regex::{IntegerFactory, RegexFactory, StringFa
 use crate::generator::server::{
     HandlerGenerator, PreHandlerGenerator, RouterGenerator, ServerGenerator,
 };
+use crate::generator::ui::{
+    CallbacksGenerator, FormGenerator, FormProcessorGenerator, InputGenerator, UiGenerator,
+};
 use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
 };
 use crate::template::helper::{
-    camel_helper, content_type_to_type_helper, eq_helper, snake_helper, trim_mod_helper,
-    upper_camel_helper,
+    camel_helper, content_type_to_type_helper, eq_helper, escape_var_name_helper, lower_helper,
+    snake_helper, trim_mod_helper, upper_camel_helper,
 };
 use crate::template::Renderer;
 use argentum_log_business::{DefaultLogger, Level};
@@ -106,6 +111,12 @@ pub fn di_factory() -> DiC {
     .unwrap();
 
     reg.register_template_string(
+        "dto/schema_dictionary.item",
+        include_str!("../template/dto/schema_dictionary.item.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
         "dto/schema.mod",
         include_str!("../template/dto/schema.mod.hbs"),
     )
@@ -137,6 +148,9 @@ pub fn di_factory() -> DiC {
     )
     .unwrap();
 
+    reg.register_template_string("client/mod", include_str!("../template/client/mod.hbs"))
+        .unwrap();
+
     reg.register_template_string("server/mod", include_str!("../template/server/mod.hbs"))
         .unwrap();
 
@@ -151,15 +165,68 @@ pub fn di_factory() -> DiC {
     reg.register_template_string(".gitignore", include_str!("../template/.gitignore.hbs"))
         .unwrap();
 
+    reg.register_template_string("ui/mod", include_str!("../template/ui/mod.hbs"))
+        .unwrap();
+    reg.register_template_string("ui/form.item", include_str!("../template/ui/form.item.hbs"))
+        .unwrap();
+    reg.register_template_string("ui/form.mod", include_str!("../template/ui/form.mod.hbs"))
+        .unwrap();
+    reg.register_template_string(
+        "ui/callbacks.item",
+        include_str!("../template/ui/callbacks.item.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/callbacks.mod",
+        include_str!("../template/ui/callbacks.mod.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/input.item",
+        include_str!("../template/ui/input.item.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string("ui/input.mod", include_str!("../template/ui/input.mod.hbs"))
+        .unwrap();
+
+    reg.register_template_string(
+        "ui/input/labeled_checkbox",
+        include_str!("../template/ui/input/labeled_checkbox.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/input/labeled_input",
+        include_str!("../template/ui/input/labeled_input.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/input/object",
+        include_str!("../template/ui/input/object.hbs"),
+    )
+    .unwrap();
+
+    reg.register_template_string(
+        "ui/form_processor.item",
+        include_str!("../template/ui/form_processor.item.hbs"),
+    )
+    .unwrap();
+    reg.register_template_string(
+        "ui/form_processor.mod",
+        include_str!("../template/ui/form_processor.mod.hbs"),
+    )
+    .unwrap();
+
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
+    reg.register_helper("lower", Box::new(lower_helper));
     reg.register_helper("eq", Box::new(eq_helper));
     reg.register_helper(
         "content_type_to_type",
         Box::new(content_type_to_type_helper),
     );
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
+    reg.register_helper("escape_var_name", Box::new(escape_var_name_helper));
 
     //services
     let log_writer = Arc::new(PrettyWriter::new());
@@ -186,9 +253,41 @@ pub fn di_factory() -> DiC {
     let cargo_toml_generator = Arc::new(CargoTomlGenerator::new(renderer.clone()));
     let readme_adoc_generator = Arc::new(ReadmeAdocGenerator::new(renderer.clone()));
     let gitignore_generator = Arc::new(GitIgnoreGenerator::new(renderer.clone()));
-    let schema_generator = Arc::new(SchemaGenerator::new(renderer));
+    let schema_generator = Arc::new(SchemaGenerator::new(renderer.clone()));
     let loader = Arc::new(OasLoader::new(logger.clone()));
     let combiner = Arc::new(Combiner::new(logger.clone(), loader));
+    let client_generator = Arc::new(ClientGenerator::new(renderer.clone()));
+
+    let request_body_extractor = Arc::new(RequestBodyExtractor::new());
+    let schema_extractor = Arc::new(SchemaExtractor::new());
+
+    let form_generator = Arc::new(FormGenerator::new(
+        renderer.clone(),
+        request_body_extractor.clone(),
+        schema_extractor.clone(),
+    ));
+
+    let form_data_generator = Arc::new(CallbacksGenerator::new(renderer.clone()));
+
+    let input_generator = Arc::new(InputGenerator::new(
+        renderer.clone(),
+        request_body_extractor.clone(),
+        schema_extractor.clone(),
+    ));
+
+    let web_boilerplate_generator = Arc::new(FormProcessorGenerator::new(
+        renderer.clone(),
+        request_body_extractor,
+        schema_extractor,
+    ));
+
+    let ui_generator = Arc::new(UiGenerator::new(
+        renderer,
+        form_generator,
+        form_data_generator,
+        input_generator,
+        web_boilerplate_generator,
+    ));
 
     let openapi_generator = Arc::new(OpenApiGenerator::new(
         logger.clone(),
@@ -210,6 +309,8 @@ pub fn di_factory() -> DiC {
         readme_adoc_generator,
         gitignore_generator,
         schema_generator,
+        client_generator,
+        ui_generator,
     ));
 
     DiC::new(openapi_generator)

@@ -1,4 +1,5 @@
 use crate::cli_params::CliParams;
+use crate::generator::client::ClientGenerator;
 use crate::generator::dto::{
     DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
     RequestGenerator, ResponseGenerator, SchemaGenerator,
@@ -13,6 +14,8 @@ use crate::generator::{
 use argentum_log_business::LoggerTrait;
 use std::error::Error;
 use std::sync::Arc;
+
+use super::ui::UiGenerator;
 
 pub struct OpenApiGenerator {
     logger: Arc<dyn LoggerTrait>,
@@ -34,6 +37,8 @@ pub struct OpenApiGenerator {
     readme_adoc_generator: Arc<ReadmeAdocGenerator>,
     gitignore_generator: Arc<GitIgnoreGenerator>,
     schema_generator: Arc<SchemaGenerator>,
+    client_generator: Arc<ClientGenerator>,
+    ui_generator: Arc<UiGenerator>,
 }
 
 impl OpenApiGenerator {
@@ -57,6 +62,8 @@ impl OpenApiGenerator {
         readme_adoc_generator: Arc<ReadmeAdocGenerator>,
         gitignore_generator: Arc<GitIgnoreGenerator>,
         schema_generator: Arc<SchemaGenerator>,
+        client_generator: Arc<ClientGenerator>,
+        ui_generator: Arc<UiGenerator>,
     ) -> Self {
         Self {
             logger,
@@ -78,6 +85,8 @@ impl OpenApiGenerator {
             readme_adoc_generator,
             gitignore_generator,
             schema_generator,
+            client_generator,
+            ui_generator,
         }
     }
 
@@ -107,6 +116,9 @@ impl OpenApiGenerator {
         self.handler_generator.generate(output, &spec)?;
         self.pre_handler_generator.generate(output, &spec)?;
         self.router_generator.generate(output, &spec)?;
+
+        self.client_generator.generate(output, &spec)?;
+
         self.server_generator.generate(output)?;
         self.di_generator.generate(output, &spec)?;
         self.lib_generator.generate(output)?;
@@ -132,7 +144,9 @@ impl OpenApiGenerator {
         self.gitignore_generator.generate(output)?;
         self.schema_generator.generate(output, &spec)?;
 
-        self.logger.info("Generation is finished".to_string());
+        self.ui_generator.generate(output, &spec)?;
+
+        self.logger.info("Code generation completed".to_string());
 
         Ok(())
     }

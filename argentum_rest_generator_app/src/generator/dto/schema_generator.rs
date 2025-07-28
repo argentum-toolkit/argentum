@@ -21,6 +21,7 @@ struct Data<'a> {
 struct Prop {
     name: String,
     rename: String,
+    clean_type: String,
     data_type: String,
     raw_type: String,
     required: bool,
@@ -51,6 +52,7 @@ const MOD_PATH: &str = "/src/dto/schema/mod.rs";
 const MOD_TEMPLATE: &str = "dto/schema.mod";
 const OBJECT_ITEM_TEMPLATE: &str = "dto/schema_object.item";
 const ARRAY_ITEM_TEMPLATE: &str = "dto/schema_array.item";
+const DICTIONARY_ITEM_TEMPLATE: &str = "dto/schema_dictionary.item";
 
 impl SchemaGenerator {
     pub fn new(renderer: Arc<Renderer>) -> Self {
@@ -66,16 +68,26 @@ impl SchemaGenerator {
         let file_path = format!("/src/dto/schema/{}.rs", name.to_case(Case::Snake));
 
         match schema.schema_type {
-            Some(SchemaType::Object) => {
-                let props = schema.properties.clone().unwrap_or_default();
-                self.generate_object_item(
-                    base_output_path,
-                    name,
-                    props,
-                    schema.required.clone(),
-                    file_path,
-                )?;
-            }
+            Some(SchemaType::Object) => match *schema.additional_properties.clone() {
+                Some(additional) => {
+                    self.generate_dictionary_item(
+                        base_output_path,
+                        name,
+                        additional.clone(),
+                        file_path,
+                    )?;
+                }
+                None => {
+                    let props = schema.properties.clone().unwrap_or_default();
+                    self.generate_object_item(
+                        base_output_path,
+                        name,
+                        props,
+                        schema.required.clone(),
+                        file_path,
+                    )?;
+                }
+            },
             Some(SchemaType::Array) => match &*schema.items {
                 Some(items) => {
                     self.generate_array_item(base_output_path, name, items.clone(), file_path)?
@@ -213,6 +225,8 @@ impl SchemaGenerator {
 
             let required: bool;
 
+            let clean_type = data_type.clone();
+
             if req.contains(&name) {
                 required = true;
             } else {
@@ -223,6 +237,7 @@ impl SchemaGenerator {
             properties.push(Prop {
                 name: name.clone().to_case(Case::Snake),
                 rename: name,
+                clean_type,
                 data_type,
                 raw_type,
                 required,
@@ -270,6 +285,37 @@ impl SchemaGenerator {
         self.renderer.render(
             base_output_path,
             ARRAY_ITEM_TEMPLATE,
+            &data,
+            file_path.as_str(),
+        )?;
+
+        Ok(())
+    }
+
+    fn generate_dictionary_item(
+        &self,
+        base_output_path: &str,
+        name: &String,
+        additional_type: RefOrObject<Schema>,
+        file_path: String,
+    ) -> Result<(), Box<dyn Error>> {
+        let mut dependencies: Vec<String> = vec![];
+
+        let (data_type, raw_type, is_ref) = self.schema_to_rs(additional_type, &mut dependencies);
+
+        let data = ArrayData {
+            dependencies,
+            name,
+            items_type: ItemType {
+                data_type,
+                raw_type,
+                is_ref,
+            },
+        };
+
+        self.renderer.render(
+            base_output_path,
+            DICTIONARY_ITEM_TEMPLATE,
             &data,
             file_path.as_str(),
         )?;

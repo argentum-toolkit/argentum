@@ -2,7 +2,7 @@ use argentum_rest_infrastructure::data_type::HttpPathParams;
 use serde::Deserialize;
 use serde_valid::Validate;
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, Clone, PartialEq)]
 pub struct UserRegistersWithPasswordPathParams {}
 
 impl UserRegistersWithPasswordPathParams {

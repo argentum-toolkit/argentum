@@ -1,4 +1,4 @@
-use hyper::StatusCode;
+use http::StatusCode;
 use serde::Serialize;
 
 pub trait SerializableBody: erased_serde::Serialize {}
@@ -56,8 +56,9 @@ impl EmptyBody {
 
 #[cfg(test)]
 mod tests {
+    use http::StatusCode;
+
     use crate::data_type::{EmptyBody, HttpResponse};
-    use hyper::StatusCode;
 
     #[test]
     fn test_constructor() {

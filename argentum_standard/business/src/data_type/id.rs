@@ -49,7 +49,7 @@ impl IdTrait for IntId {
     fn id_eq(&self, other: &dyn Any) -> bool {
         other
             .downcast_ref::<Self>()
-            .map_or(false, |id| id.value == self.value)
+            .is_some_and(|id| id.value == self.value)
     }
     fn as_any(&self) -> &dyn Any {
         self

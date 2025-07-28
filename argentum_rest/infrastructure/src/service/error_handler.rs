@@ -1,7 +1,7 @@
 use crate::data_type::error::HttpError;
 use crate::data_type::{HttpResponse, ProblemDetail};
 use argentum_log_business::LoggerTrait;
-use hyper::StatusCode;
+use http::StatusCode;
 use std::sync::Arc;
 
 pub struct ErrorHandler {
@@ -20,8 +20,14 @@ impl ErrorHandler {
 
                 let code = StatusCode::NOT_IMPLEMENTED;
                 HttpResponse::new(
-                    code,
-                    Box::new(ProblemDetail::new(None, code.to_string(), code, None, None)),
+                    code.clone(),
+                    Box::new(ProblemDetail::new(
+                        None,
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
+                        code,
+                        None,
+                        None,
+                    )),
                 )
             }
             HttpError::BadRequest(e) => {
@@ -29,10 +35,10 @@ impl ErrorHandler {
 
                 let code = StatusCode::BAD_REQUEST;
                 HttpResponse::new(
-                    code,
+                    code.clone(),
                     Box::new(ProblemDetail::new(
                         None,
-                        "Bad Request".to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         None,
                         Some(Box::new(e)),
@@ -44,10 +50,10 @@ impl ErrorHandler {
 
                 let code = StatusCode::UNAUTHORIZED;
                 HttpResponse::new(
-                    code,
+                    code.clone(),
                     Box::new(ProblemDetail::new(
                         None,
-                        "Unauthorized".to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         Some(e.msg),
                         None,
@@ -59,7 +65,7 @@ impl ErrorHandler {
 
                 let code = StatusCode::NOT_FOUND;
                 HttpResponse::new(
-                    code,
+                    code.clone(),
                     Box::new(ProblemDetail::new(None, e.msg, code, None, None)),
                 )
             }
@@ -68,7 +74,7 @@ impl ErrorHandler {
 
                 let code = StatusCode::METHOD_NOT_ALLOWED;
                 HttpResponse::new(
-                    code,
+                    code.clone(),
                     Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
                 )
             }
@@ -77,7 +83,7 @@ impl ErrorHandler {
 
                 let code = StatusCode::CONFLICT;
                 HttpResponse::new(
-                    code,
+                    code.clone(),
                     Box::new(ProblemDetail::new(
                         None,
                         e.source.to_string(),
@@ -92,7 +98,7 @@ impl ErrorHandler {
 
                 let code = StatusCode::UNPROCESSABLE_ENTITY;
                 HttpResponse::new(
-                    code,
+                    code.clone(),
                     Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
                 )
             }
@@ -101,8 +107,14 @@ impl ErrorHandler {
 
                 let code = StatusCode::INTERNAL_SERVER_ERROR;
                 HttpResponse::new(
-                    code,
-                    Box::new(ProblemDetail::new(None, code.to_string(), code, None, None)),
+                    code.clone(),
+                    Box::new(ProblemDetail::new(
+                        None,
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
+                        code,
+                        None,
+                        None,
+                    )),
                 )
             }
         }
@@ -115,10 +127,12 @@ mod tests {
         BadRequestError, HttpError, InternalServerError, MethodNotAllowedError, NotFoundError,
         NotImplementedError,
     };
+
     use crate::service::ErrorHandler;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::invariant_violation::Violations;
-    use hyper::{Method, StatusCode};
+    use http::StatusCode;
+    use hyper::Method;
     use serde_json::json;
     use std::sync::Arc;
 
@@ -135,7 +149,7 @@ mod tests {
 
         let expected = json!({
             "type": "about:blank",
-            "title": "501 Not Implemented",
+            "title": "Not Implemented",
             "status": 501,
             "detail": null
         });
@@ -230,7 +244,7 @@ mod tests {
 
         let expected = json!({
             "type": "about:blank",
-            "title": "500 Internal Server Error",
+            "title": "Internal Server Error",
             "status": 500,
             "detail": null
         });

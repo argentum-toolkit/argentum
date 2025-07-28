@@ -5,7 +5,7 @@ use argentum_standard_business::invariant_violation::{InvariantResult, Violation
 use {{dep}};
 {{/each}}
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct {{ name }} (Vec<{{{ itemsType.dataType }}}>);
 
 impl {{ name }} {
@@ -24,10 +24,17 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
 
         let mut items = vec![];
         for raw in raw_list.0 {
-            match {{{ itemsType.dataType }}}::try_from_raw(raw) {
-                Ok(item) => items.push(item),
-                Err(e) => argentum_violations.push(e),
-            }
+            match raw {
+                Some(r) => match {{{ itemsType.dataType }}}::try_from_raw(r) {
+                    Ok(item) => {
+                        items.push(item);
+                    },
+                    Err(e) => {
+                        argentum_violations.push(e);
+                    },
+                },
+                None => argentum_violations.push(Violations::new(vec!["Array item should not be None".to_string()], None)),
+            };
         }
 
         if argentum_violations.is_empty() {

@@ -5,23 +5,33 @@ version = "0.3.0-dev"
 license = "BSD-3-Clause"
 edition = "2021"
 
-homepage = "https://gitlab.com/argentum-toolkit/argentum"
-repository = "https://gitlab.com/argentum-toolkit/argentum"
-documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "readme.adoc"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+client = ["dep:reqwest"]
+server = ["dep:hyper"]
+ui = ["dep:dioxus", "dep:dioxus-logger", "dep:argentum_standard_infrastructure", "dep:argentum_standard_ui"]
+web = ["dioxus/web", "argentum_standard_ui/web"]
+
 [dependencies]
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0", optional = true }
+argentum_standard_ui = { path = "../../argentum_standard/ui", version = ">=0.3.0-dev,<0.4.0", optional = true }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0-dev,<0.4.0" }
 
 async-trait = "0.1.*"
 chrono = "0.4.*"
-erased-serde = "0.3.*"
-hyper = { version = "1.0.0", features = ["full"] }
+dioxus = { version = "0.6", features = ["fullstack", "router"], optional = true }
+dioxus-logger = { version = "0.6", optional = true }
+erased-serde = "0.4.*"
+http = "1.*"
+hyper = { version = "1.*", features = ["full"], optional = true }
 regex = "1.10.*"
+reqwest = { version = "0.12.*", features = ["json"], optional = true}
 serde = { version = "1.0.*", features = ["derive"] }
-serde_valid = "0.16.*"
-uuid = {version = "1.5.*", features = ["serde", "v4"]}
+serde_json = "1.0.133"
+serde_valid = "1.*"
+uuid = { version = "1.*", features = ["serde", "v4", "js"] }

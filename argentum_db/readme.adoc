@@ -1,0 +1,8 @@
+= Argentum ToolKit. DB Component
+
+This is a component for working with a database
+
+== Packages documentation
+
+* link:infrastructure/readme.adoc[Package with the infrastructure code]
+

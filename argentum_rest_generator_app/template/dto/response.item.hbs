@@ -11,7 +11,7 @@ use {{schemaName}};
 
 {{#each content as |schemaName|}}
 #[derive(Clone)]
-pub struct {{content_type_to_type @key}}({{trim_mod schemaName}});
+pub struct {{content_type_to_type @key}}(pub {{trim_mod schemaName}});
 {{/each}}
 
 {{#each content as |schemaName|}}
@@ -26,6 +26,7 @@ impl ContentTypeResponseTrait for {{content_type_to_type @key}} {
 }
 {{/each}}
 
+#[derive(Clone)]
 pub enum {{ upper_camel responseName }}Response {
 {{#each content as |schemaName|}}
     {{content_type_to_type @key}}({{content_type_to_type @key}})

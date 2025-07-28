@@ -8,6 +8,6 @@ services:
       - ../../..:/usr/share/nginx/html/doc
     environment:
       URLS: "[
-                { url: 'doc/argentum_user_account/api-doc/openapi.yaml', name: 'User Account'},
-                { url: 'doc/argentum_user/api-doc/openapi.yaml', name: 'User'},
+                { url: 'doc/argentum_user_account/rest/api-spec/openapi.yaml', name: 'User Account'},
+                { url: 'doc/argentum_user/rest/api-spec/openapi.yaml', name: 'User'},
             ]"

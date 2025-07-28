@@ -1,6 +1,6 @@
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_account_business::token::GeneratorTrait;
-use rand::Rng;
+use fastrand;
 
 pub struct StringTokenGenerator {}
 
@@ -16,12 +16,12 @@ impl GeneratorTrait for StringTokenGenerator {
         const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                                 abcdefghijklmnopqrstuvwxyz\
                                 0123456789-_";
-        let mut rng = rand::thread_rng();
-        let len: usize = rng.gen_range(30..=500);
+
+        let len: usize = fastrand::usize(30..=500);
 
         let token: String = (0..len)
             .map(|_| {
-                let idx = rng.gen_range(0..=CHARSET.len() - 1);
+                let idx = fastrand::usize(0..=CHARSET.len() - 1);
                 CHARSET[idx] as char
             })
             .collect();

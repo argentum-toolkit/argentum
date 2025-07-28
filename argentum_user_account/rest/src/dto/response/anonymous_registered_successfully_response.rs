@@ -4,7 +4,7 @@ use argentum_rest_infrastructure::data_type::SerializableBody;
 use crate::dto::schema::AnonymousRegistrationResult;
 
 #[derive(Clone)]
-pub struct ApplicationJson(AnonymousRegistrationResult);
+pub struct ApplicationJson(pub AnonymousRegistrationResult);
 
 impl ContentTypeResponseTrait for ApplicationJson {
     fn content_type(&self) -> Option<String> {
@@ -16,6 +16,7 @@ impl ContentTypeResponseTrait for ApplicationJson {
     }
 }
 
+#[derive(Clone)]
 pub enum AnonymousRegisteredSuccessfullyResponse {
     ApplicationJson(ApplicationJson),
 }

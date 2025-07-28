@@ -2,6 +2,7 @@ use crate::dto::path_params::AnonymousRegistersPathParams;
 use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
 use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams};
 
+//TODO: query params generator
 pub struct AnonymousRegistersParams {
     pub headers: EmptyHeaderParams,
     pub path: AnonymousRegistersPathParams,

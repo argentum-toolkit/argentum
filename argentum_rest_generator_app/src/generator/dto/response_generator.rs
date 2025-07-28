@@ -11,8 +11,9 @@ use std::sync::Arc;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data {
-    response_name: String,
     content: BTreeMap<String, String>,
+    is_error: bool,
+    response_name: String,
 }
 
 pub(crate) struct ResponseGenerator {
@@ -33,9 +34,10 @@ impl ResponseGenerator {
         response_name: String,
         response: &Response,
     ) -> Result<(), Box<dyn Error>> {
+        let escaped_response_name = self.escape_response_name(response_name.clone());
         let file_path = format!(
             "/src/dto/response/{}_response.rs",
-            response_name.to_case(Case::Snake)
+            escaped_response_name.to_case(Case::Snake)
         );
 
         let mut content: BTreeMap<String, String> = BTreeMap::new();
@@ -47,9 +49,9 @@ impl ResponseGenerator {
         }
 
         let data = Data {
-            response_name,
+            response_name: escaped_response_name,
+            is_error: self.is_status_error(response_name),
             content,
-            // body_schema,
         };
 
         self.renderer
@@ -105,6 +107,13 @@ impl ResponseGenerator {
         }
     }
 
+    fn is_status_error(&self, name: String) -> bool {
+        match name[0..1].parse::<u8>() {
+            Ok(s) => s == 4,
+            Err(_) => false,
+        }
+    }
+
     pub fn generate(
         &self,
         base_output_path: &str,
@@ -115,7 +124,7 @@ impl ResponseGenerator {
         self.generate_mod(base_output_path, responses.clone())?;
 
         for (name, response) in responses.into_iter() {
-            self.generate_item(base_output_path, self.escape_response_name(name), &response)?;
+            self.generate_item(base_output_path, name, &response)?;
         }
 
         Ok(())

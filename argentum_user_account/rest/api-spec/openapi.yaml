@@ -64,6 +64,7 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
+      x-ag-submit-label: Sign In
   /user-account/register:
     post:
       description: User registers with email and password
@@ -80,8 +81,9 @@ paths:
           $ref: '#/components/responses/UserRegisteredSuccessfully'
         '400':
           $ref: '#/components/responses/400'
-        '422':
-          $ref: '#/components/responses/422'
+        '409':
+          $ref: '#/components/responses/409'
+      x-ag-submit-label: Sign Up
   /user-account/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email
@@ -198,30 +200,42 @@ components:
       properties:
         email:
           example: test-email@test-email.com
+          title: Email
           type: string
           format: email
         password:
           example: secure-password
+          title: Password
           type: string
           format: password
+          x-ag-ui:
+            id: password
+            name: password
       type: object
     ProblemDetail:
       title: Schema for error response
       description: RFC 7807 Problem Details for HTTP APIs
       required:
-      - code
+      - status
       - title
       properties:
-        code:
+        body:
+          $ref: '#/components/schemas/Violation'
+        detail:
+          type: string
+        status:
           example: '401'
           maximum: 599.0
           minimum: 400.0
           type: integer
           format: int32
-        message:
-          example: '{"some": "json"}'
+        title:
+          example: Bad Request
           type: string
-      type: null
+        type:
+          example: about:blank
+          type: string
+      type: object
     RegistrationWithPasswordResult:
       required:
       - id
@@ -236,17 +250,33 @@ components:
       - email
       - name
       - password
+      - terms
       properties:
         email:
           example: test-email@test-email.com
+          title: Email address
           type: string
           format: email
+          x-ag-ui:
+            id: email
+            name: email
         name:
           $ref: '#/components/schemas/UserName'
         password:
           example: secure-password
+          title: Password
           type: string
           format: password
+          x-ag-ui:
+            id: password
+            name: password
+        terms:
+          example: 'false'
+          title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
+          type: boolean
+          x-ag-ui:
+            id: terms
+            name: terms
       type: object
     RequestRestoreTokenSchema:
       required:
@@ -263,19 +293,46 @@ components:
       properties:
         first:
           example: Winston
+          title: First Name
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_first_name
+            name: user_first_name
         last:
           example: Marko
+          title: Last Name
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_last_name
+            name: user_last_name
         patronymic:
+          title: Patronymic
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_patronymic
+            name: user_patronymic
       type: object
+    Violation:
+      properties:
+        errors:
+          $ref: '#/components/schemas/ViolationErrors'
+        items:
+          $ref: '#/components/schemas/ViolationItems'
+      type: object
+    ViolationErrors:
+      items:
+        type: string
+      type: array
+    ViolationItems:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Violation'
   responses:
     '400':
       content:
@@ -289,12 +346,12 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
       description: Unauthorized
-    '422':
+    '409':
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
-      description: Unprocessable Entity
+      description: Conflict
     AnonymousRegisteredSuccessfully:
       content:
         application/json:

@@ -25,9 +25,10 @@ impl ResponseToJsonTransformer {
 
 #[cfg(test)]
 mod tests {
+    use http::StatusCode;
+
     use crate::data_type::{EmptyBody, HttpResponse};
     use crate::service::ResponseToJsonTransformer;
-    use hyper::StatusCode;
 
     #[test]
     fn test_transform() {
@@ -37,7 +38,7 @@ mod tests {
 
         let hyper_response = transformer.transform(response);
 
-        assert_eq!(hyper_response.status(), StatusCode::CREATED);
+        assert_eq!(hyper_response.status().as_u16(), StatusCode::CREATED);
         assert_eq!(
             hyper_response
                 .headers()

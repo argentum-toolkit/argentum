@@ -1,6 +1,7 @@
 use crate::data_type::SerializableBody;
-use hyper::StatusCode;
+use http::StatusCode;
 use serde::Serialize;
+use serde::Serializer;
 
 pub trait ProblemDetailExtension: erased_serde::Serialize {}
 erased_serde::serialize_trait_object!(ProblemDetailExtension);
@@ -14,7 +15,8 @@ pub struct ProblemDetail {
 
     pub title: String,
 
-    pub status: u16,
+    #[serde(serialize_with = "serialize_status_code")]
+    pub status: StatusCode,
 
     pub detail: Option<String>,
 
@@ -37,7 +39,7 @@ impl ProblemDetail {
         Self {
             problem_type,
             title,
-            status: status.as_u16(),
+            status,
             detail,
             extension,
         }
@@ -46,13 +48,20 @@ impl ProblemDetail {
 
 impl SerializableBody for ProblemDetail {}
 
+fn serialize_status_code<S>(status: &StatusCode, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_u16(status.as_u16())
+}
+
 #[cfg(test)]
 mod tests {
     use crate::data_type::error::BadRequestError;
     use crate::data_type::problem_detail::PROBLEM_TYPE_BLANK;
     use crate::data_type::ProblemDetail;
     use argentum_standard_business::invariant_violation::Violations;
-    use hyper::StatusCode;
+    use http::StatusCode;
 
     #[test]
     fn test_constructor() {

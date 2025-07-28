@@ -1,0 +1,15 @@
+LabeledCheckbox {
+    id: "{{ui.id}}",
+    name: "{{ui.name}}",
+    label: "{{title}}",
+    {{#if required}}
+        value: {{name}}_value(),
+    {{else}}
+        value: {{name}}_value().unwrap_or("".to_string()),
+    {{/if}}
+    violations: {{name}}_violations,
+    oninput: move |event: bool| {
+        {{name}}_value.set(event);
+        update();
+    }
+}

@@ -133,12 +133,26 @@ $ devops/scripts/check-item.sh {{package-name}}
 * *thiserror* - errors
 * *chrono* - time
 
+== Dioxus dependencies
+
+As soon as Argentum ToolKit uses Dioxus, we need to have some dependencies such as `perl`
+
+[source,shell]
+....
+cargo install dioxus-cli
+....
+
 == TODO
 
 === V0.3
 
+* Web APP + UI
+** Client library
+** Demo Dioxus Web App 
+*** User
+*** User Account
 * DI builders: make it similar
-* behaviour tests
+* behavior tests
 
 * performance optimization
 
@@ -147,12 +161,11 @@ $ devops/scripts/check-item.sh {{package-name}}
 ** publish generator to hub.docker.com
 ** create regex factory for all types of `path params`
 ** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
+**`type ViolationItems = HashMap<String, Violation>`; instead of `struct ViolationItems(pub HashMap<String, Violation>);`
 ** generate `query params`
-** generate embedded objects
+** generate inline objects
 ** tests
 ** fix generator for cases when string field parses as integer
-
-* Configure Cargo for local development and for release as described there https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
 
 * Profiling
 
@@ -163,7 +176,6 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 * documentation
 ** ADR
-** codegen
 ** other?
 
 * New type for Password

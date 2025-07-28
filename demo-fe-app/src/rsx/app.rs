@@ -1,0 +1,28 @@
+use crate::route::Route;
+
+use argentum_standard_ui::rsx::component::dark_mode::use_dark_mode;
+use dioxus::prelude::*;
+
+pub(crate) fn App() -> Element {
+    #[cfg(feature = "web")]
+    {
+        //TODO: use ENV
+        let ua_di =
+            argentum_user_account_ui::security::di::di_factory("http://localhost:8082".into());
+        ua_di.use_client_side_authenticator_provider();
+        ua_di.use_client_provider();
+    }
+
+    //TODO: use ENV
+    let u_di = argentum_user_ui::di::di_factory("http://localhost:8082".into());
+    u_di.use_client_provider();
+
+    use_dark_mode();
+
+    rsx! {
+        document::Stylesheet {
+            href: asset!("/public/tailwind.css")
+        }
+        Router::<Route> {}
+    }
+}

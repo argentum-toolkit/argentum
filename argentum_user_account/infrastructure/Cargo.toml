@@ -13,6 +13,7 @@ readme = "readme.adoc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0-dev,<0.4.0" }
@@ -20,17 +21,16 @@ argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", ve
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_user_account_business = { path = "../business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_account_rest = { path = "../rest", version = ">=0.3.0-dev,<0.4.0" }
+argentum_user_account_rest = { path = "../rest", version = ">=0.3.0-dev,<0.4.0", features = ["server"] }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 
 async-trait = "0.1.*"
 chrono = { version = "0.4.*", features = ["serde"] }
-derive_more = "0.99.17"
+fastrand = "2.*"
 futures = "0.3.*"
-rand = "0.8.*"
 serde = { version = "1.0.*", features = ["derive"] }
 serde_json = "1.0.*"
 
 sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }
-uuid = { version = "1.5.*", features = ["serde", "v4"] }
+uuid = { version = "1.*", features = ["serde", "v4"] }

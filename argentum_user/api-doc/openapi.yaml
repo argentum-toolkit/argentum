@@ -27,8 +27,8 @@ servers:
       port:
         enum:
           - '80'
-          - '8080'
-        default: '8080'
+          - '8088'
+        default: '8088'
       basePath:
         default: api/v1
 

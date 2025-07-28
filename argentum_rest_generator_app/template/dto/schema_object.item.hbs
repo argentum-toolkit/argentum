@@ -13,10 +13,10 @@ use std::collections::BTreeMap;
 use {{dep}};
 {{/each}}
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct {{ name }} {
 {{# each properties as |prop| }}
-    pub {{ snake prop.name }}: {{{ prop.dataType }}},
+    pub {{ escape_var_name (snake prop.name) }}: {{{ prop.dataType }}},
 
 {{/each}}
 }
@@ -24,12 +24,12 @@ pub struct {{ name }} {
 impl {{ name }} {
     pub fn new(
     {{# each properties as |prop| }}
-        {{ snake prop.name }}: {{{ prop.dataType }}},
+        {{ escape_var_name (snake prop.name)  }}: {{{ prop.dataType }}},
     {{/each}}
     ) -> Self {
         Self {
         {{# each properties as |prop| }}
-            {{ snake prop.name }},
+            {{ escape_var_name (snake prop.name) }},
         {{/each}}
         }
     }
@@ -47,38 +47,38 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
         {{# each properties as |prop| }}
             {{#if prop.isRef}}
                 {{#if prop.required}}
-                    let {{ snake prop.name }} = if raw.{{ snake prop.name }}.is_none() {
+                    let {{ escape_var_name (snake prop.name) }} = if raw.{{ escape_var_name (snake prop.name) }}.is_none() {
                     argentum_violations.insert(
                             "name".into(),
                             Violations::new(vec!["required field".to_string()], None),
                         );
                         None
                     } else {
-                        match {{ upper_camel prop.dataType }}::try_from_raw(raw.{{ snake prop.name }}.unwrap()) {
+                        match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
                             Ok(value) => Some(value),
                             Err(v) => {
-                                argentum_violations.insert("{{ snake prop.name }}".into(), v);
+                                argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);
 
                                 None
                             }
                         }
                     };
                 {{else}}
-                    let {{ snake prop.name }} = match {{ upper_camel prop.dataType }}::try_from_raw(raw.{{ snake prop.name }}.unwrap()) {
+                    let {{ escape_var_name (snake prop.name) }} = match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
                         Ok(value) => Some(value),
                         Err(v) => {
-                            argentum_violations.insert("{{ snake prop.name }}".into(), v);
+                            argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);
 
                             None
                         }
-                    }
+                    };
                 {{/if}}
             {{else}}
-                let {{ snake prop.name }} = raw.{{ snake prop.name }};
+                let {{ escape_var_name (snake prop.name) }} = raw.{{ escape_var_name (snake prop.name) }};
                 {{# if prop.required }}
-                    if {{ snake prop.name }}.is_none() {
+                    if {{ escape_var_name (snake prop.name) }}.is_none() {
                         argentum_violations.insert(
-                            "{{ snake prop.name }}".into(),
+                            "{{ escape_var_name (snake prop.name) }}".into(),
                             Violations::new(vec!["field is required".to_string()], None),
                         );
                     }
@@ -89,7 +89,7 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
         if argentum_violations.is_empty() {
             Ok(Self::new(
             {{# each properties as |prop| }}
-                {{ snake prop.name }}{{# if prop.required }}.unwrap(){{/if}},
+                {{ escape_var_name (snake prop.name) }}{{# if prop.required }}.unwrap(){{/if}},
             {{/each}}
             ))
         } else {
@@ -111,6 +111,6 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
 pub struct {{ name }}Raw {
 {{# each properties as |prop| }}
     #[serde(rename = "{{ prop.rename }}")]
-    pub {{ snake prop.name }}: {{{ prop.rawType }}},
+    pub {{ escape_var_name (snake prop.name) }}: {{{ prop.rawType }}},
 {{/each}}
 }

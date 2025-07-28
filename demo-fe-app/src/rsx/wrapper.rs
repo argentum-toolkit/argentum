@@ -1,0 +1,27 @@
+use crate::route::Route;
+use crate::rsx::component::Footer;
+use crate::rsx::component::NavBar;
+use argentum_standard_ui::rsx::component::dark_mode::DarkMode;
+use dioxus::prelude::*;
+
+#[component]
+pub(crate) fn Wrapper() -> Element {
+    let mut theme_class = use_signal(|| "".to_string());
+    use_effect(move || {
+        theme_class.set(use_context::<Signal<DarkMode>>()().to_string());
+    });
+
+    rsx! {
+        div {
+            class: "{theme_class}",
+            header { class: "header left-0 top-0 z-40 flex w-full items-center dark:bg-gray-dark dark:shadow-sticky-dark fixed z-[9999] bg-white !bg-opacity-80 shadow-sticky backdrop-blur-sm transition",
+                NavBar {}
+            }
+            main {
+                class: "dark:bg-gray-dark text-body-color dark:text-body-color-dark pt-16 md:pt-20 lg:pt-28",
+                Outlet::<Route> {}
+            }
+            Footer {}
+        }
+    }
+}

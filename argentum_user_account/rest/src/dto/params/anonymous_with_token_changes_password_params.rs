@@ -2,6 +2,7 @@ use crate::dto::path_params::AnonymousWithTokenChangesPasswordPathParams;
 use argentum_rest_infrastructure::data_type::AuthHeaderParams;
 use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams};
 
+//TODO: query params generator
 pub struct AnonymousWithTokenChangesPasswordParams {
     pub headers: AuthHeaderParams,
     pub path: AnonymousWithTokenChangesPasswordPathParams,

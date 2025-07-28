@@ -5,6 +5,7 @@ set -ex
 rustc -V && cargo -V
 
 packages=(
+  'argentum_db/infrastructure'
   'argentum_encryption/business'
   'argentum_encryption/infrastructure'
   'argentum_event/business'
@@ -17,10 +18,13 @@ packages=(
   'argentum_rest_generator_app'
   'argentum_standard/business'
   'argentum_standard/infrastructure'
+  'argentum_standard/ui'
   'argentum_user/business'
   'argentum_user/infrastructure'
+  'argentum_user/ui'
   'argentum_user_account/business'
   'argentum_user_account/infrastructure'
+  'argentum_user_account/ui'
   'demo-app'
   'demo-api-app'
 )

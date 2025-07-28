@@ -1,0 +1,11 @@
+mod anonymous_registers_form;
+mod anonymous_requests_restore_token_form;
+mod anonymous_with_token_changes_password_form;
+mod user_logins_with_password_form;
+mod user_registers_with_password_form;
+
+pub use anonymous_registers_form::AnonymousRegistersForm;
+pub use anonymous_requests_restore_token_form::AnonymousRequestsRestoreTokenForm;
+pub use anonymous_with_token_changes_password_form::AnonymousWithTokenChangesPasswordForm;
+pub use user_logins_with_password_form::UserLoginsWithPasswordForm;
+pub use user_registers_with_password_form::UserRegistersWithPasswordForm;

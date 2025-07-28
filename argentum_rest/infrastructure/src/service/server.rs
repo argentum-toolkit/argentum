@@ -69,7 +69,7 @@ impl Server {
             let logger = self.logger.clone();
 
             tokio::task::spawn(async move {
-                logger.trace("HTTP response accepted".to_string());
+                logger.trace("HTTP request accepted".to_string());
                 let start = Instant::now();
                 if let Err(err) = http1::Builder::new()
                     .serve_connection(

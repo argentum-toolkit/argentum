@@ -1,0 +1,39 @@
+[workspace]
+members = [
+    "argentum_db/infrastructure",
+    "argentum_encryption/business",
+    "argentum_encryption/infrastructure",
+    "argentum_event/business",
+    "argentum_log/business",
+    "argentum_log/infrastructure",
+    "argentum_notification/business",
+    "argentum_notification/infrastructure",
+    "argentum_openapi/infrastructure",
+    "argentum_rest/infrastructure",
+    "argentum_rest_generator_app",
+    "argentum_standard/business",
+    "argentum_standard/infrastructure",
+    "argentum_standard/ui",
+    "argentum_user/business",
+    "argentum_user/infrastructure",
+    "argentum_user/ui",
+    "argentum_user_account/business",
+    "argentum_user_account/infrastructure",
+    "argentum_user_account/ui",
+    "demo-api-app",
+    "demo-app",
+    "demo-fe-app",
+]
+resolver = "2"
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
