@@ -29,6 +29,5 @@ web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
 
 [features]
 default = []
-# default = ["web"]
 server = ["dioxus/server"]
 web = ["dioxus/web", "argentum_standard_ui/web", "argentum_user_account_ui/web", "argentum_user_account_rest/web", "argentum_user_account_rest/client", "argentum_user_account_rest/web"]

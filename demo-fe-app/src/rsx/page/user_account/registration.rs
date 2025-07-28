@@ -5,7 +5,6 @@ use argentum_user_account_rest::ui::form::UserRegistersWithPasswordForm;
 
 use argentum_user_account_rest::ui::form_processor::UserRegistersWithPasswordFormProcessor;
 use dioxus::prelude::*;
-use dioxus_logger::tracing::error;
 use std::string::ToString;
 use std::sync::Arc;
 
@@ -13,19 +12,13 @@ use std::sync::Arc;
 pub fn Registration() -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
-    #[cfg(feature = "web")]
     let auth_token = {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        match authenticator().get_token() {
-            Some(t) => t,
-            None => {
-                error!("Can't get authentication token");
-
-                return rsx! {"Can't get authentication token"};
-            }
-        }
+        authenticator()
+            .get_token()
+            .expect("Can't get authentication token")
     };
 
     #[cfg(not(feature = "web"))]
