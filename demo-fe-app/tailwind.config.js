@@ -6,9 +6,8 @@ module.exports = {
     content: [
         "./src/**/*.{rs,html,css}",
         "./dist/**/*.html",
+        "./dist/**/*.js",
     ],
-    // darkMode: "selector",
-    // darkMode: ['selector', '[data-mode="dark"]'],
     darkMode: "class",
     theme: {
         container: {
@@ -79,5 +78,9 @@ module.exports = {
             },
         },
     },
-    plugins: [],
+    plugins: [require("daisyui")],
+    daisyui: {
+        themes: ["light --default", "dark --prefersdark", "cupcake"],
+        darkTheme: "dark",
+    },
 };

@@ -1,4 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+/* @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"); */
+@import "tailwindcss";
+@plugin "daisyui";
 
 @tailwind base;
 @tailwind components;
@@ -16,7 +18,6 @@
     }
 
     .sticky .header-logo {
-        @apply py-5 lg:py-2;
     }
 
     .sticky .menu-scroll.active {

@@ -21,7 +21,7 @@ pub(crate) fn App() -> Element {
 
     rsx! {
         document::Stylesheet {
-            href: asset!("/public/tailwind.css")
+            href: asset!("/assets/tailwind.css")
         }
         Router::<Route> {}
     }

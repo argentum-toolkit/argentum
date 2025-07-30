@@ -12,6 +12,7 @@ use std::sync::Arc;
 pub fn Registration() -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
+    #[cfg(feature = "web")]
     let auth_token = {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
