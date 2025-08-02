@@ -13,12 +13,14 @@ pub(crate) fn Wrapper() -> Element {
 
     rsx! {
         div {
-            class: "{theme_class}",
-            header { class: "navbar",
+            class: "{theme_class} flex flex-col min-h-screen bg-base-200 justify-between items-center bg-base-200 dark:bg-base-900 shadow",
+            "data-theme": "dracula",
+            header {
+                class: "navbar bg-base-100 shadow-md",
                 NavBar {}
             }
             main {
-                class: "dark:bg-gray-dark text-body-color dark:text-body-color-dark pt-16 md:pt-20 lg:pt-28",
+                class: "prose flex-grow p-6",
                 Outlet::<Route> {}
             }
             Footer {}

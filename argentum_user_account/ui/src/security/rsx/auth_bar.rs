@@ -83,7 +83,7 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
     }
 
     rsx! {
-        Link { class: "hidden px-7 py-3 text-base font-medium text-dark hover:opacity-70 dark:text-white md:block", to: props.login_route, "Sign In" }
-        Link { class: "ease-in-up shadow-btn hover:shadow-btn-hover hidden rounded-sm bg-primary px-8 py-3 text-base font-medium text-white transition duration-300 hover:bg-opacity-90 md:block md:px-9 lg:px-6 xl:px-9", to: props.registration_route, "Sign Up" }
+        Link { class: "btn btn-sm btn-primary p-1", to: props.login_route, "Sign In" }
+        Link { class: "btn btn-sm btn-outline p-1", to: props.registration_route, "Sign Up" }
     }
 }
