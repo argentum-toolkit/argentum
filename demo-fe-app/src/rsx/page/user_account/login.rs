@@ -57,23 +57,19 @@ pub fn Login() -> Element {
         section {
             div { class: "container",
                 div { class:"pb-40",
-                    h2 { class:"mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl", "Sign in to your account"}
+                    h2 { "Sign in to your account" }
 
-                    div {
-                        class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
+                    UserLoginsWithPasswordForm {
+                        processor,
+                        auth_token,
+                    }
 
-                        UserLoginsWithPasswordForm {
-                            processor,
-                            auth_token,
-                        }
-
-                        div { class:"text-center text-base font-medium text-body-color py-4 dark:text-body-color-dark",
-                            a {href:"#", class:"text-sm font-medium text-primary hover:underline", "Forgot password?"}
-                        }
-                        div { class: "text-center text-base font-medium text-body-color py-3 dark:text-body-color-dark",
-                            "Don't you have an account?"
-                            Link { class: "text-primary hover:underline pl-2", to: Route::Registration {}, "Sign Up" }
-                        }
+                    div { class: "text-center text-base mt-10",
+                        a {href:"#", class:"text-sm text-primary hover:underline", "Forgot password?"}
+                    }
+                    div { class: "text-center text-sm mt-2",
+                        "Don't you have an account?"
+                        Link { class: "text-primary hover:underline pl-2", to: Route::Registration {}, "Sign Up" }
                     }
                 }
             }

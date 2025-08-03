@@ -12,6 +12,7 @@ use std::sync::Arc;
 pub fn Registration() -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
+    #[cfg(feature = "web")]
     let auth_token = {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
@@ -41,43 +42,41 @@ pub fn Registration() -> Element {
     rsx! {
         section {
             div { class: "container",
-                div { class:"pb-40",
-                    h2 { class:"mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl", "Create your account"}
+                div { class:"pb-40 sm:max-w-sm",
+                    h2 { "Create your account "}
 
-                    div { class:"mt-10 sm:mx-auto sm:w-full sm:max-w-sm",
-                        match success() {
-                            Some(success_message) => {
-                                rsx! {
-                                    div {
-                                        class: "mt-4 text-sm text-green-600 dark:text-green-500",
-                                        "{success_message}",
-                                    }
-                                    div {
-                                        class: "mt-4 text-sm",
-                                        Link { class: "text-primary hover:underline pl-2", to: Route::Login {}, "Sign In" }
-                                    }
+                    match success() {
+                        Some(success_message) => {
+                            rsx! {
+                                div {
+                                    class: "text-center text-sm text-success mt-10",
+                                    "{success_message}",
                                 }
-                            },
-                            None => rsx! {
-                                UserRegistersWithPasswordForm {
-                                    processor,
-                                    auth_token,
+                                div {
+                                    class: "text-center text-sm mt-5",
+                                    Link { class: "text-primary hover:underline", to: Route::Login {}, "Sign In" }
                                 }
+                            }
+                        },
+                        None => rsx! {
+                            UserRegistersWithPasswordForm {
+                                processor,
+                                auth_token,
+                            }
 
-                                div { class: "text-center text-base font-medium py-8",
-                                    "Already here?"
-                                    Link { class: "text-primary hover:underline pl-2", to: Route::Login {}, "Sign In" }
-                                }
+                            div { class: "text-center text-sm mt-10",
+                                "Already here?"
+                                Link { class: "text-primary hover:underline pl-2", to: Route::Login {}, "Sign In" }
+                            }
 
-                                div { class: "text-left text-base font-medium",
-                                    "Please read our "
-                                    a {href:"#", class:"text-primary hover:underline",
-                                        "Terms and Conditions"
-                                    }
-                                    " and "
-                                    a {href:"#", class:"text-primary hover:underline",
-                                        "Privacy Policy"
-                                    }
+                            div { class: "text-left text-sm mt-5",
+                                "Please read our "
+                                a {href:"#", class:"text-primary hover:underline",
+                                    "Terms and Conditions"
+                                }
+                                " and "
+                                a {href:"#", class:"text-primary hover:underline",
+                                    "Privacy Policy"
                                 }
                             }
                         }
