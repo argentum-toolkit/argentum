@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @source "./public/*.{html,js}";
 @plugin "daisyui" {
-    /* themes: all; */
+  themes: corporate --default, dark --prefersdark;
 }
 
 @tailwind base;
@@ -31,8 +31,4 @@
   p {
     @apply mb-6 leading-relaxed;
   }
-
-  /* .hidden {
-    display: none;
-  } */
 }

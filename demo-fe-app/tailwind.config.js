@@ -7,6 +7,7 @@ module.exports = {
         "./dist/**/*.js",
     ],
     safelist: [
+        //authbar
         "dropdown",
         "dropdown-hover",
         "dropdown-content",
@@ -22,6 +23,19 @@ module.exports = {
         "z-1", 
         "p-2", 
         "shadow-sm",
+        //theme toggle
+        "swap",
+        "swap-rotate",
+        "theme-controller",
+        "swap-on",
+        "swap-off",
+        "fill-current",
+        "h-10",
+        "w-10",
+        "h-7",
+        "w-7",
+        "md:h-14", 
+        "md:w-14",
     ],
     darkMode: "class",
     theme: {
@@ -31,7 +45,4 @@ module.exports = {
         require("@tailwindcss/typography"),
         require("daisyui")
     ],
-    daisyui: {
-        themes: ["light ", "dark"],
-    },
 };

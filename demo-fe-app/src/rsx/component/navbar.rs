@@ -1,6 +1,6 @@
 use crate::route::Route;
 
-use argentum_standard_ui::rsx::component::dark_mode::DarkModeToggle;
+use argentum_standard_ui::rsx::component::dark_mode::{DarkModeToggle, ThemeConfig};
 use dioxus::prelude::*;
 
 #[component]
@@ -31,7 +31,7 @@ fn AuthBar() -> Element {
 }
 
 #[component]
-pub(crate) fn NavBar() -> Element {
+pub(crate) fn NavBar(theme_config: ThemeConfig) -> Element {
     rsx! {
         div { class: "w-30 max-w-full px-4 xl:mr-2 bold dark:text-white", "LOGO"}
 
@@ -45,7 +45,7 @@ pub(crate) fn NavBar() -> Element {
         div {
             class: "flex items-center space-x-4 ml-auto whitespace-nowrap",
             AuthBar {}
-            DarkModeToggle {}
+            DarkModeToggle { theme_config }
         }
     }
 }
