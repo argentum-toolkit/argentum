@@ -23,6 +23,7 @@ module.exports = {
         "z-1", 
         "p-2", 
         "shadow-sm",
+
         //theme toggle
         "swap",
         "swap-rotate",
@@ -36,6 +37,20 @@ module.exports = {
         "w-7",
         "md:h-14", 
         "md:w-14",
+
+        //forms
+        "btn",
+        "btn-active", 
+        "btn-primary",
+        "mt-5",
+        "text-error",
+        "text-success",
+        "mt-5",
+        "fieldset",
+        "fieldset-legend",
+        "input",
+        "input-neutral",
+        "input-error",
     ],
     darkMode: "class",
     theme: {
