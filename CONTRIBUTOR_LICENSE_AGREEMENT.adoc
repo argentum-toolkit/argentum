@@ -14,7 +14,7 @@ You represent that you have the rights to grant this license and that your contr
 
 == Agreement
 
-Please sign this agreement by adding a file in the `cla-signatures/` directory of the repository following the naming convention `<github-username>.adoc` with the following content:
+Please sign this agreement by adding a file in the `cla-signatures/` directory of the repository following the naming convention `<git-username>.adoc` with the following content:
 
 ----
 I, <Full Name>, agree to the Contributor License Agreement for Argentum ToolKit.

@@ -4,6 +4,11 @@ set -ex
 
 rustc -V && cargo -V
 
+cargo deny check licenses
+cargo deny check bans
+# cargo deny check advisories
+cargo deny check sources
+
 packages=(
   'argentum_db/infrastructure'
   'argentum_encryption/business'

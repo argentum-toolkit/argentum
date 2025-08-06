@@ -5,8 +5,8 @@ info:
   version: 0.3.0-dev
   description: User Account API
   license:
-    name: BSD-3-Clause
-    identifier: BSD-3-Clause
+    name: LGPL-3.0
+    identifier: LGPL-3.0
 
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum

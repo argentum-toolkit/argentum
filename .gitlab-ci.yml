@@ -19,13 +19,13 @@ before_script:
   - docker compose pull builder
 
 stages:
-  # - build
+  - build
   - check
 
-# build:
-#   stage: build
-#   script:
-#     - docker compose run --rm --build builder devops/scripts/check.sh
+build:
+  stage: build
+  script:
+    - docker compose run --rm --build builder devops/scripts/check.sh
 
 check_cla:
   stage: check
