@@ -1,0 +1,16 @@
+= Contributing to Argentum ToolKit
+
+Thank you for your interest in contributing!
+
+== Contributor License Agreement (CLA)
+Before we can accept your contributions, you must sign our CLA:
+link:CONTRIBUTOR_LICENSE_AGREEMENT.adoc[CLA Document]
+
+This ensures that contributions can be licensed under LGPL.
+
+== How to contribute
+. Fork the repository
+. Create a feature branch
+. Make changes following coding conventions
+. Sign the CLA (one-time)
+. Submit a Merge Request (GitLab)
