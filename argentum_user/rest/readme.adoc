@@ -9,7 +9,7 @@ This server was generated from OpenAPI specification by the link:https://gitlab.
 
 - API version: 0.3.0-dev
 - Package Name: argentum_user_rest
-    - License: `BSD-3-Clause`
+    - License: `LGPL-3.0`
 
 
 == How to use

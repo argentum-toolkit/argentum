@@ -146,11 +146,6 @@ cargo install dioxus-cli
 
 === V0.3
 
-* Web APP + UI
-** Client library
-** Demo Dioxus Web App 
-*** User
-*** User Account
 * DI builders: make it similar
 * behavior tests
 
@@ -184,3 +179,23 @@ cargo install dioxus-cli
 
 * notifications
 * macro for creation Id types (for user, for account for event)
+
+
+== License
+* Versions prior to *0.3*: BSD 3-Clause License
+* Version *0.3 and later*: GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+
+See link:LICENSE[LICENSE] for full details.
+
+© 2020–2025 Vital Leshchyk <vitalleshchyk@gmail.com>
+
+
+== Contributing
+
+Please read the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.adoc) before contributing.
+
+To contribute, you **must sign the CLA** by adding a file in the `cla-signatures/` directory as described in the CLA document.
+
+Your pull request or merge request will be accepted only if a valid CLA signature file is present for your GitHub/GitLab username.
+
+Thank you for your contribution!

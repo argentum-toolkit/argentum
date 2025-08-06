@@ -4,7 +4,7 @@ info:
     url: https://gitlab.com/argentum-toolkit/argentum
   description: User Account API
   license:
-    name: BSD-3-Clause
+    name: LGPL-3.0
   title: Argentum User Account component API
   version: 0.3.0-dev
 externalDocs:
