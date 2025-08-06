@@ -132,7 +132,9 @@ impl GetUserFormProcessor {
             },
             Err(e) => {
                 disabled.set(false);
-                errors.set(vec!["Unexpected error. Please try again latter".to_string()]);
+                errors.set(vec![
+                    "Unexpected error. Please try again latter".to_string(),
+                ]);
 
                 self.callbacks.on_error.call(e);
             }

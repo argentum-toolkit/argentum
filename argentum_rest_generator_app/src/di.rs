@@ -15,11 +15,11 @@ use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
 };
+use crate::template::Renderer;
 use crate::template::helper::{
     camel_helper, content_type_to_type_helper, eq_helper, escape_var_name_helper, lower_helper,
     snake_helper, trim_mod_helper, upper_camel_helper,
 };
-use crate::template::Renderer;
 use argentum_log_business::{DefaultLogger, Level};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use handlebars::Handlebars;

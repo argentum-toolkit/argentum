@@ -27,7 +27,7 @@ impl OasYamlGenerator {
             .truncate(true)
             .open(file_path)?;
 
-        serde_yaml::to_writer(f, &spec)?;
+        serde_yaml_ng::to_writer(f, &spec)?;
 
         Ok(())
     }

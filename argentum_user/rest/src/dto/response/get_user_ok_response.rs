@@ -1,5 +1,5 @@
-use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
 use argentum_rest_infrastructure::data_type::SerializableBody;
+use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
 
 use crate::dto::schema::User;
 

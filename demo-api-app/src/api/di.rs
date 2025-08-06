@@ -13,7 +13,7 @@ use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiCBuilde
 use argentum_user_account_rest::ApiDiC;
 use argentum_user_infrastructure::di::UserInfrastructureDiCBuilder;
 use argentum_user_rest::ApiDiC as UserApiDiC;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use std::sync::Arc;
 
 pub struct DiC {

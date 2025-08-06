@@ -1,5 +1,5 @@
-use crate::data_type::error::{HttpError, InternalServerError, Unauthorized};
 use crate::data_type::AuthHeaderParams;
+use crate::data_type::error::{HttpError, InternalServerError, Unauthorized};
 use argentum_user_business::entity::user::User;
 use argentum_user_business::use_case::user_authenticates_with_token::AuthenticationError;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;

@@ -8,9 +8,9 @@ use argentum_user_account_business::repository::restore_password_token_repositor
     RestorePasswordTokenRepositoryError, RestorePasswordTokenRepositoryTrait,
 };
 use futures::executor::block_on;
+use sqlx::Postgres;
 use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
-use sqlx::Postgres;
 use std::sync::Arc;
 
 pub struct RestorePasswordTokenRepository {

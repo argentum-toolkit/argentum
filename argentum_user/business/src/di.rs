@@ -6,8 +6,8 @@ use crate::repository::session_repository::SessionRepositoryTrait;
 use crate::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
-use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use crate::use_case::GetUserUc;
+use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct UserBusinessDiC {

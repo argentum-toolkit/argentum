@@ -1,10 +1,10 @@
 use crate::adapter::DbAdapterError;
-use crate::slqx_postgres::migration::collection::MigrationCollection;
-use crate::slqx_postgres::migration::MigrationDto;
 use crate::slqx_postgres::SqlxPostgresAdapter;
+use crate::slqx_postgres::migration::MigrationDto;
+use crate::slqx_postgres::migration::collection::MigrationCollection;
 use argentum_log_business::LoggerTrait;
-use sqlx::types::chrono::Utc;
 use sqlx::Transaction;
+use sqlx::types::chrono::Utc;
 use sqlx_postgres::Postgres;
 use std::sync::Arc;
 
@@ -51,7 +51,7 @@ impl<'a> Migrator<'a> {
             }
             Err(e) => {
                 self.logger
-                    .critical(format!("Ensuring was failed with error: {}", e));
+                    .critical(format!("Ensuring was failed with error: {e}",));
                 Err(e.to_string())
             }
         }
@@ -60,7 +60,7 @@ impl<'a> Migrator<'a> {
     async fn rollback(&self, tx: Transaction<'a, Postgres>) -> Result<(), String> {
         if let Err(rollback_error) = self.adapter.rollback(tx).await {
             self.logger
-                .critical(format!("Can't rollback transaction: {}", rollback_error));
+                .critical(format!("Can't rollback transaction: {rollback_error}"));
 
             return Err(rollback_error.to_string());
         }
@@ -81,12 +81,12 @@ impl<'a> Migrator<'a> {
     }
 
     pub async fn migrate_one(&self, version: &str, migration: &Vec<String>) -> Result<(), String> {
-        self.logger.info(format!("Migrate version {}", version));
+        self.logger.info(format!("Migrate version {version}"));
 
         let tx_res = self.adapter.begin_transaction().await;
         if let Err(e) = tx_res {
             self.logger
-                .critical(format!("Can't start transaction: {}", e));
+                .critical(format!("Can't start transaction: {e}"));
 
             return Err(e.to_string());
         }
@@ -109,7 +109,7 @@ impl<'a> Migrator<'a> {
 
         if let Ok(Some(_)) = result {
             self.logger
-                .info(format!("Migration {} already migrated", version));
+                .info(format!("Migration {version} already migrated"));
 
             self.rollback(tx).await?;
 
@@ -149,7 +149,7 @@ impl<'a> Migrator<'a> {
             Ok(_) => Ok(()),
             Err(e) => {
                 self.logger
-                    .critical(format!("Can't commit transaction: {}", e));
+                    .critical(format!("Can't commit transaction: {e}"));
 
                 Err(e.to_string())
             }

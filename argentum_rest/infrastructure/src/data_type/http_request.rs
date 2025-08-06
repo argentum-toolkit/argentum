@@ -1,8 +1,8 @@
 use crate::data_type::DeserializableSchemaRaw;
 use argentum_standard_business::invariant_violation::InvariantResult;
 use serde::Deserialize;
-use serde_valid::json::FromJsonSlice;
 use serde_valid::Validate;
+use serde_valid::json::FromJsonSlice;
 
 pub trait HttpRequest {
     type Body: for<'a> DeserializableSchemaRaw<'a>;

@@ -4,7 +4,7 @@ description = "Demo API app of argentum toolkit"
 version = "0.3.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
-edition = "2021"
+edition = "2024"
 homepage = "https://gitlab.com/argentum-toolkit/argentum"
 repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
@@ -39,6 +39,6 @@ argentum_log_business = { path = "../argentum_log/business", version = ">=0.3.0-
 argentum_log_infrastructure = { path = "../argentum_log/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 
 tokio = { version = "^1.40", features = ["full"] }
-dotenv = "0.15.0"
+dotenvy = "0.15.*"
 serde = { version = "1.0", features = ["derive"] }
-sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }
+sqlx = { version = "0.8.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }

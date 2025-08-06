@@ -57,9 +57,9 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::data_type::ProblemDetail;
     use crate::data_type::error::BadRequestError;
     use crate::data_type::problem_detail::PROBLEM_TYPE_BLANK;
-    use crate::data_type::ProblemDetail;
     use argentum_standard_business::invariant_violation::Violations;
     use http::StatusCode;
 

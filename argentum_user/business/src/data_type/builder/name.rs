@@ -84,8 +84,8 @@ impl NameBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::builder::name::ERR_WRONG_NAME;
     use crate::data_type::builder::NameBuilder;
+    use crate::data_type::builder::name::ERR_WRONG_NAME;
     use argentum_standard_business::invariant_violation::ViolationItem;
 
     #[test]
