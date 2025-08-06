@@ -71,7 +71,7 @@ pub fn new_unique_id() -> Id {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::unique_id::{new_unique_id, UniqueIdFactory};
+    use crate::data_type::unique_id::{UniqueIdFactory, new_unique_id};
     use argentum_standard_business::data_type::id::IdFactory;
 
     #[test]

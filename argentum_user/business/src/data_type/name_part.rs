@@ -24,8 +24,8 @@ impl Display for NamePart {
 
 #[cfg(test)]
 mod test {
-    use crate::data_type::name_part::ERR_NAME_EMPTY;
     use crate::data_type::NamePart;
+    use crate::data_type::name_part::ERR_NAME_EMPTY;
 
     #[test]
     fn test_new_valid() {

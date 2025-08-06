@@ -139,8 +139,8 @@ mod tests {
     }
 
     #[test]
-    fn test_authenticates_with_token_should_returns_error_if_token_invalid(
-    ) -> Result<(), &'static str> {
+    fn test_authenticates_with_token_should_returns_error_if_token_invalid()
+    -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
@@ -191,8 +191,8 @@ mod tests {
     }
 
     #[test]
-    fn test_authenticates_with_token_should_returns_error_if_user_doesnt_exist(
-    ) -> Result<(), &'static str> {
+    fn test_authenticates_with_token_should_returns_error_if_user_doesnt_exist()
+    -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());

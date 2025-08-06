@@ -71,7 +71,9 @@ impl UserRegistersWithPasswordUc {
 
 #[derive(thiserror::Error, Debug)]
 pub enum RegistrationError {
-    #[error("Please confirm that you agree to the Terms and Conditions and our Privacy Policy to proceed.")]
+    #[error(
+        "Please confirm that you agree to the Terms and Conditions and our Privacy Policy to proceed."
+    )]
     TermsNotAccepted,
 
     #[error("User with such email already exists")]

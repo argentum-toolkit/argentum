@@ -3,7 +3,7 @@ name = "argentum_user_ui"
 description = "Argentum User component. UI"
 version = "0.3.0-dev"
 license = "LGPL-3.0"
-edition = "2021"
+edition = "2024"
 
 readme = "readme.adoc"
 

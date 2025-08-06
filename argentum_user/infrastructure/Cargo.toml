@@ -4,7 +4,7 @@ description = "Business layer of user component"
 version = "0.3.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
-edition = "2021"
+edition = "2024"
 homepage = "https://gitlab.com/argentum-toolkit/argentum"
 repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
@@ -22,9 +22,8 @@ argentum_user_business = { path = "../../argentum_user/business", version = ">=0
 argentum_user_rest = { path = "../../argentum_user/rest", features = ["server"], version = ">=0.3.0-dev,<0.4.0" }
 
 chrono = { version = "0.4.*", features = ["serde"] }
-# derive_more = { version = "2.*", features = ["full"]}
 futures = "0.3.*"
 serde = { version = "1.0", features = ["derive"] }
-sqlx = { version = "0.7.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }
+sqlx = { version = "0.8.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }
 uuid = { version = "1.*", features = ["serde", "v4"] }
-thiserror = "1.0"
+thiserror = "2.0.*"

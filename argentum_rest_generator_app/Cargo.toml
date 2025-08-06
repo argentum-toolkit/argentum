@@ -4,7 +4,7 @@ description = "Argentum toolkit REST generator"
 version = "0.3.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
-edition = "2021"
+edition = "2024"
 homepage = "https://gitlab.com/argentum-toolkit/argentum"
 repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
@@ -18,7 +18,7 @@ http = "1.*"
 hyper = { version = "1.*", features = ["full"] }
 serde = { version = "1.0.*", features = ["derive"] }
 serde_json = "1.0.*"
-serde_yaml = "0.9.*"
+serde_yaml_ng = "0.10.*"
 reqwest = "^0.12"
 
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0" }

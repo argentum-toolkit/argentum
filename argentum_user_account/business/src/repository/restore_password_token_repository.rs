@@ -14,7 +14,7 @@ pub trait RestorePasswordTokenRepositoryTrait: Sync + Send {
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError>;
 
     fn save(&self, token: &RestorePasswordToken)
-        -> Result<(), RestorePasswordTokenRepositoryError>;
+    -> Result<(), RestorePasswordTokenRepositoryError>;
 
     fn delete_users_tokens(&self, user_id: &Id) -> Result<(), RestorePasswordTokenRepositoryError>;
 }

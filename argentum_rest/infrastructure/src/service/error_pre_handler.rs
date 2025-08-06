@@ -30,8 +30,8 @@ impl ErrorPreHandler {
 }
 #[cfg(test)]
 mod tests {
-    use crate::data_type::error::HttpError;
     use crate::data_type::RequestTrait;
+    use crate::data_type::error::HttpError;
     use crate::service::ErrorPreHandler;
     use async_trait::async_trait;
     use hyper::{Error, HeaderMap, Method};

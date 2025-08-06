@@ -10,9 +10,9 @@ use argentum_user_business::repository::user_repository::{
     AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
 use futures::executor::block_on;
+use sqlx::Postgres;
 use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
-use sqlx::Postgres;
 use std::sync::Arc;
 
 pub struct AuthenticatedUserRepository {
@@ -42,7 +42,7 @@ impl AuthenticatedUserRepository {
                     Err(_) => {
                         return Err(ExternalUserError::Authenticated(Some(Box::new(
                             BrokenStoredData::Email(dto.email.clone()),
-                        ))))
+                        ))));
                     }
                 };
 
@@ -57,7 +57,7 @@ impl AuthenticatedUserRepository {
                                 first: dto.first_name.clone(),
                                 last: dto.last_name.clone(),
                             },
-                        ))))
+                        ))));
                     }
                 };
 

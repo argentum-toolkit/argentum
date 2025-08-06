@@ -42,8 +42,8 @@ mod tests {
     use crate::entity::user::AuthenticatedUser;
     use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
-    use crate::use_case::get_user::GetUserError;
     use crate::use_case::GetUserUc;
+    use crate::use_case::get_user::GetUserError;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use std::sync::Arc;
 

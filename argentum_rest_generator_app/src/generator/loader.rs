@@ -21,7 +21,7 @@ impl OasLoader {
         let f = fs::File::open(path.clone())
             .unwrap_or_else(|_| panic!("Should have been able to read the file {}", file_path));
 
-        let spec: SpecificationRoot = serde_yaml::from_reader(f)
+        let spec: SpecificationRoot = serde_yaml_ng::from_reader(f)
             .unwrap_or_else(|_| panic!("Could not read values from '{}'.", file_path));
 
         (spec, path)

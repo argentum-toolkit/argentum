@@ -37,7 +37,7 @@ impl EmailAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::email::{EmailAddress, ERR_EMAIL_EMPTY, ERR_WRONG_EMAIL};
+    use crate::data_type::email::{ERR_EMAIL_EMPTY, ERR_WRONG_EMAIL, EmailAddress};
 
     #[test]
     fn test_new_valid_email_address() {

@@ -77,7 +77,9 @@ impl FormProcessorGenerator {
                     })
                     .to_string(),
                 RefOrObject::Object(_) => {
-                    todo!("Only reference is supported currently. Inline objects in response enum are not supported yet.")
+                    todo!(
+                        "Only reference is supported currently. Inline objects in response enum are not supported yet."
+                    )
                 }
             };
 
