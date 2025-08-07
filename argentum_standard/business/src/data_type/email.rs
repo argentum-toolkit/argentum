@@ -1,8 +1,18 @@
 use crate::invariant_violation::InvariantResult;
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 const ERR_EMAIL_EMPTY: &str = "Email should not be empty";
 const ERR_WRONG_EMAIL: &str = "Wrong email address";
+
+static EMAIL_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"(?x) # enable insigificant whitespace mode
+        ^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$
+    ",
+    )
+    .unwrap()
+});
 
 #[derive(Clone, PartialEq)]
 pub struct EmailAddress(String);
@@ -14,14 +24,7 @@ impl EmailAddress {
             return Err(ERR_EMAIL_EMPTY.into());
         }
 
-        let re = Regex::new(
-            r"(?x) # enable insigificant whitespace mode
-            ^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$
-        ",
-        )
-        .unwrap();
-
-        if re.is_match(email.as_str()) {
+        if EMAIL_REGEX.is_match(email.as_str()) {
             Ok(EmailAddress(email))
         } else {
             //Constant will be converted into `Violation`
