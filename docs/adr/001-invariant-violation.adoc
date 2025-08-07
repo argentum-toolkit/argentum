@@ -37,6 +37,7 @@ impl EmailAddress {
             return Err(ERR_EMAIL_EMPTY.into());
         }
 
+        //Note: in a real projectm, will be better to create a regex with once_cell
         let re = Regex::new(
             r"(?x) # enable insigificant whitespace mode
             ^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$

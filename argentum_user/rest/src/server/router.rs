@@ -4,9 +4,15 @@ use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
 use hyper::{Method, Uri};
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::sync::Arc;
+
+static REGEX_USER_USERID: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$")
+        .unwrap()
+});
 
 pub struct Router {
     pre_handler: Arc<PreHandler>,
@@ -37,12 +43,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = Regex::new(
-            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$",
-        )
-        .unwrap()
-        .captures(path)
-        {
+        if let Some(_) = REGEX_USER_USERID.captures(path) {
             return match *method {
                 Method::GET => true,
                 _ => false,
@@ -59,12 +60,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(caps) = Regex::new(
-            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$",
-        )
-        .unwrap()
-        .captures(path)
-        {
+        if let Some(caps) = REGEX_USER_USERID.captures(path) {
             let user_id = caps["userId"].to_string();
 
             let raw_path_params = HashMap::from([("user_id", user_id.as_str())]);

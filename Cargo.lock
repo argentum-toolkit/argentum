@@ -281,6 +281,7 @@ version = "0.3.0-dev"
 dependencies = [
  "chrono",
  "fastrand",
+ "once_cell",
  "regex",
  "thiserror 2.0.12",
 ]
@@ -361,6 +362,7 @@ dependencies = [
  "erased-serde",
  "http",
  "hyper",
+ "once_cell",
  "regex",
  "reqwest",
  "serde",
@@ -430,6 +432,7 @@ dependencies = [
  "erased-serde",
  "http",
  "hyper",
+ "once_cell",
  "regex",
  "reqwest",
  "serde",

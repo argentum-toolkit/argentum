@@ -16,8 +16,10 @@ const PATH: &str = "/src/server/router.rs";
 const TEMPLATE: &str = "server/router";
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 struct PathData {
     pub pattern: String,
+    pub const_name: String,
     pub operations: BTreeMap<String, Operation>,
     pub params: Vec<Parameter>,
 }
@@ -28,6 +30,18 @@ impl RouterGenerator {
             renderer,
             regex_factory,
         }
+    }
+
+    fn path_to_const_name(&self, path: String) -> String {
+        let name = path
+            .trim_start_matches('/')
+            .replace("/", "_")
+            .replace("{", "")
+            .replace("}", "")
+            .replace("-", "_")
+            .to_uppercase();
+
+        name.strip_suffix('_').unwrap_or(&name).to_string()
     }
 
     pub fn generate(
@@ -75,8 +89,11 @@ impl RouterGenerator {
 
             pattern.push('$');
 
+            let const_name = self.path_to_const_name(url);
+
             let item = PathData {
                 pattern,
+                const_name,
                 operations,
                 params: path_params,
             };

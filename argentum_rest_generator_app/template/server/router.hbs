@@ -4,9 +4,19 @@ use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
 use hyper::{Method, Uri};
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::sync::Arc;
+
+
+{{#each paths as |path|}}
+static REGEX_{{{path.constName}}}: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"{{{path.pattern}}}")
+        .unwrap()
+});
+
+{{/each}}
 
 pub struct Router {
     pre_handler: Arc<PreHandler>,
@@ -38,7 +48,7 @@ impl RouterTrait for Router {
         };
 
         {{#each paths as |path|}}
-        if let Some(_) = Regex::new(r"{{{path.pattern}}}").unwrap().captures(path) {
+        if let Some(_) = REGEX_{{{path.constName}}}.captures(path) {
             return match *method {
                {{#each path.operations }}
                    {{@key}} => true,
@@ -59,7 +69,7 @@ impl RouterTrait for Router {
         };
 
         {{#each paths as |path|}}
-        if let Some({{#if params}}caps{{else}}_{{/if}}) = Regex::new(r"{{{path.pattern}}}").unwrap().captures(path) {
+        if let Some({{#if params}}caps{{else}}_{{/if}}) = REGEX_{{{path.constName}}}.captures(path) {
             {{#each params as |param|}}
             let {{ snake param.name }} = caps["{{ camel param.name }}"].to_string();
             {{/each}}
