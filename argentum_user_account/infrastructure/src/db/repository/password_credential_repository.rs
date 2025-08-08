@@ -1,5 +1,6 @@
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_business::entity::credential::PasswordCredential;
@@ -11,13 +12,19 @@ use std::sync::Arc;
 use crate::db::dto::PasswordCredentialDto;
 use futures::executor::block_on;
 
-pub struct PasswordCredentialRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct PasswordCredentialRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl PasswordCredentialRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> PasswordCredentialRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -25,7 +32,10 @@ impl PasswordCredentialRepository {
     }
 }
 
-impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
+impl<L> PasswordCredentialRepositoryTrait for PasswordCredentialRepository<L>
+where
+    L: LoggerTrait,
+{
     fn save(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         let user_id = self.id_factory.id_to_uuid(&cred.user_id);
         let sql = "INSERT INTO ag_user_account_password_credential (user_id, password, salt) VALUES ($1, $2, $3)";

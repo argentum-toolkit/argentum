@@ -43,7 +43,7 @@ impl ResponseGenerator {
         let mut content: BTreeMap<String, String> = BTreeMap::new();
 
         for (name, media_type) in &response.content {
-            let schema_type = self.schema_to_rs(&media_type.schema);
+            let schema_type = self.schema_to_rs(&media_type.schema)?;
 
             content.insert(name.clone(), schema_type);
         }
@@ -60,19 +60,19 @@ impl ResponseGenerator {
         Ok(())
     }
 
-    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> String {
+    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> Result<String, Box<dyn Error>> {
         let schema = match schema {
             RefOrObject::Ref(r) => r
                 .reference
                 .clone()
                 .split('/')
                 .last()
-                .unwrap_or_else(|| {
-                    panic!(
+                .ok_or_else(|| {
+                    format!(
                         "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
                         r.reference
                     )
-                })
+                })?
                 .to_string(),
             RefOrObject::Object(_o) => {
                 todo!(
@@ -81,7 +81,7 @@ impl ResponseGenerator {
             }
         };
 
-        format!("crate::dto::schema::{}", schema)
+        Ok(format!("crate::dto::schema::{schema}"))
     }
 
     fn generate_mod(

@@ -16,7 +16,6 @@ const ITEM_TEMPLATE: &str = "ui/input.item";
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data<'a> {
-    // operation: &'a Operation,
     name: String,
     input: &'a Schema,
     inputs: BTreeMap<String, String>,
@@ -54,14 +53,14 @@ impl From<Option<ExtensionUi>> for Ui {
         //TODO: generate values or show warnings
         match value {
             None => Self {
-                id: "unknown".to_string(),
-                name: "unknown".to_string(),
-                label: "unknown".to_string(),
+                id: "unknown".into(),
+                name: "unknown".into(),
+                label: "unknown".into(),
             },
             Some(v) => Self {
-                id: v.id.unwrap_or("unknown".to_string()),
-                name: v.name.unwrap_or("unknown".to_string()),
-                label: v.label.unwrap_or("unknown".to_string()),
+                id: v.id.unwrap_or("unknown".into()),
+                name: v.name.unwrap_or("unknown".into()),
+                label: v.label.unwrap_or("unknown".into()),
             },
         }
     }
@@ -101,7 +100,7 @@ impl InputGenerator {
         let req = &input.required.clone().unwrap_or_default();
 
         for (name, property) in input.properties.clone().unwrap_or_default() {
-            let schema = self.schema_extractor.extract(&property, &spec);
+            let schema = self.schema_extractor.extract(&property, &spec)?;
 
             let required: bool;
             if req.contains(&name) {
@@ -112,18 +111,18 @@ impl InputGenerator {
 
             let input = match property {
                 RefOrObject::Ref(r) => {
-                    let type_name = r
+                    let type_name: String = r
                         .reference
                         .clone()
                         .split('/')
                         .last()
-                        .unwrap_or_else(|| {
-                            panic!(
+                        .ok_or_else(|| {
+                            format!(
                                 "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
                                 r.reference
                             )
-                        })
-                        .to_string();
+                        })?
+                        .into();
 
                     dependencies.push(format!("crate::dto::schema::{}", type_name));
                     dependencies.push(format!("crate::ui::input::{}Input", type_name));
@@ -141,7 +140,7 @@ impl InputGenerator {
                 RefOrObject::Object(s) => match s.schema_type {
                     Some(SchemaType::Boolean) => {
                         dependencies
-                            .push("argentum_standard_ui::rsx::form::LabeledCheckbox".to_string());
+                            .push("argentum_standard_ui::rsx::form::LabeledCheckbox".into());
 
                         self.renderer.render_to_result(
                             "ui/input/labeled_checkbox",
@@ -154,8 +153,7 @@ impl InputGenerator {
                         )
                     }
                     _ => {
-                        dependencies
-                            .push("argentum_standard_ui::rsx::form::LabeledInput".to_string());
+                        dependencies.push("argentum_standard_ui::rsx::form::LabeledInput".into());
 
                         self.renderer.render_to_result(
                             "ui/input/labeled_input",
@@ -195,16 +193,18 @@ impl InputGenerator {
         ref_or: &RefOrObject<Schema>,
         spec: &SpecificationRoot,
         inputs: &mut BTreeMap<String, Schema>,
-    ) {
+    ) -> Result<(), Box<dyn Error>> {
         if let Some((schema_name, schema)) =
-            self.schema_extractor.extract_ref_with_name(&ref_or, spec)
+            self.schema_extractor.extract_ref_with_name(&ref_or, spec)?
         {
             inputs.insert(schema_name, schema.clone());
 
             for (_, property) in schema.properties.unwrap_or_default() {
-                self.get_inputs(&property, spec, inputs);
+                self.get_inputs(&property, spec, inputs)?;
             }
         }
+
+        Ok(())
     }
 
     fn generate_mod(
@@ -215,13 +215,13 @@ impl InputGenerator {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {
-            if let Some(request_body) = self.request_body_extractor.extract(&operation, &spec) {
+            if let Some(request_body) = self.request_body_extractor.extract(&operation, &spec)? {
                 let body = request_body
                     .content
                     .get("application/json")
-                    .expect("Request body should contain `application/json` mime type");
+                    .ok_or_else(|| "Request body should contain `application/json` mime type")?;
 
-                self.get_inputs(&body.schema, spec, &mut inputs);
+                self.get_inputs(&body.schema, spec, &mut inputs)?;
             }
         }
 
@@ -239,13 +239,13 @@ impl InputGenerator {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {
-            if let Some(request_body) = self.request_body_extractor.extract(&operation, &spec) {
+            if let Some(request_body) = self.request_body_extractor.extract(&operation, &spec)? {
                 let body = request_body
                     .content
                     .get("application/json")
-                    .expect("Request body should contain `application/json` mime type");
+                    .ok_or_else(|| "Request body should contain `application/json` mime type")?;
 
-                self.get_inputs(&body.schema, spec, &mut inputs);
+                self.get_inputs(&body.schema, spec, &mut inputs)?;
             }
         }
 

@@ -26,31 +26,40 @@ use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
-pub struct UserAccountInfrastructureDiC {
+pub struct UserAccountInfrastructureDiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
     pub anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait>,
-    pub anonymous_requests_restore_token_handler: Arc<AnonymousRequestsRestoreTokenHandler>,
+    pub anonymous_requests_restore_token_handler: Arc<AnonymousRequestsRestoreTokenHandler<L>>,
     pub anonymous_with_token_changes_password_handler:
         Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
     pub user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait>,
     pub user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait>,
 }
 
-pub struct UserAccountInfrastructureDiCBuilder {
+pub struct UserAccountInfrastructureDiCBuilder<L>
+where
+    L: LoggerTrait,
+{
     user_infrastructure_di: Rc<UserInfrastructureDiC>,
-    business_builder: UserAccountBusinessDiCBuilder,
+    business_builder: UserAccountBusinessDiCBuilder<L>,
     id_factory: Arc<UniqueIdFactory>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl UserAccountInfrastructureDiCBuilder {
+impl<L> UserAccountInfrastructureDiCBuilder<L>
+where
+    L: LoggerTrait + 'static,
+{
     pub fn new(
         user_infrastructure_di: Rc<UserInfrastructureDiC>,
         id_factory: Arc<UniqueIdFactory>,
 
         encryptor: Arc<dyn Encryptor>,
         validator: Arc<dyn Validator>,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
         notificator: Arc<dyn NotificatorTrait>,
     ) -> Self {
         Self {
@@ -87,7 +96,7 @@ impl UserAccountInfrastructureDiCBuilder {
         id_factory: Arc<UniqueIdFactory>,
         connection_url: &str,
         max_db_connections: u32,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> &mut Self {
         let pool = Arc::new(
             PgPoolOptions::new()
@@ -130,7 +139,7 @@ impl UserAccountInfrastructureDiCBuilder {
         self
     }
 
-    pub fn build(&self) -> UserAccountInfrastructureDiC {
+    pub fn build(&self) -> UserAccountInfrastructureDiC<L> {
         let bdi = self.business_builder.build();
 
         let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(

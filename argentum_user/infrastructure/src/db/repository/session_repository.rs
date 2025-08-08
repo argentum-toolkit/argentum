@@ -1,6 +1,7 @@
 use crate::db::dto::SessionDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_business::entity::session::Session;
@@ -10,13 +11,19 @@ use argentum_user_business::repository::session_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-pub struct SessionRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct SessionRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl SessionRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> SessionRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -24,7 +31,10 @@ impl SessionRepository {
     }
 }
 
-impl SessionRepositoryTrait for SessionRepository {
+impl<L> SessionRepositoryTrait for SessionRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
         //move todo table name/prefix to const/param
         let sql = "SELECT id, user_id, token FROM ag_user_session WHERE token = $1 LIMIT 1";

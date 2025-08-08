@@ -6,15 +6,24 @@ use crate::service::{
 use argentum_log_business::LoggerTrait;
 use std::sync::Arc;
 
-pub struct RestDiC {
+pub struct RestDiC<L>
+where
+    L: LoggerTrait,
+{
     pub request_transformer: Arc<RequestTransformer>,
     pub response_transformer: Arc<ResponseToJsonTransformer>,
     pub error_pre_handler: Arc<ErrorPreHandler>,
-    pub error_handler: Arc<ErrorHandler>,
+    pub error_handler: Arc<ErrorHandler<L>>,
 }
 
-impl RestDiC {
-    pub fn new(logger: Arc<dyn LoggerTrait>) -> Self {
+impl<L> RestDiC<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(logger: Arc<L>) -> Self
+    where
+        L: LoggerTrait,
+    {
         let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
         let schema_extractor = Arc::new(SchemaExtractor::new());
         let header_params_extractor = Arc::new(HeaderParamsExtractor::new(

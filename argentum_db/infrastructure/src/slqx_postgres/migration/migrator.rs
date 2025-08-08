@@ -8,19 +8,25 @@ use sqlx::types::chrono::Utc;
 use sqlx_postgres::Postgres;
 use std::sync::Arc;
 
-pub struct Migrator<'a> {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct Migrator<'a, L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     migrations: MigrationCollection<'a>,
     migration_table_name: &'a str,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl<'a> Migrator<'a> {
+impl<'a, L> Migrator<'a, L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
-        adapter: Arc<SqlxPostgresAdapter>,
+        adapter: Arc<SqlxPostgresAdapter<L>>,
         migrations: MigrationCollection<'a>,
         migration_table_name: &'a str,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> Self {
         Self {
             adapter,

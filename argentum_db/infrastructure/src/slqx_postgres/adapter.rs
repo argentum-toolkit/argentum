@@ -17,13 +17,19 @@ pub trait FromDbRow: Sized {
     fn from_db_row(row: DbRow) -> Result<Self, Error>;
 }
 
-pub struct SqlxPostgresAdapter {
+pub struct SqlxPostgresAdapter<L>
+where
+    L: LoggerTrait,
+{
     pub pool: Arc<PgPool>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl SqlxPostgresAdapter {
-    pub fn new(pool: Arc<PgPool>, logger: Arc<dyn LoggerTrait>) -> Self {
+impl<L> SqlxPostgresAdapter<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(pool: Arc<PgPool>, logger: Arc<L>) -> Self {
         Self { pool, logger }
     }
 

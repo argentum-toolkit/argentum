@@ -149,24 +149,18 @@ cargo install dioxus-cli
 * DI builders: make it similar
 * behavior tests
 
-* performance optimization
-
 * rest-generator
-** scripts to simplify generation of API library
-** publish generator to hub.docker.com
+** tooling
+*** scripts to simplify generation of API library
+*** publish generator to hub.docker.com
 ** create regex factory for all types of `path params`
-** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
-**`type ViolationItems = HashMap<String, Violation>`; instead of `struct ViolationItems(pub HashMap<String, Violation>);`
 ** generate `query params`
-** generate inline objects
+** ?generate inline objects
 ** tests
 ** fix generator for cases when string field parses as integer
 
-* Profiling
-
 * DB
 ** table names as a const or as a param
-** Move DB to new database component
 ** ?Foreign key for session
 
 * documentation

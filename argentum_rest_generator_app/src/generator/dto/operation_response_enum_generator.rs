@@ -53,12 +53,12 @@ impl OperationResponseEnumGenerator {
                     .clone()
                     .split('/')
                     .last()
-                    .unwrap_or_else(|| {
-                        panic!(
+                    .ok_or_else(|| {
+                        format!(
                             "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
                             r.reference
                         )
-                    })
+                    })?
                     .to_string(),
                 RefOrObject::Object(_) => {
                     todo!(

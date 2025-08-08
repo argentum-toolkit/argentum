@@ -54,7 +54,7 @@ struct Data {
     pub use_responses: Vec<String>,
 }
 
-fn to_enum_name(code: &str) -> String {
+fn to_enum_name(code: &str) -> Result<String, Box<dyn Error>> {
     let m: BTreeMap<&str, &str> = BTreeMap::from([
         ("100", "CONTINUE"),
         ("101", "SWITCHING_PROTOCOLS"),
@@ -118,7 +118,9 @@ fn to_enum_name(code: &str) -> String {
         ("511", "NETWORK_AUTHENTICATION_REQUIRED"),
     ]);
 
-    m.get(code).unwrap().to_string()
+    m.get(code)
+        .map(|c| c.to_string())
+        .ok_or_else(|| format!("Unknown code `{code}`").into())
 }
 
 pub struct ClientGenerator {
@@ -171,8 +173,8 @@ impl ClientGenerator {
 
                 for (code, ref_or_obj) in &operation.responses {
                     let status_name = match StatusCode::from_str(&code.to_string()) {
-                        Ok(c) => to_enum_name(c.as_str()),
-                        Err(e) => panic!("Can't parse status code: {:?}", e),
+                        Ok(c) => to_enum_name(c.as_str())?,
+                        Err(e) => return Err(format!("Can't parse status code: {e:?}").into()),
                     };
 
                     let mut content_data: Vec<ContentData> = vec![];
@@ -181,10 +183,11 @@ impl ClientGenerator {
                         RefOrObject::Ref(r) => {
                             let component_ref = ComponentRef::from(r.reference.clone());
                             if !component_ref.is_response() {
-                                panic!(
+                                return Err(format!(
                                     "Wrong reference to response component: `{}`",
                                     r.reference.clone()
-                                );
+                                )
+                                .into());
                             }
 
                             response_name =
@@ -196,9 +199,9 @@ impl ClientGenerator {
                                 .components
                                 .responses
                                 .get(&component_ref.component_name)
-                                .unwrap_or_else(|| {
-                                    panic!("Response component `{}` not found", response_name)
-                                });
+                                .ok_or_else(|| {
+                                    format!("Response component `response_name` not found")
+                                })?;
 
                             for (content_type, media) in &response.content {
                                 let schema_name = match &media.schema {
@@ -206,18 +209,17 @@ impl ClientGenerator {
                                         let component_ref =
                                             ComponentRef::from(schema_ref.reference.clone());
                                         if !component_ref.is_schema() {
-                                            panic!(
+                                            return Err(format!(
                                                 "Wrong reference to schema component: `{}`",
                                                 r.reference.clone()
-                                            );
+                                            )
+                                            .into());
                                         }
 
                                         component_ref.component_name
                                     }
                                     RefOrObject::Object(_) => {
-                                        panic!(
-                                            "We don't support inline objects yet. Only Refs are allowed. Skipping..."
-                                        );
+                                        return Err("We don't support inline objects yet. Only Refs are allowed. Skipping...".into());
                                     }
                                 };
 
@@ -230,9 +232,7 @@ impl ClientGenerator {
                             }
                         }
                         RefOrObject::Object(_) => {
-                            panic!(
-                                "We don't support inline objects yet. Only Refs are allowed. Skipping..."
-                            );
+                            return Err("We don't support inline objects yet. Only Refs are allowed. Skipping...".into());
                         }
                     };
 
@@ -263,18 +263,6 @@ impl ClientGenerator {
 
             paths_data.push(item);
         }
-
-        // let operations = spec.operations();
-        //
-        // let mut security_enabled = false;
-        //
-        // for operation in operations.clone().into_iter() {
-        //     if operation.security.is_some() {
-        //         security_enabled = true;
-        //
-        //         break;
-        //     }
-        // }
 
         use_schemas.sort();
         use_schemas.dedup();

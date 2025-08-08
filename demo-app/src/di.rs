@@ -11,26 +11,32 @@ use argentum_user_account_business::use_case::user_registers_with_password::User
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct DiC {
+pub struct DiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
     pub id_factory: Arc<dyn IdFactory>,
     pub anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-    pub user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+    pub user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
     pub user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
     pub user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-    pub logger: Arc<dyn LoggerTrait>,
+    pub logger: Arc<L>,
 }
 
-impl DiC {
+impl<L> DiC<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         id_factory: Arc<dyn IdFactory>,
         anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-        user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
         user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
         user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-        logger: Arc<dyn LoggerTrait>,
-    ) -> DiC {
-        DiC {
+        logger: Arc<L>,
+    ) -> Self {
+        Self {
             id_factory,
             anonymous_registers_uc,
             user_logins_with_pw,
@@ -41,7 +47,7 @@ impl DiC {
     }
 }
 
-pub fn di_factory() -> DiC {
+pub fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));

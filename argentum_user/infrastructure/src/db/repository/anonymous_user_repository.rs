@@ -1,6 +1,7 @@
 use crate::db::dto::AnonymousUserDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_business::entity::user::AnonymousUser;
@@ -10,13 +11,19 @@ use argentum_user_business::repository::user_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-pub struct AnonymousUserRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct AnonymousUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl AnonymousUserRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> AnonymousUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -24,7 +31,10 @@ impl AnonymousUserRepository {
     }
 }
 
-impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
+impl<L> AnonymousUserRepositoryTrait for AnonymousUserRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
         let user_id = self.id_factory.id_to_uuid(id);
         //move todo table name/prefix to const/param

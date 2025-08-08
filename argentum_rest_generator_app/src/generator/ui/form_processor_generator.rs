@@ -69,12 +69,12 @@ impl FormProcessorGenerator {
                     .clone()
                     .split('/')
                     .last()
-                    .unwrap_or_else(|| {
-                        panic!(
+                    .ok_or_else(|| {
+                        format!(
                             "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
                             r.reference
                         )
-                    })
+                    })?
                     .to_string(),
                 RefOrObject::Object(_) => {
                     todo!(
@@ -88,16 +88,16 @@ impl FormProcessorGenerator {
 
         let mut schema_name: Option<String> = None;
 
-        if let Some(request_body) = self.request_body_extractor.extract(operation, &spec) {
+        if let Some(request_body) = self.request_body_extractor.extract(operation, &spec)? {
             //TODO copypasted from request_generator.rs
             let body = request_body
                 .content
                 .get("application/json")
-                .expect("Request body should contain `application/json` mime type");
+                .ok_or_else(|| "Request body should contain `application/json` mime type")?;
 
             if let Some((s_name, _)) = self
                 .schema_extractor
-                .extract_ref_with_name(&body.schema, spec)
+                .extract_ref_with_name(&body.schema, spec)?
             {
                 schema_name = Some(s_name);
             }

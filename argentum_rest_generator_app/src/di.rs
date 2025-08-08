@@ -20,23 +20,29 @@ use crate::template::helper::{
     camel_helper, content_type_to_type_helper, eq_helper, escape_var_name_helper, lower_helper,
     snake_helper, trim_mod_helper, upper_camel_helper,
 };
-use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use handlebars::Handlebars;
 use std::sync::Arc;
 
-pub struct DiC {
+pub struct DiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
-    pub openapi_generator: Arc<OpenApiGenerator>,
+    pub openapi_generator: Arc<OpenApiGenerator<L>>,
 }
 
-impl DiC {
-    pub fn new(openapi_generator: Arc<OpenApiGenerator>) -> DiC {
-        DiC { openapi_generator }
+impl<L> DiC<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(openapi_generator: Arc<OpenApiGenerator<L>>) -> Self {
+        Self { openapi_generator }
     }
 }
 
-pub fn di_factory() -> DiC {
+pub fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
     let mut reg = Handlebars::new();
     reg.register_template_string(
         "dto/operation_response_enum.item",
@@ -313,5 +319,5 @@ pub fn di_factory() -> DiC {
         ui_generator,
     ));
 
-    DiC::new(openapi_generator)
+    DiC::<DefaultLogger<PrettyWriter>>::new(openapi_generator)
 }

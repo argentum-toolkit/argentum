@@ -8,23 +8,29 @@ use argentum_log_business::LoggerTrait;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use std::sync::Arc;
 
-pub struct AnonymousWithTokenChangesPasswordUc {
+pub struct AnonymousWithTokenChangesPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
     encryptor: Arc<dyn Encryptor>,
     token_ttl: u32, //configurable ttl in seconds
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl AnonymousWithTokenChangesPasswordUc {
+impl<L> AnonymousWithTokenChangesPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
         encryptor: Arc<dyn Encryptor>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
         token_ttl: u32,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> Self {
         Self {
             user_repository,

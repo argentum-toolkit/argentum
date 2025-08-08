@@ -10,29 +10,38 @@ use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
-pub struct DiC<'a> {
-    pub user_migrator: Arc<Migrator<'a>>,
-    pub user_application_migrator: Arc<Migrator<'a>>,
+pub struct DiC<'a, L>
+where
+    L: LoggerTrait,
+{
+    pub user_migrator: Arc<Migrator<'a, L>>,
+    pub user_application_migrator: Arc<Migrator<'a, L>>,
 }
 
-impl<'a> DiC<'a> {
+impl<'a, L> DiC<'a, L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
-        user_migrator: Arc<Migrator<'a>>,
-        user_application_migrator: Arc<Migrator<'a>>,
-    ) -> DiC<'a> {
-        DiC {
+        user_migrator: Arc<Migrator<'a, L>>,
+        user_application_migrator: Arc<Migrator<'a, L>>,
+    ) -> Self {
+        Self {
             user_migrator,
             user_application_migrator,
         }
     }
 }
 
-async fn create_migrator<'a>(
+async fn create_migrator<'a, L>(
     u_database_url: &str,
     max_db_connections: u32,
     migrations: MigrationCollection<'a>,
-    logger: Arc<dyn LoggerTrait>,
-) -> Migrator<'a> {
+    logger: Arc<L>,
+) -> Migrator<'a, L>
+where
+    L: LoggerTrait,
+{
     let pool = Arc::new(
         PgPoolOptions::new()
             .max_connections(max_db_connections)
@@ -46,7 +55,7 @@ async fn create_migrator<'a>(
     Migrator::new(adapter, migrations, "ag__migrations", logger)
 }
 
-pub async fn di_factory<'a>() -> DiC<'a> {
+pub async fn di_factory<'a>() -> DiC<'a, DefaultLogger<PrettyWriter>> {
     dotenv().ok();
 
     let log_writer = Arc::new(PrettyWriter::new());

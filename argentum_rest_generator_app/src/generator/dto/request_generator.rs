@@ -51,12 +51,12 @@ impl RequestGenerator {
                 .clone()
                 .split('/')
                 .last()
-                .unwrap_or_else(|| {
-                    panic!(
+                .ok_or_else(|| {
+                    format!(
                         "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
                         r.reference
                     )
-                })
+                })?
                 .to_string(),
             RefOrObject::Object(_o) => {
                 todo!(
@@ -126,16 +126,16 @@ impl RequestGenerator {
                         let parts = r.reference.split("#/").collect::<Vec<_>>();
 
                         if parts.clone().len() != 2 {
-                            panic!("Wrong format of reference {}", r.reference)
+                            return Err(format!("Wrong format of reference {}", r.reference).into());
                         }
 
-                        let _file_path = parts.first().unwrap_or_else(|| {
-                            panic!("Wrong file path of reference {}", r.reference)
-                        });
+                        let _file_path = parts.first().ok_or_else(|| {
+                            format!("Wrong file path of reference {}", r.reference)
+                        })?;
 
-                        let component_path = parts.last().unwrap_or_else(|| {
-                            panic!("Wrong component path of reference {}", r.reference)
-                        });
+                        let component_path = parts.last().ok_or_else(|| {
+                            format!("Wrong component path of reference {}", r.reference)
+                        })?;
 
                         let component_parts = component_path.split('/').collect::<Vec<_>>();
 
@@ -143,16 +143,13 @@ impl RequestGenerator {
                             || component_parts[0] != "components"
                             || component_parts[1] != "requestBodies"
                         {
-                            panic!(
-                                "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
-                                component_path
-                            )
+                            return Err(format!("Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`").into());
                         }
 
-                        let component_name = component_parts.last().unwrap_or_else(|| panic!(
-                            "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
-                            component_path
-                        ));
+                        let component_name = component_parts.last()
+                        .ok_or_else(|| format!(
+                            "Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`"
+                        ))?;
 
                         spec.components.request_bodies[&component_name.to_string()].clone()
                     }

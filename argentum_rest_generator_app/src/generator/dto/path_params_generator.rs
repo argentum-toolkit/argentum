@@ -82,17 +82,15 @@ impl PathParamsGenerator {
             //todo: check $ref
             let (data_type, raw_type, is_ref) = match property {
                 RefOrObject::Object(schema) => match schema.schema_type {
-                    None => ("()".to_string(), "Option<()>".to_string(), false),
+                    None => ("()".into(), "Option<()>".into(), false),
                     Some(SchemaType::String) => match schema.format {
-                        None => ("String".to_string(), "Option<String>".to_string(), false),
-                        Some(SchemaFormat::Standard(StandardFormat::Uuid)) => (
-                            "uuid::Uuid".to_string(),
-                            "Option<uuid::Uuid>".to_string(),
-                            false,
-                        ),
-                        Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
+                        None => ("String".into(), "Option<String>".into(), false),
+                        Some(SchemaFormat::Standard(StandardFormat::Uuid)) => {
+                            ("uuid::Uuid".into(), "Option<uuid::Uuid>".into(), false)
+                        }
+                        Some(_) => ("String".into(), "Option<String>".into(), false),
                     },
-                    Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
+                    Some(_) => ("String".into(), "Option<String>".into(), false),
                 },
                 RefOrObject::Ref(r) => {
                     let type_name = r
@@ -100,18 +98,18 @@ impl PathParamsGenerator {
                         .clone()
                         .split('/')
                         .last()
-                        .unwrap_or_else(|| {
-                            panic!(
+                        .ok_or_else(|| {
+                            format!(
                                 "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
                                 r.reference
                             )
-                        })
+                        })?
                         .to_string();
 
-                    dependencies.push(format!("crate::dto::schema::{}", type_name));
-                    dependencies.push(format!("crate::dto::schema::{}Raw", type_name));
+                    dependencies.push(format!("crate::dto::schema::{type_name}"));
+                    dependencies.push(format!("crate::dto::schema::{type_name}Raw"));
 
-                    (type_name.clone(), format!("Option<{}Raw>", type_name), true)
+                    (type_name.clone(), format!("Option<{type_name}Raw>"), true)
                 }
             };
 

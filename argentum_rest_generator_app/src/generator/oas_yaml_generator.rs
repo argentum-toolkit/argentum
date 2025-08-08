@@ -18,8 +18,10 @@ impl OasYamlGenerator {
         let file_path = base_output_path.to_owned() + PATH;
 
         let path = std::path::Path::new(file_path.as_str());
-        let prefix = path.parent().unwrap();
-        std::fs::create_dir_all(prefix).unwrap();
+        let prefix = path
+            .parent()
+            .ok_or_else(|| format!("Can't find parent path: {path:?}"))?;
+        std::fs::create_dir_all(prefix)?;
 
         let f = std::fs::OpenOptions::new()
             .write(true)

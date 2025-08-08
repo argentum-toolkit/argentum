@@ -10,7 +10,10 @@ use argentum_standard_business::data_type::id::IdFactory;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use std::sync::Arc;
 
-pub struct AnonymousRequestsRestoreTokenUc {
+pub struct AnonymousRequestsRestoreTokenUc<L>
+where
+    L: LoggerTrait,
+{
     //configurable param
     product_name: String,
     /// First part of url
@@ -20,10 +23,13 @@ pub struct AnonymousRequestsRestoreTokenUc {
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
     token_generator: Arc<dyn GeneratorTrait>,
     notificator: Arc<dyn NotificatorTrait>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl AnonymousRequestsRestoreTokenUc {
+impl<L> AnonymousRequestsRestoreTokenUc<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         product_name: String,
         restore_password_front_url: String,
@@ -32,7 +38,7 @@ impl AnonymousRequestsRestoreTokenUc {
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
         token_generator: Arc<dyn GeneratorTrait>,
         notificator: Arc<dyn NotificatorTrait>,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> Self {
         Self {
             product_name,

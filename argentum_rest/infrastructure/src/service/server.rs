@@ -8,7 +8,10 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::net::TcpListener;
 
-pub struct Server {
+pub struct Server<L>
+where
+    L: LoggerTrait,
+{
     //config
     addr: SocketAddr,
 
@@ -17,18 +20,21 @@ pub struct Server {
 
     response_transformer: Arc<ResponseToJsonTransformer>,
 
-    error_handler: Arc<ErrorHandler>,
+    error_handler: Arc<ErrorHandler<L>>,
 
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl Server {
+impl<L> Server<L>
+where
+    L: LoggerTrait + 'static,
+{
     pub fn new(
         addr: SocketAddr,
         router: Arc<dyn RouterTrait>,
         response_transformer: Arc<ResponseToJsonTransformer>,
-        error_handler: Arc<ErrorHandler>,
-        logger: Arc<dyn LoggerTrait>,
+        error_handler: Arc<ErrorHandler<L>>,
+        logger: Arc<L>,
     ) -> Self {
         Server {
             addr,
@@ -40,12 +46,15 @@ impl Server {
     }
 
     pub async fn serve(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        async fn handle(
+        async fn handle<T>(
             req: Request,
             router: Arc<dyn RouterTrait>,
             transformer: Arc<ResponseToJsonTransformer>,
-            error_handler: Arc<ErrorHandler>,
-        ) -> Result<Response, hyper::Error> {
+            error_handler: Arc<ErrorHandler<T>>,
+        ) -> Result<Response, hyper::Error>
+        where
+            T: LoggerTrait,
+        {
             let res = router.route(req).await;
 
             let response = match res {

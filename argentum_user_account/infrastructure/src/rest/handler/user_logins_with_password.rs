@@ -1,4 +1,5 @@
 use crate::rest::transformer::DtoToUserLoginsWithPasswordParams;
+use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{
     HttpError, InternalServerError, Unauthorized,
 };
@@ -14,15 +15,21 @@ use argentum_user_account_rest::server::handler::UserLoginsWithPasswordTrait;
 use argentum_user_business::entity::user::User;
 use std::sync::Arc;
 
-pub struct UserLoginsWithPasswordHandler {
-    uc: Arc<UserLoginsWithPasswordUc>,
+pub struct UserLoginsWithPasswordHandler<L>
+where
+    L: LoggerTrait,
+{
+    uc: Arc<UserLoginsWithPasswordUc<L>>,
     id_factory: Arc<UniqueIdFactory>,
     dto_to_user_logins_with_password_params: Arc<DtoToUserLoginsWithPasswordParams>,
 }
 
-impl UserLoginsWithPasswordHandler {
+impl<L> UserLoginsWithPasswordHandler<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
-        uc: Arc<UserLoginsWithPasswordUc>,
+        uc: Arc<UserLoginsWithPasswordUc<L>>,
         id_factory: Arc<UniqueIdFactory>,
         dto_to_user_logins_with_password_params: Arc<DtoToUserLoginsWithPasswordParams>,
     ) -> Self {
@@ -34,7 +41,10 @@ impl UserLoginsWithPasswordHandler {
     }
 }
 
-impl UserLoginsWithPasswordTrait for UserLoginsWithPasswordHandler {
+impl<L> UserLoginsWithPasswordTrait for UserLoginsWithPasswordHandler<L>
+where
+    L: LoggerTrait,
+{
     fn handle(
         &self,
         req: UserLoginsWithPasswordRequest,

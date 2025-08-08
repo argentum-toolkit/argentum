@@ -4,12 +4,18 @@ use argentum_log_business::LoggerTrait;
 use http::StatusCode;
 use std::sync::Arc;
 
-pub struct ErrorHandler {
-    logger: Arc<dyn LoggerTrait>,
+pub struct ErrorHandler<L>
+where
+    L: LoggerTrait,
+{
+    logger: Arc<L>,
 }
 
-impl ErrorHandler {
-    pub fn new(logger: Arc<dyn LoggerTrait>) -> Self {
+impl<L> ErrorHandler<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(logger: Arc<L>) -> Self {
         Self { logger }
     }
 

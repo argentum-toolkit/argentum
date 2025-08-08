@@ -27,21 +27,27 @@ use argentum_user_business::repository::user_repository::{
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct BusinessDiC {
+pub struct BusinessDiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
     pub anonymous_registers_uc: Arc<AnonymousRegistersUc>,
     pub user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc>,
-    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc>,
+    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc<L>>,
     pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
-    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc>,
-    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc>,
+    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<L>>,
+    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<L>>,
 }
 
-pub struct UserAccountBusinessDiCBuilder {
+pub struct UserAccountBusinessDiCBuilder<L>
+where
+    L: LoggerTrait,
+{
     id_factory: Arc<dyn IdFactory>,
     encryptor: Arc<dyn Encryptor>,
     validator: Arc<dyn Validator>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
     notificator: Arc<dyn NotificatorTrait>,
 
     anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait>>,
@@ -57,12 +63,15 @@ pub struct UserAccountBusinessDiCBuilder {
     restore_password_front_url: String,
 }
 
-impl UserAccountBusinessDiCBuilder {
+impl<L> UserAccountBusinessDiCBuilder<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         id_factory: Arc<dyn IdFactory>,
         encryptor: Arc<dyn Encryptor>,
         validator: Arc<dyn Validator>,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
         notificator: Arc<dyn NotificatorTrait>,
     ) -> Self {
         Self {
@@ -134,7 +143,7 @@ impl UserAccountBusinessDiCBuilder {
         self
     }
 
-    pub fn build(&self) -> BusinessDiC {
+    pub fn build(&self) -> BusinessDiC<L> {
         let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
             self.id_factory.clone(),
             self.anonymous_user_repository.clone().unwrap(),

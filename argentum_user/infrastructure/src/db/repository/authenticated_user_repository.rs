@@ -1,6 +1,7 @@
 use crate::db::dto::AuthenticatedUserDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
@@ -15,13 +16,19 @@ use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
 
-pub struct AuthenticatedUserRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct AuthenticatedUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl AuthenticatedUserRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> AuthenticatedUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -75,7 +82,10 @@ impl AuthenticatedUserRepository {
     }
 }
 
-impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
+impl<L> AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find(&self, user_id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         let id = self.id_factory.id_to_uuid(user_id);
         let sql = "SELECT id, created_at, first_name, last_name, email FROM ag_user_authenticated WHERE id = $1 LIMIT 1";

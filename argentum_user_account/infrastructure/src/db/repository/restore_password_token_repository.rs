@@ -1,6 +1,7 @@
 use crate::db::dto::RestorePasswordTokenDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_account_business::entity::restore_password_token::RestorePasswordToken;
@@ -13,13 +14,19 @@ use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
 
-pub struct RestorePasswordTokenRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct RestorePasswordTokenRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl RestorePasswordTokenRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> RestorePasswordTokenRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -49,7 +56,10 @@ impl RestorePasswordTokenRepository {
     }
 }
 
-impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository {
+impl<L> RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find(
         &self,
         token_id: &Id,

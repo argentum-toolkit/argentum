@@ -9,25 +9,31 @@ use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct App {
+pub struct App<L>
+where
+    L: LoggerTrait,
+{
     id_factory: Arc<dyn IdFactory>,
     anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-    user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+    user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
     user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
     user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl App {
+impl<L> App<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         id_factory: Arc<dyn IdFactory>,
         anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-        user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
         user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
         user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-        logger: Arc<dyn LoggerTrait>,
-    ) -> App {
-        App {
+        logger: Arc<L>,
+    ) -> Self {
+        Self {
             id_factory,
             anonymous_registers_uc,
             user_logins_with_pw,

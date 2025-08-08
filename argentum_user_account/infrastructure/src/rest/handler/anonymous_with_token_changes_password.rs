@@ -1,10 +1,7 @@
-use argentum_user_account_rest::dto::request::{
-    AnonymousWithTokenChangesPasswordRequest,
-};
-use argentum_user_account_rest::server::handler::{
-    AnonymousWithTokenChangesPasswordTrait,
-};
-use crate::rest::transformer::{ DtoToAnonymousWithTokenChangesPasswordParams};
+use argentum_log_business::LoggerTrait;
+use argentum_user_account_rest::dto::request::AnonymousWithTokenChangesPasswordRequest;
+use argentum_user_account_rest::server::handler::AnonymousWithTokenChangesPasswordTrait;
+use crate::rest::transformer::DtoToAnonymousWithTokenChangesPasswordParams;
 use argentum_rest_infrastructure::data_type::error::{ HttpError, InternalServerError, UnprocessableEntity};
 use argentum_user_account_rest::dto::schema::EmptyResponse;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
@@ -14,15 +11,21 @@ use argentum_user_account_business::use_case::restore_password::anonymous_with_t
 use argentum_user_account_rest::dto::operation_response_enum::AnonymousWithTokenChangesPasswordOperationResponseEnum;
 use argentum_user_account_rest::dto::response::EmptyOkResponse;
 
-pub struct AnonymousWithTokenChangesPasswordHandler {
-    uc: Arc<AnonymousWithTokenChangesPasswordUc>,
+pub struct AnonymousWithTokenChangesPasswordHandler<L>
+where
+    L: LoggerTrait,
+{
+    uc: Arc<AnonymousWithTokenChangesPasswordUc<L>>,
     dto_to_anonymous_with_token_changes_password_params:
         Arc<DtoToAnonymousWithTokenChangesPasswordParams>,
 }
 
-impl AnonymousWithTokenChangesPasswordHandler {
+impl<L> AnonymousWithTokenChangesPasswordHandler<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
-        uc: Arc<AnonymousWithTokenChangesPasswordUc>,
+        uc: Arc<AnonymousWithTokenChangesPasswordUc<L>>,
         dto_to_anonymous_with_token_changes_password_params: Arc<
             DtoToAnonymousWithTokenChangesPasswordParams,
         >,
@@ -34,7 +37,10 @@ impl AnonymousWithTokenChangesPasswordHandler {
     }
 }
 
-impl AnonymousWithTokenChangesPasswordTrait for AnonymousWithTokenChangesPasswordHandler {
+impl<L> AnonymousWithTokenChangesPasswordTrait for AnonymousWithTokenChangesPasswordHandler<L>
+where
+    L: LoggerTrait,
+{
     fn handle(
         &self,
         req: AnonymousWithTokenChangesPasswordRequest,

@@ -1,5 +1,5 @@
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
-use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
 use argentum_rest_infrastructure::service::{BearerAuthenticator, RouterCombinator, Server};
@@ -16,18 +16,24 @@ use argentum_user_rest::ApiDiC as UserApiDiC;
 use dotenvy::dotenv;
 use std::sync::Arc;
 
-pub struct DiC {
+pub struct DiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
-    pub server: Arc<Server>,
+    pub server: Arc<Server<L>>,
 }
 
-impl DiC {
-    pub fn new(server: Arc<Server>) -> DiC {
-        DiC { server }
+impl<L> DiC<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(server: Arc<Server<L>>) -> Self {
+        Self { server }
     }
 }
 
-pub async fn di_factory() -> DiC {
+pub async fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
     dotenv().ok();
 
     const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";

@@ -1,6 +1,7 @@
 use crate::db::dto::AnonymousBindingDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
@@ -10,13 +11,19 @@ use argentum_user_business::repository::anonymous_binding_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-pub struct AnonymousBindingRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct AnonymousBindingRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl AnonymousBindingRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> AnonymousBindingRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -24,7 +31,10 @@ impl AnonymousBindingRepository {
     }
 }
 
-impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
+impl<L> AnonymousBindingRepositoryTrait for AnonymousBindingRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find_by_user_id(
         &self,
         user_id: &Id,

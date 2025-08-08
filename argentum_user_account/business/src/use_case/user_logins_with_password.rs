@@ -17,17 +17,23 @@ use argentum_user_business::repository::user_repository::{
 };
 use std::sync::Arc;
 
-pub struct UserLoginsWithPasswordUc {
+pub struct UserLoginsWithPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
     anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
     session_repository: Arc<dyn SessionRepositoryTrait>,
     credential_checker: Arc<PasswordCredentialChecker>,
     id_factory: Arc<dyn IdFactory>,
     token_generator: Arc<dyn GeneratorTrait>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl UserLoginsWithPasswordUc {
+impl<L> UserLoginsWithPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
         anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
@@ -35,7 +41,7 @@ impl UserLoginsWithPasswordUc {
         credential_checker: Arc<PasswordCredentialChecker>,
         id_factory: Arc<dyn IdFactory>,
         token_generator: Arc<dyn GeneratorTrait>,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> Self {
         Self {
             user_repository,

@@ -30,12 +30,15 @@ impl UserInfrastructureDiCBuilder {
         }
     }
 
-    pub async fn default_services(
+    pub async fn default_services<L>(
         &mut self,
         connection_url: &str,
         max_db_connections: u32,
-        logger: Arc<dyn LoggerTrait>,
-    ) -> &mut Self {
+        logger: Arc<L>,
+    ) -> &mut Self
+    where
+        L: LoggerTrait + 'static,
+    {
         let pool = Arc::new(
             PgPoolOptions::new()
                 .max_connections(max_db_connections)
