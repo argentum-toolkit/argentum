@@ -40,9 +40,14 @@ impl Default for ValidatorMock {
 }
 
 impl Validator for ValidatorMock {
-    fn validate(&self, password: &str, salt: &str, encoded_password: &str) -> bool {
+    fn validate(
+        &self,
+        password: &str,
+        salt: &str,
+        encoded_password: &str,
+    ) -> Result<bool, EncryptionError> {
         let hash = [salt, password].join("");
 
-        encoded_password == hash
+        Ok(encoded_password == hash)
     }
 }

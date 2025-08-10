@@ -22,7 +22,8 @@ const CREDENTIAL_LEN: usize = digest::SHA512_OUTPUT_LEN;
 
 impl Encryptor for Pbkdf2 {
     fn encrypt(&self, password: &str) -> Result<(String, String), EncryptionError> {
-        let n_iter: NonZeroU32 = NonZeroU32::new(100000).unwrap();
+        let n_iter: NonZeroU32 = NonZeroU32::new(100000)
+            .ok_or_else(|| EncryptionError::Other("Can't create NonZeroU32".into()))?;
         let rng = rand::SystemRandom::new();
 
         let mut salt = [0u8; CREDENTIAL_LEN];
@@ -49,21 +50,30 @@ impl Encryptor for Pbkdf2 {
 }
 
 impl Validator for Pbkdf2 {
-    fn validate(&self, password: &str, salt: &str, encoded_password: &str) -> bool {
-        let n_iter: NonZeroU32 = NonZeroU32::new(100000).unwrap();
+    fn validate(
+        &self,
+        password: &str,
+        salt: &str,
+        encoded_password: &str,
+    ) -> Result<bool, EncryptionError> {
+        let n_iter: NonZeroU32 = NonZeroU32::new(100000)
+            .ok_or_else(|| EncryptionError::Other("Can't create NonZeroU32".into()))?;
 
-        //TODO: check errors instead of unwrap
         let should_succeed = pbkdf2::verify(
             pbkdf2::PBKDF2_HMAC_SHA512,
             n_iter,
-            &HEXUPPER.decode(salt.as_bytes()).unwrap(),
+            &HEXUPPER
+                .decode(salt.as_bytes())
+                .map_err(|e| EncryptionError::Other(e.to_string()))?,
             password.as_bytes(),
-            &HEXUPPER.decode(encoded_password.as_bytes()).unwrap(),
+            &HEXUPPER
+                .decode(encoded_password.as_bytes())
+                .map_err(|e| EncryptionError::Other(e.to_string()))?,
         );
 
         match should_succeed {
-            Ok(()) => true,
-            Err(..) => false,
+            Ok(()) => Ok(true),
+            Err(..) => Ok(false),
         }
     }
 }
@@ -111,7 +121,7 @@ mod tests {
         let pbkdf2 = Pbkdf2::new();
         let result = pbkdf2.validate(password, salt, hash);
 
-        assert_eq!(true, result);
+        assert_eq!(Ok(true), result);
     }
 
     #[test]
@@ -122,6 +132,6 @@ mod tests {
         let pbkdf2 = Pbkdf2::new();
         let result = pbkdf2.validate(password, salt, hash);
 
-        assert_eq!(false, result);
+        assert_eq!(Ok(false), result);
     }
 }

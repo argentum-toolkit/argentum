@@ -1,7 +1,7 @@
 use argentum_notification_business::{Notification, NotificationError, NotificatorTrait};
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 
-use lettre::{Message, SmtpTransport, Transport};
+use lettre::{Message, SmtpTransport, Transport, address::AddressError};
 
 ///
 /// How to init notificator via `lettre`
@@ -64,12 +64,17 @@ impl<'s> NotificatorTrait for EmailNotificator<'s> {
             None => "".to_string(),
         };
 
-        let to_mbox = format!("{} {} <{}>", user.name.first, last, user.email.as_string())
+        let to_string = format!("{} {} <{}>", user.name.first, last, user.email.as_string());
+        let to_mbox = to_string
             .parse()
-            .unwrap();
+            .map_err(|e: AddressError| NotificationError::ToError(to_string, e.to_string()))?;
+
+        let form_mbox = self.from.clone().parse().map_err(|e: AddressError| {
+            NotificationError::FromError(self.from.clone(), e.to_string())
+        })?;
 
         let building_result = Message::builder()
-            .from(self.from.parse().unwrap())
+            .from(form_mbox)
             .to(to_mbox)
             .subject(notification.subject)
             .body(notification.body);

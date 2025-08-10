@@ -88,8 +88,8 @@ where
             restore_password_token_repository: None,
             token_generator: None,
             restore_password_token_ttl: 1,
-            product_name: "".to_string(),
-            restore_password_front_url: "".to_string(),
+            product_name: "".into(),
+            restore_password_front_url: "".into(),
         }
     }
 
@@ -109,15 +109,18 @@ where
         self
     }
 
-    pub fn config(
+    pub fn config<S>(
         &mut self,
-        product_name: String,
+        product_name: S,
         restore_password_token_ttl: u32,
-        restore_password_front_url: String,
-    ) -> &mut Self {
-        self.product_name = product_name;
+        restore_password_front_url: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
+        self.product_name = product_name.into();
         self.restore_password_token_ttl = restore_password_token_ttl;
-        self.restore_password_front_url = restore_password_front_url;
+        self.restore_password_front_url = restore_password_front_url.into();
 
         self
     }
@@ -193,8 +196,8 @@ where
             ));
 
         let anonymous_requests_restore_token_uc = Arc::new(AnonymousRequestsRestoreTokenUc::new(
-            self.product_name.clone(),
-            self.restore_password_front_url.clone(),
+            self.product_name.clone().into(),
+            self.restore_password_front_url.clone().into(),
             self.id_factory.clone(),
             self.authenticated_user_repository.clone().unwrap(),
             self.restore_password_token_repository.clone().unwrap(),

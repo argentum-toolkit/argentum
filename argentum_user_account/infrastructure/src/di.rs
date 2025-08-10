@@ -76,12 +76,15 @@ where
         }
     }
 
-    pub fn config(
+    pub fn config<S>(
         &mut self,
-        product_name: String,
+        product_name: S,
         restore_password_token_ttl: u32,
-        restore_password_front_url: String,
-    ) -> &mut Self {
+        restore_password_front_url: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
         self.business_builder.config(
             product_name,
             restore_password_token_ttl,

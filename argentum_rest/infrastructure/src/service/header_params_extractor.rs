@@ -1,5 +1,5 @@
 use crate::service::ValidationErrorTransformer;
-use argentum_standard_business::invariant_violation::InvariantResult;
+use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use hyper::HeaderMap;
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
@@ -25,10 +25,25 @@ impl HeaderParamsExtractor {
 
         for (k, v) in headers.into_iter() {
             if let Some(key) = k {
-                map.insert(key.to_string(), v.to_str().unwrap().to_string());
+                map.insert(
+                    key.to_string(),
+                    v.to_str()
+                        .map_err(|_e| {
+                            Violations::new(
+                                vec!["Internal server error (Wrong header value)".to_string()],
+                                None,
+                            )
+                        })?
+                        .to_string(),
+                );
             }
         }
-        let pp = serde_json::to_string(&map).unwrap();
+        let pp = serde_json::to_string(&map).map_err(|_e| {
+            Violations::new(
+                vec!["Internal server error (serialization)".to_string()],
+                None,
+            )
+        })?;
 
         let deserialized = R::from_json_slice(pp.as_ref());
 

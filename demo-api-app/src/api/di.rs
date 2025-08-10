@@ -39,7 +39,7 @@ pub async fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
     const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
 
     let u_database_url = env::var(U_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{} must be set", U_CONNECTION_URL_ENV_NAME));
+        .unwrap_or_else(|_| panic!("{U_CONNECTION_URL_ENV_NAME} must be set"));
 
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
@@ -74,7 +74,7 @@ pub async fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
     const UA_CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
 
     let database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{} must be set", UA_CONNECTION_URL_ENV_NAME));
+        .unwrap_or_else(|_| panic!("{UA_CONNECTION_URL_ENV_NAME} must be set",));
 
     let ua_di = UserAccountInfrastructureDiCBuilder::new(
         u_di.clone(),

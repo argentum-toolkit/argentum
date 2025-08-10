@@ -1,5 +1,5 @@
 use crate::service::{RawPathParams, ValidationErrorTransformer};
-use argentum_standard_business::invariant_violation::InvariantResult;
+use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use std::sync::Arc;
@@ -19,7 +19,13 @@ impl PathParamsExtractor {
     where
         R: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>,
     {
-        let pp = serde_json::to_string(&raw_path_params).unwrap();
+        let pp = serde_json::to_string(&raw_path_params).map_err(|_e| {
+            Violations::new(
+                vec!["Internal server error (path params serialization)".to_string()],
+                None,
+            )
+        })?;
+
         let deserialized = R::from_json_slice(pp.as_ref());
 
         match deserialized {

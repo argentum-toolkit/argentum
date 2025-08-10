@@ -1,5 +1,5 @@
 use crate::service::{RawQueryParams, ValidationErrorTransformer};
-use argentum_standard_business::invariant_violation::InvariantResult;
+use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use std::sync::Arc;
@@ -19,7 +19,13 @@ impl QueryParamsExtractor {
     where
         R: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>,
     {
-        let pp = serde_json::to_string(&raw_query_params).unwrap();
+        //TODO: log error
+        let pp = serde_json::to_string(&raw_query_params).map_err(|_e| {
+            Violations::new(
+                vec!["Internal server error (query param serialization)".to_string()],
+                None,
+            )
+        })?;
         let deserialized = R::from_json_slice(pp.as_ref());
 
         match deserialized {

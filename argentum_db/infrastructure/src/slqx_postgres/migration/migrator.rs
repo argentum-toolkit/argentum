@@ -88,7 +88,8 @@ where
     pub async fn migrate_one(&self, version: &str, migration: &Vec<String>) -> Result<(), String> {
         self.logger.info(format!("Migrate version {version}"));
 
-        let tx_res = self.adapter.begin_transaction().await;
+        let tx_res: Result<Transaction<'static, Postgres>, DbAdapterError> =
+            self.adapter.begin_transaction().await;
         if let Err(e) = tx_res {
             self.logger
                 .critical(format!("Can't start transaction: {e}"));
@@ -96,7 +97,7 @@ where
             return Err(e.to_string());
         }
 
-        let mut tx = tx_res.unwrap();
+        let mut tx = tx_res.map_err(|e| e.to_string())?;
 
         let sql = format!(
             "SELECT * FROM {} WHERE version = $1 LIMIT 1;",

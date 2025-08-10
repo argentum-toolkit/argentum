@@ -125,10 +125,11 @@ where
         if let RefOrObject::Ref(r) = property {
             let component_ref = ComponentRef::from(r.reference.clone());
             if !component_ref.is_schema() {
-                panic!(
+                return Err(format!(
                     "Wrong reference to schema component: `{}`",
                     r.reference.clone()
-                );
+                )
+                .into());
             }
 
             let component_name = component_ref.component_name;
@@ -166,10 +167,11 @@ where
                         include_spec.components.schemas.get(component_name.as_str());
                     match component {
                         None => {
-                            panic!(
+                            return Err(format!(
                                 "Schema #/components/schemas/{} is not found",
                                 component_name.clone()
                             )
+                            .into());
                         }
                         Some(s) => {
                             let ss: &mut Schema = &mut s.clone();
@@ -211,10 +213,11 @@ where
 
                     match component {
                         None => {
-                            panic!(
+                            return Err(format!(
                                 "Schema #/components/schemas/{} is not found",
                                 component_name.clone()
                             )
+                            .into());
                         }
                         Some(s) => {
                             let ss: &mut Schema = &mut s.clone();
@@ -242,10 +245,11 @@ where
         if let RefOrObject::Ref(r) = property {
             let component_ref = ComponentRef::from(r.reference.clone());
             if !component_ref.is_request_body() {
-                panic!(
+                return Err(format!(
                     "Wrong reference to RequestBody component: `{}`",
                     r.reference.clone()
-                );
+                )
+                .into());
             }
 
             if let Some(file_path) = component_ref.file_path {
@@ -263,10 +267,11 @@ where
                     .get(component_ref.component_name.as_str());
                 match component {
                     None => {
-                        panic!(
+                        return Err(format!(
                             "Request body #/components/requestBodies/{} is not found",
                             component_ref.component_name.clone()
                         )
+                        .into());
                     }
                     Some(s) => {
                         let b_name = component_ref.component_name;
@@ -303,10 +308,11 @@ where
         if let RefOrObject::Ref(r) = property {
             let component_ref = ComponentRef::from(r.reference.clone());
             if !component_ref.is_response() {
-                panic!(
+                return Err(format!(
                     "Wrong reference to response component: `{}`",
                     r.reference.clone()
-                );
+                )
+                .into());
             }
 
             if let Some(file_path) = component_ref.file_path {
@@ -324,10 +330,11 @@ where
                     .get(component_ref.component_name.as_str());
                 match component {
                     None => {
-                        panic!(
+                        return Err(format!(
                             "Response #/components/responses/{} is not found",
                             component_ref.component_name.clone()
                         )
+                        .into());
                     }
                     Some(s) => {
                         let b_name = component_ref.component_name;
