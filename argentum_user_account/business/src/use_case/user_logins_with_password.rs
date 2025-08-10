@@ -84,18 +84,14 @@ where
                 .session_repository
                 .delete_users_sessions(&anonymous.id())
             {
-                Ok(_) => self.logger.info("Anonymous session deleted".to_string()),
-                Err(_) => self
-                    .logger
-                    .warning("Anonymous session is not deleted".to_string()),
+                Ok(_) => self.logger.info("Anonymous session deleted"),
+                Err(_) => self.logger.warning("Anonymous session is not deleted"),
             };
 
             let binding = AnonymousBinding::new(user.id(), anonymous.id());
             match self.anonymous_binding_repository.save(&binding) {
-                Ok(_) => self.logger.info("Anonymous binding saved".to_string()),
-                Err(_) => self
-                    .logger
-                    .warning("Anonymous binding is not saved".to_string()),
+                Ok(_) => self.logger.info("Anonymous binding saved"),
+                Err(_) => self.logger.warning("Anonymous binding is not saved"),
             }
         }
 

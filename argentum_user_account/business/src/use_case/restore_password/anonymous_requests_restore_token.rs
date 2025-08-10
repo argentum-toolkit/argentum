@@ -112,7 +112,7 @@ where
         let notification = Notification::new(user.id, body, subject);
         if let Err(e) = self.notificator.send(notification) {
             self.logger
-                .error(format!("Restore token is not sent. {:?}", e));
+                .error(format!("Restore token is not sent. {e:?}"));
         }
 
         Ok(restore_token)

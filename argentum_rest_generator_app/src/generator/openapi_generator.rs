@@ -97,22 +97,19 @@ where
     }
 
     pub fn generate(&self, cli: CliParams) -> Result<(), Box<dyn Error>> {
-        self.logger.info("Start generation...".to_string());
-        self.logger
-            .info("Combine OpenAPI specification...".to_string());
+        self.logger.info("Start generation...");
+        self.logger.info("Combine OpenAPI specification...");
         let spec = self.combiner.combine(cli.input.clone())?;
-        self.logger
-            .info("OpenAPI specification is combined".to_string());
+        self.logger.info("OpenAPI specification is combined");
 
         let output = cli.output.as_str();
 
         //generation
-        self.logger
-            .info("Generate combined OpenAPI YAML file ".to_string());
+        self.logger.info("Generate combined OpenAPI YAML file");
 
         self.oas_yaml_generator.generate(output, &spec)?;
 
-        self.logger.info("Generate sources files ".to_string());
+        self.logger.info("Generate sources files ");
         self.dto_generator.generate(output)?;
         self.path_param_generator.generate(output, &spec)?;
         self.schema_param_generator.generate(output, &spec)?;
@@ -153,7 +150,7 @@ where
 
         self.ui_generator.generate(output, &spec)?;
 
-        self.logger.info("Code generation completed".to_string());
+        self.logger.info("Code generation completed");
 
         Ok(())
     }

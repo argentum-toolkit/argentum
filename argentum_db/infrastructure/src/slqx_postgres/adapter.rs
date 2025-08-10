@@ -83,7 +83,7 @@ where
         let sql = query_as.sql().to_string();
         self.logger.debug(sql.clone());
         let result: Result<Option<F>, Error> = query_as.fetch_optional(&*self.pool).await;
-        self.logger.trace("done".to_string());
+        self.logger.trace("done");
 
         match result {
             Ok(Some(r)) => Ok(Some(r)),
@@ -98,7 +98,7 @@ where
     pub async fn begin_transaction(
         &self,
     ) -> Result<Transaction<'static, Postgres>, DbAdapterError> {
-        self.logger.debug("Begin transaction".to_string());
+        self.logger.debug("Begin transaction");
         match self.pool.begin().await {
             Ok(tx) => Ok(tx),
             Err(e) => Err(DbAdapterError {
@@ -109,7 +109,7 @@ where
     }
 
     pub async fn commit<'a>(&'a self, tx: Transaction<'a, Postgres>) -> Result<(), DbAdapterError> {
-        self.logger.debug("Commit transaction".to_string());
+        self.logger.debug("Commit transaction");
 
         match tx.commit().await {
             Ok(_) => Ok(()),
@@ -124,7 +124,7 @@ where
         &'a self,
         tx: Transaction<'a, Postgres>,
     ) -> Result<(), DbAdapterError> {
-        self.logger.debug("Rollback transaction".to_string());
+        self.logger.debug("Rollback transaction");
 
         match tx.rollback().await {
             Ok(_) => Ok(()),

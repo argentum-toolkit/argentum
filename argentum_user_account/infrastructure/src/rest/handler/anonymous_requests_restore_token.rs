@@ -63,7 +63,7 @@ where
 
             Err(e) => match e {
                 RestorePasswordError::UserNotFoundError => {
-                    self.logger.warning(format!("{:?}", e));
+                    self.logger.warning(format!("{e:?}"));
 
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
                 }

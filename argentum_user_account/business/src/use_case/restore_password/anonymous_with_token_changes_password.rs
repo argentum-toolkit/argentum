@@ -83,7 +83,7 @@ where
             .delete_users_tokens(&user.id)
         {
             self.logger
-                .warning(format!("Restore password token is not deleted. {:?}", e));
+                .warning(format!("Restore password token is not deleted. {e:?}"));
         }
 
         Ok(())

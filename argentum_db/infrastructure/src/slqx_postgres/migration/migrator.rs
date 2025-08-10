@@ -37,8 +37,7 @@ where
     }
 
     async fn create_migration_table(&self) -> Result<(), String> {
-        self.logger
-            .info("Ensuring that migration table exists...".to_string());
+        self.logger.info("Ensuring that migration table exists...");
         let sql = format!(
             "CREATE TABLE IF NOT EXISTS {} (\
                 id INT PRIMARY KEY generated always as identity, \
@@ -52,12 +51,12 @@ where
         let res = self.adapter.exec(query).await;
         match res {
             Ok(_) => {
-                self.logger.info("Migration table is ensured.".to_string());
+                self.logger.info("Migration table is ensured.");
                 Ok(())
             }
             Err(e) => {
                 self.logger
-                    .critical(format!("Ensuring was failed with error: {e}",));
+                    .critical(format!("Ensuring was failed with error: {e}"));
                 Err(e.to_string())
             }
         }

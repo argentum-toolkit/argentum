@@ -44,12 +44,12 @@ where
     }
 
     pub fn run(&self) -> Result<(), String> {
-        self.logger.trace("Demo trace log".to_string());
-        self.logger.debug("Demo debug log".to_string());
-        self.logger.info("Demo info log".to_string());
-        self.logger.warning("Demo warning log".to_string());
-        self.logger.error("Demo error log".to_string());
-        self.logger.critical("Demo critical log".to_string());
+        self.logger.trace("Demo trace log");
+        self.logger.debug("Demo debug log");
+        self.logger.info("Demo info log");
+        self.logger.warning("Demo warning log");
+        self.logger.error("Demo error log");
+        self.logger.critical("Demo critical log");
 
         // events
         pub struct DemoEvent {}

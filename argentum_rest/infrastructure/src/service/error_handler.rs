@@ -37,7 +37,7 @@ where
                 )
             }
             HttpError::BadRequest(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::BAD_REQUEST;
                 HttpResponse::new(
@@ -52,7 +52,7 @@ where
                 )
             }
             HttpError::Unauthorized(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::UNAUTHORIZED;
                 HttpResponse::new(
@@ -67,7 +67,7 @@ where
                 )
             }
             HttpError::NotFound(e) | HttpError::RouteNotFound(e) => {
-                self.logger.warning(format!("{:?}", e));
+                self.logger.warning(format!("{e:?}"));
 
                 let code = StatusCode::NOT_FOUND;
                 HttpResponse::new(
@@ -76,7 +76,7 @@ where
                 )
             }
             HttpError::MethodNotAllowed(e) => {
-                self.logger.warning(format!("{:?}", e));
+                self.logger.warning(format!("{e:?}"));
 
                 let code = StatusCode::METHOD_NOT_ALLOWED;
                 HttpResponse::new(
@@ -85,7 +85,7 @@ where
                 )
             }
             HttpError::Conflict(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::CONFLICT;
                 HttpResponse::new(
@@ -100,7 +100,7 @@ where
                 )
             }
             HttpError::UnprocessableEntity(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::UNPROCESSABLE_ENTITY;
                 HttpResponse::new(
@@ -109,7 +109,7 @@ where
                 )
             }
             HttpError::InternalServerError(e) => {
-                self.logger.error(format!("Internal server error {:?}", e));
+                self.logger.error(format!("Internal server error {e:?}"));
 
                 let code = StatusCode::INTERNAL_SERVER_ERROR;
                 HttpResponse::new(
