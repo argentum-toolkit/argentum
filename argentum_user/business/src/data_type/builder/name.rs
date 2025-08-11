@@ -67,17 +67,12 @@ impl NameBuilder {
     }
 
     pub fn try_build(&self) -> InvariantResult<Name> {
-        if self.violations.is_empty() {
-            Ok(Name::new(
-                self.first.clone().unwrap(),
-                self.last.clone(),
-                self.patronymic.clone(),
-            ))
-        } else {
-            Err(Violations::new(
+        match self.first.clone() {
+            Some(first) => Ok(Name::new(first, self.last.clone(), self.patronymic.clone())),
+            None => Err(Violations::new(
                 vec![ERR_WRONG_NAME.to_string()],
                 Some(ViolationItem::Object(self.violations.clone())),
-            ))
+            )),
         }
     }
 }

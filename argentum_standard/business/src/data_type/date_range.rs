@@ -9,11 +9,19 @@ impl DateRange {
         self.0 <= d && d <= self.1
     }
 
-    pub fn datetime_in_range(&self, dt: NaiveDateTime) -> bool {
-        let from = self.0.and_hms_opt(0, 0, 0).unwrap();
-        let to = self.1.and_hms_opt(23, 59, 59).unwrap();
+    /// NOTE: This function ignores leap seconds
+    pub fn datetime_in_range(&self, dt: NaiveDateTime) -> Result<bool, String> {
+        //TODDO: check leap second
+        let from = self
+            .0
+            .and_hms_opt(0, 0, 0)
+            .ok_or_else(|| "Cah't convert NativeDate into NativeDateTime")?;
+        let to = self
+            .1
+            .and_hms_opt(23, 59, 59)
+            .ok_or_else(|| "Cah't convert NativeDate into NativeDateTime")?;
 
-        from <= dt && dt <= to
+        Ok(from <= dt && dt <= to)
     }
 }
 
@@ -71,9 +79,9 @@ mod tests {
             NaiveDate::from_ymd_opt(2020, 10, 12).unwrap(),
         );
 
-        assert!(d.datetime_in_range(date("2020-10-1T0:0:0Z")));
-        assert!(d.datetime_in_range(date("2020-10-11T10:10:10Z")));
-        assert!(d.datetime_in_range(date("2020-10-12T23:59:59Z")));
+        assert!(d.datetime_in_range(date("2020-10-1T0:0:0Z")).unwrap());
+        assert!(d.datetime_in_range(date("2020-10-11T10:10:10Z")).unwrap());
+        assert!(d.datetime_in_range(date("2020-10-12T23:59:59Z")).unwrap());
     }
 
     #[test]
@@ -83,7 +91,7 @@ mod tests {
             NaiveDate::from_ymd_opt(2020, 10, 12).unwrap(),
         );
 
-        assert!(!d.datetime_in_range(date("2020-9-30T23:59:59Z")));
-        assert!(!d.datetime_in_range(date("2020-10-13T0:0:0Z")));
+        assert!(!d.datetime_in_range(date("2020-9-30T23:59:59Z")).unwrap());
+        assert!(!d.datetime_in_range(date("2020-10-13T0:0:0Z")).unwrap());
     }
 }

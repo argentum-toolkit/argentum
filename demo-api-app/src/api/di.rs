@@ -33,7 +33,7 @@ where
     }
 }
 
-pub async fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
+pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     dotenv().ok();
 
     const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
@@ -48,9 +48,10 @@ pub async fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
 
     let u_di = Rc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
-            .default_services(&u_database_url, 5, logger.clone()) //todo: use params
-            .await
-            .build(),
+            //todo: use params
+            .default_services(&u_database_url, 5, logger.clone())
+            .await?
+            .build()?,
     );
 
     let rest_di = RestDiC::new(logger.clone());
@@ -123,5 +124,5 @@ pub async fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
         logger,
     ));
 
-    DiC::new(server)
+    Ok(DiC::new(server))
 }
