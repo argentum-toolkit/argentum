@@ -47,39 +47,48 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let body = match Violation::try_from_raw(raw.body.unwrap()) {
-            Ok(value) => Some(value),
-            Err(v) => {
-                argentum_violations.insert("body".into(), v);
+        let body = match raw.body {
+            Some(r) => match Violation::try_from_raw(r) {
+                Ok(value) => Some(value),
+                Err(v) => {
+                    argentum_violations.insert("body".into(), v);
 
-                None
+                    None
+                }
+            },
+            None => None,
+        };
+
+        let detail = raw.detail;
+
+        let status = match raw.status {
+            Some(s) => s,
+            None => {
+                argentum_violations.insert(
+                    "status".into(),
+                    Violations::new(vec!["field is required".to_string()], None),
+                );
+
+                Default::default()
             }
         };
-        let detail = raw.detail;
-        let status = raw.status;
-        if status.is_none() {
-            argentum_violations.insert(
-                "status".into(),
-                Violations::new(vec!["field is required".to_string()], None),
-            );
-        }
-        let title = raw.title;
-        if title.is_none() {
-            argentum_violations.insert(
-                "title".into(),
-                Violations::new(vec!["field is required".to_string()], None),
-            );
-        }
+
+        let title = match raw.title {
+            Some(t) => t,
+            None => {
+                argentum_violations.insert(
+                    "title".into(),
+                    Violations::new(vec!["field is required".to_string()], None),
+                );
+
+                Default::default()
+            }
+        };
+
         let r#type = raw.r#type;
 
         if argentum_violations.is_empty() {
-            Ok(Self::new(
-                body,
-                detail,
-                status.unwrap(),
-                title.unwrap(),
-                r#type,
-            ))
+            Ok(Self::new(body, detail, status, title, r#type))
         } else {
             Err(Violations::new(
                 vec!["wrong data for ProblemDetail".to_string()],

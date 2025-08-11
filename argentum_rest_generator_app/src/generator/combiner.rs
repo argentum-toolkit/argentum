@@ -138,15 +138,22 @@ where
             r.reference = reference;
 
             if let Some(file_path) = component_ref.file_path {
-                let dir = current_file_path.parent().unwrap();
-                let dir = dir.to_str().unwrap();
+                let dir_res: Result<&str, Box<dyn Error>> = match current_file_path.parent() {
+                    Some(d) => match d.to_str() {
+                        Some(dd) => Ok(dd),
+                        None => Err("Can't get parent as ad dir for file path".into()),
+                    },
+                    None => Err("Can't get parent dir for file path".into()),
+                };
+
+                let dir = dir_res?;
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
                 let hash_key = format!("{}#{}", inner_file_path, component_name);
                 if self
                     .combined_schemas
                     .read()
-                    .unwrap()
+                    .map_err(|e| format!("Lock poisoned while reading combined_schemas: {e}"))?
                     .contains_key(&hash_key)
                 {
                     self.logger.info(format!(
@@ -156,7 +163,7 @@ where
                 } else {
                     self.combined_schemas
                         .write()
-                        .unwrap()
+                        .map_err(|e| format!("Lock poisoned while writing combined_schemas: {e}"))?
                         .insert(hash_key, true);
 
                     //load from filesystem
@@ -185,28 +192,38 @@ where
                     }
                 }
             } else if component_ref.file_path.is_none() {
-                let hash_key =
-                    format!("{}#{}", current_file_path.to_str().unwrap(), component_name);
+                let hash_key = format!(
+                    "{}#{}",
+                    current_file_path
+                        .to_str()
+                        .ok_or_else(|| "Can't read current file path")?,
+                    component_name
+                );
                 if self
                     .combined_schemas
                     .read()
-                    .unwrap()
+                    .map_err(|e| format!("Lock poisoned while reading combined_schemas: {e}"))?
                     .contains_key(&hash_key)
                 {
                     self.logger.info(format!(
                         "Schema `{}` already loaded from file `{}`",
                         component_name,
-                        current_file_path.to_str().unwrap()
+                        current_file_path
+                            .to_str()
+                            .ok_or_else(|| "Can't read current file path")?
                     ));
                 } else {
                     self.combined_schemas
                         .write()
-                        .unwrap()
+                        .map_err(|e| format!("Lock poisoned while writing combined_schemas: {e}"))?
                         .insert(hash_key, true);
 
-                    let (include_spec, _include_spec_file_path) = self
-                        .loader
-                        .load(current_file_path.to_str().unwrap().to_string())?;
+                    let (include_spec, _include_spec_file_path) = self.loader.load(
+                        current_file_path
+                            .to_str()
+                            .ok_or_else(|| "Can't read current file path")?
+                            .to_string(),
+                    )?;
 
                     let component: Option<&Schema> =
                         include_spec.components.schemas.get(component_name.as_str());
@@ -253,8 +270,12 @@ where
             }
 
             if let Some(file_path) = component_ref.file_path {
-                let dir = current_file_path.parent().unwrap();
-                let dir = dir.to_str().unwrap();
+                let dir = current_file_path
+                    .parent()
+                    .ok_or_else(|| "Can't read parent file path")?;
+                let dir = dir
+                    .to_str()
+                    .ok_or_else(|| "Can't convert parent file path into String")?;
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
                 //load from filesystem
@@ -316,8 +337,12 @@ where
             }
 
             if let Some(file_path) = component_ref.file_path {
-                let dir = current_file_path.parent().unwrap();
-                let dir = dir.to_str().unwrap();
+                let dir = current_file_path
+                    .parent()
+                    .ok_or_else(|| "Can't read current file path")?;
+                let dir = dir
+                    .to_str()
+                    .ok_or_else(|| "Can't convert current file path into String")?;
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
                 //load from filesystem

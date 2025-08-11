@@ -26,8 +26,10 @@ impl Renderer {
         let file_path = base_output_path.to_owned() + output_path;
 
         let path = std::path::Path::new(file_path.as_str());
-        let prefix = path.parent().unwrap();
-        std::fs::create_dir_all(prefix).unwrap();
+        let prefix = path
+            .parent()
+            .ok_or_else(|| "Can't read parent path for file")?;
+        std::fs::create_dir_all(prefix)?;
 
         let mut output_file = File::create(file_path)?;
 

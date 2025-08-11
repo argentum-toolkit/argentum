@@ -120,45 +120,50 @@ impl RequestGenerator {
 
         for operation in operations.into_iter() {
             //TODO: RequestBodyExtractor::extract
-            if operation.request_body.is_some() {
-                let request_body = match operation.clone().request_body.unwrap() {
-                    RefOrObject::Ref(r) => {
-                        let parts = r.reference.split("#/").collect::<Vec<_>>();
+            match operation.clone().request_body {
+                Some(b) => {
+                    let request_body = match b {
+                        RefOrObject::Ref(r) => {
+                            let parts = r.reference.split("#/").collect::<Vec<_>>();
 
-                        if parts.clone().len() != 2 {
-                            return Err(format!("Wrong format of reference {}", r.reference).into());
-                        }
+                            if parts.clone().len() != 2 {
+                                return Err(
+                                    format!("Wrong format of reference {}", r.reference).into()
+                                );
+                            }
 
-                        let _file_path = parts.first().ok_or_else(|| {
-                            format!("Wrong file path of reference {}", r.reference)
-                        })?;
+                            let _file_path = parts.first().ok_or_else(|| {
+                                format!("Wrong file path of reference {}", r.reference)
+                            })?;
 
-                        let component_path = parts.last().ok_or_else(|| {
-                            format!("Wrong component path of reference {}", r.reference)
-                        })?;
+                            let component_path = parts.last().ok_or_else(|| {
+                                format!("Wrong component path of reference {}", r.reference)
+                            })?;
 
-                        let component_parts = component_path.split('/').collect::<Vec<_>>();
+                            let component_parts = component_path.split('/').collect::<Vec<_>>();
 
-                        if component_parts.clone().len() != 3
-                            || component_parts[0] != "components"
-                            || component_parts[1] != "requestBodies"
-                        {
-                            return Err(format!("Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`").into());
-                        }
+                            if component_parts.clone().len() != 3
+                                || component_parts[0] != "components"
+                                || component_parts[1] != "requestBodies"
+                            {
+                                return Err(format!("Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`").into());
+                            }
 
-                        let component_name = component_parts.last()
+                            let component_name = component_parts.last()
                         .ok_or_else(|| format!(
                             "Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`"
                         ))?;
 
-                        spec.components.request_bodies[&component_name.to_string()].clone()
-                    }
-                    RefOrObject::Object(request_body) => request_body,
-                };
+                            spec.components.request_bodies[&component_name.to_string()].clone()
+                        }
+                        RefOrObject::Object(request_body) => request_body,
+                    };
 
-                self.generate_item_with_body(base_output_path, &operation, request_body)?;
-            } else {
-                self.generate_item_with_empty_body(base_output_path, &operation)?;
+                    self.generate_item_with_body(base_output_path, &operation, request_body)?;
+                }
+                None => {
+                    self.generate_item_with_empty_body(base_output_path, &operation)?;
+                }
             }
         }
 

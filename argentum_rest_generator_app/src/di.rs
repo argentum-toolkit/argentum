@@ -23,6 +23,7 @@ use crate::template::helper::{
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use handlebars::Handlebars;
+use std::error::Error;
 use std::sync::Arc;
 
 pub struct DiC<L>
@@ -42,195 +43,165 @@ where
     }
 }
 
-pub fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
+pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     let mut reg = Handlebars::new();
     reg.register_template_string(
         "dto/operation_response_enum.item",
         include_str!("../template/dto/operation_response_enum.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/operation_response_enum.mod",
         include_str!("../template/dto/operation_response_enum.mod.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/response.item",
         include_str!("../template/dto/response.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/response.mod",
         include_str!("../template/dto/response.mod.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/request.item",
         include_str!("../template/dto/request.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/request.mod",
         include_str!("../template/dto/request.mod.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/path_params.item",
         include_str!("../template/dto/path_params.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/path_params.mod",
         include_str!("../template/dto/path_params.mod.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/params.item",
         include_str!("../template/dto/params.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/params.mod",
         include_str!("../template/dto/params.mod.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/schema_object.item",
         include_str!("../template/dto/schema_object.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/schema_array.item",
         include_str!("../template/dto/schema_array.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/schema_dictionary.item",
         include_str!("../template/dto/schema_dictionary.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "dto/schema.mod",
         include_str!("../template/dto/schema.mod.hbs"),
-    )
-    .unwrap();
+    )?;
 
-    reg.register_template_string("dto/mod", include_str!("../template/dto/mod.hbs"))
-        .unwrap();
+    reg.register_template_string("dto/mod", include_str!("../template/dto/mod.hbs"))?;
 
     reg.register_template_string(
         "server/handler.mod",
         include_str!("../template/server/handler.mod.hbs"),
-    )
-    .unwrap();
+    )?;
+
     reg.register_template_string(
         "server/handler.item",
         include_str!("../template/server/handler.item.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "server/pre_handler",
         include_str!("../template/server/pre_handler.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "server/router",
         include_str!("../template/server/router.hbs"),
-    )
-    .unwrap();
+    )?;
 
-    reg.register_template_string("client/mod", include_str!("../template/client/mod.hbs"))
-        .unwrap();
+    reg.register_template_string("client/mod", include_str!("../template/client/mod.hbs"))?;
+    reg.register_template_string("server/mod", include_str!("../template/server/mod.hbs"))?;
+    reg.register_template_string("di", include_str!("../template/di.hbs"))?;
+    reg.register_template_string("lib", include_str!("../template/lib.hbs"))?;
+    reg.register_template_string("cargo.toml", include_str!("../template/cargo.toml.hbs"))?;
+    reg.register_template_string("readme.adoc", include_str!("../template/readme.adoc.hbs"))?;
+    reg.register_template_string(".gitignore", include_str!("../template/.gitignore.hbs"))?;
 
-    reg.register_template_string("server/mod", include_str!("../template/server/mod.hbs"))
-        .unwrap();
+    reg.register_template_string("ui/mod", include_str!("../template/ui/mod.hbs"))?;
+    reg.register_template_string("ui/form.item", include_str!("../template/ui/form.item.hbs"))?;
+    reg.register_template_string("ui/form.mod", include_str!("../template/ui/form.mod.hbs"))?;
 
-    reg.register_template_string("di", include_str!("../template/di.hbs"))
-        .unwrap();
-    reg.register_template_string("lib", include_str!("../template/lib.hbs"))
-        .unwrap();
-    reg.register_template_string("cargo.toml", include_str!("../template/cargo.toml.hbs"))
-        .unwrap();
-    reg.register_template_string("readme.adoc", include_str!("../template/readme.adoc.hbs"))
-        .unwrap();
-    reg.register_template_string(".gitignore", include_str!("../template/.gitignore.hbs"))
-        .unwrap();
-
-    reg.register_template_string("ui/mod", include_str!("../template/ui/mod.hbs"))
-        .unwrap();
-    reg.register_template_string("ui/form.item", include_str!("../template/ui/form.item.hbs"))
-        .unwrap();
-    reg.register_template_string("ui/form.mod", include_str!("../template/ui/form.mod.hbs"))
-        .unwrap();
     reg.register_template_string(
         "ui/callbacks.item",
         include_str!("../template/ui/callbacks.item.hbs"),
-    )
-    .unwrap();
+    )?;
+
     reg.register_template_string(
         "ui/callbacks.mod",
         include_str!("../template/ui/callbacks.mod.hbs"),
-    )
-    .unwrap();
+    )?;
+
     reg.register_template_string(
         "ui/input.item",
         include_str!("../template/ui/input.item.hbs"),
-    )
-    .unwrap();
-    reg.register_template_string("ui/input.mod", include_str!("../template/ui/input.mod.hbs"))
-        .unwrap();
+    )?;
+
+    reg.register_template_string("ui/input.mod", include_str!("../template/ui/input.mod.hbs"))?;
 
     reg.register_template_string(
         "ui/input/labeled_checkbox",
         include_str!("../template/ui/input/labeled_checkbox.hbs"),
-    )
-    .unwrap();
+    )?;
+
     reg.register_template_string(
         "ui/input/labeled_input",
         include_str!("../template/ui/input/labeled_input.hbs"),
-    )
-    .unwrap();
+    )?;
+
     reg.register_template_string(
         "ui/input/object",
         include_str!("../template/ui/input/object.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_template_string(
         "ui/form_processor.item",
         include_str!("../template/ui/form_processor.item.hbs"),
-    )
-    .unwrap();
+    )?;
+
     reg.register_template_string(
         "ui/form_processor.mod",
         include_str!("../template/ui/form_processor.mod.hbs"),
-    )
-    .unwrap();
+    )?;
 
     reg.register_helper("snake", Box::new(snake_helper));
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
     reg.register_helper("lower", Box::new(lower_helper));
     reg.register_helper("eq", Box::new(eq_helper));
+
     reg.register_helper(
         "content_type_to_type",
         Box::new(content_type_to_type_helper),
     );
+
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
     reg.register_helper("escape_var_name", Box::new(escape_var_name_helper));
 
@@ -319,5 +290,5 @@ pub fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
         ui_generator,
     ));
 
-    DiC::<DefaultLogger<PrettyWriter>>::new(openapi_generator)
+    Ok(DiC::<DefaultLogger<PrettyWriter>>::new(openapi_generator))
 }
