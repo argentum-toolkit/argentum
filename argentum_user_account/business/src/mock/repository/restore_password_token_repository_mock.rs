@@ -30,10 +30,13 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
         &self,
         id: &Id,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
-        let result =
-            self.tokens.read().unwrap().get(id).map(|t| {
-                RestorePasswordToken::new(t.id.clone(), t.user_id.clone(), t.token.clone())
-            });
+        let guard = self.tokens.read().map_err(|_| {
+            RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+        })?;
+
+        let result = guard
+            .get(id)
+            .map(|t| RestorePasswordToken::new(t.id.clone(), t.user_id.clone(), t.token.clone()));
 
         Ok(result)
     }
@@ -42,7 +45,11 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
         &self,
         token: String,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
-        for (_, t) in self.tokens.read().unwrap().iter() {
+        let guard = self.tokens.read().map_err(|_| {
+            RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+        })?;
+
+        for (_, t) in guard.iter() {
             if t.token == token {
                 return Ok(Some(RestorePasswordToken {
                     id: t.id.clone(),
@@ -72,7 +79,9 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
         match self
             .tokens
             .write()
-            .unwrap()
+            .map_err(|_| {
+                RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+            })?
             .insert(token.id.clone(), t)
             .is_none()
         {
@@ -84,7 +93,11 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
     fn delete_users_tokens(&self, user_id: &Id) -> Result<(), RestorePasswordTokenRepositoryError> {
         let mut id: Option<Id> = None;
 
-        for (k, t) in self.tokens.read().unwrap().iter() {
+        let guard = self.tokens.read().map_err(|_| {
+            RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+        })?;
+
+        for (k, t) in guard.iter() {
             if &t.user_id == user_id {
                 id = Some(k.clone());
 
@@ -92,8 +105,15 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
             }
         }
 
+        drop(guard);
+
         if let Some(id) = id {
-            self.tokens.write().unwrap().remove(&id);
+            self.tokens
+                .write()
+                .map_err(|_| {
+                    RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+                })?
+                .remove(&id);
         }
 
         Ok(())

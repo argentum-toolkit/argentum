@@ -49,9 +49,7 @@ where
             })),
 
             Ok(None) => Ok(None),
-            Err(e) => Err(RestorePasswordTokenRepositoryError::Other(Some(Box::new(
-                e,
-            )))),
+            Err(e) => Err(RestorePasswordTokenRepositoryError::Find(Some(Box::new(e)))),
         }
     }
 }

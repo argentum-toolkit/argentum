@@ -146,49 +146,84 @@ where
         self
     }
 
-    pub fn build(&self) -> BusinessDiC<L> {
+    pub fn build(&self) -> Result<BusinessDiC<L>, String> {
+        let anonymous_user_repository = self
+            .anonymous_user_repository
+            .clone()
+            .ok_or_else(|| "anonymous_user_repository is not initialized")?;
+
+        let session_repository = self
+            .session_repository
+            .clone()
+            .ok_or_else(|| "session_repository is not initialized")?;
+
+        let token_generator = self
+            .token_generator
+            .clone()
+            .ok_or_else(|| "token_generator is not initialized")?;
+
+        let password_credential_repository = self
+            .password_credential_repository
+            .clone()
+            .ok_or_else(|| "password_credential_repository is not initialized")?;
+
+        let authenticated_user_repository = self
+            .authenticated_user_repository
+            .clone()
+            .ok_or_else(|| "authenticated_user_repository is not initialized")?;
+
+        let anonymous_binding_repository = self
+            .anonymous_binding_repository
+            .clone()
+            .ok_or_else(|| "anonymous_binding_repository is not initialized")?;
+
+        let restore_password_token_repository = self
+            .restore_password_token_repository
+            .clone()
+            .ok_or_else(|| "restore_password_token_repository is not initialized")?;
+
         let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
             self.id_factory.clone(),
-            self.anonymous_user_repository.clone().unwrap(),
-            self.session_repository.clone().unwrap(),
-            self.token_generator.clone().unwrap(),
+            anonymous_user_repository.clone(),
+            session_repository.clone(),
+            token_generator.clone(),
         ));
 
         let password_credential_writer = Arc::new(PasswordCredentialWriter::new(
-            self.password_credential_repository.clone().unwrap(),
+            password_credential_repository.clone(),
         ));
 
         let user_registers_with_password_uc = Arc::new(UserRegistersWithPasswordUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
+            authenticated_user_repository.clone(),
             password_credential_writer.clone(),
             self.encryptor.clone(),
         ));
 
         let password_credential_checker = Arc::new(PasswordCredentialChecker::new(
-            self.password_credential_repository.clone().unwrap(),
+            password_credential_repository,
             self.validator.clone(),
         ));
 
         let user_logins_with_password_uc = Arc::new(UserLoginsWithPasswordUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
-            self.anonymous_binding_repository.clone().unwrap(),
-            self.session_repository.clone().unwrap(),
+            authenticated_user_repository.clone(),
+            anonymous_binding_repository,
+            session_repository.clone(),
             password_credential_checker,
             self.id_factory.clone(),
-            self.token_generator.clone().unwrap(),
+            token_generator.clone(),
             self.logger.clone(),
         ));
 
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
-            self.anonymous_user_repository.clone().unwrap(),
-            self.session_repository.clone().unwrap(),
+            authenticated_user_repository.clone(),
+            anonymous_user_repository,
+            session_repository,
         ));
 
         let anonymous_with_token_changes_password_uc =
             Arc::new(AnonymousWithTokenChangesPasswordUc::new(
-                self.authenticated_user_repository.clone().unwrap(),
-                self.restore_password_token_repository.clone().unwrap(),
+                authenticated_user_repository.clone(),
+                restore_password_token_repository.clone(),
                 self.encryptor.clone(),
                 password_credential_writer,
                 self.restore_password_token_ttl,
@@ -199,20 +234,20 @@ where
             self.product_name.clone().into(),
             self.restore_password_front_url.clone().into(),
             self.id_factory.clone(),
-            self.authenticated_user_repository.clone().unwrap(),
-            self.restore_password_token_repository.clone().unwrap(),
-            self.token_generator.clone().unwrap(),
+            authenticated_user_repository,
+            restore_password_token_repository,
+            token_generator,
             self.notificator.clone(),
             self.logger.clone(),
         ));
 
-        BusinessDiC {
+        Ok(BusinessDiC {
             anonymous_registers_uc,
             user_registers_with_password_uc,
             user_logins_with_password_uc,
             user_authenticates_with_token_uc,
             anonymous_with_token_changes_password_uc,
             anonymous_requests_restore_token_uc,
-        }
+        })
     }
 }

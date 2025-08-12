@@ -86,13 +86,13 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         notificator,
     )
     .services(unique_id_factory, &database_url, 5, logger.clone())
-    .await
+    .await?
     .config(
         "Argentum ToolKit demo web application".to_string(),
         3600, // TTL 1h
         "http://localhost:8082/change-password/".to_string(),
     )
-    .build();
+    .build()?;
 
     let ua_api_di = ApiDiC::new(
         "/api/v1".to_string(),

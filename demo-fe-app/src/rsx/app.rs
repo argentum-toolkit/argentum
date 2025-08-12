@@ -7,10 +7,19 @@ pub(crate) fn App() -> Element {
     #[cfg(feature = "web")]
     {
         //TODO: use ENV
-        let ua_di =
+        let ua_di_result =
             argentum_user_account_ui::security::di::di_factory("http://localhost:8082".into());
-        ua_di.use_client_side_authenticator_provider();
-        ua_di.use_client_provider();
+        match ua_di_result {
+            Ok(ua_di) => {
+                ua_di.use_client_side_authenticator_provider();
+                ua_di.use_client_provider();
+            }
+            Err(e) => {
+                return rsx! {
+                    "Can't initialize FE application. Error: {e}"
+                };
+            }
+        }
     }
 
     //TODO: use ENV

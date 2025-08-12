@@ -100,13 +100,13 @@ where
         connection_url: &str,
         max_db_connections: u32,
         logger: Arc<L>,
-    ) -> &mut Self {
+    ) -> Result<&mut Self, String> {
         let pool = Arc::new(
             PgPoolOptions::new()
                 .max_connections(max_db_connections)
                 .connect(connection_url)
                 .await
-                .unwrap(),
+                .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?,
         );
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
@@ -133,7 +133,7 @@ where
             token_generator,
         );
 
-        self
+        Ok(self)
     }
 
     pub fn mock(&mut self) -> &mut Self {
@@ -142,8 +142,8 @@ where
         self
     }
 
-    pub fn build(&self) -> UserAccountInfrastructureDiC<L> {
-        let bdi = self.business_builder.build();
+    pub fn build(&self) -> Result<UserAccountInfrastructureDiC<L>, String> {
+        let bdi = self.business_builder.build()?;
 
         let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(
             bdi.anonymous_registers_uc,
@@ -186,12 +186,12 @@ where
             dto_to_anonymous_requests_restore_token_params,
         ));
 
-        UserAccountInfrastructureDiC {
+        Ok(UserAccountInfrastructureDiC {
             anonymous_registers_handler,
             user_registers_with_password_handler,
             user_logins_with_password_handler,
             anonymous_with_token_changes_password_handler: anonymous_with_token_changes_password,
             anonymous_requests_restore_token_handler: anonymous_requests_restore_token,
-        }
+        })
     }
 }

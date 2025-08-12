@@ -23,4 +23,7 @@ pub enum PasswordCredentialRepositoryError {
 
     #[error("Can't fidn password credentials. Db error.")]
     Find(#[source] Box<dyn Error>),
+
+    #[error("Password credentioals error")]
+    Other(#[source] Box<dyn Error>),
 }

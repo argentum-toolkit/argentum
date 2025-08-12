@@ -44,13 +44,11 @@ impl DtoToUserRegistersWithPasswordParams {
 
         let terms_accepted = req.body.terms;
 
-        if vo.is_empty() {
-            Ok((
-                name.unwrap(),
-                email.unwrap(),
-                req.body.password,
-                terms_accepted,
-            ))
+        if vo.is_empty()
+            && let Some(n) = name
+            && let Some(e) = email
+        {
+            Ok((n, e, req.body.password, terms_accepted))
         } else {
             Err(HttpError::BadRequest(BadRequestError::new(
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),

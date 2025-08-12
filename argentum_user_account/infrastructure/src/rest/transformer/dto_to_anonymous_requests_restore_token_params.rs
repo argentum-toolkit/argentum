@@ -15,30 +15,24 @@ impl DtoToAnonymousRequestsRestoreTokenParams {
         &self,
         req: AnonymousRequestsRestoreTokenRequest,
     ) -> Result<EmailAddress, HttpError> {
-        let mut vo = BTreeMap::new();
-
         let email_result = EmailAddress::try_new(req.body.email);
 
-        let email = match email_result {
-            Ok(e) => Some(e),
+        match email_result {
+            Ok(em) => Ok(em),
             Err(v) => {
-                vo.insert("email".to_string(), v);
-                None
-            }
-        };
+                let vo = BTreeMap::from([("email".into(), v)]);
 
-        if vo.is_empty() {
-            Ok(email.unwrap())
-        } else {
-            Err(HttpError::BadRequest(BadRequestError::new(
-                Violations::new(vec![], Some(ViolationItem::Object(vo))),
-                Violations::new(vec![], None),
-                Violations::new(vec![], None),
-                Violations::new(vec![], None),
-            )))
+                Err(HttpError::BadRequest(BadRequestError::new(
+                    Violations::new(vec![], Some(ViolationItem::Object(vo))),
+                    Violations::new(vec![], None),
+                    Violations::new(vec![], None),
+                    Violations::new(vec![], None),
+                )))
+            }
         }
     }
 }
+
 impl Default for DtoToAnonymousRequestsRestoreTokenParams {
     fn default() -> Self {
         Self::new()

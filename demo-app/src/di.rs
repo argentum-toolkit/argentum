@@ -47,7 +47,7 @@ where
     }
 }
 
-pub fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
+pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
@@ -68,14 +68,14 @@ pub fn di_factory() -> DiC<DefaultLogger<PrettyWriter>> {
         3600, // TTL 1h
         "http://localhost:8082/change-password/".to_string(),
     )
-    .build();
+    .build()?;
 
-    DiC::new(
+    Ok(DiC::new(
         unique_id_factory,
         ua_di.anonymous_registers_uc,
         ua_di.user_logins_with_password_uc,
         ua_di.user_registers_with_password_uc,
         ua_di.user_authenticates_with_token_uc,
         logger,
-    )
+    ))
 }
