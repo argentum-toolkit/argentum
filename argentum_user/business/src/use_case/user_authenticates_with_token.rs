@@ -99,8 +99,8 @@ mod tests {
             NameBuilder::new("Dionne".into())
                 .last(Some("Morrison".into()))
                 .try_build()
-                .unwrap(),
-            EmailAddress::try_new("aa@a.com".into()).unwrap(),
+                .expect("Name should be valid"),
+            EmailAddress::try_new("aa@a.com".into()).expect("Email should be valid"),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
 
@@ -155,8 +155,8 @@ mod tests {
             NameBuilder::new("Dionne".into())
                 .last(Some("Morrison".into()))
                 .try_build()
-                .unwrap(),
-            EmailAddress::try_new("aa@a.com".into()).unwrap(),
+                .expect("Name should be valid"),
+            EmailAddress::try_new("aa@a.com".into()).expect("Email should be valid"),
         );
         let session = Session::new(session_id, user_id.clone(), token.clone());
 

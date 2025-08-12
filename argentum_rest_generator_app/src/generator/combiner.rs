@@ -196,7 +196,7 @@ where
                     "{}#{}",
                     current_file_path
                         .to_str()
-                        .ok_or_else(|| "Can't read current file path")?,
+                        .ok_or("Can't read current file path")?,
                     component_name
                 );
                 if self
@@ -210,7 +210,7 @@ where
                         component_name,
                         current_file_path
                             .to_str()
-                            .ok_or_else(|| "Can't read current file path")?
+                            .ok_or("Can't read current file path")?
                     ));
                 } else {
                     self.combined_schemas
@@ -221,7 +221,7 @@ where
                     let (include_spec, _include_spec_file_path) = self.loader.load(
                         current_file_path
                             .to_str()
-                            .ok_or_else(|| "Can't read current file path")?
+                            .ok_or("Can't read current file path")?
                             .to_string(),
                     )?;
 
@@ -272,10 +272,10 @@ where
             if let Some(file_path) = component_ref.file_path {
                 let dir = current_file_path
                     .parent()
-                    .ok_or_else(|| "Can't read parent file path")?;
+                    .ok_or("Can't read parent file path")?;
                 let dir = dir
                     .to_str()
-                    .ok_or_else(|| "Can't convert parent file path into String")?;
+                    .ok_or("Can't convert parent file path into String")?;
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
                 //load from filesystem
@@ -339,10 +339,10 @@ where
             if let Some(file_path) = component_ref.file_path {
                 let dir = current_file_path
                     .parent()
-                    .ok_or_else(|| "Can't read current file path")?;
+                    .ok_or("Can't read current file path")?;
                 let dir = dir
                     .to_str()
-                    .ok_or_else(|| "Can't convert current file path into String")?;
+                    .ok_or("Can't convert current file path into String")?;
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
                 //load from filesystem

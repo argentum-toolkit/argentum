@@ -120,7 +120,7 @@ fn to_enum_name(code: &str) -> Result<String, Box<dyn Error>> {
 
     m.get(code)
         .map(|c| c.to_string())
-        .ok_or_else(|| format!("Unknown code `{code}`").into())
+        .ok_or(format!("Unknown code `{code}`").into())
 }
 
 pub struct ClientGenerator {
@@ -148,21 +148,16 @@ impl ClientGenerator {
                 let uri_parameters = path.parameters.clone();
                 let mut parameters: Vec<Parameter> = vec![];
 
-                match uri_parameters {
-                    Some(params) => {
-                        for param in params {
-                            parameters.push(param.clone())
-                        }
+                if let Some(params) = uri_parameters {
+                    for param in params {
+                        parameters.push(param.clone())
                     }
-                    None => {}
                 };
-                match &operation.parameters {
-                    Some(params) => {
-                        for param in params {
-                            parameters.push(param.clone())
-                        }
+
+                if let Some(params) = &operation.parameters {
+                    for param in params {
+                        parameters.push(param.clone())
                     }
-                    None => {}
                 }
 
                 if operation.security.is_some() {
@@ -199,9 +194,7 @@ impl ClientGenerator {
                                 .components
                                 .responses
                                 .get(&component_ref.component_name)
-                                .ok_or_else(|| {
-                                    format!("Response component `response_name` not found")
-                                })?;
+                                .ok_or("Response component `response_name` not found")?;
 
                             for (content_type, media) in &response.content {
                                 let schema_name = match &media.schema {
@@ -244,10 +237,7 @@ impl ClientGenerator {
                     });
                 }
 
-                let need_body = match method {
-                    Method::Post => true,
-                    _ => false,
-                };
+                let need_body = matches!(method, Method::Post);
 
                 operations.push(OperationData {
                     method: method.to_string(),

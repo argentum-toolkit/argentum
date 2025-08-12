@@ -23,9 +23,6 @@ pub fn AnonymousRegistersForm(
             "novalidate": true,
             onsubmit: move |_| {
                 let processor = processor.clone();
-                let violations = violations.clone();
-                let errors = errors.clone();
-                let disabled = disabled.clone();
                 let auth_token = auth_token.clone();
 
                 spawn(async move {

@@ -26,10 +26,6 @@ pub fn AnonymousRequestsRestoreTokenForm(
             "novalidate": true,
             onsubmit: move |_| {
                 let processor = processor.clone();
-                let values = values.clone();
-                let violations = violations.clone();
-                let errors = errors.clone();
-                let disabled = disabled.clone();
                 let auth_token = auth_token.clone();
 
                 spawn(async move {

@@ -23,20 +23,23 @@ mod tests {
 
     #[test]
     fn test_new_full() {
-        let first = NamePart::try_new("Lucian".into()).unwrap();
-        let last = NamePart::try_new("Fisher".into()).unwrap();
-        let patronymic = NamePart::try_new("Bushra".into()).unwrap();
+        let first = NamePart::try_new("Lucian".into()).expect("Should be valid");
+        let last = NamePart::try_new("Fisher".into()).expect("Should be valid");
+        let patronymic = NamePart::try_new("Bushra".into()).expect("Should be valid");
 
         let name = Name::new(first, Some(last), Some(patronymic));
 
         assert_eq!(name.first.to_string(), "Lucian".to_string());
-        assert_eq!(name.last.unwrap().to_string(), "Fisher".to_string());
-        assert_eq!(name.patronymic.unwrap().to_string(), "Bushra".to_string());
+        assert_eq!(name.last.map(|n| n.to_string()), Some("Fisher".to_string()));
+        assert_eq!(
+            name.patronymic.map(|n| n.to_string()),
+            Some("Bushra".to_string())
+        );
     }
 
     #[test]
     fn test_new_minimal() {
-        let first = NamePart::try_new("Lucian".into()).unwrap();
+        let first = NamePart::try_new("Lucian".into()).expect("Should be valid");
 
         let name = Name::new(first, None, None);
 

@@ -31,11 +31,11 @@ impl RequestBodyExtractor {
 
                 let _file_path = parts
                     .first()
-                    .ok_or_else(|| format!("Wrong file path of reference {}", r.reference))?;
+                    .ok_or(format!("Wrong file path of reference {}", r.reference))?;
 
                 let component_path = parts
                     .last()
-                    .ok_or_else(|| format!("Wrong component path of reference {}", r.reference))?;
+                    .ok_or(format!("Wrong component path of reference {}", r.reference))?;
 
                 let component_parts = component_path.split('/').collect::<Vec<_>>();
 
@@ -48,12 +48,10 @@ impl RequestBodyExtractor {
                     ).into());
                 }
 
-                let component_name = component_parts.last().ok_or_else(|| {
-                    format!(
-                        "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
-                        component_path
-                    )
-                })?;
+                let component_name = component_parts.last().ok_or(format!(
+                    "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
+                    component_path
+                ))?;
 
                 Ok(Some(
                     spec.components.request_bodies[&component_name.to_string()].clone(),

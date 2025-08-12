@@ -183,12 +183,10 @@ impl SchemaGenerator {
                     .clone()
                     .split('/')
                     .last()
-                    .ok_or_else(|| {
-                        format!(
-                            "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                            r.reference
-                        )
-                    })?
+                    .ok_or(format!(
+                        "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                        r.reference
+                    ))?
                     .to_string();
 
                 dependencies.push(format!("crate::dto::schema::{}", type_name));

@@ -49,7 +49,7 @@ impl UniqueIdFactory {
         id.as_any()
             .downcast_ref::<UniqueId>()
             .map(|id| id.value)
-            .unwrap()
+            .expect("Should be UUID compatible")
     }
 }
 

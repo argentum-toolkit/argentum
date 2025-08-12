@@ -64,7 +64,7 @@ impl FormGenerator {
             let body = request_body
                 .content
                 .get("application/json")
-                .ok_or_else(|| "Request body should contain `application/json` mime type")?;
+                .ok_or("Request body should contain `application/json` mime type")?;
 
             if let Some((s_name, _)) = self
                 .schema_extractor

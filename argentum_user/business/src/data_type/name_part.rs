@@ -31,7 +31,7 @@ mod test {
     fn test_new_valid() {
         let res = NamePart::try_new("Andrey".into());
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().0, "Andrey");
+        assert_eq!(res.expect("Name part should be valid").0, "Andrey");
     }
 
     #[test]
@@ -44,7 +44,7 @@ mod test {
         assert!(violations.items.is_none());
         assert_eq!(violations.errors.len(), 1);
 
-        let v = violations.errors.first().unwrap();
+        let v = violations.errors.first().expect("Should be not None");
         assert_eq!(v, &ERR_NAME_EMPTY.to_string());
     }
 }

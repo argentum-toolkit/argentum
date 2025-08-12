@@ -36,15 +36,9 @@ pub fn {{upper_camel operation.operationId}}Form(
             "novalidate": true,
             onsubmit: move |_| {
                 let processor = processor.clone();
-                {{#if schemaName}}
-                let values = values.clone();
-                {{/if}}
                 {{#if needPathParams}}
                 let path_params = path_params.clone();
                 {{/if}}
-                let violations = violations.clone();
-                let errors = errors.clone();
-                let disabled = disabled.clone();
                 let auth_token = auth_token.clone();
 
                 spawn(async move {

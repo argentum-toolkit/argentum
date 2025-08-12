@@ -66,13 +66,11 @@ impl ResponseGenerator {
                 .reference
                 .clone()
                 .split('/')
-                .last()
-                .ok_or_else(|| {
-                    format!(
-                        "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                        r.reference
-                    )
-                })?
+                .next_back()
+                .ok_or(format!(
+                    "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                    r.reference
+                ))?
                 .to_string(),
             RefOrObject::Object(_o) => {
                 todo!(

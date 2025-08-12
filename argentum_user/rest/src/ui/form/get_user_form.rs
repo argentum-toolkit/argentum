@@ -26,9 +26,6 @@ pub fn GetUserForm(
             onsubmit: move |_| {
                 let processor = processor.clone();
                 let path_params = path_params.clone();
-                let violations = violations.clone();
-                let errors = errors.clone();
-                let disabled = disabled.clone();
                 let auth_token = auth_token.clone();
 
                 spawn(async move {

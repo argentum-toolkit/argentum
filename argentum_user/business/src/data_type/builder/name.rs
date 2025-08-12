@@ -95,11 +95,11 @@ mod tests {
             .patronymic(patronymic.clone())
             .try_build();
 
-        let name = res.unwrap();
+        let name = res.expect("Name should be valid");
 
         assert_eq!(name.first.to_string(), first);
-        assert_eq!(name.last.unwrap().to_string(), last.unwrap());
-        assert_eq!(name.patronymic.unwrap().to_string(), patronymic.unwrap());
+        assert_eq!(name.last.map(|n| n.to_string()), last);
+        assert_eq!(name.patronymic.map(|n| n.to_string()), patronymic);
     }
 
     #[test]
@@ -114,11 +114,11 @@ mod tests {
             .patronymic(patronymic.clone())
             .try_build();
 
-        let name = res.unwrap();
+        let name = res.expect("Name be valid");
 
         assert_eq!(name.first.to_string(), first);
-        assert_eq!(name.last.unwrap().to_string(), last.unwrap());
-        assert_eq!(name.patronymic.unwrap().to_string(), patronymic.unwrap());
+        assert_eq!(name.last.map(|n| n.to_string()), last);
+        assert_eq!(name.patronymic.map(|n| n.to_string()), patronymic);
     }
 
     #[test]
@@ -137,35 +137,27 @@ mod tests {
         if let Err(violations) = res {
             assert_eq!(violations.errors.len(), 1);
             assert_eq!(
-                violations.errors.first().unwrap(),
+                violations.errors.first().expect("Should be not empty"),
                 &ERR_WRONG_NAME.to_string()
             );
             assert!(violations.items.is_some());
-            let items = violations.items.unwrap();
+            let items = violations.items.expect("Should be not empty");
 
             assert!(!items.is_empty());
 
             if let ViolationItem::Object(v) = items {
-                let f_errors = &v.get("first").unwrap().errors;
+                let f_errors = &v.get("first").expect("Should be not empty").errors;
                 assert_eq!(f_errors.len(), 1);
-                assert_eq!(
-                    f_errors.first().unwrap(),
-                    &"Should not be empty".to_string()
-                );
+                assert_eq!(f_errors.first(), Some(&"Should not be empty".to_string()));
 
-                let l_errors = &v.get("last").unwrap().errors;
+                let l_errors = &v.get("last").expect("Should be not empty").errors;
                 assert_eq!(l_errors.len(), 1);
-                assert_eq!(
-                    l_errors.first().unwrap(),
-                    &"Should not be empty".to_string()
-                );
+                assert_eq!(l_errors.first(), Some(&"Should not be empty".to_string()));
 
-                let p_errors = &v.get("first").unwrap().errors;
+                let p_errors = &v.get("first").expect("Should be not empty").errors;
+
                 assert_eq!(p_errors.len(), 1);
-                assert_eq!(
-                    p_errors.first().unwrap(),
-                    &"Should not be empty".to_string()
-                );
+                assert_eq!(p_errors.first(), Some(&"Should not be empty".to_string()));
             }
         }
     }

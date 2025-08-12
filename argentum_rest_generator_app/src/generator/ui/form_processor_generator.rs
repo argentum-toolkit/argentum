@@ -69,12 +69,10 @@ impl FormProcessorGenerator {
                     .clone()
                     .split('/')
                     .last()
-                    .ok_or_else(|| {
-                        format!(
-                            "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
-                            r.reference
-                        )
-                    })?
+                    .ok_or(format!(
+                        "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
+                        r.reference
+                    ))?
                     .to_string(),
                 RefOrObject::Object(_) => {
                     todo!(
@@ -93,7 +91,7 @@ impl FormProcessorGenerator {
             let body = request_body
                 .content
                 .get("application/json")
-                .ok_or_else(|| "Request body should contain `application/json` mime type")?;
+                .ok_or("Request body should contain `application/json` mime type")?;
 
             if let Some((s_name, _)) = self
                 .schema_extractor

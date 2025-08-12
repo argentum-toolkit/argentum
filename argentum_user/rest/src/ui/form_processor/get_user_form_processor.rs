@@ -59,11 +59,11 @@ impl GetUserFormProcessor {
     #[cfg(not(feature = "web"))]
     pub async fn submit(
         &self,
-        auth_token: String,
-        path_params: GetUserPathParams,
-        mut violations: Signal<ViolationsDto>,
-        mut errors: Signal<Vec<String>>,
-        mut disabled: Signal<bool>,
+        _auth_token: String,
+        _path_params: GetUserPathParams,
+        mut _violations: Signal<ViolationsDto>,
+        mut _errors: Signal<Vec<String>>,
+        mut _disabled: Signal<bool>,
     ) {
     }
 

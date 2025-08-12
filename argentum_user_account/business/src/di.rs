@@ -150,37 +150,37 @@ where
         let anonymous_user_repository = self
             .anonymous_user_repository
             .clone()
-            .ok_or_else(|| "anonymous_user_repository is not initialized")?;
+            .ok_or("anonymous_user_repository is not initialized")?;
 
         let session_repository = self
             .session_repository
             .clone()
-            .ok_or_else(|| "session_repository is not initialized")?;
+            .ok_or("session_repository is not initialized")?;
 
         let token_generator = self
             .token_generator
             .clone()
-            .ok_or_else(|| "token_generator is not initialized")?;
+            .ok_or("token_generator is not initialized")?;
 
         let password_credential_repository = self
             .password_credential_repository
             .clone()
-            .ok_or_else(|| "password_credential_repository is not initialized")?;
+            .ok_or("password_credential_repository is not initialized")?;
 
         let authenticated_user_repository = self
             .authenticated_user_repository
             .clone()
-            .ok_or_else(|| "authenticated_user_repository is not initialized")?;
+            .ok_or("authenticated_user_repository is not initialized")?;
 
         let anonymous_binding_repository = self
             .anonymous_binding_repository
             .clone()
-            .ok_or_else(|| "anonymous_binding_repository is not initialized")?;
+            .ok_or("anonymous_binding_repository is not initialized")?;
 
         let restore_password_token_repository = self
             .restore_password_token_repository
             .clone()
-            .ok_or_else(|| "restore_password_token_repository is not initialized")?;
+            .ok_or("restore_password_token_repository is not initialized")?;
 
         let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
             self.id_factory.clone(),
@@ -231,8 +231,8 @@ where
             ));
 
         let anonymous_requests_restore_token_uc = Arc::new(AnonymousRequestsRestoreTokenUc::new(
-            self.product_name.clone().into(),
-            self.restore_password_front_url.clone().into(),
+            self.product_name.clone(),
+            self.restore_password_front_url.clone(),
             self.id_factory.clone(),
             authenticated_user_repository,
             restore_password_token_repository,

@@ -56,7 +56,7 @@ mod tests {
         if let Err(violations) = res {
             assert!(violations.items.is_none());
             assert_eq!(violations.errors.len(), 1);
-            let v = violations.errors.first().unwrap();
+            let v = violations.errors.first().expect("Should be not empty");
             assert_eq!(v, ERR_EMAIL_EMPTY)
         }
     }
@@ -70,7 +70,7 @@ mod tests {
         if let Err(violations) = res {
             assert!(violations.items.is_none());
             assert_eq!(violations.errors.len(), 1);
-            let v = violations.errors.first().unwrap();
+            let v = violations.errors.first().expect("Should be not empty");
             assert_eq!(v, ERR_WRONG_EMAIL)
         }
     }

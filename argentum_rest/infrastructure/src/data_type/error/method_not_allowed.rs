@@ -33,6 +33,8 @@ impl MethodNotAllowedError {
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
+
     use crate::data_type::error::MethodNotAllowedError;
     use hyper::Method;
 
@@ -53,11 +55,13 @@ mod tests {
     }
 
     #[test]
-    fn test_serialize() {
+    fn test_serialize() -> Result<(), Box<dyn Error>> {
         let err = MethodNotAllowedError::new(Method::POST);
 
-        let actual = serde_json::to_string(&err).unwrap();
+        let actual = serde_json::to_string(&err)?;
 
-        assert_eq!("\"Method POST not allowed for this endpoint\"", actual)
+        assert_eq!("\"Method POST not allowed for this endpoint\"", actual);
+
+        Ok(())
     }
 }

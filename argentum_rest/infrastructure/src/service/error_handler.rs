@@ -26,7 +26,7 @@ where
 
                 let code = StatusCode::NOT_IMPLEMENTED;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(
                         None,
                         code.canonical_reason().unwrap_or("unknown").to_string(),
@@ -41,7 +41,7 @@ where
 
                 let code = StatusCode::BAD_REQUEST;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(
                         None,
                         code.canonical_reason().unwrap_or("unknown").to_string(),
@@ -56,7 +56,7 @@ where
 
                 let code = StatusCode::UNAUTHORIZED;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(
                         None,
                         code.canonical_reason().unwrap_or("unknown").to_string(),
@@ -71,7 +71,7 @@ where
 
                 let code = StatusCode::NOT_FOUND;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(None, e.msg, code, None, None)),
                 )
             }
@@ -80,7 +80,7 @@ where
 
                 let code = StatusCode::METHOD_NOT_ALLOWED;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
                 )
             }
@@ -89,7 +89,7 @@ where
 
                 let code = StatusCode::CONFLICT;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(
                         None,
                         e.source.to_string(),
@@ -104,7 +104,7 @@ where
 
                 let code = StatusCode::UNPROCESSABLE_ENTITY;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(None, e.to_string(), code, None, None)),
                 )
             }
@@ -113,7 +113,7 @@ where
 
                 let code = StatusCode::INTERNAL_SERVER_ERROR;
                 HttpResponse::new(
-                    code.clone(),
+                    code,
                     Box::new(ProblemDetail::new(
                         None,
                         code.canonical_reason().unwrap_or("unknown").to_string(),
@@ -140,10 +140,11 @@ mod tests {
     use http::StatusCode;
     use hyper::Method;
     use serde_json::json;
+    use std::error::Error;
     use std::sync::Arc;
 
     #[test]
-    fn test_handle_not_implemented() {
+    fn test_handle_not_implemented() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -151,7 +152,7 @@ mod tests {
         let response = handler.handle(HttpError::NotImplemented(NotImplementedError::new()));
         assert_eq!(response.code, StatusCode::NOT_IMPLEMENTED);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -161,10 +162,12 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_bad_request() {
+    fn test_handle_bad_request() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -177,7 +180,7 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::BAD_REQUEST);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -187,10 +190,12 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_not_found() {
+    fn test_handle_not_found() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -200,7 +205,7 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::NOT_FOUND);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -210,10 +215,12 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_method_nod_allowed() {
+    fn test_handle_method_nod_allowed() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -223,7 +230,7 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::METHOD_NOT_ALLOWED);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -233,10 +240,12 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_internal_server_error() {
+    fn test_handle_internal_server_error() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -246,7 +255,7 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::INTERNAL_SERVER_ERROR);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -256,6 +265,8 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[derive(thiserror::Error, Debug)]

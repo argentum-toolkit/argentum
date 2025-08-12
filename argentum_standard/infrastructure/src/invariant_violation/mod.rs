@@ -85,7 +85,7 @@ impl Serialize for ViolationItemDto {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub struct ViolationsDto {
     pub errors: Vec<String>,
 
@@ -114,15 +114,6 @@ impl ViolationsDto {
                 None => Self::new(vec![], None),
             },
             _ => Self::new(vec![], None),
-        }
-    }
-}
-
-impl Default for ViolationsDto {
-    fn default() -> Self {
-        Self {
-            errors: Default::default(),
-            items: Default::default(),
         }
     }
 }

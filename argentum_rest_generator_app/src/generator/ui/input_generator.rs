@@ -116,12 +116,10 @@ impl InputGenerator {
                         .clone()
                         .split('/')
                         .last()
-                        .ok_or_else(|| {
-                            format!(
-                                "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                                r.reference
-                            )
-                        })?
+                        .ok_or(format!(
+                            "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                            r.reference
+                        ))?
                         .into();
 
                     dependencies.push(format!("crate::dto::schema::{}", type_name));
@@ -195,7 +193,7 @@ impl InputGenerator {
         inputs: &mut BTreeMap<String, Schema>,
     ) -> Result<(), Box<dyn Error>> {
         if let Some((schema_name, schema)) =
-            self.schema_extractor.extract_ref_with_name(&ref_or, spec)?
+            self.schema_extractor.extract_ref_with_name(ref_or, spec)?
         {
             inputs.insert(schema_name, schema.clone());
 
@@ -215,11 +213,11 @@ impl InputGenerator {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {
-            if let Some(request_body) = self.request_body_extractor.extract(&operation, &spec)? {
+            if let Some(request_body) = self.request_body_extractor.extract(&operation, spec)? {
                 let body = request_body
                     .content
                     .get("application/json")
-                    .ok_or_else(|| "Request body should contain `application/json` mime type")?;
+                    .ok_or("Request body should contain `application/json` mime type")?;
 
                 self.get_inputs(&body.schema, spec, &mut inputs)?;
             }
@@ -239,17 +237,17 @@ impl InputGenerator {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {
-            if let Some(request_body) = self.request_body_extractor.extract(&operation, &spec)? {
+            if let Some(request_body) = self.request_body_extractor.extract(&operation, spec)? {
                 let body = request_body
                     .content
                     .get("application/json")
-                    .ok_or_else(|| "Request body should contain `application/json` mime type")?;
+                    .ok_or("Request body should contain `application/json` mime type")?;
 
                 self.get_inputs(&body.schema, spec, &mut inputs)?;
             }
         }
 
-        self.generate_mod(base_output_path, &spec)?;
+        self.generate_mod(base_output_path, spec)?;
 
         for (name, input) in inputs.into_iter() {
             self.generate_item(base_output_path, name, &input, spec)?;

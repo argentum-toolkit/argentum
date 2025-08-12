@@ -64,6 +64,7 @@ mod tests {
     use serde::Deserialize;
     use serde_valid::Validate;
     use std::collections::HashMap;
+    use std::error::Error;
     use std::sync::Arc;
 
     #[derive(Debug, Deserialize, Validate)]
@@ -72,14 +73,16 @@ mod tests {
     }
 
     #[test]
-    pub fn test_extract() {
+    pub fn test_extract() -> Result<(), Box<dyn Error>> {
         let extractor = PathParamsExtractor::new(Arc::new(ValidationErrorTransformer::new()));
 
         let params = HashMap::from([("title", "v")]);
         let result = extractor.extract::<ExtractMock>(params);
 
         assert!(result.is_ok());
-        assert_eq!(result.unwrap().title, "v".to_string());
+        assert_eq!(result.map_err(|_| "Can't extract")?.title, "v".to_string());
+
+        Ok(())
     }
 
     #[test]

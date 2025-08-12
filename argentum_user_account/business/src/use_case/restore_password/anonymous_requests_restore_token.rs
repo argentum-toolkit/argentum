@@ -137,10 +137,11 @@ mod tests {
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use std::error::Error;
     use std::sync::Arc;
 
     #[test]
-    fn anonymous_requests_restore_token() -> Result<(), &'static str> {
+    fn anonymous_requests_restore_token() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -165,32 +166,32 @@ mod tests {
         let user_name = NameBuilder::new("Dionne".into())
             .last(Some("Morrison".into()))
             .try_build()
-            .unwrap();
+            .expect("Name should be valid");
 
-        let email = EmailAddress::try_new("test@mail.com".into()).unwrap();
+        let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 
-        user_repository.save(&user).unwrap();
+        user_repository.save(&user)?;
 
         let result = uc.execute(email);
 
         if let Err(_) = result {
-            return Err("User is not registered");
+            return Err("User is not registered".into());
         }
 
-        let token = result.unwrap();
+        let token = result?;
 
         assert!(user_id.eq(&token.user_id), "Wrong user id in token");
 
-        match token_repository.find_by_token(token.token).unwrap() {
+        match token_repository.find_by_token(token.token)? {
             Some(stored_token) => {
                 assert!(stored_token.id.eq(&token.id), "Wrong token id");
                 assert!(user_id.eq(&stored_token.user_id), "Wrong user id in token");
 
                 Ok(())
             }
-            None => Err("Token is not saved"),
+            None => Err("Token is not saved".into()),
         }
     }
 
@@ -216,7 +217,7 @@ mod tests {
             logger.clone(),
         );
 
-        let email = EmailAddress::try_new("test@mail.com".into()).unwrap();
+        let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
         let result = uc.execute(email);
 

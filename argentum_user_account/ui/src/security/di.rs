@@ -36,7 +36,7 @@ pub fn di_factory(user_accoutn_server_url: String) -> Result<DiC, String> {
 
     let local_storage = Arc::new(
         web_sys::window()
-            .ok_or_else(|| "Can't get window object")?
+            .ok_or("Can't get window object")?
             .local_storage()
             .map_err(|e| {
                 format!(
@@ -44,7 +44,7 @@ pub fn di_factory(user_accoutn_server_url: String) -> Result<DiC, String> {
                     e.as_string().unwrap_or("UNKNOWN".into())
                 )
             })?
-            .ok_or_else(|| "Can't get local storag. Object is empty")?,
+            .ok_or("Can't get local storag. Object is empty")?,
     );
 
     let security_repository: Arc<SecurityRepository> =

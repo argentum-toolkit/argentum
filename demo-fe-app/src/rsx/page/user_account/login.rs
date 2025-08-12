@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use crate::route::Route;
 
-use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
 use argentum_user_account_rest::ui::callbacks::UserLoginsWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::UserLoginsWithPasswordForm;
 use argentum_user_account_rest::ui::form_processor::UserLoginsWithPasswordFormProcessor;
@@ -26,6 +25,7 @@ pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let callbacks = {
         use argentum_standard_ui::service::redirect;
+        use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
         use argentum_user_account_ui::security::ClientSideAuthenticator;
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>()();

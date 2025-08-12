@@ -56,9 +56,9 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
     }
 
     fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
-        // TODO: check if key exists
+        // TODO: check if key exists. Eg:
         // if self.users. contains_key(user.get_id().clone()) {
-        //     return Err("Already exists".parse().unwrap());
+        //     return Err("Already exists");
         // }
 
         let u = AuthenticatedUser {

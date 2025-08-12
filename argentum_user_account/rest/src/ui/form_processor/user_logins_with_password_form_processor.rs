@@ -58,11 +58,11 @@ impl UserLoginsWithPasswordFormProcessor {
     #[cfg(not(feature = "web"))]
     pub async fn submit(
         &self,
-        auth_token: String,
-        values: Signal<LoginWithPasswordSchema>,
-        mut violations: Signal<ViolationsDto>,
-        mut errors: Signal<Vec<String>>,
-        mut disabled: Signal<bool>,
+        _auth_token: String,
+        _values: Signal<LoginWithPasswordSchema>,
+        mut _violations: Signal<ViolationsDto>,
+        mut _errors: Signal<Vec<String>>,
+        mut _disabled: Signal<bool>,
     ) {
     }
 

@@ -75,22 +75,22 @@ impl UserBusinessDiCBuilder {
         let authenticated_user_repository = self
             .authenticated_user_repository
             .clone()
-            .ok_or_else(|| "authenticated_user_repository not initialized".to_string())?;
+            .ok_or("authenticated_user_repository not initialized")?;
 
         let anonymous_user_repository = self
             .anonymous_user_repository
             .clone()
-            .ok_or_else(|| "anonymous_user_repository not initialized".to_string())?;
+            .ok_or("anonymous_user_repository not initialized")?;
 
         let anonymous_binding_repository = self
             .anonymous_binding_repository
             .clone()
-            .ok_or_else(|| "anonymous_binding_repository not initialized".to_string())?;
+            .ok_or("anonymous_binding_repository not initialized")?;
 
         let session_repository = self
             .session_repository
             .clone()
-            .ok_or_else(|| "session_repository not initialized".to_string())?;
+            .ok_or("session_repository not initialized")?;
 
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
             authenticated_user_repository.clone(),

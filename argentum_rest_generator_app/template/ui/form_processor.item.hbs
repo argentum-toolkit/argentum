@@ -65,17 +65,17 @@ impl {{upper_camel operation.operationId}}FormProcessor {
     pub async fn submit(
         &self,
         {{#if operation.security }}
-        auth_token: String,
+        _auth_token: String,
         {{/if}}
         {{#if needPathParams}}
-        path_params: {{upper_camel operation.operationId}}PathParams,
+        _path_params: {{upper_camel operation.operationId}}PathParams,
         {{/if}}
         {{#if schemaName}}
-        values: Signal<{{upper_camel schemaName}}>,
+        _values: Signal<{{upper_camel schemaName}}>,
         {{/if}}
-        mut violations: Signal<ViolationsDto>,
-        mut errors: Signal<Vec<String>>,
-        mut disabled: Signal<bool>,
+        mut _violations: Signal<ViolationsDto>,
+        mut _errors: Signal<Vec<String>>,
+        mut _disabled: Signal<bool>,
     ) {
 
     }

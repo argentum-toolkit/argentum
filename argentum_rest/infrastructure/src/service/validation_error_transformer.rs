@@ -80,6 +80,8 @@ impl ValidationErrorTransformer {
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
+
     use crate::service::ValidationErrorTransformer;
     use argentum_standard_business::invariant_violation::ViolationItem;
     use serde_valid::validation::{ArrayErrors, ItemErrorsMap, ObjectErrors, PropertyErrorsMap};
@@ -91,7 +93,7 @@ mod tests {
     }
 
     #[test]
-    fn test_deserialization_error() {
+    fn test_deserialization_error() -> Result<(), Box<dyn Error>> {
         let transformer = ValidationErrorTransformer::new();
         let e = serde_valid::Error::DeserializeError(MockError::Deserialization);
         let v = transformer.transform(e);
@@ -100,11 +102,13 @@ mod tests {
         assert!(!v.errors.is_empty());
         assert!(v.items.is_none());
         assert_eq!(v.errors.len(), 1);
-        assert_eq!(v.errors.first().unwrap(), "Deserialization error")
+        assert_eq!(v.errors.first(), Some(&"Deserialization error".to_string()));
+
+        Ok(())
     }
 
     #[test]
-    fn test_validation_error_with_array_items() {
+    fn test_validation_error_with_array_items() -> Result<(), Box<dyn Error>> {
         let transformer = ValidationErrorTransformer::new();
 
         let e: serde_valid::Error<MockError> = serde_valid::Error::ValidationError(
@@ -120,12 +124,14 @@ mod tests {
         assert!(!v.is_empty());
         assert!(!v.errors.is_empty());
         assert_eq!(v.errors.len(), 1);
-        assert_eq!(v.errors.first().unwrap(), "Some err");
+        assert_eq!(v.errors.first(), Some(&"Some err".to_string()));
         assert!(v.items.is_none());
+
+        Ok(())
     }
 
     #[test]
-    fn test_validation_error_with_array_items_tree() {
+    fn test_validation_error_with_array_items_tree() -> Result<(), Box<dyn Error>> {
         let transformer = ValidationErrorTransformer::new();
 
         let e: serde_valid::Error<MockError> = serde_valid::Error::ValidationError(
@@ -148,20 +154,29 @@ mod tests {
         assert!(!v.is_empty());
         assert!(v.errors.is_empty());
         assert!(v.items.is_some());
-        match v.items.unwrap() {
+        match v.items.ok_or("Items is None")? {
             ViolationItem::Object(_) => {
                 panic!("Should be an array")
             }
             ViolationItem::Array(a) => {
                 assert_eq!(a.len(), 1);
-                assert_eq!(a.first().unwrap().errors.first().unwrap(), "Some err");
-                assert!(a.first().unwrap().items.is_none());
+                assert_eq!(
+                    a.first()
+                        .ok_or("Empty vec of violations")?
+                        .errors
+                        .first()
+                        .ok_or("Empty vec of errors")?,
+                    "Some err"
+                );
+                assert!(a.first().ok_or("Empty vec of violations")?.items.is_none());
             }
-        }
+        };
+
+        Ok(())
     }
 
     #[test]
-    fn test_validation_error_with_object_items() {
+    fn test_validation_error_with_object_items() -> Result<(), Box<dyn Error>> {
         let transformer = ValidationErrorTransformer::new();
 
         let e: serde_valid::Error<MockError> = serde_valid::Error::ValidationError(
@@ -177,12 +192,14 @@ mod tests {
         assert!(!v.is_empty());
         assert!(!v.errors.is_empty());
         assert_eq!(v.errors.len(), 1);
-        assert_eq!(v.errors.first().unwrap(), "Some err");
+        assert_eq!(v.errors.first().ok_or("Empty vec of errors")?, "Some err");
         assert!(v.items.is_none());
+
+        Ok(())
     }
 
     #[test]
-    fn test_validation_error_with_object_items_tree() {
+    fn test_validation_error_with_object_items_tree() -> Result<(), Box<dyn Error>> {
         let transformer = ValidationErrorTransformer::new();
 
         let e: serde_valid::Error<MockError> = serde_valid::Error::ValidationError(
@@ -205,19 +222,30 @@ mod tests {
         assert!(!v.is_empty());
         assert!(v.errors.is_empty());
         assert!(v.items.is_some());
-        match v.items.unwrap() {
+        match v.items.ok_or("Empty vec of violations")? {
             ViolationItem::Object(o) => {
                 assert_eq!(o.len(), 1);
                 assert_eq!(
-                    o.get("some-field").unwrap().errors.first().unwrap(),
+                    o.get("some-field")
+                        .ok_or("Can't find a field")?
+                        .errors
+                        .first()
+                        .ok_or("Empty vec of errors")?,
                     "Some err"
                 );
-                assert!(o.get("some-field").unwrap().items.is_none());
+                assert!(
+                    o.get("some-field")
+                        .ok_or("Can't find a field")?
+                        .items
+                        .is_none()
+                );
             }
             ViolationItem::Array(_) => {
                 panic!("Should be an object")
             }
-        }
+        };
+
+        Ok(())
     }
 
     #[test]
@@ -233,7 +261,7 @@ mod tests {
         assert!(!v.is_empty());
         assert!(!v.errors.is_empty());
         assert_eq!(v.errors.len(), 1);
-        assert_eq!(v.errors.first().unwrap(), "Some err");
+        assert_eq!(v.errors.first(), Some(&"Some err".to_string()));
         assert!(v.items.is_none());
     }
 }
