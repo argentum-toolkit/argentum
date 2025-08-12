@@ -65,11 +65,11 @@ pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, St
     const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
 
     let u_database_url = env::var(U_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{} must be set", U_CONNECTION_URL_ENV_NAME));
+        .map_err(|e| format!("Cant get ENV {U_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
     const UA_CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
     let ua_database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{} must be set", UA_CONNECTION_URL_ENV_NAME));
+        .map_err(|e| format!("Cant get ENV {UA_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
     let u_migrations = user_migration::up("ag_user_");
     let u_migrator = Arc::new(

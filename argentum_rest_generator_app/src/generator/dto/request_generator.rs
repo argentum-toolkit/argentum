@@ -43,7 +43,7 @@ impl RequestGenerator {
         let body = request_body
             .content
             .get("application/json")
-            .expect("Request body should contain `application/json` mime type");
+            .ok_or("Request body should contain `application/json` mime type")?;
 
         let schema = match &body.schema {
             RefOrObject::Ref(r) => r

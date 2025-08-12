@@ -39,12 +39,12 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
 
     let u_database_url = env::var(U_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{U_CONNECTION_URL_ENV_NAME} must be set"));
+        .map_err(|e| format!("Cant get ENV {U_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
     let log_writer = Arc::new(PrettyWriter::new());
-    let logger = Arc::new(DefaultLogger::new(Level::Info, log_writer));
+    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
     let u_di = Rc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
@@ -75,7 +75,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     const UA_CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
 
     let database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{UA_CONNECTION_URL_ENV_NAME} must be set",));
+        .map_err(|e| format!("Cant get ENV {UA_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
     let ua_di = UserAccountInfrastructureDiCBuilder::new(
         u_di.clone(),
@@ -109,7 +109,9 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     // let listen = "172.18.0.1:8088";
     // let listen = "127.0.0.1:8088";
     let listen = "0.0.0.0:8088";
-    let addr: SocketAddr = listen.parse().expect("Unable to parse socket address");
+    let addr: SocketAddr = listen
+        .parse()
+        .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
 
     let router = Arc::new(RouterCombinator::new(
         vec![u_api_di.router, ua_api_di.router],

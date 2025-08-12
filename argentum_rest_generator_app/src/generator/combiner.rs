@@ -123,7 +123,7 @@ where
         current_file_path: PathBuf,
     ) -> Result<(), Box<dyn Error>> {
         if let RefOrObject::Ref(r) = property {
-            let component_ref = ComponentRef::from(r.reference.clone());
+            let component_ref = ComponentRef::try_from(r.reference.clone())?;
             if !component_ref.is_schema() {
                 return Err(format!(
                     "Wrong reference to schema component: `{}`",
@@ -260,7 +260,7 @@ where
         current_file_path: PathBuf,
     ) -> Result<(), Box<dyn Error>> {
         if let RefOrObject::Ref(r) = property {
-            let component_ref = ComponentRef::from(r.reference.clone());
+            let component_ref = ComponentRef::try_from(r.reference.clone())?;
             if !component_ref.is_request_body() {
                 return Err(format!(
                     "Wrong reference to RequestBody component: `{}`",
@@ -327,7 +327,7 @@ where
         current_file_path: PathBuf,
     ) -> Result<(), Box<dyn Error>> {
         if let RefOrObject::Ref(r) = property {
-            let component_ref = ComponentRef::from(r.reference.clone());
+            let component_ref = ComponentRef::try_from(r.reference.clone())?;
             if !component_ref.is_response() {
                 return Err(format!(
                     "Wrong reference to response component: `{}`",

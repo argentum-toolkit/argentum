@@ -109,7 +109,7 @@ where
                 }
 
                 let elapsed = start.elapsed();
-                logger.info(format!("Duration: {}μs", elapsed.as_micros()));
+                logger.trace(format!("Duration: {}μs", elapsed.as_micros()));
             });
         }
     }

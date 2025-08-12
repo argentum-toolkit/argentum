@@ -181,7 +181,7 @@ impl ClientGenerator {
                     let response_name: String;
                     match ref_or_obj {
                         RefOrObject::Ref(r) => {
-                            let component_ref = ComponentRef::from(r.reference.clone());
+                            let component_ref = ComponentRef::try_from(r.reference.clone())?;
                             if !component_ref.is_response() {
                                 return Err(format!(
                                     "Wrong reference to response component: `{}`",
@@ -207,7 +207,7 @@ impl ClientGenerator {
                                 let schema_name = match &media.schema {
                                     RefOrObject::Ref(schema_ref) => {
                                         let component_ref =
-                                            ComponentRef::from(schema_ref.reference.clone());
+                                            ComponentRef::try_from(schema_ref.reference.clone())?;
                                         if !component_ref.is_schema() {
                                             return Err(format!(
                                                 "Wrong reference to schema component: `{}`",

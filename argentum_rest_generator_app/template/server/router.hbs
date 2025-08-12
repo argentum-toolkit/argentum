@@ -9,15 +9,6 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-
-{{!-- {{#each paths as |path|}}
-static REGEX_{{{path.constName}}}: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"{{{path.pattern}}}")
-        .expect("Can't compile regex")
-});
-
-{{/each}} --}}
-
 pub struct Router {
     pre_handler: Arc<PreHandler>,
     error_pre_handler: Arc<ErrorPreHandler>,
