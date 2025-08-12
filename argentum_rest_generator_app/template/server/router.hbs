@@ -13,7 +13,7 @@ use std::sync::Arc;
 {{#each paths as |path|}}
 static REGEX_{{{path.constName}}}: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"{{{path.pattern}}}")
-        .unwrap()
+        .expect("Can't compile regex")
 });
 
 {{/each}}

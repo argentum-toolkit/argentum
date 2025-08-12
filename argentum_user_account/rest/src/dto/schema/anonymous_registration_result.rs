@@ -44,8 +44,11 @@ impl DeserializableSchemaRaw<'_> for AnonymousRegistrationResult {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(anonymous_id.unwrap(), token.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(anonymous_id) = anonymous_id
+            && let Some(token) = token
+        {
+            Ok(Self::new(anonymous_id, token))
         } else {
             Err(Violations::new(
                 vec!["wrong data for AnonymousRegistrationResult".to_string()],

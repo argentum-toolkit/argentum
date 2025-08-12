@@ -47,13 +47,16 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let body = match Violation::try_from_raw(raw.body.unwrap()) {
-            Ok(value) => Some(value),
-            Err(v) => {
-                argentum_violations.insert("body".into(), v);
+        let body = match raw.body {
+            Some(raw_body) => match Violation::try_from_raw(raw_body) {
+                Ok(value) => Some(value),
+                Err(v) => {
+                    argentum_violations.insert("body".into(), v);
 
-                None
-            }
+                    None
+                }
+            },
+            None => None,
         };
         let detail = raw.detail;
         let status = raw.status;
@@ -72,14 +75,11 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
         }
         let r#type = raw.r#type;
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(
-                body,
-                detail,
-                status.unwrap(),
-                title.unwrap(),
-                r#type,
-            ))
+        if argentum_violations.is_empty()
+            && let Some(status) = status
+            && let Some(title) = title
+        {
+            Ok(Self::new(body, detail, status, title, r#type))
         } else {
             Err(Violations::new(
                 vec!["wrong data for ProblemDetail".to_string()],

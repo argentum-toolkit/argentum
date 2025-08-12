@@ -19,7 +19,7 @@ impl Default for GetUserCallbacks {
     fn default() -> Self {
         Self {
             on_error: EventHandler::new(move |e: String| {
-                dioxus_logger::tracing::error!("API error: `{:?}`", e);
+                dioxus_logger::tracing::error!("API error: `{e:?}`");
             }),
 
             on_get_user_ok: EventHandler::new(move |_response: GetUserOkResponse| {}),

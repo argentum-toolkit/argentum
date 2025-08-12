@@ -45,20 +45,21 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
-        let name = if raw.name.is_none() {
-            argentum_violations.insert(
-                "name".into(),
-                Violations::new(vec!["required field".to_string()], None),
-            );
-            None
-        } else {
-            match UserName::try_from_raw(raw.name.unwrap()) {
+        let name = match raw.name {
+            Some(raw_name) => match UserName::try_from_raw(raw_name) {
                 Ok(value) => Some(value),
                 Err(v) => {
                     argentum_violations.insert("name".into(), v);
 
                     None
                 }
+            },
+            None => {
+                argentum_violations.insert(
+                    "name".into(),
+                    Violations::new(vec!["required field".to_string()], None),
+                );
+                None
             }
         };
         let password = raw.password;
@@ -76,13 +77,13 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(
-                email.unwrap(),
-                name.unwrap(),
-                password.unwrap(),
-                terms.unwrap(),
-            ))
+        if argentum_violations.is_empty()
+            && let Some(email) = email
+            && let Some(name) = name
+            && let Some(password) = password
+            && let Some(terms) = terms
+        {
+            Ok(Self::new(email, name, password, terms))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordSchema".to_string()],

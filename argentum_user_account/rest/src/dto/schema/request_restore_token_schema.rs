@@ -32,8 +32,10 @@ impl DeserializableSchemaRaw<'_> for RequestRestoreTokenSchema {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(email.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(email) = email
+        {
+            Ok(Self::new(email))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RequestRestoreTokenSchema".to_string()],

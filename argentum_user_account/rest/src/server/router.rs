@@ -10,19 +10,21 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 static REGEX_USER_ACCOUNT_ANONYMOUS_REGISTER: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user-account\/anonymous-register$").unwrap());
+    Lazy::new(|| Regex::new(r"\/user-account\/anonymous-register$").expect("Can't compile regex"));
 
 static REGEX_USER_ACCOUNT_PASSWORD_LOGIN: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user-account\/password-login$").unwrap());
+    Lazy::new(|| Regex::new(r"\/user-account\/password-login$").expect("Can't compile regex"));
 
 static REGEX_USER_ACCOUNT_REGISTER: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user-account\/register$").unwrap());
+    Lazy::new(|| Regex::new(r"\/user-account\/register$").expect("Can't compile regex"));
 
-static REGEX_USER_ACCOUNT_RESTORE_PASSWORD_TOKEN_REQUEST: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user-account\/restore-password\/token-request$").unwrap());
+static REGEX_USER_ACCOUNT_RESTORE_PASSWORD_TOKEN_REQUEST: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"\/user-account\/restore-password\/token-request$").expect("Can't compile regex")
+});
 
-static REGEX_USER_RESTORE_PASSWORD_CHANGE_PASSWORD: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user\/restore-password\/change-password$").unwrap());
+static REGEX_USER_RESTORE_PASSWORD_CHANGE_PASSWORD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"\/user\/restore-password\/change-password$").expect("Can't compile regex")
+});
 
 pub struct Router {
     pre_handler: Arc<PreHandler>,

@@ -92,9 +92,9 @@ where
         let name = NameBuilder::new("Sarah".into())
             .last(Some("Connor".into()))
             .try_build()
-            .unwrap();
-
-        let email = EmailAddress::try_new("sarah-connor@example.com".into()).unwrap();
+            .map_err(|e| format!("Wrong name: {}", e.errors.concat()))?;
+        let email = EmailAddress::try_new("sarah-connor@example.com".into())
+            .map_err(|e| format!("Wrong email address: {}", e.errors.concat()))?;
         let password = "111".into();
 
         let res = self
@@ -111,7 +111,8 @@ where
 
         let anon_id2 = self.id_factory.create();
         let anon2 = AnonymousUser::new(&anon_id2);
-        let email2 = EmailAddress::try_new("sarah-connor@example.com".into()).unwrap();
+        let email2 = EmailAddress::try_new("sarah-connor@example.com".into())
+            .map_err(|e| format!("Wrong email address: {}", e.errors.concat()))?;
         let password2 = "111".to_string();
 
         let login_result = self

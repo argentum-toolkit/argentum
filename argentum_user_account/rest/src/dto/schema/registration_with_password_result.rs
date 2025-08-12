@@ -32,8 +32,10 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordResult {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(id.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(id) = id
+        {
+            Ok(Self::new(id))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordResult".to_string()],

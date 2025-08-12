@@ -42,8 +42,10 @@ impl DeserializableSchemaRaw<'_> for UserName {
         let last = raw.last;
         let patronymic = raw.patronymic;
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(first.unwrap(), last, patronymic))
+        if argentum_violations.is_empty()
+            && let Some(first) = first
+        {
+            Ok(Self::new(first, last, patronymic))
         } else {
             Err(Violations::new(
                 vec!["wrong data for UserName".to_string()],

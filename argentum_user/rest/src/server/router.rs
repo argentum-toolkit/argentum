@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 static REGEX_USER_USERID: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$")
-        .unwrap()
+        .expect("Can't compile regex")
 });
 
 pub struct Router {

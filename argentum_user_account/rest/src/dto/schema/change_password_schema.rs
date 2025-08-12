@@ -41,8 +41,11 @@ impl DeserializableSchemaRaw<'_> for ChangePasswordSchema {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(password.unwrap(), token.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(password) = password
+            && let Some(token) = token
+        {
+            Ok(Self::new(password, token))
         } else {
             Err(Violations::new(
                 vec!["wrong data for ChangePasswordSchema".to_string()],

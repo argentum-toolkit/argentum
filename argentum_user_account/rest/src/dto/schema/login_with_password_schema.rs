@@ -41,8 +41,11 @@ impl DeserializableSchemaRaw<'_> for LoginWithPasswordSchema {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(email.unwrap(), password.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(email) = email
+            && let Some(password) = password
+        {
+            Ok(Self::new(email, password))
         } else {
             Err(Violations::new(
                 vec!["wrong data for LoginWithPasswordSchema".to_string()],

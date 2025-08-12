@@ -48,7 +48,7 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
         let body = match raw.body {
-            Some(r) => match Violation::try_from_raw(r) {
+            Some(raw_body) => match Violation::try_from_raw(raw_body) {
                 Ok(value) => Some(value),
                 Err(v) => {
                     argentum_violations.insert("body".into(), v);
@@ -58,36 +58,27 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
             },
             None => None,
         };
-
         let detail = raw.detail;
-
-        let status = match raw.status {
-            Some(s) => s,
-            None => {
-                argentum_violations.insert(
-                    "status".into(),
-                    Violations::new(vec!["field is required".to_string()], None),
-                );
-
-                Default::default()
-            }
-        };
-
-        let title = match raw.title {
-            Some(t) => t,
-            None => {
-                argentum_violations.insert(
-                    "title".into(),
-                    Violations::new(vec!["field is required".to_string()], None),
-                );
-
-                Default::default()
-            }
-        };
-
+        let status = raw.status;
+        if status.is_none() {
+            argentum_violations.insert(
+                "status".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
+        let title = raw.title;
+        if title.is_none() {
+            argentum_violations.insert(
+                "title".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
         let r#type = raw.r#type;
 
-        if argentum_violations.is_empty() {
+        if argentum_violations.is_empty()
+            && let Some(status) = status
+            && let Some(title) = title
+        {
             Ok(Self::new(body, detail, status, title, r#type))
         } else {
             Err(Violations::new(

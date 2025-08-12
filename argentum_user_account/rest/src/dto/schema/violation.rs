@@ -31,21 +31,27 @@ impl DeserializableSchemaRaw<'_> for Violation {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let errors = match ViolationErrors::try_from_raw(raw.errors.unwrap()) {
-            Ok(value) => Some(value),
-            Err(v) => {
-                argentum_violations.insert("errors".into(), v);
+        let errors = match raw.errors {
+            Some(raw_errors) => match ViolationErrors::try_from_raw(raw_errors) {
+                Ok(value) => Some(value),
+                Err(v) => {
+                    argentum_violations.insert("errors".into(), v);
 
-                None
-            }
+                    None
+                }
+            },
+            None => None,
         };
-        let items = match ViolationItems::try_from_raw(raw.items.unwrap()) {
-            Ok(value) => Some(value),
-            Err(v) => {
-                argentum_violations.insert("items".into(), v);
+        let items = match raw.items {
+            Some(raw_items) => match ViolationItems::try_from_raw(raw_items) {
+                Ok(value) => Some(value),
+                Err(v) => {
+                    argentum_violations.insert("items".into(), v);
 
-                None
-            }
+                    None
+                }
+            },
+            None => None,
         };
 
         if argentum_violations.is_empty() {

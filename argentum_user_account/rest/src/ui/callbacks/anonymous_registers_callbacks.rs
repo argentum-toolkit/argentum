@@ -13,7 +13,7 @@ impl Default for AnonymousRegistersCallbacks {
     fn default() -> Self {
         Self {
             on_error: EventHandler::new(move |e: String| {
-                dioxus_logger::tracing::error!("API error: `{:?}`", e);
+                dioxus_logger::tracing::error!("API error: `{e:?}`");
             }),
 
             on_anonymous_registered_successfully: EventHandler::new(

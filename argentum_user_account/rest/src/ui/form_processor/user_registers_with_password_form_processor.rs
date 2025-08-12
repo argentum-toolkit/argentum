@@ -23,10 +23,22 @@ impl UserRegistersWithPasswordFormProcessor {
         mut errors: Signal<Vec<String>>,
         mut violations: Signal<ViolationsDto>,
         mut inactive: Signal<bool>,
-    ) {
+    ) -> Result<(), String> {
         if let Some(body_violation) = problem.body {
-            let pp = serde_json::to_string(&body_violation).unwrap();
-            let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
+            let pp = serde_json::to_string(&body_violation).map_err(|e| {
+                let msg = format!("Can't serialize violations. Error {e}");
+                errors.push(msg.clone());
+
+                msg
+            })?;
+
+            let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).map_err(|e| {
+                let msg = format!("Can't parse body violations. Error {e}");
+                errors.push(msg.clone());
+
+                msg
+            })?;
+
             if let Some(ViolationItemDto::Object(ref items)) = v.items {
                 violations.set(v.clone());
             };
@@ -39,6 +51,8 @@ impl UserRegistersWithPasswordFormProcessor {
         }
 
         inactive.set(false);
+
+        Ok(())
     }
 
     #[cfg(not(feature = "web"))]
@@ -99,7 +113,7 @@ impl UserRegistersWithPasswordFormProcessor {
                 }
                 UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                     Status400Response::ApplicationProblemJson(j) => {
-                        self.extract_errors_from_problem_details(
+                        let _ = self.extract_errors_from_problem_details(
                             j.0.clone(),
                             errors,
                             violations,
@@ -109,7 +123,7 @@ impl UserRegistersWithPasswordFormProcessor {
                 },
                 UserRegistersWithPasswordOperationResponseEnum::Status409(r) => match r {
                     Status409Response::ApplicationProblemJson(j) => {
-                        self.extract_errors_from_problem_details(
+                        let _ = self.extract_errors_from_problem_details(
                             j.0.clone(),
                             errors,
                             violations,

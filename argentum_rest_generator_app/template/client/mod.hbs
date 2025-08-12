@@ -44,7 +44,9 @@ impl Client {
             let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
             {{#if operation.needBody}}
-            let body = serde_json::to_vec_pretty(&req.body).unwrap();
+            let body = serde_json::to_vec_pretty(&req.body)
+                .map_err(|e| format!("Can't parse request body. Error: {e}"))?
+            ;
             {{/if}}
             //TODO: params: header, query
 

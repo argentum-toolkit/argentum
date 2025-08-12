@@ -46,7 +46,8 @@ impl Client {
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        let body = serde_json::to_vec_pretty(&req.body)
+            .map_err(|e| format!("Can't parse request body. Error: {e}"))?;
         //TODO: params: header, query
 
         let client = reqwest::Client::new();
@@ -85,7 +86,8 @@ impl Client {
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        let body = serde_json::to_vec_pretty(&req.body)
+            .map_err(|e| format!("Can't parse request body. Error: {e}"))?;
         //TODO: params: header, query
 
         let client = reqwest::Client::new();
@@ -139,7 +141,8 @@ impl Client {
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        let body = serde_json::to_vec_pretty(&req.body)
+            .map_err(|e| format!("Can't parse request body. Error: {e}"))?;
         //TODO: params: header, query
 
         let client = reqwest::Client::new();
@@ -198,7 +201,8 @@ impl Client {
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        let body = serde_json::to_vec_pretty(&req.body)
+            .map_err(|e| format!("Can't parse request body. Error: {e}"))?;
         //TODO: params: header, query
 
         let client = reqwest::Client::new();
@@ -258,7 +262,8 @@ impl Client {
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
-        let body = serde_json::to_vec_pretty(&req.body).unwrap();
+        let body = serde_json::to_vec_pretty(&req.body)
+            .map_err(|e| format!("Can't parse request body. Error: {e}"))?;
         //TODO: params: header, query
 
         let client = reqwest::Client::new();
