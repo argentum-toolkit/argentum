@@ -40,14 +40,6 @@ impl From<&ViolationItem> for ViolationItemDto {
     }
 }
 
-// impl <'de> Deserialize for ViolationItemDto {
-//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: serde::Deserializer<'de> {
-//         todo!()
-//     }
-// }
-
 impl From<ViolationItemDto> for ViolationItem {
     fn from(val: ViolationItemDto) -> Self {
         match val {
@@ -69,7 +61,6 @@ impl From<ViolationItemDto> for ViolationItem {
 
 impl From<ViolationsDto> for Violations {
     fn from(val: ViolationsDto) -> Self {
-        // self.items.unwrap()
         let items = val.items.as_ref().map(|v| (*v).clone().into());
         Violations::new(val.errors.clone(), items)
     }

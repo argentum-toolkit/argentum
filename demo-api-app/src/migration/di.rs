@@ -38,7 +38,7 @@ async fn create_migrator<'a, L>(
     max_db_connections: u32,
     migrations: MigrationCollection<'a>,
     logger: Arc<L>,
-) -> Migrator<'a, L>
+) -> Result<Migrator<'a, L>, String>
 where
     L: LoggerTrait,
 {
@@ -47,15 +47,15 @@ where
             .max_connections(max_db_connections)
             .connect(u_database_url)
             .await
-            .unwrap(),
+            .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?,
     );
 
     let adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger.clone()));
 
-    Migrator::new(adapter, migrations, "ag__migrations", logger)
+    Ok(Migrator::new(adapter, migrations, "ag__migrations", logger))
 }
 
-pub async fn di_factory<'a>() -> DiC<'a, DefaultLogger<PrettyWriter>> {
+pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, String> {
     dotenv().ok();
 
     let log_writer = Arc::new(PrettyWriter::new());
@@ -79,13 +79,13 @@ pub async fn di_factory<'a>() -> DiC<'a, DefaultLogger<PrettyWriter>> {
             u_migrations,
             logger.clone(),
         )
-        .await,
+        .await?,
     );
 
     let ua_migrations = user_account_migration::up("ag_user_account_");
     let ua_migrator = Arc::new(
-        create_migrator(&ua_database_url, max_db_connections, ua_migrations, logger).await,
+        create_migrator(&ua_database_url, max_db_connections, ua_migrations, logger).await?,
     );
 
-    DiC::new(u_migrator, ua_migrator)
+    Ok(DiC::new(u_migrator, ua_migrator))
 }

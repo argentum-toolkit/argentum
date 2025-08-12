@@ -83,7 +83,7 @@ where
         let sql = query_as.sql().to_string();
         self.logger.debug(sql.clone());
         let result: Result<Option<F>, Error> = query_as.fetch_optional(&*self.pool).await;
-        self.logger.trace("done");
+        self.logger.trace("SQL done");
 
         match result {
             Ok(Some(r)) => Ok(Some(r)),

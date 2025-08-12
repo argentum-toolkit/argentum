@@ -280,8 +280,8 @@ name = "argentum_standard_business"
 version = "0.3.0-dev"
 dependencies = [
  "chrono",
+ "compiletime-regex",
  "fastrand",
- "once_cell",
  "regex",
  "thiserror 2.0.12",
 ]
@@ -357,12 +357,12 @@ dependencies = [
  "argentum_user_business",
  "async-trait",
  "chrono",
+ "compiletime-regex",
  "dioxus",
  "dioxus-logger",
  "erased-serde",
  "http",
  "hyper",
- "once_cell",
  "regex",
  "reqwest",
  "serde",
@@ -427,12 +427,12 @@ dependencies = [
  "argentum_user_business",
  "async-trait",
  "chrono",
+ "compiletime-regex",
  "dioxus",
  "dioxus-logger",
  "erased-serde",
  "http",
  "hyper",
- "once_cell",
  "regex",
  "reqwest",
  "serde",
@@ -735,6 +735,17 @@ name = "colorchoice"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
+
+[[package]]
+name = "compiletime-regex"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2fc8cf3fbdecb6f5663e1f8958bf9b30e398d1aafe1e427770ef6780ff06e7f"
+dependencies = [
+ "quote",
+ "regex",
+ "syn",
+]
 
 [[package]]
 name = "concurrent-queue"

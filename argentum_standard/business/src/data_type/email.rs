@@ -1,18 +1,12 @@
 use crate::invariant_violation::InvariantResult;
-use once_cell::sync::Lazy;
-use regex::Regex;
+use compiletime_regex::regex;
+use std::sync::LazyLock;
 
 const ERR_EMAIL_EMPTY: &str = "Email should not be empty";
 const ERR_WRONG_EMAIL: &str = "Wrong email address";
 
-static EMAIL_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(
-        r"(?x) # enable insigificant whitespace mode
-        ^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$
-    ",
-    )
-    .unwrap()
-});
+pub static EMAIL_REGEX: LazyLock<regex::Regex> =
+    LazyLock::new(|| regex!(r"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$"));
 
 #[derive(Clone, PartialEq)]
 pub struct EmailAddress(String);

@@ -51,7 +51,8 @@ where
             router: Arc<dyn RouterTrait>,
             transformer: Arc<ResponseToJsonTransformer>,
             error_handler: Arc<ErrorHandler<T>>,
-        ) -> Result<Response, hyper::Error>
+            logger: Arc<T>,
+        ) -> Result<Response, String>
         where
             T: LoggerTrait,
         {
@@ -62,7 +63,14 @@ where
                 Err(e) => error_handler.handle(e),
             };
 
-            Ok(transformer.transform(response))
+            match transformer.transform(response) {
+                Ok(r) => Ok(r),
+                Err(e) => {
+                    logger.critical(e.clone());
+
+                    Err(e)
+                }
+            }
         }
 
         let listener = TcpListener::bind(self.addr).await?;
@@ -80,6 +88,8 @@ where
             tokio::task::spawn(async move {
                 logger.trace("HTTP request accepted");
                 let start = Instant::now();
+
+                let log = logger.clone();
                 if let Err(err) = http1::Builder::new()
                     .serve_connection(
                         io,
@@ -89,6 +99,7 @@ where
                                 router.clone(),
                                 transformer.clone(),
                                 error_handler.clone(),
+                                log.clone(),
                             )
                         }),
                     )
@@ -98,7 +109,7 @@ where
                 }
 
                 let elapsed = start.elapsed();
-                logger.trace(format!("Duration: {}μs", elapsed.as_micros()));
+                logger.info(format!("Duration: {}μs", elapsed.as_micros()));
             });
         }
     }

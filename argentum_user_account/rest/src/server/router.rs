@@ -3,33 +3,21 @@ use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
+use compiletime_regex::regex;
 use hyper::{Method, Uri};
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::sync::Arc;
-
-static REGEX_USER_ACCOUNT_ANONYMOUS_REGISTER: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user-account\/anonymous-register$").expect("Can't compile regex"));
-
-static REGEX_USER_ACCOUNT_PASSWORD_LOGIN: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user-account\/password-login$").expect("Can't compile regex"));
-
-static REGEX_USER_ACCOUNT_REGISTER: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\/user-account\/register$").expect("Can't compile regex"));
-
-static REGEX_USER_ACCOUNT_RESTORE_PASSWORD_TOKEN_REQUEST: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\/user-account\/restore-password\/token-request$").expect("Can't compile regex")
-});
-
-static REGEX_USER_RESTORE_PASSWORD_CHANGE_PASSWORD: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\/user\/restore-password\/change-password$").expect("Can't compile regex")
-});
 
 pub struct Router {
     pre_handler: Arc<PreHandler>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
+    regex_user_account_anonymous_register: Regex,
+    regex_user_account_password_login: Regex,
+    regex_user_account_register: Regex,
+    regex_user_account_restore_password_token_request: Regex,
+    regex_user_restore_password_change_password: Regex,
 }
 
 impl Router {
@@ -38,10 +26,23 @@ impl Router {
         error_pre_handler: Arc<ErrorPreHandler>,
         url_prefix: String,
     ) -> Self {
+        let regex_user_account_anonymous_register = regex!(r"\/user-account\/anonymous-register$");
+        let regex_user_account_password_login = regex!(r"\/user-account\/password-login$");
+        let regex_user_account_register = regex!(r"\/user-account\/register$");
+        let regex_user_account_restore_password_token_request =
+            regex!(r"\/user-account\/restore-password\/token-request$");
+        let regex_user_restore_password_change_password =
+            regex!(r"\/user\/restore-password\/change-password$");
+
         Self {
             pre_handler,
             error_pre_handler,
             url_prefix,
+            regex_user_account_anonymous_register,
+            regex_user_account_password_login,
+            regex_user_account_register,
+            regex_user_account_restore_password_token_request,
+            regex_user_restore_password_change_password,
         }
     }
 }
@@ -55,35 +56,41 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = REGEX_USER_ACCOUNT_ANONYMOUS_REGISTER.captures(path) {
+        if let Some(_) = self.regex_user_account_anonymous_register.captures(path) {
             return match *method {
                 Method::POST => true,
                 _ => false,
             };
         }
 
-        if let Some(_) = REGEX_USER_ACCOUNT_PASSWORD_LOGIN.captures(path) {
+        if let Some(_) = self.regex_user_account_password_login.captures(path) {
             return match *method {
                 Method::POST => true,
                 _ => false,
             };
         }
 
-        if let Some(_) = REGEX_USER_ACCOUNT_REGISTER.captures(path) {
+        if let Some(_) = self.regex_user_account_register.captures(path) {
             return match *method {
                 Method::POST => true,
                 _ => false,
             };
         }
 
-        if let Some(_) = REGEX_USER_ACCOUNT_RESTORE_PASSWORD_TOKEN_REQUEST.captures(path) {
+        if let Some(_) = self
+            .regex_user_account_restore_password_token_request
+            .captures(path)
+        {
             return match *method {
                 Method::POST => true,
                 _ => false,
             };
         }
 
-        if let Some(_) = REGEX_USER_RESTORE_PASSWORD_CHANGE_PASSWORD.captures(path) {
+        if let Some(_) = self
+            .regex_user_restore_password_change_password
+            .captures(path)
+        {
             return match *method {
                 Method::POST => true,
                 _ => false,
@@ -100,7 +107,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = REGEX_USER_ACCOUNT_ANONYMOUS_REGISTER.captures(path) {
+        if let Some(_) = self.regex_user_account_anonymous_register.captures(path) {
             let raw_path_params = HashMap::from([]);
 
             return match *req.method() {
@@ -113,7 +120,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = REGEX_USER_ACCOUNT_PASSWORD_LOGIN.captures(path) {
+        if let Some(_) = self.regex_user_account_password_login.captures(path) {
             let raw_path_params = HashMap::from([]);
 
             return match *req.method() {
@@ -126,7 +133,7 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = REGEX_USER_ACCOUNT_REGISTER.captures(path) {
+        if let Some(_) = self.regex_user_account_register.captures(path) {
             let raw_path_params = HashMap::from([]);
 
             return match *req.method() {
@@ -139,7 +146,10 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = REGEX_USER_ACCOUNT_RESTORE_PASSWORD_TOKEN_REQUEST.captures(path) {
+        if let Some(_) = self
+            .regex_user_account_restore_password_token_request
+            .captures(path)
+        {
             let raw_path_params = HashMap::from([]);
 
             return match *req.method() {
@@ -152,7 +162,10 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = REGEX_USER_RESTORE_PASSWORD_CHANGE_PASSWORD.captures(path) {
+        if let Some(_) = self
+            .regex_user_restore_password_change_password
+            .captures(path)
+        {
             let raw_path_params = HashMap::from([]);
 
             return match *req.method() {

@@ -44,7 +44,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
     let log_writer = Arc::new(PrettyWriter::new());
-    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+    let logger = Arc::new(DefaultLogger::new(Level::Info, log_writer));
 
     let u_di = Rc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
