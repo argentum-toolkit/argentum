@@ -48,7 +48,7 @@ impl Display for StatusCode {
             Self::Uint(u) => u.to_string(),
             Self::String(s) => s.clone(),
         };
-        write!(f, "{}", str)
+        write!(f, "{str}")
     }
 }
 

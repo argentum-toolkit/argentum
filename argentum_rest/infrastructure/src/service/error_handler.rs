@@ -22,7 +22,7 @@ where
     pub fn handle(&self, err: HttpError) -> HttpResponse {
         match err {
             HttpError::NotImplemented(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::NOT_IMPLEMENTED;
                 HttpResponse::new(

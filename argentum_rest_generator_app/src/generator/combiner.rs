@@ -134,7 +134,7 @@ where
 
             let component_name = component_ref.component_name;
 
-            let reference = format!("#/components/schemas/{}", component_name);
+            let reference = format!("#/components/schemas/{component_name}");
             r.reference = reference;
 
             if let Some(file_path) = component_ref.file_path {
@@ -149,7 +149,7 @@ where
                 let dir = dir_res?;
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
-                let hash_key = format!("{}#{}", inner_file_path, component_name);
+                let hash_key = format!("{inner_file_path}#{component_name}");
                 if self
                     .combined_schemas
                     .read()
@@ -157,8 +157,7 @@ where
                     .contains_key(&hash_key)
                 {
                     self.logger.info(format!(
-                        "Schema `{}` already loaded from file `{}`",
-                        component_name, inner_file_path
+                        "Schema `{component_name}` already loaded from file `{inner_file_path}`"
                     ));
                 } else {
                     self.combined_schemas
@@ -297,7 +296,7 @@ where
                     Some(s) => {
                         let b_name = component_ref.component_name;
 
-                        let reference = format!("#/components/requestBodies/{}", b_name);
+                        let reference = format!("#/components/requestBodies/{b_name}");
                         r.reference = reference;
 
                         let b: &mut RequestBody = &mut s.clone();
@@ -364,7 +363,7 @@ where
                     Some(s) => {
                         let b_name = component_ref.component_name;
 
-                        let reference = format!("#/components/responses/{}", b_name);
+                        let reference = format!("#/components/responses/{b_name}");
                         r.reference = reference;
 
                         let resp: &mut Response = &mut s.clone();

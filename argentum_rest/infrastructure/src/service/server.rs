@@ -105,7 +105,7 @@ where
                     )
                     .await
                 {
-                    println!("Failed to serve connection: {:?}", err);
+                    println!("Failed to serve connection: {err:?}");
                 }
 
                 let elapsed = start.elapsed();

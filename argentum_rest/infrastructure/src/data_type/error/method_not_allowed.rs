@@ -13,7 +13,7 @@ impl Display for MethodNotAllowedError {
             "Method {} not allowed for this endpoint",
             self.method.as_str()
         );
-        write!(f, "{}", str)
+        write!(f, "{str}")
     }
 }
 impl Serialize for MethodNotAllowedError {

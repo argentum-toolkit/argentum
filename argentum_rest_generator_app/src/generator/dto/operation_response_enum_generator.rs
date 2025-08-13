@@ -52,7 +52,7 @@ impl OperationResponseEnumGenerator {
                     .reference
                     .clone()
                     .split('/')
-                    .last()
+                    .next_back()
                     .ok_or(format!(
                         "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
                         r.reference
