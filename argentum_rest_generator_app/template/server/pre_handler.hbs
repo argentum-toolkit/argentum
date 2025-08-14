@@ -1,8 +1,8 @@
-{{#each operations as |operation|}}
+{{#each operations as |operation|~}}
 use crate::dto::request::{{upper_camel operation.operationId}}Request;
 {{/each}}
 
-{{#each operations as |operation|}}
+{{#each operations as |operation|~}}
 use crate::server::handler::{{upper_camel operation.operationId}}Trait;
 {{/each}}
 use argentum_rest_infrastructure::data_type::error::HttpError;

@@ -4,15 +4,15 @@ use crate::data_type::NamePart;
 pub struct Name {
     pub first: NamePart,
     pub last: Option<NamePart>,
-    pub patronymic: Option<NamePart>,
+    pub additional: Option<NamePart>,
 }
 
 impl Name {
-    pub fn new(first: NamePart, last: Option<NamePart>, patronymic: Option<NamePart>) -> Self {
+    pub fn new(first: NamePart, last: Option<NamePart>, additional: Option<NamePart>) -> Self {
         Self {
             first,
             last,
-            patronymic,
+            additional,
         }
     }
 }
@@ -25,14 +25,14 @@ mod tests {
     fn test_new_full() {
         let first = NamePart::try_new("Lucian".into()).expect("Should be valid");
         let last = NamePart::try_new("Fisher".into()).expect("Should be valid");
-        let patronymic = NamePart::try_new("Bushra".into()).expect("Should be valid");
+        let additional = NamePart::try_new("Bushra".into()).expect("Should be valid");
 
-        let name = Name::new(first, Some(last), Some(patronymic));
+        let name = Name::new(first, Some(last), Some(additional));
 
         assert_eq!(name.first.to_string(), "Lucian".to_string());
         assert_eq!(name.last.map(|n| n.to_string()), Some("Fisher".to_string()));
         assert_eq!(
-            name.patronymic.map(|n| n.to_string()),
+            name.additional.map(|n| n.to_string()),
             Some("Bushra".to_string())
         );
     }
@@ -45,6 +45,6 @@ mod tests {
 
         assert_eq!(name.first.to_string(), "Lucian".to_string());
         assert!(name.last.is_none());
-        assert!(name.patronymic.is_none());
+        assert!(name.additional.is_none());
     }
 }

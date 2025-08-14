@@ -7,19 +7,19 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct UserName {
+    pub additional: Option<String>,
+
     pub first: String,
 
     pub last: Option<String>,
-
-    pub patronymic: Option<String>,
 }
 
 impl UserName {
-    pub fn new(first: String, last: Option<String>, patronymic: Option<String>) -> Self {
+    pub fn new(additional: Option<String>, first: String, last: Option<String>) -> Self {
         Self {
+            additional,
             first,
             last,
-            patronymic,
         }
     }
 }
@@ -32,6 +32,7 @@ impl DeserializableSchemaRaw<'_> for UserName {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
+        let additional = raw.additional;
         let first = raw.first;
         if first.is_none() {
             argentum_violations.insert(
@@ -40,12 +41,11 @@ impl DeserializableSchemaRaw<'_> for UserName {
             );
         }
         let last = raw.last;
-        let patronymic = raw.patronymic;
 
         if argentum_violations.is_empty()
             && let Some(first) = first
         {
-            Ok(Self::new(first, last, patronymic))
+            Ok(Self::new(additional, first, last))
         } else {
             Err(Violations::new(
                 vec!["wrong data for UserName".to_string()],
@@ -57,10 +57,10 @@ impl DeserializableSchemaRaw<'_> for UserName {
 
 #[derive(serde::Deserialize)]
 pub struct UserNameRaw {
+    #[serde(rename = "additional")]
+    pub additional: Option<String>,
     #[serde(rename = "first")]
     pub first: Option<String>,
     #[serde(rename = "last")]
     pub last: Option<String>,
-    #[serde(rename = "patronymic")]
-    pub patronymic: Option<String>,
 }

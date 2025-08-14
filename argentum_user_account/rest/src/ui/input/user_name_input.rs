@@ -22,9 +22,9 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         ..
     } = props.clone();
 
+    let mut additional_value = use_signal(|| user_name.additional);
     let mut first_value = use_signal(|| user_name.first);
     let mut last_value = use_signal(|| user_name.last);
-    let mut patronymic_value = use_signal(|| user_name.patronymic);
 
     let violation_items = match violations {
         Some(vv) => match vv.items {
@@ -34,19 +34,33 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         None => BTreeMap::new(),
     };
 
+    let additional_violations = violation_items.get("additional").cloned();
     let first_violations = violation_items.get("first").cloned();
     let last_violations = violation_items.get("last").cloned();
-    let patronymic_violations = violation_items.get("patronymic").cloned();
 
     let update = move || {
         props.oninput.call(UserName::new(
+            additional_value(),
             first_value(),
             last_value(),
-            patronymic_value(),
         ))
     };
 
     rsx! {
+            LabeledInput {
+        id: "user_additional",
+        name: "user_additional",
+        label: "Additional",
+        input_type: "text".to_string(),
+            value: additional_value().unwrap_or("".to_string()),
+
+        violations: additional_violations,
+        oninput: move |event: String| {
+            additional_value.set(Some(event));
+            update();
+        },
+    }
+
             LabeledInput {
         id: "user_first_name",
         name: "user_first_name",
@@ -71,20 +85,6 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         violations: last_violations,
         oninput: move |event: String| {
             last_value.set(Some(event));
-            update();
-        },
-    }
-
-            LabeledInput {
-        id: "user_patronymic",
-        name: "user_patronymic",
-        label: "Patronymic",
-        input_type: "text".to_string(),
-            value: patronymic_value().unwrap_or("".to_string()),
-
-        violations: patronymic_violations,
-        oninput: move |event: String| {
-            patronymic_value.set(Some(event));
             update();
         },
     }

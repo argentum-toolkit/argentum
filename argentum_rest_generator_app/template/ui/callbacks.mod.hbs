@@ -1,7 +1,7 @@
-{{#each operations as |operation|}}
+{{#each operations as |operation|~}}
 mod {{snake operation.operationId}}_callbacks;
 {{/each}}
 
-{{#each operations as |operation|}}
+{{#each operations as |operation|~}}
 pub use {{snake operation.operationId}}_callbacks::{{upper_camel operation.operationId}}Callbacks;
 {{/each}}

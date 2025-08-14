@@ -20,7 +20,7 @@ impl DtoToUserRegistersWithPasswordParams {
         let mut vo = BTreeMap::new();
 
         let raw_name = req.body.name.clone();
-        let name_result = NameBuilder::new(raw_name.first)
+        let name_result = NameBuilder::new(&raw_name.first)
             .last(raw_name.last)
             .try_build();
 

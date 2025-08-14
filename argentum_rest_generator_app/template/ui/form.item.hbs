@@ -1,5 +1,5 @@
 use std::rc::Rc;
-{{#if needPathParams}}
+{{#if needPathParams~}}
 use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
 {{/if}}
 {{#if schemaName}}

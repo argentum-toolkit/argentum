@@ -40,9 +40,9 @@ impl GetUserTrait for GetUserHandler {
                     user.email.as_string(),
                     Some(id),
                     UserNameDto::new(
+                        user.name.additional.map(|a| a.to_string()),
                         user.name.first.to_string(),
                         user.name.last.map(|l| l.to_string()),
-                        user.name.patronymic.map(|p| p.to_string()),
                     ),
                 );
 

@@ -5,6 +5,7 @@ use crate::dto::response::Status401Response;
 use crate::dto::response::Status409Response;
 use crate::dto::response::UserLoggedInSuccessfullyResponse;
 use crate::dto::response::UserRegisteredSuccessfullyResponse;
+
 use crate::dto::schema::AnonymousRegistrationResult as AnonymousRegistrationResultSchema;
 use crate::dto::schema::EmptyResponse as EmptyResponseSchema;
 use crate::dto::schema::LoginResult as LoginResultSchema;

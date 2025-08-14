@@ -10,12 +10,12 @@ const ERR_WRONG_NAME: &str = "Wrong name";
 pub struct NameBuilder {
     first: Option<NamePart>,
     last: Option<NamePart>,
-    patronymic: Option<NamePart>,
+    additional: Option<NamePart>,
     violations: ViolationObject,
 }
 
 impl NameBuilder {
-    pub fn new(first: String) -> Self {
+    pub fn new(first: &str) -> Self {
         let mut violations = BTreeMap::new();
 
         let first_name = match NamePart::try_new(first) {
@@ -29,7 +29,7 @@ impl NameBuilder {
         Self {
             first: first_name,
             last: None,
-            patronymic: None,
+            additional: None,
             violations,
         }
     }
@@ -37,7 +37,7 @@ impl NameBuilder {
     pub fn last(mut self, last: Option<String>) -> Self {
         self.last = match last {
             None => None,
-            Some(l) => match NamePart::try_new(l) {
+            Some(l) => match NamePart::try_new(&l) {
                 Ok(ln) => Some(ln),
                 Err(v) => {
                     self.violations.insert("last".into(), v);
@@ -50,13 +50,13 @@ impl NameBuilder {
         self
     }
 
-    pub fn patronymic(mut self, patronymic: Option<String>) -> Self {
-        self.patronymic = match patronymic {
+    pub fn additional(mut self, additional: Option<String>) -> Self {
+        self.additional = match additional {
             None => None,
-            Some(l) => match NamePart::try_new(l) {
+            Some(l) => match NamePart::try_new(&l) {
                 Ok(ln) => Some(ln),
                 Err(v) => {
-                    self.violations.insert("patronymic".into(), v);
+                    self.violations.insert("additional".into(), v);
 
                     None
                 }
@@ -68,7 +68,7 @@ impl NameBuilder {
 
     pub fn try_build(&self) -> InvariantResult<Name> {
         match self.first.clone() {
-            Some(first) => Ok(Name::new(first, self.last.clone(), self.patronymic.clone())),
+            Some(first) => Ok(Name::new(first, self.last.clone(), self.additional.clone())),
             None => Err(Violations::new(
                 vec![ERR_WRONG_NAME.to_string()],
                 Some(ViolationItem::Object(self.violations.clone())),
@@ -87,49 +87,49 @@ mod tests {
     fn test_new_full() {
         let first = "First".to_string();
         let last = Some("Last".into());
-        let patronymic = Some("Patronymic".into());
+        let additional = Some("Additional".into());
 
-        let builder = NameBuilder::new(first.clone());
+        let builder = NameBuilder::new(&first);
         let res = builder
             .last(last.clone())
-            .patronymic(patronymic.clone())
+            .additional(additional.clone())
             .try_build();
 
         let name = res.expect("Name should be valid");
 
         assert_eq!(name.first.to_string(), first);
         assert_eq!(name.last.map(|n| n.to_string()), last);
-        assert_eq!(name.patronymic.map(|n| n.to_string()), patronymic);
+        assert_eq!(name.additional.map(|n| n.to_string()), additional);
     }
 
     #[test]
     fn test_new_minimal() {
         let first = "First".to_string();
         let last = Some("Last".into());
-        let patronymic = Some("Patronymic".into());
+        let additional = Some("Additional".into());
 
-        let builder = NameBuilder::new(first.clone());
+        let builder = NameBuilder::new(&first);
         let res = builder
             .last(last.clone())
-            .patronymic(patronymic.clone())
+            .additional(additional.clone())
             .try_build();
 
         let name = res.expect("Name be valid");
 
         assert_eq!(name.first.to_string(), first);
         assert_eq!(name.last.map(|n| n.to_string()), last);
-        assert_eq!(name.patronymic.map(|n| n.to_string()), patronymic);
+        assert_eq!(name.additional.map(|n| n.to_string()), additional);
     }
 
     #[test]
     fn test_new_error_for_empty_fields() {
         let first = "".to_string();
         let last = Some("".into());
-        let patronymic = Some("".into());
-        let builder = NameBuilder::new(first.clone());
+        let additional = Some("".into());
+        let builder = NameBuilder::new(&first);
         let res = builder
             .last(last.clone())
-            .patronymic(patronymic.clone())
+            .additional(additional.clone())
             .try_build();
 
         assert!(res.is_err());

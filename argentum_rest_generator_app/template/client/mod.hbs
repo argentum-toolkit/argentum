@@ -1,11 +1,12 @@
-{{#each useResponses as |response|}}
+{{#each useResponses as |response|~}}
     use crate::dto::response::{{upper_camel response}}Response;
 {{/each}}
-{{#each useSchemas as |schema|}}
+
+{{#each useSchemas as |schema|~}}
     use crate::dto::schema::{{upper_camel schema}} as {{upper_camel schema}}Schema;
 {{/each}}
 
-{{#each paths as |path|}}
+{{#each paths as |path|~}}
     {{#each path.operations as |operation|}}
     use crate::dto::request::{{upper_camel operation.operationId}}Request;
     use crate::dto::operation_response_enum::{{ upper_camel operation.operationId }}OperationResponseEnum;

@@ -53,8 +53,7 @@ where
                     }
                 };
 
-                let name_builder =
-                    NameBuilder::new(dto.first_name.clone()).last(dto.last_name.clone());
+                let name_builder = NameBuilder::new(&dto.first_name).last(dto.last_name.clone());
 
                 let name = match name_builder.try_build() {
                     Ok(n) => n,
@@ -62,7 +61,7 @@ where
                         return Err(ExternalUserError::Authenticated(Some(Box::new(
                             BrokenStoredData::UserName {
                                 first: dto.first_name.clone(),
-                                last: dto.last_name.clone(),
+                                last: dto.last_name,
                             },
                         ))));
                     }
