@@ -181,7 +181,7 @@ impl ClientGenerator {
                             }
 
                             response_name =
-                                self.escape_response_name(component_ref.component_name.clone());
+                                self.escape_response_name(&component_ref.component_name);
 
                             use_responses.push(response_name.clone());
 
@@ -267,11 +267,11 @@ impl ClientGenerator {
         Ok(())
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if name.len() > 0 && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 }

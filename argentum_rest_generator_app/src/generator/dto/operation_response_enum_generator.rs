@@ -25,11 +25,11 @@ impl OperationResponseEnumGenerator {
         Self { renderer }
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if name.len() > 0 && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 
@@ -60,7 +60,7 @@ impl OperationResponseEnumGenerator {
                 }
             };
 
-            response_names.insert(code.to_string(), self.escape_response_name(response_name));
+            response_names.insert(code.to_string(), self.escape_response_name(&response_name));
         }
 
         let data = Data {

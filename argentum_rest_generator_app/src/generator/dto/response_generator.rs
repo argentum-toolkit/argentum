@@ -33,7 +33,7 @@ impl ResponseGenerator {
         response_name: String,
         response: &Response,
     ) -> Result<(), String> {
-        let escaped_response_name = self.escape_response_name(response_name.clone());
+        let escaped_response_name = self.escape_response_name(&response_name);
         let file_path = format!(
             "/src/dto/response/{}_response.rs",
             escaped_response_name.to_case(Case::Snake)
@@ -89,7 +89,7 @@ impl ResponseGenerator {
         let mut response_names: Vec<String> = Vec::new();
 
         for (name, _) in responses {
-            response_names.push(self.escape_response_name(name));
+            response_names.push(self.escape_response_name(&name));
         }
 
         let data = HashMap::from([("responseNames", response_names)]);
@@ -98,11 +98,11 @@ impl ResponseGenerator {
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if name.len() > 0 && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 
