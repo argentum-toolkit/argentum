@@ -57,7 +57,7 @@ pub fn {{upper_camel operation.operationId}}Form(
 
             {{#if schemaName}}
             {{ upper_camel schemaName}}Input {
-                {{ snake schemaName}}: values(),
+                value: values(),
                 violations: violations(),
                 oninput: move |event: {{ upper_camel schemaName}}| {
                     values.set(event);

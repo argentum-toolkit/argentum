@@ -35,7 +35,7 @@ pub fn Login() -> Element {
                 UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
                     authenticator.auth_user(j.0.token, j.0.user_id);
 
-                    redirect(Route::Home {});
+                    let _ = redirect(Route::Home {});
                 }
             },
         );

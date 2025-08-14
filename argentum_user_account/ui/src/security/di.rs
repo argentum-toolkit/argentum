@@ -1,5 +1,6 @@
 use argentum_user_account_rest::client::Client;
 use dioxus::html::g::format;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::security::ClientSideAuthenticator;
@@ -9,11 +10,11 @@ use dioxus::prelude::*;
 
 pub struct DiC {
     pub auth: ClientSideAuthenticator,
-    pub client: Arc<Client>,
+    pub client: Rc<Client>,
 }
 
 impl DiC {
-    pub fn new(auth: ClientSideAuthenticator, client: Arc<Client>) -> DiC {
+    pub fn new(auth: ClientSideAuthenticator, client: Rc<Client>) -> DiC {
         DiC { auth, client }
     }
 
@@ -32,9 +33,9 @@ impl DiC {
 }
 
 pub fn di_factory(user_accoutn_server_url: String) -> Result<DiC, String> {
-    let client = Arc::new(Client::new(user_accoutn_server_url, "/api/v1".to_string()));
+    let client = Rc::new(Client::new(user_accoutn_server_url, "/api/v1".to_string()));
 
-    let local_storage = Arc::new(
+    let local_storage = Rc::new(
         web_sys::window()
             .ok_or("Can't get window object")?
             .local_storage()
@@ -47,8 +48,8 @@ pub fn di_factory(user_accoutn_server_url: String) -> Result<DiC, String> {
             .ok_or("Can't get local storag. Object is empty")?,
     );
 
-    let security_repository: Arc<SecurityRepository> =
-        Arc::new(SecurityRepository::new(local_storage));
+    let security_repository: Rc<SecurityRepository> =
+        Rc::new(SecurityRepository::new(local_storage));
     let mut auth = ClientSideAuthenticator::new(client.clone(), security_repository.clone());
 
     Ok(DiC::new(auth, client))

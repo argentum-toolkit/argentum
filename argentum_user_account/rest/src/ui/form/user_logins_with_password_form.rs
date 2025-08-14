@@ -43,7 +43,7 @@ pub fn UserLoginsWithPasswordForm(
             ErrorBlock {errors: errors()}
 
             LoginWithPasswordSchemaInput {
-                login_with_password_schema: values(),
+                value: values(),
                 violations: violations(),
                 oninput: move |event: LoginWithPasswordSchema| {
                     values.set(event);

@@ -17,8 +17,15 @@ const ITEM_TEMPLATE: &str = "ui/input.item";
 struct Data<'a> {
     name: String,
     input: &'a Schema,
-    inputs: BTreeMap<String, String>,
+    inputs: Vec<KV>,
     dependencies: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct KV {
+    key: String,
+    value: String,
+    weight: i16,
 }
 
 #[derive(Serialize)]
@@ -93,7 +100,7 @@ impl InputGenerator {
     ) -> Result<(), String> {
         let file_path = format!("/src/ui/input/{}_input.rs", name.to_case(Case::Snake));
 
-        let mut inputs = BTreeMap::new();
+        let mut inputs = Vec::new();
         let mut dependencies: Vec<String> = vec![];
 
         let req = &input.required.clone().unwrap_or_default();
@@ -102,6 +109,10 @@ impl InputGenerator {
             let schema = self.schema_extractor.extract(&property, spec)?;
 
             let required = req.contains(&name);
+            let weight = match schema.extension_ui {
+                Some(ref ext) => ext.weight,
+                None => 0,
+            };
 
             let input = match property {
                 RefOrObject::Ref(r) => {
@@ -119,53 +130,81 @@ impl InputGenerator {
                     dependencies.push(format!("crate::dto::schema::{}", type_name));
                     dependencies.push(format!("crate::ui::input::{}Input", type_name));
 
-                    self.renderer.render_to_result(
-                        "ui/input/object",
-                        ObjectInput {
-                            required,
-                            type_name,
-                            name: name.clone(),
-                            ui: schema.clone().extension_ui.into(),
-                        },
-                    )
+                    let input = self
+                        .renderer
+                        .render_to_result(
+                            "ui/input/object",
+                            ObjectInput {
+                                required,
+                                type_name,
+                                name: name.clone(),
+                                ui: schema.clone().extension_ui.into(),
+                            },
+                        )
+                        .unwrap_or(format!("Can't render property {}", name));
+
+                    KV {
+                        key: name,
+                        value: input,
+                        weight,
+                    }
                 }
                 RefOrObject::Object(s) => match s.schema_type {
                     Some(SchemaType::Boolean) => {
                         dependencies
                             .push("argentum_standard_ui::rsx::form::LabeledCheckbox".into());
 
-                        self.renderer.render_to_result(
-                            "ui/input/labeled_checkbox",
-                            Input {
-                                required,
-                                name: name.clone(),
-                                title: schema.title.clone().unwrap_or(String::new()),
-                                ui: schema.extension_ui.into(),
-                            },
-                        )
+                        let input = self
+                            .renderer
+                            .render_to_result(
+                                "ui/input/labeled_checkbox",
+                                Input {
+                                    required,
+                                    name: name.clone(),
+                                    title: schema.title.clone().unwrap_or(String::new()),
+                                    ui: schema.extension_ui.into(),
+                                },
+                            )
+                            .unwrap_or(format!("Can't render property {}", name));
+
+                        KV {
+                            key: name,
+                            value: input,
+                            weight,
+                        }
                     }
                     _ => {
                         dependencies.push("argentum_standard_ui::rsx::form::LabeledInput".into());
 
-                        self.renderer.render_to_result(
-                            "ui/input/labeled_input",
-                            Input {
-                                required,
-                                name: name.clone(),
-                                title: schema.title.clone().unwrap_or(String::new()),
-                                ui: schema.extension_ui.into(),
-                            },
-                        )
+                        let input = self
+                            .renderer
+                            .render_to_result(
+                                "ui/input/labeled_input",
+                                Input {
+                                    required,
+                                    name: name.clone(),
+                                    title: schema.title.clone().unwrap_or(String::new()),
+                                    ui: schema.extension_ui.into(),
+                                },
+                            )
+                            .unwrap_or(format!("Can't render property {}", name));
+
+                        KV {
+                            key: name,
+                            value: input,
+                            weight,
+                        }
                     }
                 },
-            }
-            .unwrap_or(format!("Can't render property {}", name));
+            };
 
-            inputs.insert(name, input);
+            inputs.push(input);
         }
 
         dependencies.sort();
         dependencies.dedup();
+
+        inputs.sort_by_key(|item| item.weight);
 
         let data = Data {
             name,

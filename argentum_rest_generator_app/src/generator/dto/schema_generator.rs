@@ -1,3 +1,4 @@
+use crate::extractor::SchemaExtractor;
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{
     RefOrObject, Schema, SchemaFormat, SchemaType, SpecificationRoot, StandardFormat,
@@ -25,6 +26,7 @@ struct Prop {
     raw_type: String,
     required: bool,
     is_ref: bool,
+    weight: i16,
 }
 
 #[derive(Serialize)]
@@ -45,6 +47,7 @@ struct ItemType {
 
 pub(crate) struct SchemaGenerator {
     renderer: Arc<Renderer>,
+    schema_extractor: Arc<SchemaExtractor>,
 }
 
 const MOD_PATH: &str = "/src/dto/schema/mod.rs";
@@ -54,8 +57,11 @@ const ARRAY_ITEM_TEMPLATE: &str = "dto/schema_array.item";
 const DICTIONARY_ITEM_TEMPLATE: &str = "dto/schema_dictionary.item";
 
 impl SchemaGenerator {
-    pub fn new(renderer: Arc<Renderer>) -> Self {
-        Self { renderer }
+    pub fn new(renderer: Arc<Renderer>, schema_extractor: Arc<SchemaExtractor>) -> Self {
+        Self {
+            renderer,
+            schema_extractor,
+        }
     }
 
     fn generate_item(
@@ -63,6 +69,7 @@ impl SchemaGenerator {
         base_output_path: &str,
         name: &String,
         schema: &Schema,
+        spec: &SpecificationRoot,
     ) -> Result<(), String> {
         let file_path = format!("/src/dto/schema/{}.rs", name.to_case(Case::Snake));
 
@@ -84,6 +91,7 @@ impl SchemaGenerator {
                         props,
                         schema.required.clone(),
                         file_path,
+                        spec,
                     )?;
                 }
             },
@@ -105,6 +113,7 @@ impl SchemaGenerator {
                         props,
                         schema.required.clone(),
                         file_path,
+                        spec,
                     )?;
                 } else if let Some(items) = &*schema.items {
                     self.generate_array_item(base_output_path, name, items.clone(), file_path)?;
@@ -203,11 +212,18 @@ impl SchemaGenerator {
         schema_properties: BTreeMap<String, RefOrObject<Schema>>,
         required_fields: Option<Vec<String>>,
         file_path: String,
+        spec: &SpecificationRoot,
     ) -> Result<(), String> {
         let mut properties: Vec<Prop> = vec![];
         let mut dependencies: Vec<String> = vec![];
 
         for (name, property) in schema_properties {
+            let schema = self.schema_extractor.extract(&property, spec)?;
+            let weight = match schema.extension_ui {
+                Some(ref ext) => ext.weight,
+                None => 0,
+            };
+
             let (mut data_type, raw_type, is_ref) =
                 self.schema_to_rs(property, &mut dependencies)?;
 
@@ -232,8 +248,11 @@ impl SchemaGenerator {
                 raw_type,
                 required,
                 is_ref,
+                weight,
             })
         }
+
+        properties.sort_by_key(|item| item.weight);
 
         let data = Data {
             dependencies,
@@ -319,7 +338,7 @@ impl SchemaGenerator {
             .render(base_output_path, MOD_TEMPLATE, spec, MOD_PATH)?;
 
         for (name, schema) in &spec.components.schemas {
-            self.generate_item(base_output_path, name, schema)?;
+            self.generate_item(base_output_path, name, schema, spec)?;
         }
 
         Ok(())

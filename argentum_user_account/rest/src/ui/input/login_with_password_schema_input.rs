@@ -8,7 +8,7 @@ use dioxus::prelude::*;
 
 #[derive(PartialEq, Props, Clone)]
 pub struct LoginWithPasswordSchemaProps {
-    pub login_with_password_schema: LoginWithPasswordSchema,
+    pub value: LoginWithPasswordSchema,
     pub violations: Option<ViolationsDto>,
 
     oninput: EventHandler<LoginWithPasswordSchema>,
@@ -17,13 +17,11 @@ pub struct LoginWithPasswordSchemaProps {
 #[component]
 pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Element {
     let LoginWithPasswordSchemaProps {
-        login_with_password_schema,
-        violations,
-        ..
+        value, violations, ..
     } = props.clone();
 
-    let mut email_value = use_signal(|| login_with_password_schema.email);
-    let mut password_value = use_signal(|| login_with_password_schema.password);
+    let mut email_value = use_signal(|| value.email);
+    let mut password_value = use_signal(|| value.password);
 
     let violation_items = match violations {
         Some(vv) => match vv.items {

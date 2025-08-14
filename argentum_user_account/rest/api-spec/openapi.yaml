@@ -213,6 +213,7 @@ components:
           x-ag-ui:
             id: password
             name: password
+            weight: 0
       type: object
     ProblemDetail:
       title: Schema for error response
@@ -262,6 +263,7 @@ components:
           x-ag-ui:
             id: email
             name: email
+            weight: 0
         name:
           $ref: '#/components/schemas/UserName'
         password:
@@ -272,6 +274,7 @@ components:
           x-ag-ui:
             id: password
             name: password
+            weight: 0
         terms:
           example: 'false'
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
@@ -279,6 +282,7 @@ components:
           x-ag-ui:
             id: terms
             name: terms
+            weight: 0
       type: object
     RequestRestoreTokenSchema:
       required:
@@ -301,6 +305,7 @@ components:
           x-ag-ui:
             id: user_additional
             name: user_additional
+            weight: 100
         first:
           example: Winston
           title: First Name
@@ -310,6 +315,7 @@ components:
           x-ag-ui:
             id: user_first_name
             name: user_first_name
+            weight: 0
         last:
           example: Marko
           title: Last Name
@@ -319,6 +325,7 @@ components:
           x-ag-ui:
             id: user_last_name
             name: user_last_name
+            weight: 0
       type: object
     Violation:
       properties:

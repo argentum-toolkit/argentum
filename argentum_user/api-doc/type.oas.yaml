@@ -57,6 +57,7 @@ components:
           x-ag-ui:
             id: user_additional
             name: user_additional
+            weight: 100
 
       required:
         - first

@@ -43,7 +43,7 @@ pub fn UserRegistersWithPasswordForm(
             ErrorBlock {errors: errors()}
 
             RegistrationWithPasswordSchemaInput {
-                registration_with_password_schema: values(),
+                value: values(),
                 violations: violations(),
                 oninput: move |event: RegistrationWithPasswordSchema| {
                     values.set(event);

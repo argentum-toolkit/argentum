@@ -230,13 +230,17 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> 
     let cargo_toml_generator = Arc::new(CargoTomlGenerator::new(renderer.clone()));
     let readme_adoc_generator = Arc::new(ReadmeAdocGenerator::new(renderer.clone()));
     let gitignore_generator = Arc::new(GitIgnoreGenerator::new(renderer.clone()));
-    let schema_generator = Arc::new(SchemaGenerator::new(renderer.clone()));
+
+    let schema_extractor = Arc::new(SchemaExtractor::new());
+    let schema_generator = Arc::new(SchemaGenerator::new(
+        renderer.clone(),
+        schema_extractor.clone(),
+    ));
     let loader = Arc::new(OasLoader::new(logger.clone()));
     let combiner = Arc::new(Combiner::new(logger.clone(), loader));
     let client_generator = Arc::new(ClientGenerator::new(renderer.clone()));
 
     let request_body_extractor = Arc::new(RequestBodyExtractor::new());
-    let schema_extractor = Arc::new(SchemaExtractor::new());
 
     let form_generator = Arc::new(FormGenerator::new(
         renderer.clone(),
