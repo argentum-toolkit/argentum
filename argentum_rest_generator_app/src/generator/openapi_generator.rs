@@ -12,7 +12,6 @@ use crate::generator::{
     ReadmeAdocGenerator,
 };
 use argentum_log_business::LoggerTrait;
-use std::error::Error;
 use std::sync::Arc;
 
 use super::ui::UiGenerator;
@@ -96,10 +95,10 @@ where
         }
     }
 
-    pub fn generate(&self, cli: CliParams) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, cli: CliParams) -> Result<(), String> {
         self.logger.info("Start generation...");
         self.logger.info("Combine OpenAPI specification...");
-        let spec = self.combiner.combine(cli.input.clone())?;
+        let spec = self.combiner.combine(&cli.input)?;
         self.logger.info("OpenAPI specification is combined");
 
         let output = cli.output.as_str();

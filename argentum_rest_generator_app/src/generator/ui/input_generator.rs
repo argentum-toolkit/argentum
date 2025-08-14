@@ -6,7 +6,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 const MOD_PATH: &str = "/src/ui/input/mod.rs";
@@ -91,7 +90,7 @@ impl InputGenerator {
         name: String,
         input: &Schema,
         spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!("/src/ui/input/{}_input.rs", name.to_case(Case::Snake));
 
         let mut inputs = BTreeMap::new();
@@ -160,7 +159,7 @@ impl InputGenerator {
                     }
                 },
             }
-            .unwrap_or(format!("can't render property {}", name));
+            .unwrap_or(format!("Can't render property {}", name));
 
             inputs.insert(name, input);
         }
@@ -186,7 +185,7 @@ impl InputGenerator {
         ref_or: &RefOrObject<Schema>,
         spec: &SpecificationRoot,
         inputs: &mut BTreeMap<String, Schema>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         if let Some((schema_name, schema)) =
             self.schema_extractor.extract_ref_with_name(ref_or, spec)?
         {
@@ -200,11 +199,7 @@ impl InputGenerator {
         Ok(())
     }
 
-    fn generate_mod(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    fn generate_mod(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {
@@ -226,11 +221,7 @@ impl InputGenerator {
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {

@@ -5,7 +5,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::BTreeMap;
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -64,7 +63,7 @@ impl SchemaGenerator {
         base_output_path: &str,
         name: &String,
         schema: &Schema,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!("/src/dto/schema/{}.rs", name.to_case(Case::Snake));
 
         match schema.schema_type {
@@ -124,7 +123,7 @@ impl SchemaGenerator {
         &self,
         property: RefOrObject<Schema>,
         dependencies: &mut Vec<String>,
-    ) -> Result<(String, String, bool), Box<dyn Error>> {
+    ) -> Result<(String, String, bool), String> {
         //todo: check $ref
         match property {
             RefOrObject::Object(schema) => match schema.schema_type {
@@ -204,7 +203,7 @@ impl SchemaGenerator {
         schema_properties: BTreeMap<String, RefOrObject<Schema>>,
         required_fields: Option<Vec<String>>,
         file_path: String,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut properties: Vec<Prop> = vec![];
         let mut dependencies: Vec<String> = vec![];
 
@@ -258,7 +257,7 @@ impl SchemaGenerator {
         name: &String,
         items_type: RefOrObject<Schema>,
         file_path: String,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut dependencies: Vec<String> = vec![];
 
         let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies)?;
@@ -289,7 +288,7 @@ impl SchemaGenerator {
         name: &String,
         additional_type: RefOrObject<Schema>,
         file_path: String,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut dependencies: Vec<String> = vec![];
 
         let (data_type, raw_type, is_ref) =
@@ -315,11 +314,7 @@ impl SchemaGenerator {
         Ok(())
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, spec, MOD_PATH)?;
 

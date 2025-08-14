@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use argentum_openapi_infrastructure::data_type::{
     RefOrObject, Reference, Schema, SpecificationRoot,
 };
@@ -11,7 +9,7 @@ impl SchemaExtractor {
         Self {}
     }
 
-    fn extract_name(&self, reference: &Reference) -> Result<String, Box<dyn Error>> {
+    fn extract_name(&self, reference: &Reference) -> Result<String, String> {
         reference
             .reference
             .clone()
@@ -31,7 +29,7 @@ impl SchemaExtractor {
         &self,
         ref_or: &RefOrObject<Schema>,
         spec: &SpecificationRoot,
-    ) -> Result<Schema, Box<dyn Error>> {
+    ) -> Result<Schema, String> {
         match ref_or {
             RefOrObject::Ref(r) => {
                 let schema_name = self.extract_name(r)?;
@@ -45,7 +43,7 @@ impl SchemaExtractor {
         &self,
         ref_or: &RefOrObject<Schema>,
         spec: &SpecificationRoot,
-    ) -> Result<Option<(String, Schema)>, Box<dyn Error>> {
+    ) -> Result<Option<(String, Schema)>, String> {
         match ref_or {
             RefOrObject::Ref(r) => {
                 let schema_name = self.extract_name(r)?;

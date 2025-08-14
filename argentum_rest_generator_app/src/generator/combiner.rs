@@ -4,8 +4,7 @@ use argentum_openapi_infrastructure::data_type::{
     ComponentRef, RefOrObject, RequestBody, Response, Schema, SchemaType, SpecificationRoot,
 };
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::{Arc, RwLock};
 
 pub struct Combiner<L>
@@ -32,14 +31,14 @@ where
     fn collect_request_body(
         &self,
         body: &mut RequestBody,
-        current_file_path: PathBuf,
-    ) -> Result<(SpecificationRoot, RequestBody), Box<dyn Error>> {
+        current_file_path: &str,
+    ) -> Result<(SpecificationRoot, RequestBody), String> {
         let mut to_spec = SpecificationRoot::new_empty();
 
         for media_type in body.content.values_mut() {
             let ref_or_schema = &mut media_type.schema;
 
-            self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path.clone())?;
+            self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path)?;
         }
 
         Ok((to_spec, body.clone()))
@@ -48,14 +47,14 @@ where
     fn collect_response(
         &self,
         response: &mut Response,
-        current_file_path: PathBuf,
-    ) -> Result<(SpecificationRoot, Response), Box<dyn Error>> {
+        current_file_path: &str,
+    ) -> Result<(SpecificationRoot, Response), String> {
         let mut to_spec = SpecificationRoot::new_empty();
 
         for media_type in response.content.values_mut() {
             let ref_or_schema = &mut media_type.schema;
 
-            self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path.clone())?;
+            self.collect_ref_to_schema(ref_or_schema, &mut to_spec, current_file_path)?;
         }
 
         Ok((to_spec, response.clone()))
@@ -64,8 +63,8 @@ where
     fn collect_schema(
         &self,
         schema: &mut Schema,
-        current_file_path: PathBuf,
-    ) -> Result<(SpecificationRoot, Schema), Box<dyn Error>> {
+        current_file_path: &str,
+    ) -> Result<(SpecificationRoot, Schema), String> {
         let mut spec = SpecificationRoot::new_empty();
 
         self.collect_schema_properties(schema, current_file_path, &mut spec)?;
@@ -76,9 +75,9 @@ where
     fn collect_schema_properties(
         &self,
         schema: &mut Schema,
-        current_file_path: PathBuf,
+        current_file_path: &str,
         to_spec: &mut SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         match schema.schema_type {
             Some(SchemaType::Array) => match &mut *schema.items {
                 None => {
@@ -86,7 +85,7 @@ where
                         .warning("The items keyword is required in arrays");
                 }
                 Some(items) => {
-                    self.collect_ref_to_schema(items, to_spec, current_file_path.clone())?;
+                    self.collect_ref_to_schema(items, to_spec, current_file_path)?;
                 }
             },
             Some(SchemaType::Object) => match *schema.additional_properties.clone() {
@@ -120,8 +119,8 @@ where
         &self,
         property: &mut RefOrObject<Schema>,
         to_spec: &mut SpecificationRoot,
-        current_file_path: PathBuf,
-    ) -> Result<(), Box<dyn Error>> {
+        current_file_path: &str,
+    ) -> Result<(), String> {
         if let RefOrObject::Ref(r) = property {
             let component_ref = ComponentRef::try_from(r.reference.clone())?;
             if !component_ref.is_schema() {
@@ -138,7 +137,7 @@ where
             r.reference = reference;
 
             if let Some(file_path) = component_ref.file_path {
-                let dir_res: Result<&str, Box<dyn Error>> = match current_file_path.parent() {
+                let dir_res: Result<&str, String> = match Path::new(current_file_path).parent() {
                     Some(d) => match d.to_str() {
                         Some(dd) => Ok(dd),
                         None => Err("Can't get parent as ad dir for file path".into()),
@@ -166,8 +165,7 @@ where
                         .insert(hash_key, true);
 
                     //load from filesystem
-                    let (include_spec, _include_spec_file_path) =
-                        self.loader.load(inner_file_path.clone())?;
+                    let include_spec = self.loader.load(&inner_file_path)?;
 
                     let component: Option<&Schema> =
                         include_spec.components.schemas.get(component_name.as_str());
@@ -181,7 +179,7 @@ where
                         }
                         Some(s) => {
                             let ss: &mut Schema = &mut s.clone();
-                            self.collect_schema_properties(ss, inner_file_path.into(), to_spec)?;
+                            self.collect_schema_properties(ss, &inner_file_path, to_spec)?;
 
                             to_spec
                                 .components
@@ -191,13 +189,7 @@ where
                     }
                 }
             } else if component_ref.file_path.is_none() {
-                let hash_key = format!(
-                    "{}#{}",
-                    current_file_path
-                        .to_str()
-                        .ok_or("Can't read current file path")?,
-                    component_name
-                );
+                let hash_key = format!("{current_file_path}#{component_name}");
                 if self
                     .combined_schemas
                     .read()
@@ -205,11 +197,7 @@ where
                     .contains_key(&hash_key)
                 {
                     self.logger.info(format!(
-                        "Schema `{}` already loaded from file `{}`",
-                        component_name,
-                        current_file_path
-                            .to_str()
-                            .ok_or("Can't read current file path")?
+                        "Schema `{component_name}` already loaded from file `{current_file_path}`"
                     ));
                 } else {
                     self.combined_schemas
@@ -217,12 +205,7 @@ where
                         .map_err(|e| format!("Lock poisoned while writing combined_schemas: {e}"))?
                         .insert(hash_key, true);
 
-                    let (include_spec, _include_spec_file_path) = self.loader.load(
-                        current_file_path
-                            .to_str()
-                            .ok_or("Can't read current file path")?
-                            .to_string(),
-                    )?;
+                    let include_spec = self.loader.load(current_file_path)?;
 
                     let component: Option<&Schema> =
                         include_spec.components.schemas.get(component_name.as_str());
@@ -256,8 +239,8 @@ where
         &self,
         property: &mut RefOrObject<RequestBody>,
         to_spec: &mut SpecificationRoot,
-        current_file_path: PathBuf,
-    ) -> Result<(), Box<dyn Error>> {
+        current_file_path: &str,
+    ) -> Result<(), String> {
         if let RefOrObject::Ref(r) = property {
             let component_ref = ComponentRef::try_from(r.reference.clone())?;
             if !component_ref.is_request_body() {
@@ -269,7 +252,7 @@ where
             }
 
             if let Some(file_path) = component_ref.file_path {
-                let dir = current_file_path
+                let dir = Path::new(current_file_path)
                     .parent()
                     .ok_or("Can't read parent file path")?;
                 let dir = dir
@@ -278,8 +261,7 @@ where
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
                 //load from filesystem
-                let (include_spec, _include_spec_file_path) =
-                    self.loader.load(inner_file_path.clone())?;
+                let include_spec = self.loader.load(&inner_file_path)?;
 
                 let component: Option<&RequestBody> = include_spec
                     .components
@@ -302,7 +284,7 @@ where
                         let b: &mut RequestBody = &mut s.clone();
 
                         let (res_spec, res_body) =
-                            self.collect_request_body(b, inner_file_path.into())?;
+                            self.collect_request_body(b, &inner_file_path)?;
 
                         // collect_schema_properties(ss, inner_file_path.into(), to_spec);
 
@@ -323,8 +305,8 @@ where
         &self,
         property: &mut RefOrObject<Response>,
         to_spec: &mut SpecificationRoot,
-        current_file_path: PathBuf,
-    ) -> Result<(), Box<dyn Error>> {
+        current_file_path: &str,
+    ) -> Result<(), String> {
         if let RefOrObject::Ref(r) = property {
             let component_ref = ComponentRef::try_from(r.reference.clone())?;
             if !component_ref.is_response() {
@@ -336,7 +318,7 @@ where
             }
 
             if let Some(file_path) = component_ref.file_path {
-                let dir = current_file_path
+                let dir = Path::new(current_file_path)
                     .parent()
                     .ok_or("Can't read current file path")?;
                 let dir = dir
@@ -345,8 +327,7 @@ where
 
                 let inner_file_path = format!("{}/{}", dir.to_string().clone(), file_path);
                 //load from filesystem
-                let (include_spec, _include_spec_file_path) =
-                    self.loader.load(inner_file_path.clone())?;
+                let include_spec = self.loader.load(&inner_file_path)?;
 
                 let component: Option<&Response> = include_spec
                     .components
@@ -368,8 +349,7 @@ where
 
                         let resp: &mut Response = &mut s.clone();
 
-                        let (res_spec, res_resp) =
-                            self.collect_response(resp, inner_file_path.into())?;
+                        let (res_spec, res_resp) = self.collect_response(resp, &inner_file_path)?;
 
                         for (n, s) in res_spec.components.schemas {
                             to_spec.components.schemas.insert(n, s.clone());
@@ -388,17 +368,17 @@ where
         &self,
         properties: &mut BTreeMap<String, RefOrObject<Schema>>,
         to_spec: &mut SpecificationRoot,
-        current_file_path: PathBuf,
-    ) -> Result<(), Box<dyn Error>> {
+        current_file_path: &str,
+    ) -> Result<(), String> {
         for (_name, property) in properties.iter_mut() {
-            self.collect_ref_to_schema(property, to_spec, current_file_path.clone())?;
+            self.collect_ref_to_schema(property, to_spec, current_file_path)?;
         }
 
         Ok(())
     }
 
-    pub fn combine(&self, file_path: String) -> Result<SpecificationRoot, Box<dyn Error>> {
-        let (mut spec, current_file_path) = self.loader.load(file_path)?;
+    pub fn combine(&self, file_path: &str) -> Result<SpecificationRoot, String> {
+        let mut spec = self.loader.load(file_path)?;
         let mut res_spec = SpecificationRoot::new_empty();
 
         res_spec.openapi.clone_from(&spec.openapi);
@@ -409,8 +389,7 @@ where
         res_spec.servers.clone_from(&spec.servers);
 
         for (body_name, body) in &mut spec.components.request_bodies {
-            let (body_spec, updated_body) =
-                self.collect_request_body(body, current_file_path.clone())?;
+            let (body_spec, updated_body) = self.collect_request_body(body, &file_path)?;
 
             for (n, s) in body_spec.components.schemas {
                 res_spec.components.schemas.insert(n, s.clone());
@@ -423,8 +402,7 @@ where
         }
 
         for (response_name, response) in &mut spec.components.responses {
-            let (body_spec, updated_response) =
-                self.collect_response(response, current_file_path.clone())?;
+            let (body_spec, updated_response) = self.collect_response(response, file_path)?;
 
             for (n, s) in body_spec.components.schemas {
                 res_spec.components.schemas.insert(n, s.clone());
@@ -437,8 +415,7 @@ where
         }
 
         for (schema_name, schema) in &mut spec.components.schemas {
-            let (schemas_spec, updated_schema) =
-                self.collect_schema(schema, current_file_path.clone())?;
+            let (schemas_spec, updated_schema) = self.collect_schema(schema, file_path)?;
 
             for (n, s) in schemas_spec.components.schemas {
                 res_spec.components.schemas.insert(n, s.clone());
@@ -453,19 +430,11 @@ where
         for (uri, path) in &mut spec.paths {
             for operation in path.operations.values_mut() {
                 if let Some(ref_or_schema) = &mut operation.request_body {
-                    self.collect_ref_to_request_body(
-                        ref_or_schema,
-                        &mut res_spec,
-                        current_file_path.clone(),
-                    )?;
+                    self.collect_ref_to_request_body(ref_or_schema, &mut res_spec, file_path)?;
                 }
 
                 for ref_or_response in operation.responses.values_mut() {
-                    self.collect_ref_to_response(
-                        ref_or_response,
-                        &mut res_spec,
-                        current_file_path.clone(),
-                    )?;
+                    self.collect_ref_to_response(ref_or_response, &mut res_spec, file_path)?;
                 }
             }
 

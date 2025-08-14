@@ -4,7 +4,6 @@ use argentum_openapi_infrastructure::data_type::{InPlace, Operation, Specificati
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 
 const MOD_PATH: &str = "/src/ui/form/mod.rs";
@@ -43,7 +42,7 @@ impl FormGenerator {
         base_output_path: &str,
         operation: &Operation,
         spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!(
             "/src/ui/form/{}_form.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -90,7 +89,7 @@ impl FormGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let filtered: Vec<Operation> = operations
             .into_iter()
             .filter(|o| o.extension_form.is_some())
@@ -102,11 +101,7 @@ impl FormGenerator {
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
         self.generate_mod(base_output_path, operations.clone())?;
 

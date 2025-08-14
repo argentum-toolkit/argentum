@@ -3,7 +3,6 @@ use argentum_openapi_infrastructure::data_type::{Operation, RefOrObject, Specifi
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -34,11 +33,7 @@ impl OperationResponseEnumGenerator {
         }
     }
 
-    fn generate_item(
-        &self,
-        base_output_path: &str,
-        operation: &Operation,
-    ) -> Result<(), Box<dyn Error>> {
+    fn generate_item(&self, base_output_path: &str, operation: &Operation) -> Result<(), String> {
         let file_path = format!(
             "/src/dto/operation_response_enum/{}_operation_response_enum.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -83,18 +78,14 @@ impl OperationResponseEnumGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let data = HashMap::from([("operations", operations)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
 
         self.generate_mod(base_output_path, operations.clone())?;

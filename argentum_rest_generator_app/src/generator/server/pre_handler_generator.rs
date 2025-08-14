@@ -1,6 +1,5 @@
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{Operation, SpecificationRoot};
-use std::error::Error;
 use std::sync::Arc;
 
 const PATH: &str = "/src/server/pre_handler.rs";
@@ -22,11 +21,7 @@ impl PreHandlerGenerator {
         Self { renderer }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
 
         let mut security_enabled = false;

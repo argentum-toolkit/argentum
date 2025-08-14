@@ -1,4 +1,4 @@
-use std::{error::Error, sync::Arc};
+use std::sync::Arc;
 
 use argentum_openapi_infrastructure::data_type::SpecificationRoot;
 
@@ -37,11 +37,7 @@ impl UiGenerator {
         }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         self.form_generator.generate(base_output_path, spec)?;
         self.form_data_generator.generate(base_output_path, spec)?;
         self.input_generator.generate(base_output_path, spec)?;

@@ -5,7 +5,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -33,7 +32,7 @@ impl RequestGenerator {
         base_output_path: &str,
         operation: &Operation,
         request_body: RequestBody,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!(
             "/src/dto/request/{}_request.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -79,7 +78,7 @@ impl RequestGenerator {
         &self,
         base_output_path: &str,
         operation: &Operation,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!(
             "/src/dto/request/{}_request.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -100,18 +99,14 @@ impl RequestGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let data = HashMap::from([("operations", operations)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
 
         self.generate_mod(base_output_path, operations.clone())?;

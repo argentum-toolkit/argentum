@@ -5,7 +5,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -33,7 +32,7 @@ impl ResponseGenerator {
         base_output_path: &str,
         response_name: String,
         response: &Response,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let escaped_response_name = self.escape_response_name(response_name.clone());
         let file_path = format!(
             "/src/dto/response/{}_response.rs",
@@ -60,7 +59,7 @@ impl ResponseGenerator {
         Ok(())
     }
 
-    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> Result<String, Box<dyn Error>> {
+    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> Result<String, String> {
         let schema = match schema {
             RefOrObject::Ref(r) => r
                 .reference
@@ -86,7 +85,7 @@ impl ResponseGenerator {
         &self,
         base_output_path: &str,
         responses: BTreeMap<String, Response>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut response_names: Vec<String> = Vec::new();
 
         for (name, _) in responses {
@@ -114,11 +113,7 @@ impl ResponseGenerator {
         }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let responses = spec.clone().components.responses;
 
         self.generate_mod(base_output_path, responses.clone())?;

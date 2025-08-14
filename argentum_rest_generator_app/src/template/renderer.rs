@@ -1,6 +1,5 @@
 use handlebars::Handlebars;
 use serde::Serialize;
-use std::error::Error;
 use std::fs::File;
 use std::sync::Arc;
 
@@ -19,7 +18,7 @@ impl Renderer {
         template_name: &str,
         data: T,
         output_path: &str,
-    ) -> Result<(), Box<dyn Error>>
+    ) -> Result<(), String>
     where
         T: Serialize,
     {
@@ -27,25 +26,26 @@ impl Renderer {
 
         let path = std::path::Path::new(file_path.as_str());
         let prefix = path.parent().ok_or("Can't read parent path for file")?;
-        std::fs::create_dir_all(prefix)?;
+        std::fs::create_dir_all(prefix).map_err(|e| format!("Can't create dir. Error: {e}"))?;
 
-        let mut output_file = File::create(file_path)?;
+        let mut output_file = File::create(&file_path)
+            .map_err(|e| format!("Can't create file `{file_path}`. Error: {e}"))?;
 
-        self.handlebars
-            .render_to_write(template_name, &data, &mut output_file)?;
+        let _ = self
+            .handlebars
+            .render_to_write(template_name, &data, &mut output_file);
 
         Ok(())
     }
 
-    pub fn render_to_result<T>(
-        &self,
-        template_name: &str,
-        data: T,
-    ) -> Result<String, Box<dyn Error>>
+    pub fn render_to_result<T>(&self, template_name: &str, data: T) -> Result<String, String>
     where
         T: Serialize,
     {
-        let res = self.handlebars.render(template_name, &data)?;
+        let res = self
+            .handlebars
+            .render(template_name, &data)
+            .map_err(|e| format!("Can't render template `{template_name}`. Error: {e}"))?;
 
         Ok(res)
     }

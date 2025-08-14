@@ -4,7 +4,6 @@ use argentum_openapi_infrastructure::data_type::{
 };
 use reqwest::StatusCode;
 use std::collections::BTreeMap;
-use std::error::Error;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -54,7 +53,7 @@ struct Data {
     pub use_responses: Vec<String>,
 }
 
-fn to_enum_name(code: &str) -> Result<String, Box<dyn Error>> {
+fn to_enum_name(code: &str) -> Result<String, String> {
     let m: BTreeMap<&str, &str> = BTreeMap::from([
         ("100", "CONTINUE"),
         ("101", "SWITCHING_PROTOCOLS"),
@@ -132,11 +131,7 @@ impl ClientGenerator {
         Self { renderer }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let mut paths_data: Vec<PathData> = vec![];
         let mut security_enabled = false;
         let mut use_schemas: Vec<String> = vec![];

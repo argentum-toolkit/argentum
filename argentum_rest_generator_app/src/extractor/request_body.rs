@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use argentum_openapi_infrastructure::data_type::{
     Operation, RefOrObject, RequestBody, SpecificationRoot,
 };
@@ -15,7 +13,7 @@ impl RequestBodyExtractor {
         &self,
         operation: &Operation,
         spec: &SpecificationRoot,
-    ) -> Result<Option<RequestBody>, Box<dyn Error>> {
+    ) -> Result<Option<RequestBody>, String> {
         let ref_or = match operation.clone().request_body {
             Some(r) => r,
             None => return Ok(None),
