@@ -182,7 +182,7 @@ impl SchemaGenerator {
                     .reference
                     .clone()
                     .split('/')
-                    .last()
+                    .next_back()
                     .ok_or(format!(
                         "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
                         r.reference

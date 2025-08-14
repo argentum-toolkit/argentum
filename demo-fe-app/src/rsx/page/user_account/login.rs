@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use crate::route::Route;
 
@@ -40,18 +40,18 @@ pub fn Login() -> Element {
             },
         );
 
-        Arc::new(UserLoginsWithPasswordCallbacks {
+        Rc::new(UserLoginsWithPasswordCallbacks {
             on_user_logged_in_successfully,
             ..Default::default()
         })
     };
 
     #[cfg(not(feature = "web"))]
-    let callbacks = Arc::new(UserLoginsWithPasswordCallbacks {
+    let callbacks = Rc::new(UserLoginsWithPasswordCallbacks {
         ..Default::default()
     });
 
-    let processor = Arc::new(UserLoginsWithPasswordFormProcessor::new(callbacks.clone()));
+    let processor = Rc::new(UserLoginsWithPasswordFormProcessor::new(callbacks.clone()));
 
     rsx! {
         section {

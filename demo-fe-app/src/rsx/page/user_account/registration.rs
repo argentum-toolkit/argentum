@@ -5,8 +5,8 @@ use argentum_user_account_rest::ui::form::UserRegistersWithPasswordForm;
 
 use argentum_user_account_rest::ui::form_processor::UserRegistersWithPasswordFormProcessor;
 use dioxus::prelude::*;
+use std::rc::Rc;
 use std::string::ToString;
-use std::sync::Arc;
 
 #[component]
 pub fn Registration() -> Element {
@@ -30,12 +30,12 @@ pub fn Registration() -> Element {
             success.set(Some("Congratulations! Your account has been created."));
         });
 
-    let callbacks = Arc::new(UserRegistersWithPasswordCallbacks {
+    let callbacks = Rc::new(UserRegistersWithPasswordCallbacks {
         on_user_registered_successfully,
         ..Default::default()
     });
 
-    let processor = Arc::new(UserRegistersWithPasswordFormProcessor::new(
+    let processor = Rc::new(UserRegistersWithPasswordFormProcessor::new(
         callbacks.clone(),
     ));
 

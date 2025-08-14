@@ -66,7 +66,8 @@ paths:
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
         '409':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/409"
-      x-ag-submit-label: "Sign Up"
+      x-ag-form:
+        submit-label: "Sign Up"
 
   /user-account/password-login:
     post:
@@ -87,7 +88,8 @@ paths:
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
         '401':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
-      x-ag-submit-label: "Sign In"
+      x-ag-form:
+        submit-label: "Sign In"
 
   /user-account/restore-password/token-request:
     post:

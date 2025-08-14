@@ -50,16 +50,16 @@ impl FormGenerator {
         );
 
         let need_path_params = match &operation.parameters {
-            Some(params) => match params.iter().find(|&x| x.in_place == InPlace::Path) {
-                Some(_) => true,
-                None => false,
-            },
+            Some(params) => params
+                .iter()
+                .find(|&x| x.in_place == InPlace::Path)
+                .is_some(),
             None => false,
         };
 
         let mut schema_name: Option<String> = None;
 
-        if let Some(request_body) = self.request_body_extractor.extract(operation, &spec)? {
+        if let Some(request_body) = self.request_body_extractor.extract(operation, spec)? {
             //TODO copypasted from request_generator.rs
             let body = request_body
                 .content
@@ -91,7 +91,12 @@ impl FormGenerator {
         base_output_path: &str,
         operations: Vec<Operation>,
     ) -> Result<(), Box<dyn Error>> {
-        let data = HashMap::from([("operations", operations)]);
+        let filtered: Vec<Operation> = operations
+            .into_iter()
+            .filter(|o| o.extension_form.is_some())
+            .collect();
+
+        let data = HashMap::from([("operations", filtered)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
@@ -106,7 +111,9 @@ impl FormGenerator {
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            self.generate_item(base_output_path, &operation, spec)?;
+            if operation.extension_form.is_some() {
+                self.generate_item(base_output_path, &operation, spec)?;
+            }
         }
 
         Ok(())

@@ -1,7 +1,7 @@
 use crate::dto::schema::LoginWithPasswordSchema;
 use crate::ui::form_processor::UserLoginsWithPasswordFormProcessor;
 use crate::ui::input::LoginWithPasswordSchemaInput;
-use std::sync::Arc;
+use std::rc::Rc;
 
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_standard_ui::rsx::component::ErrorBlock;
@@ -11,12 +11,12 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn UserLoginsWithPasswordForm(
-    processor: Arc<UserLoginsWithPasswordFormProcessor>,
+    processor: Rc<UserLoginsWithPasswordFormProcessor>,
     auth_token: String,
 ) -> Element {
-    let mut values: Signal<LoginWithPasswordSchema> = use_signal(|| Default::default());
-    let violations: Signal<ViolationsDto> = use_signal(|| Default::default());
-    let errors = use_signal(|| vec![]);
+    let mut values: Signal<LoginWithPasswordSchema> = use_signal(Default::default);
+    let violations: Signal<ViolationsDto> = use_signal(Default::default);
+    let errors = use_signal(Vec::new);
     let disabled = use_signal(|| false);
 
     rsx! {
@@ -43,7 +43,7 @@ pub fn UserLoginsWithPasswordForm(
             ErrorBlock {errors: errors()}
 
             LoginWithPasswordSchemaInput {
-                login_with_password_schema: values().into(),
+                login_with_password_schema: values(),
                 violations: violations(),
                 oninput: move |event: LoginWithPasswordSchema| {
                     values.set(event);
@@ -51,7 +51,7 @@ pub fn UserLoginsWithPasswordForm(
             }
 
             Submit {
-                title: "Sign In".to_string(),
+                title: "Submit".to_string(),
                 disabled: disabled(),
             }
         }

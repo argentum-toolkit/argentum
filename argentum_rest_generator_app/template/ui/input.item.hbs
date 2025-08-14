@@ -25,7 +25,7 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
     } = props.clone();
 
     {{#each inputs as |input|}}
-    let mut {{@key}}_value = use_signal(|| {{ snake @root.name }}.{{@key}}.clone());
+    let mut {{@key}}_value = use_signal(|| {{ snake @root.name }}.{{@key}});
     {{/each}}
 
     let violation_items = match violations {
@@ -53,27 +53,6 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
     rsx! {
         {{#each inputs as |input|}}
         {{{input}}}
-        {{!-- LabeledInput {
-            id: "{{property.ui.id}}",
-            name: "{{property.ui.name}}",
-            label: "{{property.ui.label}}",           
-            input_type: "text".to_string(),
-            {{#if property.required}}
-                value: {{@key}},
-            {{else}}
-                value: {{@key}}().unwrap_or("".to_string()),
-            {{/if}}
-            
-            violations: {{@key}}_violations,
-            oninput: move |event: String| {
-                {{#if property.required}}
-                {{@key}}.set(event);
-                {{else}}
-                {{@key}}.set(Some(event));
-                {{/if}}
-                update();
-            },
-        }, --}}
         {{/each}}
     }
 }

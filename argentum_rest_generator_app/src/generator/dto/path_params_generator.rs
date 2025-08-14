@@ -58,22 +58,16 @@ impl PathParamsGenerator {
         let mut parameters: Vec<Parameter> = vec![];
 
         //TODO: add path_parameters from path.rs
-        match uri_parameters {
-            Some(params) => {
-                for param in params {
-                    parameters.push(param.clone())
-                }
+        if let Some(params) = uri_parameters {
+            for param in params {
+                parameters.push(param.clone())
             }
-            None => {}
         };
 
-        match &operation.parameters {
-            Some(params) => {
-                for param in params {
-                    parameters.push(param.clone())
-                }
+        if let Some(params) = &operation.parameters {
+            for param in params {
+                parameters.push(param.clone())
             }
-            None => {}
         }
 
         for parameter in parameters {

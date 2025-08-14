@@ -100,14 +100,9 @@ impl InputGenerator {
         let req = &input.required.clone().unwrap_or_default();
 
         for (name, property) in input.properties.clone().unwrap_or_default() {
-            let schema = self.schema_extractor.extract(&property, &spec)?;
+            let schema = self.schema_extractor.extract(&property, spec)?;
 
-            let required: bool;
-            if req.contains(&name) {
-                required = true;
-            } else {
-                required = false;
-            }
+            let required = req.contains(&name);
 
             let input = match property {
                 RefOrObject::Ref(r) => {
@@ -115,7 +110,7 @@ impl InputGenerator {
                         .reference
                         .clone()
                         .split('/')
-                        .last()
+                        .next_back()
                         .ok_or(format!(
                             "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
                             r.reference
@@ -213,7 +208,9 @@ impl InputGenerator {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {
-            if let Some(request_body) = self.request_body_extractor.extract(&operation, spec)? {
+            if operation.extension_form.is_some()
+                && let Some(request_body) = self.request_body_extractor.extract(&operation, spec)?
+            {
                 let body = request_body
                     .content
                     .get("application/json")
@@ -237,7 +234,9 @@ impl InputGenerator {
         let mut inputs: BTreeMap<String, Schema> = BTreeMap::new();
 
         for operation in spec.operations().into_iter() {
-            if let Some(request_body) = self.request_body_extractor.extract(&operation, spec)? {
+            if operation.extension_form.is_some()
+                && let Some(request_body) = self.request_body_extractor.extract(&operation, spec)?
+            {
                 let body = request_body
                     .content
                     .get("application/json")

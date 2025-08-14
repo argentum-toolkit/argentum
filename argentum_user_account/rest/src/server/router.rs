@@ -56,30 +56,10 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = self.regex_user_account_anonymous_register.captures(path) {
-            return match *method {
-                Method::POST => true,
-                _ => false,
-            };
-        }
-
-        if let Some(_) = self.regex_user_account_password_login.captures(path) {
-            return match *method {
-                Method::POST => true,
-                _ => false,
-            };
-        }
-
-        if let Some(_) = self.regex_user_account_register.captures(path) {
-            return match *method {
-                Method::POST => true,
-                _ => false,
-            };
-        }
-
-        if let Some(_) = self
-            .regex_user_account_restore_password_token_request
+        if self
+            .regex_user_account_anonymous_register
             .captures(path)
+            .is_some()
         {
             return match *method {
                 Method::POST => true,
@@ -87,9 +67,39 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = self
+        if self
+            .regex_user_account_password_login
+            .captures(path)
+            .is_some()
+        {
+            return match *method {
+                Method::POST => true,
+                _ => false,
+            };
+        }
+
+        if self.regex_user_account_register.captures(path).is_some() {
+            return match *method {
+                Method::POST => true,
+                _ => false,
+            };
+        }
+
+        if self
+            .regex_user_account_restore_password_token_request
+            .captures(path)
+            .is_some()
+        {
+            return match *method {
+                Method::POST => true,
+                _ => false,
+            };
+        }
+
+        if self
             .regex_user_restore_password_change_password
             .captures(path)
+            .is_some()
         {
             return match *method {
                 Method::POST => true,
@@ -107,8 +117,12 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = self.regex_user_account_anonymous_register.captures(path) {
-            let raw_path_params = HashMap::from([]);
+        if self
+            .regex_user_account_anonymous_register
+            .captures(path)
+            .is_some()
+        {
+            let raw_path_params = HashMap::new();
 
             return match *req.method() {
                 Method::POST => {
@@ -120,8 +134,12 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = self.regex_user_account_password_login.captures(path) {
-            let raw_path_params = HashMap::from([]);
+        if self
+            .regex_user_account_password_login
+            .captures(path)
+            .is_some()
+        {
+            let raw_path_params = HashMap::new();
 
             return match *req.method() {
                 Method::POST => {
@@ -133,8 +151,8 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = self.regex_user_account_register.captures(path) {
-            let raw_path_params = HashMap::from([]);
+        if self.regex_user_account_register.captures(path).is_some() {
+            let raw_path_params = HashMap::new();
 
             return match *req.method() {
                 Method::POST => {
@@ -146,11 +164,12 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = self
+        if self
             .regex_user_account_restore_password_token_request
             .captures(path)
+            .is_some()
         {
-            let raw_path_params = HashMap::from([]);
+            let raw_path_params = HashMap::new();
 
             return match *req.method() {
                 Method::POST => {
@@ -162,11 +181,12 @@ impl RouterTrait for Router {
             };
         }
 
-        if let Some(_) = self
+        if self
             .regex_user_restore_password_change_password
             .captures(path)
+            .is_some()
         {
-            let raw_path_params = HashMap::from([]);
+            let raw_path_params = HashMap::new();
 
             return match *req.method() {
                 Method::POST => {

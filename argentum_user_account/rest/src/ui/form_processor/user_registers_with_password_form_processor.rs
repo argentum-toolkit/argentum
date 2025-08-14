@@ -1,22 +1,25 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
-use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
+#[cfg(feature = "web")]
 use crate::dto::schema::ProblemDetail;
+
 use crate::dto::schema::RegistrationWithPasswordSchema;
 use crate::ui::callbacks::UserRegistersWithPasswordCallbacks;
 use dioxus::prelude::*;
 
 #[derive(PartialEq)]
 pub struct UserRegistersWithPasswordFormProcessor {
-    callbacks: Arc<UserRegistersWithPasswordCallbacks>,
+    callbacks: Rc<UserRegistersWithPasswordCallbacks>,
 }
 
 impl UserRegistersWithPasswordFormProcessor {
-    pub fn new(callbacks: Arc<UserRegistersWithPasswordCallbacks>) -> Self {
+    pub fn new(callbacks: Rc<UserRegistersWithPasswordCallbacks>) -> Self {
         Self { callbacks }
     }
 
+    #[cfg(feature = "web")]
     fn extract_errors_from_problem_details(
         &self,
         problem: ProblemDetail,
@@ -39,7 +42,7 @@ impl UserRegistersWithPasswordFormProcessor {
                 msg
             })?;
 
-            if let Some(ViolationItemDto::Object(ref items)) = v.items {
+            if v.items.is_some() {
                 violations.set(v.clone());
             };
         };
@@ -75,7 +78,7 @@ impl UserRegistersWithPasswordFormProcessor {
         mut errors: Signal<Vec<String>>,
         mut disabled: Signal<bool>,
     ) {
-        use std::sync::Arc;
+        use std::rc::Rc;
 
         use crate::client::Client;
         use argentum_rest_infrastructure::data_type::AuthHeaderParams;
@@ -93,7 +96,7 @@ impl UserRegistersWithPasswordFormProcessor {
         errors.set(vec![]);
         violations.set(Default::default());
 
-        let client = use_context::<Signal<Arc<Client>>>();
+        let client = use_context::<Signal<Rc<Client>>>();
 
         let req = UserRegistersWithPasswordRequest::new(
             values().into(),

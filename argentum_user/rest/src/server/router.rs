@@ -44,7 +44,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = self.regex_user_userid.captures(path) {
+        if self.regex_user_userid.captures(path).is_some() {
             return match *method {
                 Method::GET => true,
                 _ => false,

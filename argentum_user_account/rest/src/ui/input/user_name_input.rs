@@ -22,9 +22,9 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         ..
     } = props.clone();
 
-    let mut first_value = use_signal(|| user_name.first.clone());
-    let mut last_value = use_signal(|| user_name.last.clone());
-    let mut patronymic_value = use_signal(|| user_name.patronymic.clone());
+    let mut first_value = use_signal(|| user_name.first);
+    let mut last_value = use_signal(|| user_name.last);
+    let mut patronymic_value = use_signal(|| user_name.patronymic);
 
     let violation_items = match violations {
         Some(vv) => match vv.items {

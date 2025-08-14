@@ -1,5 +1,6 @@
 use crate::data_type::{
-    Parameter, RefOrObject, Reference, RequestBody, Response, SecurityRequirementObject,
+    ExtensionForm, Parameter, RefOrObject, Reference, RequestBody, Response,
+    SecurityRequirementObject,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -31,8 +32,9 @@ pub struct Operation {
     #[serde(default)]
     pub responses: BTreeMap<StatusCode, RefOrObject<Response>>,
 
-    #[serde(skip_serializing_if = "Option::is_none", rename = "x-ag-submit-label")]
-    pub extension_submit_label: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", rename = "x-ag-form")]
+    pub extension_form: Option<ExtensionForm>,
+    // extension_submit_label
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]

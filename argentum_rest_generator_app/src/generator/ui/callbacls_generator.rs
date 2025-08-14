@@ -44,7 +44,7 @@ impl CallbacksGenerator {
                     .reference
                     .clone()
                     .split('/')
-                    .last()
+                    .next_back()
                     .ok_or(format!(
                         "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
                         r.reference
@@ -84,7 +84,12 @@ impl CallbacksGenerator {
         base_output_path: &str,
         operations: Vec<Operation>,
     ) -> Result<(), Box<dyn Error>> {
-        let data = HashMap::from([("operations", operations)]);
+        let filtered: Vec<Operation> = operations
+            .into_iter()
+            .filter(|o| o.extension_form.is_some())
+            .collect();
+
+        let data = HashMap::from([("operations", filtered)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
@@ -99,7 +104,9 @@ impl CallbacksGenerator {
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            self.generate_item(base_output_path, &operation)?;
+            if operation.extension_form.is_some() {
+                self.generate_item(base_output_path, &operation)?;
+            }
         }
 
         Ok(())

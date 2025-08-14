@@ -64,7 +64,8 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
-      x-ag-submit-label: Sign In
+      x-ag-form:
+        submitLabel: Submit
   /user-account/register:
     post:
       description: User registers with email and password
@@ -83,7 +84,8 @@ paths:
           $ref: '#/components/responses/400'
         '409':
           $ref: '#/components/responses/409'
-      x-ag-submit-label: Sign Up
+      x-ag-form:
+        submitLabel: Submit
   /user-account/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email

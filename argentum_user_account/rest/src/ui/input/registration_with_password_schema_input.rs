@@ -25,10 +25,10 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
         ..
     } = props.clone();
 
-    let mut email_value = use_signal(|| registration_with_password_schema.email.clone());
-    let mut name_value = use_signal(|| registration_with_password_schema.name.clone());
-    let mut password_value = use_signal(|| registration_with_password_schema.password.clone());
-    let mut terms_value = use_signal(|| registration_with_password_schema.terms.clone());
+    let mut email_value = use_signal(|| registration_with_password_schema.email);
+    let mut name_value = use_signal(|| registration_with_password_schema.name);
+    let mut password_value = use_signal(|| registration_with_password_schema.password);
+    let mut terms_value = use_signal(|| registration_with_password_schema.terms);
 
     let violation_items = match violations {
         Some(vv) => match vv.items {

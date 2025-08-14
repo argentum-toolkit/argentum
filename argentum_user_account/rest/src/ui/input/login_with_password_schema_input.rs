@@ -22,8 +22,8 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
         ..
     } = props.clone();
 
-    let mut email_value = use_signal(|| login_with_password_schema.email.clone());
-    let mut password_value = use_signal(|| login_with_password_schema.password.clone());
+    let mut email_value = use_signal(|| login_with_password_schema.email);
+    let mut password_value = use_signal(|| login_with_password_schema.password);
 
     let violation_items = match violations {
         Some(vv) => match vv.items {
