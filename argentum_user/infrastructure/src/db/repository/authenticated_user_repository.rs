@@ -44,7 +44,7 @@ where
 
         match result {
             Ok(Some(dto)) => {
-                let email = match EmailAddress::try_new(dto.email.clone()) {
+                let email = match EmailAddress::try_new(&dto.email) {
                     Ok(e) => e,
                     Err(_) => {
                         return Err(ExternalUserError::Authenticated(Some(Box::new(

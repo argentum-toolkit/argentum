@@ -32,7 +32,7 @@ impl DtoToUserRegistersWithPasswordParams {
             }
         };
 
-        let email_result = EmailAddress::try_new(req.body.email);
+        let email_result = EmailAddress::try_new(&req.body.email);
 
         let email = match email_result {
             Ok(e) => Some(e),

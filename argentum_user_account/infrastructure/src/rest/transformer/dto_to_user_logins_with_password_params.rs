@@ -15,7 +15,7 @@ impl DtoToUserLoginsWithPasswordParams {
         &self,
         req: UserLoginsWithPasswordRequest,
     ) -> Result<(EmailAddress, String), HttpError> {
-        let email_result = EmailAddress::try_new(req.body.email);
+        let email_result = EmailAddress::try_new(&req.body.email);
 
         match email_result {
             Ok(em) => Ok((em, req.body.password)),

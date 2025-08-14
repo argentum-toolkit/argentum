@@ -12,21 +12,20 @@ pub static EMAIL_REGEX: LazyLock<regex::Regex> =
 pub struct EmailAddress(String);
 
 impl EmailAddress {
-    pub fn try_new(email: String) -> InvariantResult<EmailAddress> {
+    pub fn try_new(email: &str) -> InvariantResult<EmailAddress> {
         if email.is_empty() {
             //Constant will be converted into `Violation`
             return Err(ERR_EMAIL_EMPTY.into());
         }
 
-        if EMAIL_REGEX.is_match(email.as_str()) {
-            Ok(EmailAddress(email))
+        if EMAIL_REGEX.is_match(email) {
+            Ok(EmailAddress(email.into()))
         } else {
             //Constant will be converted into `Violation`
             Err(ERR_WRONG_EMAIL.into())
         }
     }
 
-    //TODO: to_string
     pub fn as_string(&self) -> String {
         self.0.clone()
     }
@@ -38,18 +37,18 @@ mod tests {
 
     #[test]
     fn test_new_valid_email_address() {
-        let email_string = "man@example.com".to_string();
-        let res = EmailAddress::try_new(email_string.clone());
+        let email_str = "man@example.com";
+        let res = EmailAddress::try_new(&email_str);
 
         match res {
-            Ok(email) => assert_eq!(email_string, email.as_string()),
+            Ok(email) => assert_eq!(email_str.to_string(), email.as_string()),
             Err(_) => assert!(false),
         }
     }
 
     #[test]
     fn test_new_empty_email_address() {
-        let res = EmailAddress::try_new("".into());
+        let res = EmailAddress::try_new("");
 
         assert!(res.is_err());
 
@@ -63,7 +62,7 @@ mod tests {
 
     #[test]
     fn test_new_wrong_email_address() {
-        let res = EmailAddress::try_new("a@aa".into());
+        let res = EmailAddress::try_new("a@aa");
 
         assert!(res.is_err());
 

@@ -62,7 +62,7 @@ where
         let sql = query.sql().to_string();
         self.logger.debug(sql.clone());
         let result = query.execute(executor).await;
-        self.logger.trace("done".to_string());
+        self.logger.trace("done");
         match result {
             Ok(r) => Ok(r.rows_affected()),
             Err(e) => Err(DbAdapterError {
