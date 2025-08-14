@@ -19,13 +19,31 @@ impl fmt::Display for Level {
 }
 
 pub trait LoggerTrait: Send + Sync {
-    fn log(&self, level: Level, msg: impl Into<String>);
-    fn trace(&self, msg: impl Into<String>);
-    fn debug(&self, msg: impl Into<String>);
-    fn info(&self, msg: impl Into<String>);
-    fn warning(&self, msg: impl Into<String>);
-    fn error(&self, msg: impl Into<String>);
-    fn critical(&self, msg: impl Into<String>);
+    fn log<S: AsRef<str>>(&self, level: Level, msg: S);
+
+    fn trace<S: AsRef<str>>(&self, msg: S) {
+        self.log(Level::Trace, msg);
+    }
+
+    fn debug<S: AsRef<str>>(&self, msg: S) {
+        self.log(Level::Debug, msg);
+    }
+
+    fn info<S: AsRef<str>>(&self, msg: S) {
+        self.log(Level::Info, msg);
+    }
+
+    fn warning<S: AsRef<str>>(&self, msg: S) {
+        self.log(Level::Warning, msg);
+    }
+
+    fn error<S: AsRef<str>>(&self, msg: S) {
+        self.log(Level::Error, msg);
+    }
+
+    fn critical<S: AsRef<str>>(&self, msg: S) {
+        self.log(Level::Critical, msg);
+    }
 }
 
 pub struct DefaultLogger<W>
@@ -49,41 +67,17 @@ impl<W> LoggerTrait for DefaultLogger<W>
 where
     W: WriterTrait,
 {
-    fn log(&self, level: Level, msg: impl Into<String>) {
+    fn log<S: AsRef<str>>(&self, level: Level, msg: S) {
         if level < self.level {
             return;
         }
 
-        self.writer.write(Utc::now(), level, msg.into())
-    }
-
-    fn trace(&self, msg: impl Into<String>) {
-        self.log(Level::Trace, msg);
-    }
-
-    fn debug(&self, msg: impl Into<String>) {
-        self.log(Level::Debug, msg);
-    }
-
-    fn info(&self, msg: impl Into<String>) {
-        self.log(Level::Info, msg);
-    }
-
-    fn warning(&self, msg: impl Into<String>) {
-        self.log(Level::Warning, msg);
-    }
-
-    fn error(&self, msg: impl Into<String>) {
-        self.log(Level::Error, msg);
-    }
-
-    fn critical(&self, msg: impl Into<String>) {
-        self.log(Level::Critical, msg);
+        self.writer.write(Utc::now(), level, msg.as_ref())
     }
 }
 
 pub trait WriterTrait: Send + Sync {
-    fn write(&self, date_time: DateTime<Utc>, level: Level, msg: impl Into<String>);
+    fn write<S: AsRef<str>>(&self, date_time: DateTime<Utc>, level: Level, msg: S);
 }
 
 pub struct StdoutWriter {}
@@ -101,12 +95,12 @@ impl Default for StdoutWriter {
 }
 
 impl WriterTrait for StdoutWriter {
-    fn write(&self, time: DateTime<Utc>, level: Level, msg: impl Into<String>) {
+    fn write<S: AsRef<str>>(&self, time: DateTime<Utc>, level: Level, msg: S) {
         println!(
             "{} {}: {}",
             time.format("%Y-%m-%d %H:%M:%S%.3f%:z"),
             level.to_string().to_uppercase(),
-            msg.into(),
+            msg.as_ref(),
         );
     }
 }

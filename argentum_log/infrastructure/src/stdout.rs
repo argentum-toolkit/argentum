@@ -17,7 +17,7 @@ impl Default for PrettyWriter {
 }
 
 impl WriterTrait for PrettyWriter {
-    fn write(&self, time: DateTime<Utc>, level: Level, msg: impl Into<String>) {
+    fn write<S: AsRef<str>>(&self, time: DateTime<Utc>, level: Level, msg: S) {
         let l = level.to_string().to_uppercase();
         let colored_level = match level {
             Level::Trace => Paint::blue(&l),
@@ -32,7 +32,7 @@ impl WriterTrait for PrettyWriter {
             "{} {}: {}",
             time.format("%Y-%m-%d %H:%M:%S%.3f%:z"),
             colored_level,
-            msg.into(),
+            msg.as_ref(),
         );
     }
 }
