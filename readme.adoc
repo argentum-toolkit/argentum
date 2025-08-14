@@ -160,7 +160,6 @@ cargo install dioxus-cli
 ** fix generator for cases when string field parses as integer
 
 * DB
-** table names as a const or as a param
 ** ?Foreign key for session
 
 * documentation

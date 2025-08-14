@@ -24,7 +24,7 @@ impl Default for SessionRepositoryMockWithBrokenSave {
 }
 
 impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
-    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
+    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
         let guard = self
             .sessions
             .read()
@@ -35,7 +35,7 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
                 return Ok(Some(Session::new(
                     s.id.clone(),
                     s.user_id.clone(),
-                    s.token.clone(),
+                    &s.token,
                 )));
             }
         }

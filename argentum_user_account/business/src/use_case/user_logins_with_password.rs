@@ -74,7 +74,7 @@ where
         let session = Session::new(
             self.id_factory.create(),
             user.id().clone(),
-            self.token_generator.generate(&user.id),
+            &self.token_generator.generate(&user.id),
         );
 
         self.session_repository.save(&session)?;

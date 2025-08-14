@@ -11,6 +11,8 @@ use argentum_user_business::repository::session_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
+const TABLE_NAME: &'static str = "ag_user_session";
+
 pub struct SessionRepository<L>
 where
     L: LoggerTrait,
@@ -35,10 +37,10 @@ impl<L> SessionRepositoryTrait for SessionRepository<L>
 where
     L: LoggerTrait,
 {
-    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
+    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
         //move todo table name/prefix to const/param
-        let sql = "SELECT id, user_id, token FROM ag_user_session WHERE token = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(token);
+        let sql = format!("SELECT id, user_id, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1");
+        let query = sqlx::query_as(&sql).bind(token);
 
         let result: Result<Option<SessionDto>, DbAdapterError> =
             block_on(self.adapter.fetch_one(query));
@@ -59,8 +61,8 @@ where
         let id = self.id_factory.id_to_uuid(&session.id);
         let user_id = self.id_factory.id_to_uuid(&session.user_id);
 
-        let sql = "INSERT INTO ag_user_session (id, user_id, token) VALUES ($1, $2, $3)";
-        let query = sqlx::query(sql)
+        let sql = format!("INSERT INTO {TABLE_NAME} (id, user_id, token) VALUES ($1, $2, $3)");
+        let query = sqlx::query(&sql)
             .bind(id)
             .bind(user_id)
             .bind(session.token.clone());
@@ -75,8 +77,9 @@ where
 
     fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
         let id = self.id_factory.id_to_uuid(user_id);
+        let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
 
-        let query = sqlx::query("DELETE FROM ag_user_session WHERE user_id = $1").bind(id);
+        let query = sqlx::query(&sql).bind(id);
 
         let result = block_on(self.adapter.exec(query));
 

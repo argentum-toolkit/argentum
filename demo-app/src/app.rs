@@ -77,7 +77,7 @@ where
 
         let anon_auth_result = self
             .user_authenticates_with_token
-            .execute(anon_session.token);
+            .execute(&anon_session.token);
 
         match anon_auth_result {
             Ok(_) => {}
@@ -130,7 +130,7 @@ where
             }
         };
 
-        let aut_result = self.user_authenticates_with_token.execute(login.token);
+        let aut_result = self.user_authenticates_with_token.execute(&login.token);
 
         match aut_result {
             Ok(_) => {

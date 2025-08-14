@@ -16,6 +16,8 @@ use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
 
+const TABLE_NAME: &'static str = "ag_user_authenticated";
+
 pub struct AuthenticatedUserRepository<L>
 where
     L: LoggerTrait,
@@ -87,8 +89,10 @@ where
 {
     fn find(&self, user_id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         let id = self.id_factory.id_to_uuid(user_id);
-        let sql = "SELECT id, created_at, first_name, last_name, email FROM ag_user_authenticated WHERE id = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(id);
+        let sql = format!(
+            "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
+        );
+        let query = sqlx::query_as(&sql).bind(id);
 
         self.find_one(query)
     }
@@ -97,8 +101,10 @@ where
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
-        let sql = "SELECT id, created_at, first_name, last_name, email FROM ag_user_authenticated WHERE email = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(email.as_string());
+        let sql = format!(
+            "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
+        );
+        let query = sqlx::query_as(&sql).bind(email.as_string());
 
         self.find_one(query)
     }
@@ -108,8 +114,10 @@ where
 
         let last = user.name.last.as_ref().map(|l| l.to_string());
 
-        let sql = "INSERT INTO ag_user_authenticated (id, created_at, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)";
-        let query = sqlx::query(sql)
+        let sql = format!(
+            "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)"
+        );
+        let query = sqlx::query(&sql)
             .bind(id)
             .bind(user.created_at)
             .bind(user.name.first.to_string())

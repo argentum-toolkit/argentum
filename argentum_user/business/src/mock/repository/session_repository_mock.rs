@@ -24,7 +24,7 @@ impl Default for SessionRepositoryMock {
 }
 
 impl SessionRepositoryTrait for SessionRepositoryMock {
-    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
+    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
         let guard = self
             .sessions
             .read()
@@ -35,7 +35,7 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
                 return Ok(Some(Session::new(
                     s.id.clone(),
                     s.user_id.clone(),
-                    s.token.clone(),
+                    &s.token,
                 )));
             }
         }
@@ -46,11 +46,7 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
     fn save(&self, session: &Session) -> Result<(), SessionRepositoryError> {
         // TODO: check if key exists
 
-        let s = Session::new(
-            session.id.clone(),
-            session.user_id.clone(),
-            session.token.clone(),
-        );
+        let s = Session::new(session.id.clone(), session.user_id.clone(), &session.token);
 
         match self
             .sessions
