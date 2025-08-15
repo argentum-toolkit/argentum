@@ -25,15 +25,3 @@ argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", versi
 argentum_openapi_infrastructure = { path = "../argentum_openapi/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
 argentum_log_business = { path = "../argentum_log/business", version = ">=0.3.0-dev,<0.4.0" }
 argentum_log_infrastructure = { path = "../argentum_log/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
-
-[profile]
-
-[profile.wasm-dev]
-inherits = "dev"
-opt-level = 1
-
-[profile.server-dev]
-inherits = "dev"
-
-[profile.android-dev]
-inherits = "dev"

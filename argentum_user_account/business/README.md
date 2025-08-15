@@ -1,0 +1,34 @@
+Argentum ToolKit User. An Business layer.
+=========================================
+
+# User workflow Overview
+
+@startuml actor User as user
+
+user -> reg: registration reg --> user: mail ||| user -> reg: confirmation \n(not implemented yet) reg --> user: mail ||| user -> login: login login --> user: token ||| user -> action: do something action --> user: result
+
+@enduml
+
+# Authentication
+
+@startuml actor user participant Middleware as m database "Token storage" as ts
+
+user -> m m ->  ts: token ts --> m: userId m -> SomeController: userId + request
+
+@enduml
+
+# Restore Password
+
+@startuml autonumber 1.1
+
+actor User as u
+
+participant system as s participant Notificator as n
+
+group Request Reset Token     u -> s: Request reset\n**password token**     s -> s: Generate token\nInvalidate previous token     s -> n: Send token     n --> u: Send token end
+
+autonumber 2.1
+
+group Reset Password     u -> s: Send new **password**     s -> s: Change password\nInvalidate token     s -> n: Password was changed     n --> u: Password was changed end
+
+@enduml

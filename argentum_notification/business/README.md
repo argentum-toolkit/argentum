@@ -1,0 +1,2 @@
+Argentum ToolKit. Notification. Business layer.
+===============================================
