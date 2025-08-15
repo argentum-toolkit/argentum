@@ -16,13 +16,10 @@ impl SchemaExtractor {
             .split('/')
             .next_back()
             .map(|n| n.to_string())
-            .ok_or(
-                format!(
-                    "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                    reference.reference
-                )
-                .into(),
-            )
+            .ok_or(format!(
+                "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                reference.reference
+            ))
     }
 
     pub fn extract(

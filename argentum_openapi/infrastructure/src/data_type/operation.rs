@@ -34,7 +34,6 @@ pub struct Operation {
 
     #[serde(skip_serializing_if = "Option::is_none", rename = "x-ag-form")]
     pub extension_form: Option<ExtensionForm>,
-    // extension_submit_label
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]

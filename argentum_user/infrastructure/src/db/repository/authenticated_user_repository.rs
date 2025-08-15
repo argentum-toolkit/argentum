@@ -16,7 +16,7 @@ use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
 
-const TABLE_NAME: &'static str = "ag_user_authenticated";
+const TABLE_NAME: &str = "ag_user_authenticated";
 
 pub struct AuthenticatedUserRepository<L>
 where

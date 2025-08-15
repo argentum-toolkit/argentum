@@ -11,7 +11,7 @@ use argentum_user_business::repository::user_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-const TABLE_NAME: &'static str = "ag_user_anonymous";
+const TABLE_NAME: &str = "ag_user_anonymous";
 
 pub struct AnonymousUserRepository<L>
 where

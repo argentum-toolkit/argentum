@@ -99,7 +99,7 @@ impl ResponseGenerator {
     }
 
     fn escape_response_name(&self, name: &str) -> String {
-        if name.len() > 0 && name[0..1].parse::<u8>().is_ok() {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
             "Status".to_owned() + name
         } else {
             name.into()

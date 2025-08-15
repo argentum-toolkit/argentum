@@ -127,8 +127,7 @@ where
                 return Err(format!(
                     "Wrong reference to schema component: `{}`",
                     r.reference.clone()
-                )
-                .into());
+                ));
             }
 
             let component_name = component_ref.component_name;
@@ -174,8 +173,7 @@ where
                             return Err(format!(
                                 "Schema #/components/schemas/{} is not found",
                                 component_name.clone()
-                            )
-                            .into());
+                            ));
                         }
                         Some(s) => {
                             let ss: &mut Schema = &mut s.clone();
@@ -215,8 +213,7 @@ where
                             return Err(format!(
                                 "Schema #/components/schemas/{} is not found",
                                 component_name.clone()
-                            )
-                            .into());
+                            ));
                         }
                         Some(s) => {
                             let ss: &mut Schema = &mut s.clone();
@@ -247,8 +244,7 @@ where
                 return Err(format!(
                     "Wrong reference to RequestBody component: `{}`",
                     r.reference.clone()
-                )
-                .into());
+                ));
             }
 
             if let Some(file_path) = component_ref.file_path {
@@ -272,8 +268,7 @@ where
                         return Err(format!(
                             "Request body #/components/requestBodies/{} is not found",
                             component_ref.component_name.clone()
-                        )
-                        .into());
+                        ));
                     }
                     Some(s) => {
                         let b_name = component_ref.component_name;
@@ -313,8 +308,7 @@ where
                 return Err(format!(
                     "Wrong reference to response component: `{}`",
                     r.reference.clone()
-                )
-                .into());
+                ));
             }
 
             if let Some(file_path) = component_ref.file_path {
@@ -338,8 +332,7 @@ where
                         return Err(format!(
                             "Response #/components/responses/{} is not found",
                             component_ref.component_name.clone()
-                        )
-                        .into());
+                        ));
                     }
                     Some(s) => {
                         let b_name = component_ref.component_name;
@@ -389,7 +382,7 @@ where
         res_spec.servers.clone_from(&spec.servers);
 
         for (body_name, body) in &mut spec.components.request_bodies {
-            let (body_spec, updated_body) = self.collect_request_body(body, &file_path)?;
+            let (body_spec, updated_body) = self.collect_request_body(body, file_path)?;
 
             for (n, s) in body_spec.components.schemas {
                 res_spec.components.schemas.insert(n, s.clone());

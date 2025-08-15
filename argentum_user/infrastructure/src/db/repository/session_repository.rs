@@ -11,7 +11,7 @@ use argentum_user_business::repository::session_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-const TABLE_NAME: &'static str = "ag_user_session";
+const TABLE_NAME: &str = "ag_user_session";
 
 pub struct SessionRepository<L>
 where

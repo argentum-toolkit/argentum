@@ -24,7 +24,7 @@ impl RequestBodyExtractor {
                 let parts = r.reference.split("#/").collect::<Vec<_>>();
 
                 if parts.clone().len() != 2 {
-                    return Err(format!("Wrong format of reference {}", r.reference).into());
+                    return Err(format!("Wrong format of reference {}", r.reference));
                 }
 
                 let _file_path = parts
@@ -43,7 +43,7 @@ impl RequestBodyExtractor {
                 {
                     return Err(format!(
                         "Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`"
-                    ).into());
+                    ));
                 }
 
                 let component_name = component_parts.last().ok_or(format!(

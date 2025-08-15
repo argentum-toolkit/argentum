@@ -120,9 +120,7 @@ impl RequestGenerator {
                             let parts = r.reference.split("#/").collect::<Vec<_>>();
 
                             if parts.clone().len() != 2 {
-                                return Err(
-                                    format!("Wrong format of reference {}", r.reference).into()
-                                );
+                                return Err(format!("Wrong format of reference {}", r.reference));
                             }
 
                             let _file_path = parts
@@ -140,7 +138,9 @@ impl RequestGenerator {
                                 || component_parts[0] != "components"
                                 || component_parts[1] != "requestBodies"
                             {
-                                return Err(format!("Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`").into());
+                                return Err(format!(
+                                    "Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`"
+                                ));
                             }
 
                             let component_name = component_parts.last()

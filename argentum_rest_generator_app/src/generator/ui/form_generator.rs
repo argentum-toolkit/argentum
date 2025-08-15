@@ -49,10 +49,7 @@ impl FormGenerator {
         );
 
         let need_path_params = match &operation.parameters {
-            Some(params) => params
-                .iter()
-                .find(|&x| x.in_place == InPlace::Path)
-                .is_some(),
+            Some(params) => params.iter().any(|x| x.in_place == InPlace::Path),
             None => false,
         };
 

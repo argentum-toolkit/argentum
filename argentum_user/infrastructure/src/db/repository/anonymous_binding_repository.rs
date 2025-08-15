@@ -11,7 +11,7 @@ use argentum_user_business::repository::anonymous_binding_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-const TABLE_NAME: &'static str = "ag_user_anonymous_binding";
+const TABLE_NAME: &str = "ag_user_anonymous_binding";
 
 pub struct AnonymousBindingRepository<L>
 where

@@ -119,7 +119,7 @@ fn to_enum_name(code: &str) -> Result<String, String> {
 
     m.get(code)
         .map(|c| c.to_string())
-        .ok_or(format!("Unknown code `{code}`").into())
+        .ok_or(format!("Unknown code `{code}`"))
 }
 
 pub struct ClientGenerator {
@@ -164,7 +164,7 @@ impl ClientGenerator {
                 for (code, ref_or_obj) in &operation.responses {
                     let status_name = match StatusCode::from_str(&code.to_string()) {
                         Ok(c) => to_enum_name(c.as_str())?,
-                        Err(e) => return Err(format!("Can't parse status code: {e:?}").into()),
+                        Err(e) => return Err(format!("Can't parse status code: {e:?}")),
                     };
 
                     let mut content_data: Vec<ContentData> = vec![];
@@ -176,8 +176,7 @@ impl ClientGenerator {
                                 return Err(format!(
                                     "Wrong reference to response component: `{}`",
                                     r.reference.clone()
-                                )
-                                .into());
+                                ));
                             }
 
                             response_name =
@@ -200,8 +199,7 @@ impl ClientGenerator {
                                             return Err(format!(
                                                 "Wrong reference to schema component: `{}`",
                                                 r.reference.clone()
-                                            )
-                                            .into());
+                                            ));
                                         }
 
                                         component_ref.component_name
@@ -268,7 +266,7 @@ impl ClientGenerator {
     }
 
     fn escape_response_name(&self, name: &str) -> String {
-        if name.len() > 0 && name[0..1].parse::<u8>().is_ok() {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
             "Status".to_owned() + name
         } else {
             name.into()

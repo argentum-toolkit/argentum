@@ -54,10 +54,7 @@ impl FormProcessorGenerator {
         let mut response_names: BTreeMap<String, String> = BTreeMap::new();
 
         let need_path_params = match &operation.parameters {
-            Some(params) => params
-                .iter()
-                .find(|&x| x.in_place == InPlace::Path)
-                .is_some(),
+            Some(params) => params.iter().any(|x| x.in_place == InPlace::Path),
             None => false,
         };
 
@@ -114,7 +111,7 @@ impl FormProcessorGenerator {
     }
 
     fn escape_response_name(&self, name: &str) -> String {
-        if name.len() > 0 && name[0..1].parse::<u8>().is_ok() {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
             "Status".to_owned() + name
         } else {
             name.into()

@@ -14,7 +14,7 @@ use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
 
-const TABLE_NAME: &'static str = "ag_user_account_restore_password_token";
+const TABLE_NAME: &str = "ag_user_account_restore_password_token";
 
 pub struct RestorePasswordTokenRepository<L>
 where
@@ -78,7 +78,7 @@ where
         token: String,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
         let sql = format!(
-            "SELECT id, user_id, token, created_at FROM TABLE_NAME WHERE token = $1 LIMIT 1"
+            "SELECT id, user_id, token, created_at FROM {TABLE_NAME} WHERE token = $1 LIMIT 1"
         );
         let query = sqlx::query_as(&sql).bind(token);
 

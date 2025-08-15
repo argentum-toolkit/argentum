@@ -95,12 +95,11 @@ impl SchemaGenerator {
                     )?;
                 }
             },
-            Some(SchemaType::Array) => match &*schema.items {
-                Some(items) => {
+            Some(SchemaType::Array) => {
+                if let Some(items) = &*schema.items {
                     self.generate_array_item(base_output_path, name, items.clone(), file_path)?
                 }
-                None => {}
-            },
+            }
             Some(_) => {
                 //TODO: implement for other types
                 //TODO: log

@@ -12,7 +12,7 @@ use std::sync::Arc;
 use crate::db::dto::PasswordCredentialDto;
 use futures::executor::block_on;
 
-const TABLE_NAME: &'static str = "ag_user_account_password_credential";
+const TABLE_NAME: &str = "ag_user_account_password_credential";
 
 pub struct PasswordCredentialRepository<L>
 where
