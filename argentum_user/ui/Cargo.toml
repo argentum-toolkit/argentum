@@ -5,7 +5,7 @@ version = "0.3.0-dev"
 license = "LGPL-3.0"
 edition = "2024"
 
-readme = "readme.adoc"
+readme = "README.md"
 
 [dependencies]
 argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client"] }

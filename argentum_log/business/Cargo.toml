@@ -8,7 +8,7 @@ edition = "2024"
 homepage = "https://gitlab.com/argentum-toolkit/argentum"
 repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
-readme = "readme.adoc"
+readme = "README.md"
 
 [dependencies]
 chrono = "0.4.*"
