@@ -5,7 +5,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -33,8 +32,8 @@ impl ResponseGenerator {
         base_output_path: &str,
         response_name: String,
         response: &Response,
-    ) -> Result<(), Box<dyn Error>> {
-        let escaped_response_name = self.escape_response_name(response_name.clone());
+    ) -> Result<(), String> {
+        let escaped_response_name = self.escape_response_name(&response_name);
         let file_path = format!(
             "/src/dto/response/{}_response.rs",
             escaped_response_name.to_case(Case::Snake)
@@ -43,7 +42,7 @@ impl ResponseGenerator {
         let mut content: BTreeMap<String, String> = BTreeMap::new();
 
         for (name, media_type) in &response.content {
-            let schema_type = self.schema_to_rs(&media_type.schema);
+            let schema_type = self.schema_to_rs(&media_type.schema)?;
 
             content.insert(name.clone(), schema_type);
         }
@@ -60,19 +59,17 @@ impl ResponseGenerator {
         Ok(())
     }
 
-    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> String {
+    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> Result<String, String> {
         let schema = match schema {
             RefOrObject::Ref(r) => r
                 .reference
                 .clone()
                 .split('/')
-                .last()
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                        r.reference
-                    )
-                })
+                .next_back()
+                .ok_or(format!(
+                    "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                    r.reference
+                ))?
                 .to_string(),
             RefOrObject::Object(_o) => {
                 todo!(
@@ -81,18 +78,18 @@ impl ResponseGenerator {
             }
         };
 
-        format!("crate::dto::schema::{}", schema)
+        Ok(format!("crate::dto::schema::{schema}"))
     }
 
     fn generate_mod(
         &self,
         base_output_path: &str,
         responses: BTreeMap<String, Response>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut response_names: Vec<String> = Vec::new();
 
         for (name, _) in responses {
-            response_names.push(self.escape_response_name(name));
+            response_names.push(self.escape_response_name(&name));
         }
 
         let data = HashMap::from([("responseNames", response_names)]);
@@ -101,11 +98,11 @@ impl ResponseGenerator {
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 
@@ -116,11 +113,7 @@ impl ResponseGenerator {
         }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let responses = spec.clone().components.responses;
 
         self.generate_mod(base_output_path, responses.clone())?;

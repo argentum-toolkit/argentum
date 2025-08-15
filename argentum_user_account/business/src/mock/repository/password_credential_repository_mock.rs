@@ -34,7 +34,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
     fn save(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         self.credentials
             .write()
-            .unwrap()
+            .map_err(|_| PasswordCredentialRepositoryError::Other("`RwLock` is poisoned".into()))?
             .insert(cred.user_id.to_string(), cred.clone());
 
         Ok(())
@@ -47,7 +47,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
         let credentials = self
             .credentials
             .read()
-            .unwrap()
+            .map_err(|_| PasswordCredentialRepositoryError::Other("`RwLock` is poisoned".into()))?
             .get(&*id.to_string())
             .map(|c| {
                 PasswordCredential::new(c.user_id.clone(), c.password.clone(), c.salt.clone())
@@ -59,7 +59,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
     fn delete(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         self.credentials
             .write()
-            .unwrap()
+            .map_err(|_| PasswordCredentialRepositoryError::Other("`RwLock` is poisoned".into()))?
             .remove(&cred.user_id.to_string());
 
         Ok(())

@@ -24,7 +24,11 @@ impl<T: PasswordCredentialWriterTrait> CredentialWriterTrait for T {
     fn write(&self, cred: Box<dyn Credential>) -> CredentialWriterResult {
         let pass_cred = match cred.as_any().downcast_ref::<PasswordCredential>() {
             Some(b) => b,
-            None => panic!("Accepted only PasswordCredential type"),
+            None => {
+                return CredentialWriterResult::Err(CredentialWriterError::Credential(
+                    "Accepted only PasswordCredential type".into(),
+                ));
+            }
         };
 
         self.write_password_credentials(pass_cred)

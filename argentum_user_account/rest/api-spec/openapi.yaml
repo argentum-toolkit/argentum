@@ -64,7 +64,8 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
-      x-ag-submit-label: Sign In
+      x-ag-form:
+        submitLabel: Submit
   /user-account/register:
     post:
       description: User registers with email and password
@@ -83,7 +84,8 @@ paths:
           $ref: '#/components/responses/400'
         '409':
           $ref: '#/components/responses/409'
-      x-ag-submit-label: Sign Up
+      x-ag-form:
+        submitLabel: Submit
   /user-account/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email
@@ -211,6 +213,7 @@ components:
           x-ag-ui:
             id: password
             name: password
+            weight: 0
       type: object
     ProblemDetail:
       title: Schema for error response
@@ -260,6 +263,7 @@ components:
           x-ag-ui:
             id: email
             name: email
+            weight: 0
         name:
           $ref: '#/components/schemas/UserName'
         password:
@@ -270,6 +274,7 @@ components:
           x-ag-ui:
             id: password
             name: password
+            weight: 0
         terms:
           example: 'false'
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
@@ -277,6 +282,7 @@ components:
           x-ag-ui:
             id: terms
             name: terms
+            weight: 0
       type: object
     RequestRestoreTokenSchema:
       required:
@@ -291,6 +297,15 @@ components:
       required:
       - first
       properties:
+        additional:
+          title: Additional
+          maxLength: 255
+          minLength: 1
+          type: string
+          x-ag-ui:
+            id: user_additional
+            name: user_additional
+            weight: 100
         first:
           example: Winston
           title: First Name
@@ -300,6 +315,7 @@ components:
           x-ag-ui:
             id: user_first_name
             name: user_first_name
+            weight: 0
         last:
           example: Marko
           title: Last Name
@@ -309,14 +325,7 @@ components:
           x-ag-ui:
             id: user_last_name
             name: user_last_name
-        patronymic:
-          title: Patronymic
-          maxLength: 255
-          minLength: 1
-          type: string
-          x-ag-ui:
-            id: user_patronymic
-            name: user_patronymic
+            weight: 0
       type: object
     Violation:
       properties:

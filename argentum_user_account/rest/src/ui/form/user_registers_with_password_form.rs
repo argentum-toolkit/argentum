@@ -1,7 +1,7 @@
 use crate::dto::schema::RegistrationWithPasswordSchema;
 use crate::ui::form_processor::UserRegistersWithPasswordFormProcessor;
 use crate::ui::input::RegistrationWithPasswordSchemaInput;
-use std::sync::Arc;
+use std::rc::Rc;
 
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_standard_ui::rsx::component::ErrorBlock;
@@ -11,12 +11,12 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn UserRegistersWithPasswordForm(
-    processor: Arc<UserRegistersWithPasswordFormProcessor>,
+    processor: Rc<UserRegistersWithPasswordFormProcessor>,
     auth_token: String,
 ) -> Element {
-    let mut values: Signal<RegistrationWithPasswordSchema> = use_signal(|| Default::default());
-    let violations: Signal<ViolationsDto> = use_signal(|| Default::default());
-    let errors = use_signal(|| vec![]);
+    let mut values: Signal<RegistrationWithPasswordSchema> = use_signal(Default::default);
+    let violations: Signal<ViolationsDto> = use_signal(Default::default);
+    let errors = use_signal(Vec::new);
     let disabled = use_signal(|| false);
 
     rsx! {
@@ -26,10 +26,6 @@ pub fn UserRegistersWithPasswordForm(
             "novalidate": true,
             onsubmit: move |_| {
                 let processor = processor.clone();
-                let values = values.clone();
-                let violations = violations.clone();
-                let errors = errors.clone();
-                let disabled = disabled.clone();
                 let auth_token = auth_token.clone();
 
                 spawn(async move {
@@ -47,7 +43,7 @@ pub fn UserRegistersWithPasswordForm(
             ErrorBlock {errors: errors()}
 
             RegistrationWithPasswordSchemaInput {
-                registration_with_password_schema: values().into(),
+                value: values(),
                 violations: violations(),
                 oninput: move |event: RegistrationWithPasswordSchema| {
                     values.set(event);
@@ -55,7 +51,7 @@ pub fn UserRegistersWithPasswordForm(
             }
 
             Submit {
-                title: "Sign Up".to_string(),
+                title: "Submit".to_string(),
                 disabled: disabled(),
             }
         }

@@ -1,5 +1,5 @@
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
-use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
 use argentum_rest_infrastructure::service::{BearerAuthenticator, RouterCombinator, Server};
@@ -16,24 +16,30 @@ use argentum_user_rest::ApiDiC as UserApiDiC;
 use dotenvy::dotenv;
 use std::sync::Arc;
 
-pub struct DiC {
+pub struct DiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
-    pub server: Arc<Server>,
+    pub server: Arc<Server<L>>,
 }
 
-impl DiC {
-    pub fn new(server: Arc<Server>) -> DiC {
-        DiC { server }
+impl<L> DiC<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(server: Arc<Server<L>>) -> Self {
+        Self { server }
     }
 }
 
-pub async fn di_factory() -> DiC {
+pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     dotenv().ok();
 
     const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
 
     let u_database_url = env::var(U_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{} must be set", U_CONNECTION_URL_ENV_NAME));
+        .map_err(|e| format!("Cant get ENV {U_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
@@ -42,9 +48,10 @@ pub async fn di_factory() -> DiC {
 
     let u_di = Rc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
-            .default_services(&u_database_url, 5, logger.clone()) //todo: use params
-            .await
-            .build(),
+            //todo: use params
+            .default_services(&u_database_url, 5, logger.clone())
+            .await?
+            .build()?,
     );
 
     let rest_di = RestDiC::new(logger.clone());
@@ -68,7 +75,7 @@ pub async fn di_factory() -> DiC {
     const UA_CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
 
     let database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
-        .unwrap_or_else(|_| panic!("{} must be set", UA_CONNECTION_URL_ENV_NAME));
+        .map_err(|e| format!("Cant get ENV {UA_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
     let ua_di = UserAccountInfrastructureDiCBuilder::new(
         u_di.clone(),
@@ -79,13 +86,13 @@ pub async fn di_factory() -> DiC {
         notificator,
     )
     .services(unique_id_factory, &database_url, 5, logger.clone())
-    .await
+    .await?
     .config(
         "Argentum ToolKit demo web application".to_string(),
         3600, // TTL 1h
         "http://localhost:8082/change-password/".to_string(),
     )
-    .build();
+    .build()?;
 
     let ua_api_di = ApiDiC::new(
         "/api/v1".to_string(),
@@ -102,7 +109,9 @@ pub async fn di_factory() -> DiC {
     // let listen = "172.18.0.1:8088";
     // let listen = "127.0.0.1:8088";
     let listen = "0.0.0.0:8088";
-    let addr: SocketAddr = listen.parse().expect("Unable to parse socket address");
+    let addr: SocketAddr = listen
+        .parse()
+        .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
 
     let router = Arc::new(RouterCombinator::new(
         vec![u_api_di.router, ua_api_di.router],
@@ -117,5 +126,5 @@ pub async fn di_factory() -> DiC {
         logger,
     ));
 
-    DiC::new(server)
+    Ok(DiC::new(server))
 }

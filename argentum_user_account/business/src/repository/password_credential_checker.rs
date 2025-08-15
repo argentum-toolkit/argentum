@@ -1,7 +1,7 @@
 use crate::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,
 };
-use argentum_encryption_business::password::Validator;
+use argentum_encryption_business::password::{EncryptionError, Validator};
 use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
@@ -33,7 +33,10 @@ impl PasswordCredentialChecker {
                     self.validator
                         .validate(password, cred.salt.as_str(), cred.password.as_str());
 
-                Ok(res)
+                match res {
+                    Ok(r) => Ok(r),
+                    Err(e) => Err(PasswordCredentialCheckerError::Validation(e)),
+                }
             }
             Err(e) => Err(PasswordCredentialCheckerError::Repository(e)),
         }
@@ -44,4 +47,7 @@ impl PasswordCredentialChecker {
 pub enum PasswordCredentialCheckerError {
     #[error("Can't check credentials")]
     Repository(#[source] PasswordCredentialRepositoryError),
+
+    #[error("Validation error")]
+    Validation(#[source] EncryptionError),
 }

@@ -30,18 +30,21 @@ impl UserInfrastructureDiCBuilder {
         }
     }
 
-    pub async fn default_services(
+    pub async fn default_services<L>(
         &mut self,
         connection_url: &str,
         max_db_connections: u32,
-        logger: Arc<dyn LoggerTrait>,
-    ) -> &mut Self {
+        logger: Arc<L>,
+    ) -> Result<&mut Self, String>
+    where
+        L: LoggerTrait + 'static,
+    {
         let pool = Arc::new(
             PgPoolOptions::new()
                 .max_connections(max_db_connections)
                 .connect(connection_url)
                 .await
-                .unwrap(),
+                .map_err(|e| format!("Can't create PG connecion pool. Err: {e}"))?,
         );
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
@@ -64,20 +67,20 @@ impl UserInfrastructureDiCBuilder {
                 self.id_factory.clone(),
             )));
 
-        self
+        Ok(self)
     }
 
-    pub fn build(&self) -> UserInfrastructureDiC {
-        let bdi = self.business_builder.build();
+    pub fn build(&self) -> Result<UserInfrastructureDiC, String> {
+        let business_dic = self.business_builder.build()?;
 
         let get_user_handler = Arc::new(GetUserHandler::new(
-            bdi.get_user_uc,
+            business_dic.get_user_uc.clone(),
             self.id_factory.clone(),
         ));
 
-        UserInfrastructureDiC {
-            business_dic: self.business_builder.build(),
+        Ok(UserInfrastructureDiC {
+            business_dic,
             get_user_handler,
-        }
+        })
     }
 }

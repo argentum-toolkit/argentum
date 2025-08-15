@@ -1,6 +1,7 @@
 use crate::db::dto::AnonymousBindingDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
@@ -10,13 +11,21 @@ use argentum_user_business::repository::anonymous_binding_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-pub struct AnonymousBindingRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+const TABLE_NAME: &str = "ag_user_anonymous_binding";
+
+pub struct AnonymousBindingRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl AnonymousBindingRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> AnonymousBindingRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -24,15 +33,20 @@ impl AnonymousBindingRepository {
     }
 }
 
-impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
+impl<L> AnonymousBindingRepositoryTrait for AnonymousBindingRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find_by_user_id(
         &self,
         user_id: &Id,
     ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
         let id = self.id_factory.id_to_uuid(user_id);
         //move todo table name/prefix to const/param
-        let sql = "SELECT user_id, anonymous_id, created_at FROM ag_user_anonymous_binding WHERE id = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(id);
+        let sql = format!(
+            "SELECT user_id, anonymous_id, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
+        );
+        let query = sqlx::query_as(&sql).bind(id);
 
         let result: Result<Option<AnonymousBindingDto>, DbAdapterError> =
             block_on(self.adapter.fetch_one(query));
@@ -53,8 +67,10 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepository {
         let user_id = self.id_factory.id_to_uuid(&binding.user_id);
         let anonymous_id = self.id_factory.id_to_uuid(&binding.anonymous_id);
 
-        let sql = "INSERT INTO ag_user_anonymous_binding (user_id, anonymous_id, created_at) VALUES ($1, $2, $3)";
-        let query = sqlx::query(sql)
+        let sql = format!(
+            "INSERT INTO {TABLE_NAME} (user_id, anonymous_id, created_at) VALUES ($1, $2, $3)"
+        );
+        let query = sqlx::query(&sql)
             .bind(user_id)
             .bind(anonymous_id)
             .bind(binding.created_at);

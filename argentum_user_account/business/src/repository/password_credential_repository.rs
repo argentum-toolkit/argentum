@@ -23,8 +23,7 @@ pub enum PasswordCredentialRepositoryError {
 
     #[error("Can't fidn password credentials. Db error.")]
     Find(#[source] Box<dyn Error>),
-    // //TODO: after switching to sqlx, remove this variant
-    // #[deprecated]
-    // #[error("Password Credentials repository error")]
-    // Other(#[source] Option<Box<dyn Error>>),
+
+    #[error("Password credentioals error")]
+    Other(#[source] Box<dyn Error>),
 }

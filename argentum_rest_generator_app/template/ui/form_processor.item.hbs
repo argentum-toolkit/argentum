@@ -1,8 +1,10 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
-use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
+#[cfg(feature = "web")]
 use crate::dto::schema::ProblemDetail;
+
 use crate::ui::callbacks::{{upper_camel operation.operationId}}Callbacks;
 use dioxus::prelude::*;
 {{#if schemaName }}
@@ -15,25 +17,38 @@ use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
 
 #[derive(PartialEq)]
 pub struct {{upper_camel operation.operationId}}FormProcessor {
-    callbacks: Arc<{{upper_camel operation.operationId}}Callbacks>,
+    callbacks: Rc<{{upper_camel operation.operationId}}Callbacks>,
 }
 
 impl {{upper_camel operation.operationId}}FormProcessor {
-    pub fn new(callbacks: Arc<{{upper_camel operation.operationId}}Callbacks>) -> Self {
+    pub fn new(callbacks: Rc<{{upper_camel operation.operationId}}Callbacks>) -> Self {
         Self { callbacks }
     }
 
+    #[cfg(feature = "web")]
     fn extract_errors_from_problem_details(
         &self,
         problem: ProblemDetail,
         mut errors: Signal<Vec<String>>,
         mut violations: Signal<ViolationsDto>,
         mut inactive: Signal<bool>,
-    ) {
+    ) -> Result<(), String> {
         if let Some(body_violation) = problem.body {
-            let pp = serde_json::to_string(&body_violation).unwrap();
-            let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
-            if let Some(ViolationItemDto::Object(ref items)) = v.items {
+            let pp = serde_json::to_string(&body_violation).map_err(|e| {
+                let msg = format!("Can't serialize violations. Error {e}");
+                errors.push(msg.clone());
+
+                msg
+            })?;
+
+            let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).map_err(|e| {
+                let msg = format!("Can't parse body violations. Error {e}");
+                errors.push(msg.clone());
+
+                msg
+            })?;
+
+            if v.items.is_some() {
                 violations.set(v.clone());
             };
         };
@@ -45,23 +60,25 @@ impl {{upper_camel operation.operationId}}FormProcessor {
         }
 
         inactive.set(false);
+
+        Ok(())
     }
 
     #[cfg(not(feature = "web"))]
     pub async fn submit(
         &self,
         {{#if operation.security }}
-        auth_token: String,
+        _auth_token: String,
         {{/if}}
         {{#if needPathParams}}
-        path_params: {{upper_camel operation.operationId}}PathParams,
+        _path_params: {{upper_camel operation.operationId}}PathParams,
         {{/if}}
         {{#if schemaName}}
-        values: Signal<{{upper_camel schemaName}}>,
+        _values: Signal<{{upper_camel schemaName}}>,
         {{/if}}
-        mut violations: Signal<ViolationsDto>,
-        mut errors: Signal<Vec<String>>,
-        mut disabled: Signal<bool>,
+        mut _violations: Signal<ViolationsDto>,
+        mut _errors: Signal<Vec<String>>,
+        mut _disabled: Signal<bool>,
     ) {
 
     }
@@ -82,7 +99,7 @@ impl {{upper_camel operation.operationId}}FormProcessor {
         mut errors: Signal<Vec<String>>,
         mut disabled: Signal<bool>,
     ) {
-        use std::sync::Arc;
+        use std::rc::Rc;
 
         {{#unless schemaName}}
         use argentum_rest_infrastructure::data_type::EmptyRequestBody;
@@ -114,7 +131,7 @@ impl {{upper_camel operation.operationId}}FormProcessor {
         errors.set(vec![]);
         violations.set(Default::default());
 
-        let client = use_context::<Signal<Arc<Client>>>();
+        let client = use_context::<Signal<Rc<Client>>>();
 
         let req = {{upper_camel operation.operationId}}Request::new(
             {{#if schemaName}}
@@ -141,7 +158,7 @@ impl {{upper_camel operation.operationId}}FormProcessor {
                 {{#if (and (gte @key 400) (lt @key 500))}}
                 {{upper_camel ../operation.operationId}}OperationResponseEnum::Status{{@key}}(r) => match r {
                     Status{{@key}}Response::ApplicationProblemJson(j) => {
-                        self.extract_errors_from_problem_details(
+                        let _ = self.extract_errors_from_problem_details(
                             j.0.clone(),
                             errors,
                             violations,

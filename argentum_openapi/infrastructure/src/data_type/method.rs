@@ -18,6 +18,6 @@ impl Display for Method {
             Self::Put => "PUT".to_string(),
             Self::Delete => "DELETE".to_string(),
         };
-        write!(f, "{}", str)
+        write!(f, "{str}")
     }
 }

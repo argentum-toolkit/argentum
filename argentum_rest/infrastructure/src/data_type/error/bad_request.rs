@@ -61,9 +61,10 @@ mod tests {
     use argentum_standard_business::invariant_violation::Violations;
     use serde_json::json;
     use std::collections::BTreeMap;
+    use std::error::Error;
 
     #[test]
-    fn empty_bad_request_serialize() {
+    fn empty_bad_request_serialize() -> Result<(), Box<dyn Error>> {
         let br = BadRequestError::new(
             Violations::new(vec![], None),
             Violations::new(vec![], None),
@@ -71,15 +72,17 @@ mod tests {
             Violations::new(vec![], None),
         );
 
-        let str = serde_json::to_string(&br).unwrap();
+        let str = serde_json::to_string(&br)?;
 
         assert_eq!(true, br.body.is_empty());
         assert_eq!(true, br.path.is_empty());
         assert_eq!("{}".to_string(), str);
+
+        Ok(())
     }
 
     #[test]
-    fn full_bad_request_serialize() {
+    fn full_bad_request_serialize() -> Result<(), Box<dyn Error>> {
         let br = BadRequestError::new(
             Violations::new(
                 vec!["error1.1".to_string(), "error1.2".to_string()],
@@ -102,7 +105,7 @@ mod tests {
             Violations::new(vec![], None),
         );
 
-        let str = serde_json::to_value(&br).unwrap();
+        let str = serde_json::to_value(&br)?;
 
         let expected = json!({
             "body": {
@@ -141,5 +144,7 @@ mod tests {
         assert!(!br.body.is_empty());
         assert!(!br.path.is_empty());
         assert_eq!(str, expected);
+
+        Ok(())
     }
 }

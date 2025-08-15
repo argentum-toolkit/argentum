@@ -3,7 +3,6 @@ use argentum_openapi_infrastructure::data_type::{Operation, RefOrObject, Specifi
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 const MOD_PATH: &str = "/src/ui/callbacks/mod.rs";
@@ -26,11 +25,7 @@ impl CallbacksGenerator {
         Self { renderer }
     }
 
-    fn generate_item(
-        &self,
-        base_output_path: &str,
-        operation: &Operation,
-    ) -> Result<(), Box<dyn Error>> {
+    fn generate_item(&self, base_output_path: &str, operation: &Operation) -> Result<(), String> {
         let file_path = format!(
             "/src/ui/callbacks/{}_callbacks.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -44,13 +39,11 @@ impl CallbacksGenerator {
                     .reference
                     .clone()
                     .split('/')
-                    .last()
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
-                            r.reference
-                        )
-                    })
+                    .next_back()
+                    .ok_or(format!(
+                        "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
+                        r.reference
+                    ))?
                     .to_string(),
                 RefOrObject::Object(_) => {
                     todo!(
@@ -59,7 +52,7 @@ impl CallbacksGenerator {
                 }
             };
 
-            response_names.insert(code.to_string(), self.escape_response_name(response_name));
+            response_names.insert(code.to_string(), self.escape_response_name(&response_name));
         }
 
         let data = Data {
@@ -73,11 +66,11 @@ impl CallbacksGenerator {
         Ok(())
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 
@@ -85,23 +78,26 @@ impl CallbacksGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
-        let data = HashMap::from([("operations", operations)]);
+    ) -> Result<(), String> {
+        let filtered: Vec<Operation> = operations
+            .into_iter()
+            .filter(|o| o.extension_form.is_some())
+            .collect();
+
+        let data = HashMap::from([("operations", filtered)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            self.generate_item(base_output_path, &operation)?;
+            if operation.extension_form.is_some() {
+                self.generate_item(base_output_path, &operation)?;
+            }
         }
 
         Ok(())

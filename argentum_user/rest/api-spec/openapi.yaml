@@ -107,6 +107,15 @@ components:
       required:
       - first
       properties:
+        additional:
+          title: Additional
+          maxLength: 255
+          minLength: 1
+          type: string
+          x-ag-ui:
+            id: user_additional
+            name: user_additional
+            weight: 100
         first:
           example: Winston
           title: First Name
@@ -116,6 +125,7 @@ components:
           x-ag-ui:
             id: user_first_name
             name: user_first_name
+            weight: 0
         last:
           example: Marko
           title: Last Name
@@ -125,14 +135,7 @@ components:
           x-ag-ui:
             id: user_last_name
             name: user_last_name
-        patronymic:
-          title: Patronymic
-          maxLength: 255
-          minLength: 1
-          type: string
-          x-ag-ui:
-            id: user_patronymic
-            name: user_patronymic
+            weight: 0
       type: object
     Violation:
       properties:

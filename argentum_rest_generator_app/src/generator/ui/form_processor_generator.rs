@@ -6,7 +6,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 const MOD_PATH: &str = "/src/ui/form_processor/mod.rs";
@@ -46,7 +45,7 @@ impl FormProcessorGenerator {
         base_output_path: &str,
         operation: &Operation,
         spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!(
             "/src/ui/form_processor/{}_form_processor.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -55,10 +54,7 @@ impl FormProcessorGenerator {
         let mut response_names: BTreeMap<String, String> = BTreeMap::new();
 
         let need_path_params = match &operation.parameters {
-            Some(params) => match params.iter().find(|&x| x.in_place == InPlace::Path) {
-                Some(_) => true,
-                None => false,
-            },
+            Some(params) => params.iter().any(|x| x.in_place == InPlace::Path),
             None => false,
         };
 
@@ -68,13 +64,11 @@ impl FormProcessorGenerator {
                     .reference
                     .clone()
                     .split('/')
-                    .last()
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
-                            r.reference
-                        )
-                    })
+                    .next_back()
+                    .ok_or(format!(
+                        "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
+                        r.reference
+                    ))?
                     .to_string(),
                 RefOrObject::Object(_) => {
                     todo!(
@@ -83,21 +77,21 @@ impl FormProcessorGenerator {
                 }
             };
 
-            response_names.insert(code.to_string(), self.escape_response_name(response_name));
+            response_names.insert(code.to_string(), self.escape_response_name(&response_name));
         }
 
         let mut schema_name: Option<String> = None;
 
-        if let Some(request_body) = self.request_body_extractor.extract(operation, &spec) {
+        if let Some(request_body) = self.request_body_extractor.extract(operation, spec)? {
             //TODO copypasted from request_generator.rs
             let body = request_body
                 .content
                 .get("application/json")
-                .expect("Request body should contain `application/json` mime type");
+                .ok_or("Request body should contain `application/json` mime type")?;
 
             if let Some((s_name, _)) = self
                 .schema_extractor
-                .extract_ref_with_name(&body.schema, spec)
+                .extract_ref_with_name(&body.schema, spec)?
             {
                 schema_name = Some(s_name);
             }
@@ -116,11 +110,11 @@ impl FormProcessorGenerator {
         Ok(())
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 
@@ -128,23 +122,26 @@ impl FormProcessorGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
-        let data = HashMap::from([("operations", operations)]);
+    ) -> Result<(), String> {
+        let filtered: Vec<Operation> = operations
+            .into_iter()
+            .filter(|o| o.extension_form.is_some())
+            .collect();
+
+        let data = HashMap::from([("operations", filtered)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            self.generate_item(base_output_path, &operation, spec)?;
+            if operation.extension_form.is_some() {
+                self.generate_item(base_output_path, &operation, spec)?;
+            }
         }
 
         Ok(())

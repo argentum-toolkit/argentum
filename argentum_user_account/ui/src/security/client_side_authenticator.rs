@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use super::AuthHash;
 use super::Security;
@@ -9,12 +9,12 @@ use argentum_user_account_rest::client::Client;
 
 #[derive(Clone)]
 pub struct ClientSideAuthenticator {
-    client: Arc<Client>,
-    security_repository: Arc<SecurityRepository>,
+    client: Rc<Client>,
+    security_repository: Rc<SecurityRepository>,
 }
 
 impl ClientSideAuthenticator {
-    pub fn new(client: Arc<Client>, security_repository: Arc<SecurityRepository>) -> Self {
+    pub fn new(client: Rc<Client>, security_repository: Rc<SecurityRepository>) -> Self {
         Self {
             client,
             security_repository,

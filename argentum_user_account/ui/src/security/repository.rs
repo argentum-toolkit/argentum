@@ -1,22 +1,21 @@
 use super::Security;
-use std::str::FromStr;
-use std::sync::Arc;
+use std::{rc::Rc, str::FromStr};
 use web_sys::Storage;
 
 pub struct SecurityRepository {
-    local_storage: Arc<Storage>,
+    local_storage: Rc<Storage>,
 }
 
 impl SecurityRepository {
-    pub fn new(local_storage: Arc<Storage>) -> Self {
+    pub fn new(local_storage: Rc<Storage>) -> Self {
         Self { local_storage }
     }
 
     pub fn clear(&self) {
         //TODO: use consts for keys
-        self.local_storage.delete("x_auth_token"); //anonymous
-        self.local_storage.delete("x_auth_user_token");
-        self.local_storage.delete("x_auth_user_id");
+        let _ = self.local_storage.delete("x_auth_token"); //anonymous
+        let _ = self.local_storage.delete("x_auth_user_token");
+        let _ = self.local_storage.delete("x_auth_user_id");
     }
 
     pub fn read(&self) -> Option<Security> {
@@ -51,16 +50,17 @@ impl SecurityRepository {
     pub fn save(&self, security: Security) {
         match security {
             Security::Anonymous(hash) => {
-                self.local_storage.delete("x_auth_user_token");
-                self.local_storage.delete("x_auth_user_id");
+                let _ = self.local_storage.delete("x_auth_user_token");
+                let _ = self.local_storage.delete("x_auth_user_id");
 
-                self.local_storage.set("x_auth_token", &hash);
+                let _ = self.local_storage.set("x_auth_token", &hash);
             }
             Security::Authenticated(hash, user_id) => {
-                self.local_storage.delete("x_auth_token"); //anonymous
+                let _ = self.local_storage.delete("x_auth_token"); //anonymous
 
-                self.local_storage.set("x_auth_user_token", &hash);
-                self.local_storage
+                let _ = self.local_storage.set("x_auth_user_token", &hash);
+                let _ = self
+                    .local_storage
                     .set("x_auth_user_id", &user_id.to_string());
             }
         };

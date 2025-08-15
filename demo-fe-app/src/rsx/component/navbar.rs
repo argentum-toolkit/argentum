@@ -5,10 +5,10 @@ use dioxus::prelude::*;
 
 #[component]
 fn AuthBar() -> Element {
-    let mut mounted = use_signal(|| false);
-
     #[cfg(feature = "web")]
     {
+        let mut mounted = use_signal(|| false);
+
         use_effect(move || {
             mounted.set(true);
         });

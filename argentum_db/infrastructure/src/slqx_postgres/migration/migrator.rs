@@ -8,19 +8,25 @@ use sqlx::types::chrono::Utc;
 use sqlx_postgres::Postgres;
 use std::sync::Arc;
 
-pub struct Migrator<'a> {
-    adapter: Arc<SqlxPostgresAdapter>,
+pub struct Migrator<'a, L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     migrations: MigrationCollection<'a>,
     migration_table_name: &'a str,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl<'a> Migrator<'a> {
+impl<'a, L> Migrator<'a, L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
-        adapter: Arc<SqlxPostgresAdapter>,
+        adapter: Arc<SqlxPostgresAdapter<L>>,
         migrations: MigrationCollection<'a>,
         migration_table_name: &'a str,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> Self {
         Self {
             adapter,
@@ -31,8 +37,7 @@ impl<'a> Migrator<'a> {
     }
 
     async fn create_migration_table(&self) -> Result<(), String> {
-        self.logger
-            .info("Ensuring that migration table exists...".to_string());
+        self.logger.info("Ensuring that migration table exists...");
         let sql = format!(
             "CREATE TABLE IF NOT EXISTS {} (\
                 id INT PRIMARY KEY generated always as identity, \
@@ -46,12 +51,12 @@ impl<'a> Migrator<'a> {
         let res = self.adapter.exec(query).await;
         match res {
             Ok(_) => {
-                self.logger.info("Migration table is ensured.".to_string());
+                self.logger.info("Migration table is ensured.");
                 Ok(())
             }
             Err(e) => {
                 self.logger
-                    .critical(format!("Ensuring was failed with error: {e}",));
+                    .critical(format!("Ensuring was failed with error: {e}"));
                 Err(e.to_string())
             }
         }
@@ -83,7 +88,8 @@ impl<'a> Migrator<'a> {
     pub async fn migrate_one(&self, version: &str, migration: &Vec<String>) -> Result<(), String> {
         self.logger.info(format!("Migrate version {version}"));
 
-        let tx_res = self.adapter.begin_transaction().await;
+        let tx_res: Result<Transaction<'static, Postgres>, DbAdapterError> =
+            self.adapter.begin_transaction().await;
         if let Err(e) = tx_res {
             self.logger
                 .critical(format!("Can't start transaction: {e}"));
@@ -91,7 +97,7 @@ impl<'a> Migrator<'a> {
             return Err(e.to_string());
         }
 
-        let mut tx = tx_res.unwrap();
+        let mut tx = tx_res.map_err(|e| e.to_string())?;
 
         let sql = format!(
             "SELECT * FROM {} WHERE version = $1 LIMIT 1;",

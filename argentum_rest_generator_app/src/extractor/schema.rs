@@ -9,28 +9,30 @@ impl SchemaExtractor {
         Self {}
     }
 
-    fn extract_name(&self, reference: &Reference) -> String {
+    fn extract_name(&self, reference: &Reference) -> Result<String, String> {
         reference
             .reference
             .clone()
             .split('/')
-            .last()
-            .unwrap_or_else(|| {
-                panic!(
-                    "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                    reference.reference
-                )
-            })
-            .to_string()
+            .next_back()
+            .map(|n| n.to_string())
+            .ok_or(format!(
+                "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                reference.reference
+            ))
     }
 
-    pub fn extract(&self, ref_or: &RefOrObject<Schema>, spec: &SpecificationRoot) -> Schema {
+    pub fn extract(
+        &self,
+        ref_or: &RefOrObject<Schema>,
+        spec: &SpecificationRoot,
+    ) -> Result<Schema, String> {
         match ref_or {
             RefOrObject::Ref(r) => {
-                let schema_name = self.extract_name(r);
-                spec.components.schemas[&schema_name].clone()
+                let schema_name = self.extract_name(r)?;
+                Ok(spec.components.schemas[&schema_name].clone())
             }
-            RefOrObject::Object(s) => s.clone(),
+            RefOrObject::Object(s) => Ok(s.clone()),
         }
     }
 
@@ -38,15 +40,15 @@ impl SchemaExtractor {
         &self,
         ref_or: &RefOrObject<Schema>,
         spec: &SpecificationRoot,
-    ) -> Option<(String, Schema)> {
+    ) -> Result<Option<(String, Schema)>, String> {
         match ref_or {
             RefOrObject::Ref(r) => {
-                let schema_name = self.extract_name(r);
+                let schema_name = self.extract_name(r)?;
                 let s = spec.components.schemas[&schema_name].clone();
 
-                Some((schema_name, s))
+                Ok(Some((schema_name, s)))
             }
-            RefOrObject::Object(_) => None,
+            RefOrObject::Object(_) => Ok(None),
         }
     }
 }

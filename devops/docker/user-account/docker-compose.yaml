@@ -1,7 +1,6 @@
 services:
   service.user_account.db:
-    image: 'postgres:16.1'
-    command: -c jit=off
+    image: 'postgres:17.5'
     environment:
       - POSTGRES_DB=${POSTGRES_DB_FOR_ARGENTUM_USER_ACCOUNT}
       - POSTGRES_USER=${POSTGRES_USER}

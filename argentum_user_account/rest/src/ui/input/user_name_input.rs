@@ -8,7 +8,7 @@ use dioxus::prelude::*;
 
 #[derive(PartialEq, Props, Clone)]
 pub struct UserNameProps {
-    pub user_name: UserName,
+    pub value: UserName,
     pub violations: Option<ViolationsDto>,
 
     oninput: EventHandler<UserName>,
@@ -17,14 +17,12 @@ pub struct UserNameProps {
 #[component]
 pub fn UserNameInput(props: UserNameProps) -> Element {
     let UserNameProps {
-        user_name,
-        violations,
-        ..
+        value, violations, ..
     } = props.clone();
 
-    let mut first_value = use_signal(|| user_name.first.clone());
-    let mut last_value = use_signal(|| user_name.last.clone());
-    let mut patronymic_value = use_signal(|| user_name.patronymic.clone());
+    let mut first_value = use_signal(|| value.first);
+    let mut last_value = use_signal(|| value.last);
+    let mut additional_value = use_signal(|| value.additional);
 
     let violation_items = match violations {
         Some(vv) => match vv.items {
@@ -36,13 +34,13 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
 
     let first_violations = violation_items.get("first").cloned();
     let last_violations = violation_items.get("last").cloned();
-    let patronymic_violations = violation_items.get("patronymic").cloned();
+    let additional_violations = violation_items.get("additional").cloned();
 
     let update = move || {
         props.oninput.call(UserName::new(
             first_value(),
             last_value(),
-            patronymic_value(),
+            additional_value(),
         ))
     };
 
@@ -76,15 +74,15 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
     }
 
             LabeledInput {
-        id: "user_patronymic",
-        name: "user_patronymic",
-        label: "Patronymic",
+        id: "user_additional",
+        name: "user_additional",
+        label: "Additional",
         input_type: "text".to_string(),
-            value: patronymic_value().unwrap_or("".to_string()),
+            value: additional_value().unwrap_or("".to_string()),
 
-        violations: patronymic_violations,
+        violations: additional_violations,
         oninput: move |event: String| {
-            patronymic_value.set(Some(event));
+            additional_value.set(Some(event));
             update();
         },
     }

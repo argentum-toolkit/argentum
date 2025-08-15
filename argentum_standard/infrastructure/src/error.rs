@@ -10,10 +10,10 @@ pub enum InternalError {
 }
 
 fn error_chain_fmt(e: &impl Error, f: &mut Formatter<'_>) -> Result {
-    writeln!(f, "InternalError => msg: {}", e)?;
+    writeln!(f, "InternalError => msg: {e}")?;
     let mut current = e.source();
     while let Some(cause) = current {
-        writeln!(f, "Caused by:\n\t{:?} => msg: {}", cause, cause)?;
+        writeln!(f, "Caused by:\n\t{cause:?} => msg: {cause}")?;
         current = cause.source();
     }
     Ok(())

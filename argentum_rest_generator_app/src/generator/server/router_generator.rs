@@ -4,7 +4,6 @@ use argentum_openapi_infrastructure::data_type::{
     InPlace, Operation, Parameter, SpecificationRoot,
 };
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 pub(crate) struct RouterGenerator {
@@ -44,11 +43,7 @@ impl RouterGenerator {
         name.strip_suffix('_').unwrap_or(&name).to_string()
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let mut paths_data: Vec<PathData> = vec![];
 
         for (url, path) in spec.clone().paths {

@@ -17,17 +17,23 @@ use argentum_user_business::repository::user_repository::{
 };
 use std::sync::Arc;
 
-pub struct UserLoginsWithPasswordUc {
+pub struct UserLoginsWithPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
     anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
     session_repository: Arc<dyn SessionRepositoryTrait>,
     credential_checker: Arc<PasswordCredentialChecker>,
     id_factory: Arc<dyn IdFactory>,
     token_generator: Arc<dyn GeneratorTrait>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl UserLoginsWithPasswordUc {
+impl<L> UserLoginsWithPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
         anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
@@ -35,7 +41,7 @@ impl UserLoginsWithPasswordUc {
         credential_checker: Arc<PasswordCredentialChecker>,
         id_factory: Arc<dyn IdFactory>,
         token_generator: Arc<dyn GeneratorTrait>,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> Self {
         Self {
             user_repository,
@@ -68,7 +74,7 @@ impl UserLoginsWithPasswordUc {
         let session = Session::new(
             self.id_factory.create(),
             user.id().clone(),
-            self.token_generator.generate(&user.id),
+            &self.token_generator.generate(&user.id),
         );
 
         self.session_repository.save(&session)?;
@@ -78,18 +84,14 @@ impl UserLoginsWithPasswordUc {
                 .session_repository
                 .delete_users_sessions(&anonymous.id())
             {
-                Ok(_) => self.logger.info("Anonymous session deleted".to_string()),
-                Err(_) => self
-                    .logger
-                    .warning("Anonymous session is not deleted".to_string()),
+                Ok(_) => self.logger.info("Anonymous session deleted"),
+                Err(_) => self.logger.warning("Anonymous session is not deleted"),
             };
 
             let binding = AnonymousBinding::new(user.id(), anonymous.id());
             match self.anonymous_binding_repository.save(&binding) {
-                Ok(_) => self.logger.info("Anonymous binding saved".to_string()),
-                Err(_) => self
-                    .logger
-                    .warning("Anonymous binding is not saved".to_string()),
+                Ok(_) => self.logger.info("Anonymous binding saved"),
+                Err(_) => self.logger.warning("Anonymous binding is not saved"),
             }
         }
 
@@ -146,10 +148,11 @@ mod test {
     use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
     use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use std::error::Error;
     use std::sync::Arc;
 
     #[test]
-    fn test_user_logins_with_passwodr() -> Result<(), &'static str> {
+    fn test_user_logins_with_passwodr() -> Result<(), Box<dyn Error>> {
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let anonymous_binding_repository = Arc::new(AnonymousBindingRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
@@ -182,16 +185,17 @@ mod test {
         let name = NameBuilder::new("Dionne".into())
             .last(Some("Morrison".into()))
             .try_build()
-            .unwrap();
-        let email = EmailAddress::try_new("test@test-mail.com".into()).unwrap();
+            .expect("Name should be valid");
+        let email =
+            EmailAddress::try_new("test@test-mail.com".into()).expect("Email should be valid");
         let password = "12345".to_string();
         let user = AuthenticatedUser::new(&user_id, name, email.clone());
         let encryptor = EncryptorMock::new();
-        let (hashed_password, salt) = encryptor.encrypt(&password).unwrap();
+        let (hashed_password, salt) = encryptor.encrypt(&password)?;
         let cred = PasswordCredential::new(user_id.clone(), hashed_password, salt);
 
         user_repository.save(&user).expect("Can't save a user");
-        credential_writer.write(Box::new(cred)).unwrap();
+        credential_writer.write(Box::new(cred))?;
 
         let anonymous_id: Id = id_factory.create();
         let anonymous = AnonymousUser::new(&anonymous_id);
@@ -203,15 +207,14 @@ mod test {
                 assert_eq!(s.user_id.to_string(), user_id.to_string());
 
                 let binding = anonymous_binding_repository
-                    .find_by_user_id(&user_id)
-                    .unwrap()
-                    .unwrap();
+                    .find_by_user_id(&user_id)?
+                    .expect("Should be Some");
                 assert_eq!(binding.anonymous_id.to_string(), anonymous_id.to_string());
 
                 return Ok(());
             }
             Err(_) => {
-                return Err("User can't login");
+                return Err("User can't login".into());
             }
         }
     }

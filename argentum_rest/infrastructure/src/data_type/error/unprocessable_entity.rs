@@ -30,15 +30,19 @@ impl Serialize for UnprocessableEntity {
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
+
     use crate::data_type::error::UnprocessableEntity;
 
     #[test]
-    fn test_serialize() {
+    fn test_serialize() -> Result<(), Box<dyn Error>> {
         let ie = UnprocessableEntity::new(Box::new(ErrorMock {}));
 
-        let actual = serde_json::to_string(&ie).unwrap();
+        let actual = serde_json::to_string(&ie)?;
 
-        assert_eq!("\"test error\"", actual)
+        assert_eq!("\"test error\"", actual);
+
+        Ok(())
     }
 
     #[derive(thiserror::Error, Debug)]

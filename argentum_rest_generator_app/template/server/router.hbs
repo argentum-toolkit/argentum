@@ -3,25 +3,19 @@ use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
+use compiletime_regex::regex;
 use hyper::{Method, Uri};
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::sync::Arc;
-
-
-{{#each paths as |path|}}
-static REGEX_{{{path.constName}}}: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"{{{path.pattern}}}")
-        .unwrap()
-});
-
-{{/each}}
 
 pub struct Router {
     pre_handler: Arc<PreHandler>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
+    {{#each paths as |path|}}
+    regex_{{{snake path.constName}}}: Regex,
+    {{/each}}
 }
 
 impl Router {
@@ -30,10 +24,17 @@ impl Router {
         error_pre_handler: Arc<ErrorPreHandler>,
         url_prefix: String,
     ) -> Self {
+        {{#each paths as |path|}}
+        let regex_{{{snake path.constName}}} = regex!(r"{{{path.pattern}}}");
+        {{/each}}
+
         Self {
             pre_handler,
             error_pre_handler,
             url_prefix,
+            {{#each paths as |path|}}
+            regex_{{{snake path.constName}}},
+            {{/each}}
         }
     }
 }
@@ -48,7 +49,7 @@ impl RouterTrait for Router {
         };
 
         {{#each paths as |path|}}
-        if let Some(_) = REGEX_{{{path.constName}}}.captures(path) {
+        if self.regex_{{{snake path.constName}}}.captures(path).is_some() {
             return match *method {
                {{#each path.operations }}
                    {{@key}} => true,
@@ -69,24 +70,37 @@ impl RouterTrait for Router {
         };
 
         {{#each paths as |path|}}
-        if let Some({{#if params}}caps{{else}}_{{/if}}) = REGEX_{{{path.constName}}}.captures(path) {
-            {{#each params as |param|}}
-            let {{ snake param.name }} = caps["{{ camel param.name }}"].to_string();
-            {{/each}}
-
-            let raw_path_params = HashMap::from([
+        {{#if params}}
+            if let Some(caps) = self.regex_{{{snake path.constName}}}.captures(path) {
                 {{#each params as |param|}}
-                ("{{ snake param.name }}", {{ snake param.name }}.as_str()),
+                let {{ snake param.name }} = caps["{{ camel param.name }}"].to_string();
                 {{/each}}
-            ]);
 
-            return match *req.method() {
-               {{#each path.operations }}
-               {{@key}} => self.pre_handler.{{snake this.operationId}}(req, raw_path_params).await,
-               {{/each}}
-               _ => self.error_pre_handler.method_not_allowed(req).await,
-           };
-        }
+                let raw_path_params = HashMap::from([
+                    {{#each params as |param|}}
+                    ("{{ snake param.name }}", {{ snake param.name }}.as_str()),
+                    {{/each}}
+                ]);
+
+                return match *req.method() {
+                {{#each path.operations }}
+                {{@key}} => self.pre_handler.{{snake this.operationId}}(req, raw_path_params).await,
+                {{/each}}
+                _ => self.error_pre_handler.method_not_allowed(req).await,
+            };
+            }
+        {{else}}
+            if self.regex_{{{snake path.constName}}}.captures(path).is_some() {
+                let raw_path_params = HashMap::new();
+
+                return match *req.method() {
+                {{#each path.operations }}
+                {{@key}} => self.pre_handler.{{snake this.operationId}}(req, raw_path_params).await,
+                {{/each}}
+                _ => self.error_pre_handler.method_not_allowed(req).await,
+            };
+            }
+        {{/if}}
 
         {{/each}}
         self.error_pre_handler.route_not_found(req).await

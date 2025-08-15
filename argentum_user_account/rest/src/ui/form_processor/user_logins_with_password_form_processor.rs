@@ -1,33 +1,48 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
-use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
+use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
+
+#[cfg(feature = "web")]
+use crate::dto::schema::ProblemDetail;
 
 use crate::dto::schema::LoginWithPasswordSchema;
-use crate::dto::schema::ProblemDetail;
 use crate::ui::callbacks::UserLoginsWithPasswordCallbacks;
 use dioxus::prelude::*;
 
 #[derive(PartialEq)]
 pub struct UserLoginsWithPasswordFormProcessor {
-    callbacks: Arc<UserLoginsWithPasswordCallbacks>,
+    callbacks: Rc<UserLoginsWithPasswordCallbacks>,
 }
 
 impl UserLoginsWithPasswordFormProcessor {
-    pub fn new(callbacks: Arc<UserLoginsWithPasswordCallbacks>) -> Self {
+    pub fn new(callbacks: Rc<UserLoginsWithPasswordCallbacks>) -> Self {
         Self { callbacks }
     }
 
+    #[cfg(feature = "web")]
     fn extract_errors_from_problem_details(
         &self,
         problem: ProblemDetail,
         mut errors: Signal<Vec<String>>,
         mut violations: Signal<ViolationsDto>,
         mut inactive: Signal<bool>,
-    ) {
+    ) -> Result<(), String> {
         if let Some(body_violation) = problem.body {
-            let pp = serde_json::to_string(&body_violation).unwrap();
-            let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).unwrap();
-            if let Some(ViolationItemDto::Object(ref items)) = v.items {
+            let pp = serde_json::to_string(&body_violation).map_err(|e| {
+                let msg = format!("Can't serialize violations. Error {e}");
+                errors.push(msg.clone());
+
+                msg
+            })?;
+
+            let v: ViolationsDto = serde_json::from_slice(pp.as_ref()).map_err(|e| {
+                let msg = format!("Can't parse body violations. Error {e}");
+                errors.push(msg.clone());
+
+                msg
+            })?;
+
+            if v.items.is_some() {
                 violations.set(v.clone());
             };
         };
@@ -39,16 +54,18 @@ impl UserLoginsWithPasswordFormProcessor {
         }
 
         inactive.set(false);
+
+        Ok(())
     }
 
     #[cfg(not(feature = "web"))]
     pub async fn submit(
         &self,
-        auth_token: String,
-        values: Signal<LoginWithPasswordSchema>,
-        mut violations: Signal<ViolationsDto>,
-        mut errors: Signal<Vec<String>>,
-        mut disabled: Signal<bool>,
+        _auth_token: String,
+        _values: Signal<LoginWithPasswordSchema>,
+        mut _violations: Signal<ViolationsDto>,
+        mut _errors: Signal<Vec<String>>,
+        mut _disabled: Signal<bool>,
     ) {
     }
 
@@ -61,7 +78,7 @@ impl UserLoginsWithPasswordFormProcessor {
         mut errors: Signal<Vec<String>>,
         mut disabled: Signal<bool>,
     ) {
-        use std::sync::Arc;
+        use std::rc::Rc;
 
         use crate::client::Client;
         use argentum_rest_infrastructure::data_type::AuthHeaderParams;
@@ -79,7 +96,7 @@ impl UserLoginsWithPasswordFormProcessor {
         errors.set(vec![]);
         violations.set(Default::default());
 
-        let client = use_context::<Signal<Arc<Client>>>();
+        let client = use_context::<Signal<Rc<Client>>>();
 
         let req = UserLoginsWithPasswordRequest::new(
             values().into(),
@@ -99,7 +116,7 @@ impl UserLoginsWithPasswordFormProcessor {
                 }
                 UserLoginsWithPasswordOperationResponseEnum::Status400(r) => match r {
                     Status400Response::ApplicationProblemJson(j) => {
-                        self.extract_errors_from_problem_details(
+                        let _ = self.extract_errors_from_problem_details(
                             j.0.clone(),
                             errors,
                             violations,
@@ -109,7 +126,7 @@ impl UserLoginsWithPasswordFormProcessor {
                 },
                 UserLoginsWithPasswordOperationResponseEnum::Status401(r) => match r {
                     Status401Response::ApplicationProblemJson(j) => {
-                        self.extract_errors_from_problem_details(
+                        let _ = self.extract_errors_from_problem_details(
                             j.0.clone(),
                             errors,
                             violations,

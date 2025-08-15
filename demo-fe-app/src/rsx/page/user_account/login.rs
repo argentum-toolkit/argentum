@@ -1,8 +1,7 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use crate::route::Route;
 
-use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
 use argentum_user_account_rest::ui::callbacks::UserLoginsWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::UserLoginsWithPasswordForm;
 use argentum_user_account_rest::ui::form_processor::UserLoginsWithPasswordFormProcessor;
@@ -26,6 +25,7 @@ pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let callbacks = {
         use argentum_standard_ui::service::redirect;
+        use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
         use argentum_user_account_ui::security::ClientSideAuthenticator;
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>()();
@@ -35,23 +35,23 @@ pub fn Login() -> Element {
                 UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
                     authenticator.auth_user(j.0.token, j.0.user_id);
 
-                    redirect(Route::Home {});
+                    let _ = redirect(Route::Home {});
                 }
             },
         );
 
-        Arc::new(UserLoginsWithPasswordCallbacks {
+        Rc::new(UserLoginsWithPasswordCallbacks {
             on_user_logged_in_successfully,
             ..Default::default()
         })
     };
 
     #[cfg(not(feature = "web"))]
-    let callbacks = Arc::new(UserLoginsWithPasswordCallbacks {
+    let callbacks = Rc::new(UserLoginsWithPasswordCallbacks {
         ..Default::default()
     });
 
-    let processor = Arc::new(UserLoginsWithPasswordFormProcessor::new(callbacks.clone()));
+    let processor = Rc::new(UserLoginsWithPasswordFormProcessor::new(callbacks.clone()));
 
     rsx! {
         section {

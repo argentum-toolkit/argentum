@@ -1,5 +1,5 @@
-use std::sync::Arc;
-{{#if needPathParams}}
+use std::rc::Rc;
+{{#if needPathParams~}}
 use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
 {{/if}}
 {{#if schemaName}}
@@ -16,17 +16,17 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn {{upper_camel operation.operationId}}Form(
-        processor: Arc<{{upper_camel operation.operationId}}FormProcessor>, 
+        processor: Rc<{{upper_camel operation.operationId}}FormProcessor>, 
         auth_token: String,
         {{#if needPathParams}}
         path_params: {{upper_camel operation.operationId}}PathParams,
         {{/if}}
     ) -> Element {
     {{#if schemaName}}
-    let mut values: Signal<{{ upper_camel schemaName}}> = use_signal(|| Default::default());
+    let mut values: Signal<{{ upper_camel schemaName}}> = use_signal(Default::default);
     {{/if}}
-    let violations: Signal<ViolationsDto>= use_signal(|| Default::default());
-    let errors = use_signal(|| vec![]);
+    let violations: Signal<ViolationsDto>= use_signal(Default::default);
+    let errors = use_signal(Vec::new);
     let disabled = use_signal(|| false);
 
     rsx! {
@@ -36,15 +36,9 @@ pub fn {{upper_camel operation.operationId}}Form(
             "novalidate": true,
             onsubmit: move |_| {
                 let processor = processor.clone();
-                {{#if schemaName}}
-                let values = values.clone();
-                {{/if}}
                 {{#if needPathParams}}
                 let path_params = path_params.clone();
                 {{/if}}
-                let violations = violations.clone();
-                let errors = errors.clone();
-                let disabled = disabled.clone();
                 let auth_token = auth_token.clone();
 
                 spawn(async move {
@@ -63,7 +57,7 @@ pub fn {{upper_camel operation.operationId}}Form(
 
             {{#if schemaName}}
             {{ upper_camel schemaName}}Input {
-                {{ snake schemaName}}: values().into(),
+                value: values(),
                 violations: violations(),
                 oninput: move |event: {{ upper_camel schemaName}}| {
                     values.set(event);
@@ -72,8 +66,8 @@ pub fn {{upper_camel operation.operationId}}Form(
             {{/if}}
 
             Submit {
-                {{#if operation.x-ag-submit-label}}
-                title: "{{operation.x-ag-submit-label}}".to_string(),
+                {{#if operation.x-ag-form.submitLabel}}
+                title: "{{operation.x-ag-form.submitLabel}}".to_string(),
                 {{else}}
                 title: "Submit".to_string(),
                 {{/if}}

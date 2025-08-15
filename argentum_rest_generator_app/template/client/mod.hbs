@@ -1,11 +1,12 @@
-{{#each useResponses as |response|}}
+{{#each useResponses as |response|~}}
     use crate::dto::response::{{upper_camel response}}Response;
 {{/each}}
-{{#each useSchemas as |schema|}}
+
+{{#each useSchemas as |schema|~}}
     use crate::dto::schema::{{upper_camel schema}} as {{upper_camel schema}}Schema;
 {{/each}}
 
-{{#each paths as |path|}}
+{{#each paths as |path|~}}
     {{#each path.operations as |operation|}}
     use crate::dto::request::{{upper_camel operation.operationId}}Request;
     use crate::dto::operation_response_enum::{{ upper_camel operation.operationId }}OperationResponseEnum;
@@ -44,7 +45,9 @@ impl Client {
             let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
             {{#if operation.needBody}}
-            let body = serde_json::to_vec_pretty(&req.body).unwrap();
+            let body = serde_json::to_vec_pretty(&req.body)
+                .map_err(|e| format!("Can't parse request body. Error: {e}"))?
+            ;
             {{/if}}
             //TODO: params: header, query
 

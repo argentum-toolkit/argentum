@@ -49,15 +49,15 @@ components:
               id: user_last_name
               name: user_last_name
 
-        # TODO rename to Additional name
-        patronymic:
+        additional:
           type: string
           minLength: 1
           maxLength: 255
-          title: "Patronymic"
+          title: "Additional"
           x-ag-ui:
-            id: user_patronymic
-            name: user_patronymic
+            id: user_additional
+            name: user_additional
+            weight: 100
 
       required:
         - first

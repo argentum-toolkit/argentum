@@ -1,5 +1,4 @@
 use crate::template::Renderer;
-use std::error::Error;
 use std::sync::Arc;
 
 const MOD_PATH: &str = "/src/server/mod.rs";
@@ -14,7 +13,7 @@ impl ServerGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self, base_output_path: &str) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str) -> Result<(), String> {
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, "", MOD_PATH)?;
 

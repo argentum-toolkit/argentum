@@ -1,6 +1,6 @@
 use argentum_rest_infrastructure::data_type::DeserializableSchemaRaw;
 use argentum_rest_infrastructure::data_type::SerializableBody;
-{{#if properties}}
+{{#if properties~}}
 use argentum_standard_business::invariant_violation::{
     InvariantResult, ViolationItem, ViolationObject, Violations,
 };
@@ -47,30 +47,38 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
         {{# each properties as |prop| }}
             {{#if prop.isRef}}
                 {{#if prop.required}}
-                    let {{ escape_var_name (snake prop.name) }} = if raw.{{ escape_var_name (snake prop.name) }}.is_none() {
-                    argentum_violations.insert(
-                            "name".into(),
-                            Violations::new(vec!["required field".to_string()], None),
-                        );
-                        None
-                    } else {
-                        match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
-                            Ok(value) => Some(value),
-                            Err(v) => {
-                                argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);
+                    let {{ escape_var_name (snake prop.name) }} = match raw.{{ escape_var_name (snake prop.name) }} {
+                        Some(raw_{{ escape_var_name (snake prop.name) }}) => {
+                            match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw_{{ escape_var_name (snake prop.name) }}) {
+                                Ok(value) => Some(value),
+                                Err(v) => {
+                                    argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);
 
-                                None
+                                    None
+                                }
                             }
-                        }
+                        },
+                        None => {
+                            argentum_violations.insert(
+                                "{{ escape_var_name (snake prop.name) }}".into(),
+                                Violations::new(vec!["required field".to_string()], None),
+                            );
+                            None
+                        },
                     };
                 {{else}}
-                    let {{ escape_var_name (snake prop.name) }} = match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw.{{ escape_var_name (snake prop.name) }}.unwrap()) {
-                        Ok(value) => Some(value),
-                        Err(v) => {
-                            argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);
+                    let {{ escape_var_name (snake prop.name) }} = match raw.{{ escape_var_name (snake prop.name) }} {
+                        Some(raw_{{ escape_var_name (snake prop.name) }}) => {
+                            match {{{ upper_camel prop.cleanType }}}::try_from_raw(raw_{{ escape_var_name (snake prop.name) }}) {
+                                Ok(value) => Some(value),
+                                Err(v) => {
+                                    argentum_violations.insert("{{ escape_var_name (snake prop.name) }}".into(), v);
 
-                            None
-                        }
+                                    None
+                                }
+                            }
+                        },
+                        None => None,
                     };
                 {{/if}}
             {{else}}
@@ -86,10 +94,14 @@ impl DeserializableSchemaRaw<'_> for {{ name }} {
             {{/if}}
         {{/each}}
 
-        if argentum_violations.is_empty() {
+        if argentum_violations.is_empty() 
+        {{# each properties as |prop| }}
+            {{# if prop.required }}&& let Some({{ escape_var_name (snake prop.name) }}) = {{ escape_var_name (snake prop.name) }}{{/if}}
+        {{/each}}
+        {
             Ok(Self::new(
             {{# each properties as |prop| }}
-                {{ escape_var_name (snake prop.name) }}{{# if prop.required }}.unwrap(){{/if}},
+                {{ escape_var_name (snake prop.name) }},
             {{/each}}
             ))
         } else {

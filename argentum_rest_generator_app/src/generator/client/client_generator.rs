@@ -4,7 +4,6 @@ use argentum_openapi_infrastructure::data_type::{
 };
 use reqwest::StatusCode;
 use std::collections::BTreeMap;
-use std::error::Error;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -54,7 +53,7 @@ struct Data {
     pub use_responses: Vec<String>,
 }
 
-fn to_enum_name(code: &str) -> String {
+fn to_enum_name(code: &str) -> Result<String, String> {
     let m: BTreeMap<&str, &str> = BTreeMap::from([
         ("100", "CONTINUE"),
         ("101", "SWITCHING_PROTOCOLS"),
@@ -118,7 +117,9 @@ fn to_enum_name(code: &str) -> String {
         ("511", "NETWORK_AUTHENTICATION_REQUIRED"),
     ]);
 
-    m.get(code).unwrap().to_string()
+    m.get(code)
+        .map(|c| c.to_string())
+        .ok_or(format!("Unknown code `{code}`"))
 }
 
 pub struct ClientGenerator {
@@ -130,11 +131,7 @@ impl ClientGenerator {
         Self { renderer }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let mut paths_data: Vec<PathData> = vec![];
         let mut security_enabled = false;
         let mut use_schemas: Vec<String> = vec![];
@@ -146,21 +143,16 @@ impl ClientGenerator {
                 let uri_parameters = path.parameters.clone();
                 let mut parameters: Vec<Parameter> = vec![];
 
-                match uri_parameters {
-                    Some(params) => {
-                        for param in params {
-                            parameters.push(param.clone())
-                        }
+                if let Some(params) = uri_parameters {
+                    for param in params {
+                        parameters.push(param.clone())
                     }
-                    None => {}
                 };
-                match &operation.parameters {
-                    Some(params) => {
-                        for param in params {
-                            parameters.push(param.clone())
-                        }
+
+                if let Some(params) = &operation.parameters {
+                    for param in params {
+                        parameters.push(param.clone())
                     }
-                    None => {}
                 }
 
                 if operation.security.is_some() {
@@ -171,24 +163,24 @@ impl ClientGenerator {
 
                 for (code, ref_or_obj) in &operation.responses {
                     let status_name = match StatusCode::from_str(&code.to_string()) {
-                        Ok(c) => to_enum_name(c.as_str()),
-                        Err(e) => panic!("Can't parse status code: {:?}", e),
+                        Ok(c) => to_enum_name(c.as_str())?,
+                        Err(e) => return Err(format!("Can't parse status code: {e:?}")),
                     };
 
                     let mut content_data: Vec<ContentData> = vec![];
                     let response_name: String;
                     match ref_or_obj {
                         RefOrObject::Ref(r) => {
-                            let component_ref = ComponentRef::from(r.reference.clone());
+                            let component_ref = ComponentRef::try_from(r.reference.clone())?;
                             if !component_ref.is_response() {
-                                panic!(
+                                return Err(format!(
                                     "Wrong reference to response component: `{}`",
                                     r.reference.clone()
-                                );
+                                ));
                             }
 
                             response_name =
-                                self.escape_response_name(component_ref.component_name.clone());
+                                self.escape_response_name(&component_ref.component_name);
 
                             use_responses.push(response_name.clone());
 
@@ -196,28 +188,24 @@ impl ClientGenerator {
                                 .components
                                 .responses
                                 .get(&component_ref.component_name)
-                                .unwrap_or_else(|| {
-                                    panic!("Response component `{}` not found", response_name)
-                                });
+                                .ok_or("Response component `response_name` not found")?;
 
                             for (content_type, media) in &response.content {
                                 let schema_name = match &media.schema {
                                     RefOrObject::Ref(schema_ref) => {
                                         let component_ref =
-                                            ComponentRef::from(schema_ref.reference.clone());
+                                            ComponentRef::try_from(schema_ref.reference.clone())?;
                                         if !component_ref.is_schema() {
-                                            panic!(
+                                            return Err(format!(
                                                 "Wrong reference to schema component: `{}`",
                                                 r.reference.clone()
-                                            );
+                                            ));
                                         }
 
                                         component_ref.component_name
                                     }
                                     RefOrObject::Object(_) => {
-                                        panic!(
-                                            "We don't support inline objects yet. Only Refs are allowed. Skipping..."
-                                        );
+                                        return Err("We don't support inline objects yet. Only Refs are allowed. Skipping...".into());
                                     }
                                 };
 
@@ -230,9 +218,7 @@ impl ClientGenerator {
                             }
                         }
                         RefOrObject::Object(_) => {
-                            panic!(
-                                "We don't support inline objects yet. Only Refs are allowed. Skipping..."
-                            );
+                            return Err("We don't support inline objects yet. Only Refs are allowed. Skipping...".into());
                         }
                     };
 
@@ -244,10 +230,7 @@ impl ClientGenerator {
                     });
                 }
 
-                let need_body = match method {
-                    Method::Post => true,
-                    _ => false,
-                };
+                let need_body = matches!(method, Method::Post);
 
                 operations.push(OperationData {
                     method: method.to_string(),
@@ -263,18 +246,6 @@ impl ClientGenerator {
 
             paths_data.push(item);
         }
-
-        // let operations = spec.operations();
-        //
-        // let mut security_enabled = false;
-        //
-        // for operation in operations.clone().into_iter() {
-        //     if operation.security.is_some() {
-        //         security_enabled = true;
-        //
-        //         break;
-        //     }
-        // }
 
         use_schemas.sort();
         use_schemas.dedup();
@@ -294,11 +265,11 @@ impl ClientGenerator {
         Ok(())
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 }

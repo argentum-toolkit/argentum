@@ -7,12 +7,12 @@ const ERR_NAME_EMPTY: &str = "Should not be empty";
 pub struct NamePart(String);
 
 impl NamePart {
-    pub fn try_new(value: String) -> InvariantResult<Self> {
+    pub fn try_new(value: &str) -> InvariantResult<Self> {
         if value.is_empty() {
             return Err(ERR_NAME_EMPTY.into());
         }
 
-        Ok(Self(value))
+        Ok(Self(value.into()))
     }
 }
 
@@ -29,14 +29,14 @@ mod test {
 
     #[test]
     fn test_new_valid() {
-        let res = NamePart::try_new("Andrey".into());
+        let res = NamePart::try_new("Andrey");
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().0, "Andrey");
+        assert_eq!(res.expect("Name part should be valid").0, "Andrey");
     }
 
     #[test]
     fn test_new_empty() {
-        let res = NamePart::try_new("".into());
+        let res = NamePart::try_new("");
         assert!(res.is_err());
 
         let violations = res.unwrap_err();
@@ -44,7 +44,7 @@ mod test {
         assert!(violations.items.is_none());
         assert_eq!(violations.errors.len(), 1);
 
-        let v = violations.errors.first().unwrap();
+        let v = violations.errors.first().expect("Should be not None");
         assert_eq!(v, &ERR_NAME_EMPTY.to_string());
     }
 }

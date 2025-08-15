@@ -15,14 +15,15 @@ impl SchemaExtractor {
     {
         let result = request.fetch_body().await;
 
-        if result.is_err() {
-            return Err(Violations::new(
-                vec!["Can't receive request body".to_string()],
-                None,
-            ));
-        }
-
-        let mut body = result.unwrap();
+        let mut body = match result {
+            Ok(r) => r,
+            Err(_e) => {
+                return Err(Violations::new(
+                    vec!["Can't receive request body".to_string()],
+                    None,
+                ));
+            }
+        };
 
         if body.is_empty() {
             body = Vec::from("{}");

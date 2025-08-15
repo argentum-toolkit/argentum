@@ -2,6 +2,7 @@ use crate::dto::response::GetUserOkResponse;
 use crate::dto::response::Status401Response;
 use crate::dto::response::Status403Response;
 use crate::dto::response::Status404Response;
+
 use crate::dto::schema::ProblemDetail as ProblemDetailSchema;
 use crate::dto::schema::User as UserSchema;
 

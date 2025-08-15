@@ -20,12 +20,14 @@ impl ComponentRef {
     }
 }
 
-impl From<String> for ComponentRef {
-    fn from(value: String) -> Self {
+impl TryFrom<String> for ComponentRef {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
         let parts = value.split("#/").collect::<Vec<_>>();
 
         if parts.clone().len() != 2 {
-            panic!("Wrong format of reference {}", value)
+            return Err(format!("Wrong format of reference {value}"));
         }
 
         let file_path = if parts[0].is_empty() {
@@ -36,24 +38,23 @@ impl From<String> for ComponentRef {
 
         let component_path = parts
             .last()
-            .unwrap_or_else(|| panic!("Wrong component path of reference {}", value));
+            .ok_or(format!("Wrong component path of reference {value}"))?;
 
         let component_parts = component_path.split('/').collect::<Vec<_>>();
 
-        let component_type = ComponentType::from(component_parts[1]);
+        let component_type = ComponentType::try_from(component_parts[1])?;
         if component_parts.clone().len() != 3 || component_parts[0] != "components" {
-            panic!(
-                "Wrong component path {}. Expected: `#/components/<type>/<{{name}}>`",
-                component_path
-            )
+            return Err(format!(
+                "Wrong component path {component_path}. Expected: `#/components/<type>/<{{name}}>`",
+            ));
         }
 
         let component_name = component_parts[2].to_string();
 
-        Self {
+        Ok(Self {
             file_path,
             component_type,
             component_name,
-        }
+        })
     }
 }

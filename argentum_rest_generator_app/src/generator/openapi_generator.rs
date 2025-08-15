@@ -12,14 +12,16 @@ use crate::generator::{
     ReadmeAdocGenerator,
 };
 use argentum_log_business::LoggerTrait;
-use std::error::Error;
 use std::sync::Arc;
 
 use super::ui::UiGenerator;
 
-pub struct OpenApiGenerator {
-    logger: Arc<dyn LoggerTrait>,
-    combiner: Arc<Combiner>,
+pub struct OpenApiGenerator<L>
+where
+    L: LoggerTrait,
+{
+    logger: Arc<L>,
+    combiner: Arc<Combiner<L>>,
     oas_yaml_generator: Arc<OasYamlGenerator>,
     dto_generator: Arc<DtoGenerator>,
     path_param_generator: Arc<PathParamsGenerator>,
@@ -41,10 +43,13 @@ pub struct OpenApiGenerator {
     ui_generator: Arc<UiGenerator>,
 }
 
-impl OpenApiGenerator {
+impl<L> OpenApiGenerator<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
-        logger: Arc<dyn LoggerTrait>,
-        combiner: Arc<Combiner>,
+        logger: Arc<L>,
+        combiner: Arc<Combiner<L>>,
         oas_yaml_generator: Arc<OasYamlGenerator>,
         dto_generator: Arc<DtoGenerator>,
         path_param_generator: Arc<PathParamsGenerator>,
@@ -90,22 +95,20 @@ impl OpenApiGenerator {
         }
     }
 
-    pub fn generate(&self, cli: CliParams) -> Result<(), Box<dyn Error>> {
-        self.logger.info("Start generation...".to_string());
-        self.logger
-            .info("Combine OpenAPI specification...".to_string());
-        let spec = self.combiner.combine(cli.input.clone());
-        self.logger
-            .info("OpenAPI specification is combined".to_string());
+    pub fn generate(&self, cli: CliParams) -> Result<(), String> {
+        self.logger.info("Start generation...");
+        self.logger.info("Combine OpenAPI specification...");
+        let spec = self.combiner.combine(&cli.input)?;
+        self.logger.info("OpenAPI specification is combined");
 
         let output = cli.output.as_str();
 
         //generation
-        self.logger
-            .info("Generate combined OpenAPI YAML file ".to_string());
+        self.logger.info("Generate combined OpenAPI YAML file");
+
         self.oas_yaml_generator.generate(output, &spec)?;
 
-        self.logger.info("Generate sources files ".to_string());
+        self.logger.info("Generate sources files ");
         self.dto_generator.generate(output)?;
         self.path_param_generator.generate(output, &spec)?;
         self.schema_param_generator.generate(output, &spec)?;
@@ -146,7 +149,7 @@ impl OpenApiGenerator {
 
         self.ui_generator.generate(output, &spec)?;
 
-        self.logger.info("Code generation completed".to_string());
+        self.logger.info("Code generation completed");
 
         Ok(())
     }

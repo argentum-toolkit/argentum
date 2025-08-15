@@ -41,8 +41,11 @@ impl DeserializableSchemaRaw<'_> for LoginResult {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(token.unwrap(), user_id.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(token) = token
+            && let Some(user_id) = user_id
+        {
+            Ok(Self::new(token, user_id))
         } else {
             Err(Violations::new(
                 vec!["wrong data for LoginResult".to_string()],

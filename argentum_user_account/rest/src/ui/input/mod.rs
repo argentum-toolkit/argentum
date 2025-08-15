@@ -1,11 +1,7 @@
-mod change_password_schema_input;
 mod login_with_password_schema_input;
 mod registration_with_password_schema_input;
-mod request_restore_token_schema_input;
 mod user_name_input;
 
-pub use change_password_schema_input::ChangePasswordSchemaInput;
 pub use login_with_password_schema_input::LoginWithPasswordSchemaInput;
 pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInput;
-pub use request_restore_token_schema_input::RequestRestoreTokenSchemaInput;
 pub use user_name_input::UserNameInput;

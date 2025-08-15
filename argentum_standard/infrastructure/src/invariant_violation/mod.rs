@@ -40,14 +40,6 @@ impl From<&ViolationItem> for ViolationItemDto {
     }
 }
 
-// impl <'de> Deserialize for ViolationItemDto {
-//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: serde::Deserializer<'de> {
-//         todo!()
-//     }
-// }
-
 impl From<ViolationItemDto> for ViolationItem {
     fn from(val: ViolationItemDto) -> Self {
         match val {
@@ -69,7 +61,6 @@ impl From<ViolationItemDto> for ViolationItem {
 
 impl From<ViolationsDto> for Violations {
     fn from(val: ViolationsDto) -> Self {
-        // self.items.unwrap()
         let items = val.items.as_ref().map(|v| (*v).clone().into());
         Violations::new(val.errors.clone(), items)
     }
@@ -94,7 +85,7 @@ impl Serialize for ViolationItemDto {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub struct ViolationsDto {
     pub errors: Vec<String>,
 
@@ -123,15 +114,6 @@ impl ViolationsDto {
                 None => Self::new(vec![], None),
             },
             _ => Self::new(vec![], None),
-        }
-    }
-}
-
-impl Default for ViolationsDto {
-    fn default() -> Self {
-        Self {
-            errors: Default::default(),
-            items: Default::default(),
         }
     }
 }

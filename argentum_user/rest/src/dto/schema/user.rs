@@ -39,25 +39,29 @@ impl DeserializableSchemaRaw<'_> for User {
             );
         }
         let id = raw.id;
-        let name = if raw.name.is_none() {
-            argentum_violations.insert(
-                "name".into(),
-                Violations::new(vec!["required field".to_string()], None),
-            );
-            None
-        } else {
-            match UserName::try_from_raw(raw.name.unwrap()) {
+        let name = match raw.name {
+            Some(raw_name) => match UserName::try_from_raw(raw_name) {
                 Ok(value) => Some(value),
                 Err(v) => {
                     argentum_violations.insert("name".into(), v);
 
                     None
                 }
+            },
+            None => {
+                argentum_violations.insert(
+                    "name".into(),
+                    Violations::new(vec!["required field".to_string()], None),
+                );
+                None
             }
         };
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(email.unwrap(), id, name.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(email) = email
+            && let Some(name) = name
+        {
+            Ok(Self::new(email, id, name))
         } else {
             Err(Violations::new(
                 vec!["wrong data for User".to_string()],

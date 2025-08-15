@@ -8,7 +8,10 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::net::TcpListener;
 
-pub struct Server {
+pub struct Server<L>
+where
+    L: LoggerTrait,
+{
     //config
     addr: SocketAddr,
 
@@ -17,18 +20,21 @@ pub struct Server {
 
     response_transformer: Arc<ResponseToJsonTransformer>,
 
-    error_handler: Arc<ErrorHandler>,
+    error_handler: Arc<ErrorHandler<L>>,
 
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl Server {
+impl<L> Server<L>
+where
+    L: LoggerTrait + 'static,
+{
     pub fn new(
         addr: SocketAddr,
         router: Arc<dyn RouterTrait>,
         response_transformer: Arc<ResponseToJsonTransformer>,
-        error_handler: Arc<ErrorHandler>,
-        logger: Arc<dyn LoggerTrait>,
+        error_handler: Arc<ErrorHandler<L>>,
+        logger: Arc<L>,
     ) -> Self {
         Server {
             addr,
@@ -40,12 +46,16 @@ impl Server {
     }
 
     pub async fn serve(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        async fn handle(
+        async fn handle<T>(
             req: Request,
             router: Arc<dyn RouterTrait>,
             transformer: Arc<ResponseToJsonTransformer>,
-            error_handler: Arc<ErrorHandler>,
-        ) -> Result<Response, hyper::Error> {
+            error_handler: Arc<ErrorHandler<T>>,
+            logger: Arc<T>,
+        ) -> Result<Response, String>
+        where
+            T: LoggerTrait,
+        {
             let res = router.route(req).await;
 
             let response = match res {
@@ -53,7 +63,14 @@ impl Server {
                 Err(e) => error_handler.handle(e),
             };
 
-            Ok(transformer.transform(response))
+            match transformer.transform(response) {
+                Ok(r) => Ok(r),
+                Err(e) => {
+                    logger.critical(e.clone());
+
+                    Err(e)
+                }
+            }
         }
 
         let listener = TcpListener::bind(self.addr).await?;
@@ -69,8 +86,10 @@ impl Server {
             let logger = self.logger.clone();
 
             tokio::task::spawn(async move {
-                logger.trace("HTTP request accepted".to_string());
+                logger.trace("HTTP request accepted");
                 let start = Instant::now();
+
+                let log = logger.clone();
                 if let Err(err) = http1::Builder::new()
                     .serve_connection(
                         io,
@@ -80,12 +99,13 @@ impl Server {
                                 router.clone(),
                                 transformer.clone(),
                                 error_handler.clone(),
+                                log.clone(),
                             )
                         }),
                     )
                     .await
                 {
-                    println!("Failed to serve connection: {:?}", err);
+                    println!("Failed to serve connection: {err:?}");
                 }
 
                 let elapsed = start.elapsed();

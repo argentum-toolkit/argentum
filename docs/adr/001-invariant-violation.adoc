@@ -37,14 +37,8 @@ impl EmailAddress {
             return Err(ERR_EMAIL_EMPTY.into());
         }
 
-        //Note: in a real projectm, will be better to create a regex with once_cell
-        let re = Regex::new(
-            r"(?x) # enable insigificant whitespace mode
-            ^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$
-        ")
-        .unwrap();
-
-        if re.is_match(email.as_str()) {
+        //EMAIL_REGEX is defined outside
+        if EMAIL_REGEX.is_match(email.as_str()) {
             Ok(EmailAddress(email))
         } else {
             //Constant will be converted into `Violation`

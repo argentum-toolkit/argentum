@@ -20,7 +20,7 @@ impl DtoToUserRegistersWithPasswordParams {
         let mut vo = BTreeMap::new();
 
         let raw_name = req.body.name.clone();
-        let name_result = NameBuilder::new(raw_name.first)
+        let name_result = NameBuilder::new(&raw_name.first)
             .last(raw_name.last)
             .try_build();
 
@@ -32,7 +32,7 @@ impl DtoToUserRegistersWithPasswordParams {
             }
         };
 
-        let email_result = EmailAddress::try_new(req.body.email);
+        let email_result = EmailAddress::try_new(&req.body.email);
 
         let email = match email_result {
             Ok(e) => Some(e),
@@ -44,13 +44,11 @@ impl DtoToUserRegistersWithPasswordParams {
 
         let terms_accepted = req.body.terms;
 
-        if vo.is_empty() {
-            Ok((
-                name.unwrap(),
-                email.unwrap(),
-                req.body.password,
-                terms_accepted,
-            ))
+        if vo.is_empty()
+            && let Some(n) = name
+            && let Some(e) = email
+        {
+            Ok((n, e, req.body.password, terms_accepted))
         } else {
             Err(HttpError::BadRequest(BadRequestError::new(
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),

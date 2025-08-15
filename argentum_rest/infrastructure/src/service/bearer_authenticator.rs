@@ -28,7 +28,7 @@ impl BearerAuthenticator {
 
         let token: String = header.chars().skip(7).collect();
 
-        match self.uc.execute(token) {
+        match self.uc.execute(&token) {
             Ok(user) => Ok(user),
             Err(AuthenticationError::UserNotFound) | Err(AuthenticationError::WrongToken) => Err(
                 HttpError::Unauthorized(Unauthorized::new("can't authenticate".to_string())),

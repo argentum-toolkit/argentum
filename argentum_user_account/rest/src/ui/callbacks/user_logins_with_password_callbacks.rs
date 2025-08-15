@@ -17,7 +17,7 @@ impl Default for UserLoginsWithPasswordCallbacks {
     fn default() -> Self {
         Self {
             on_error: EventHandler::new(move |e: String| {
-                dioxus_logger::tracing::error!("API error: `{:?}`", e);
+                dioxus_logger::tracing::error!("API error: `{e:?}`");
             }),
 
             on_user_logged_in_successfully: EventHandler::new(

@@ -11,7 +11,7 @@ use dioxus::prelude::*;
 
 #[derive(PartialEq, Props, Clone)]
 pub struct RegistrationWithPasswordSchemaProps {
-    pub registration_with_password_schema: RegistrationWithPasswordSchema,
+    pub value: RegistrationWithPasswordSchema,
     pub violations: Option<ViolationsDto>,
 
     oninput: EventHandler<RegistrationWithPasswordSchema>,
@@ -20,15 +20,13 @@ pub struct RegistrationWithPasswordSchemaProps {
 #[component]
 pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchemaProps) -> Element {
     let RegistrationWithPasswordSchemaProps {
-        registration_with_password_schema,
-        violations,
-        ..
+        value, violations, ..
     } = props.clone();
 
-    let mut email_value = use_signal(|| registration_with_password_schema.email.clone());
-    let mut name_value = use_signal(|| registration_with_password_schema.name.clone());
-    let mut password_value = use_signal(|| registration_with_password_schema.password.clone());
-    let mut terms_value = use_signal(|| registration_with_password_schema.terms.clone());
+    let mut email_value = use_signal(|| value.email);
+    let mut name_value = use_signal(|| value.name);
+    let mut password_value = use_signal(|| value.password);
+    let mut terms_value = use_signal(|| value.terms);
 
     let violation_items = match violations {
         Some(vv) => match vv.items {
@@ -68,7 +66,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
     }
 
             UserNameInput {
-        user_name: name_value(),
+        value: name_value(),
         violations: name_violations,
         oninput: move |event: UserName| {
             name_value.set(event);

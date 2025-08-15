@@ -11,16 +11,22 @@ use argentum_user_account_rest::server::handler::AnonymousRequestsRestoreTokenTr
 use argentum_user_business::entity::user::User;
 use std::sync::Arc;
 
-pub struct AnonymousRequestsRestoreTokenHandler {
-    uc: Arc<AnonymousRequestsRestoreTokenUc>,
-    logger: Arc<dyn LoggerTrait>,
+pub struct AnonymousRequestsRestoreTokenHandler<L>
+where
+    L: LoggerTrait,
+{
+    uc: Arc<AnonymousRequestsRestoreTokenUc<L>>,
+    logger: Arc<L>,
     dto_to_anonymous_requests_restore_token_params: Arc<DtoToAnonymousRequestsRestoreTokenParams>,
 }
 
-impl AnonymousRequestsRestoreTokenHandler {
+impl<L> AnonymousRequestsRestoreTokenHandler<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
-        uc: Arc<AnonymousRequestsRestoreTokenUc>,
-        logger: Arc<dyn LoggerTrait>,
+        uc: Arc<AnonymousRequestsRestoreTokenUc<L>>,
+        logger: Arc<L>,
         dto_to_anonymous_requests_restore_token_params: Arc<
             DtoToAnonymousRequestsRestoreTokenParams,
         >,
@@ -33,7 +39,10 @@ impl AnonymousRequestsRestoreTokenHandler {
     }
 }
 
-impl AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler {
+impl<L> AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler<L>
+where
+    L: LoggerTrait,
+{
     fn handle(
         &self,
         req: AnonymousRequestsRestoreTokenRequest,
@@ -54,7 +63,7 @@ impl AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler
 
             Err(e) => match e {
                 RestorePasswordError::UserNotFoundError => {
-                    self.logger.warning(format!("{:?}", e));
+                    self.logger.warning(format!("{e:?}"));
 
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
                 }

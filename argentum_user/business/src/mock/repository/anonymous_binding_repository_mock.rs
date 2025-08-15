@@ -33,7 +33,9 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
         let binding = self
             .sessions
             .read()
-            .unwrap()
+            .map_err(|_| {
+                AnonymousBindingRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+            })?
             .get(user_id)
             .map(|b| AnonymousBinding::new(b.user_id.clone(), b.anonymous_id.clone()));
 
@@ -48,7 +50,9 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
         match self
             .sessions
             .write()
-            .unwrap()
+            .map_err(|_| {
+                AnonymousBindingRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+            })?
             .insert(binding.user_id.clone(), s)
             .is_none()
         {

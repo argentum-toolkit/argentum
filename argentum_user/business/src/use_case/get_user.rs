@@ -59,8 +59,8 @@ mod tests {
             NameBuilder::new("Dionne".into())
                 .last(Some("Morrison".into()))
                 .try_build()
-                .unwrap(),
-            EmailAddress::try_new("dionne@examples.com".into()).unwrap(),
+                .expect("Name should be valid"),
+            EmailAddress::try_new("dionne@examples.com".into()).expect("Email should be valid"),
         );
 
         //Prefilling
@@ -98,8 +98,8 @@ mod tests {
             NameBuilder::new("Dionne".into())
                 .last(Some("Morrison".into()))
                 .try_build()
-                .unwrap(),
-            EmailAddress::try_new("dionne@examples.com".into()).unwrap(),
+                .expect("Name should be valid"),
+            EmailAddress::try_new("dionne@examples.com".into()).expect("Email should be valid"),
         );
 
         //Prefilling

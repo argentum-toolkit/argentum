@@ -1,3 +1,4 @@
+use crate::extractor::SchemaExtractor;
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{
     RefOrObject, Schema, SchemaFormat, SchemaType, SpecificationRoot, StandardFormat,
@@ -5,7 +6,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::BTreeMap;
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -26,6 +26,7 @@ struct Prop {
     raw_type: String,
     required: bool,
     is_ref: bool,
+    weight: i16,
 }
 
 #[derive(Serialize)]
@@ -46,6 +47,7 @@ struct ItemType {
 
 pub(crate) struct SchemaGenerator {
     renderer: Arc<Renderer>,
+    schema_extractor: Arc<SchemaExtractor>,
 }
 
 const MOD_PATH: &str = "/src/dto/schema/mod.rs";
@@ -55,8 +57,11 @@ const ARRAY_ITEM_TEMPLATE: &str = "dto/schema_array.item";
 const DICTIONARY_ITEM_TEMPLATE: &str = "dto/schema_dictionary.item";
 
 impl SchemaGenerator {
-    pub fn new(renderer: Arc<Renderer>) -> Self {
-        Self { renderer }
+    pub fn new(renderer: Arc<Renderer>, schema_extractor: Arc<SchemaExtractor>) -> Self {
+        Self {
+            renderer,
+            schema_extractor,
+        }
     }
 
     fn generate_item(
@@ -64,7 +69,8 @@ impl SchemaGenerator {
         base_output_path: &str,
         name: &String,
         schema: &Schema,
-    ) -> Result<(), Box<dyn Error>> {
+        spec: &SpecificationRoot,
+    ) -> Result<(), String> {
         let file_path = format!("/src/dto/schema/{}.rs", name.to_case(Case::Snake));
 
         match schema.schema_type {
@@ -85,15 +91,15 @@ impl SchemaGenerator {
                         props,
                         schema.required.clone(),
                         file_path,
+                        spec,
                     )?;
                 }
             },
-            Some(SchemaType::Array) => match &*schema.items {
-                Some(items) => {
+            Some(SchemaType::Array) => {
+                if let Some(items) = &*schema.items {
                     self.generate_array_item(base_output_path, name, items.clone(), file_path)?
                 }
-                None => {}
-            },
+            }
             Some(_) => {
                 //TODO: implement for other types
                 //TODO: log
@@ -106,6 +112,7 @@ impl SchemaGenerator {
                         props,
                         schema.required.clone(),
                         file_path,
+                        spec,
                     )?;
                 } else if let Some(items) = &*schema.items {
                     self.generate_array_item(base_output_path, name, items.clone(), file_path)?;
@@ -124,85 +131,75 @@ impl SchemaGenerator {
         &self,
         property: RefOrObject<Schema>,
         dependencies: &mut Vec<String>,
-    ) -> (String, String, bool) {
+    ) -> Result<(String, String, bool), String> {
         //todo: check $ref
         match property {
             RefOrObject::Object(schema) => match schema.schema_type {
-                None => ("()".to_string(), "Option<()>".to_string(), false),
-                Some(SchemaType::Boolean) => {
-                    ("bool".to_string(), "Option<bool>".to_string(), false)
-                }
+                None => Ok(("()".into(), "Option<()>".into(), false)),
+                Some(SchemaType::Boolean) => Ok(("bool".into(), "Option<bool>".into(), false)),
                 Some(SchemaType::Integer) => match schema.format {
-                    None => ("i64".to_string(), "Option<i64>".to_string(), false),
+                    None => Ok(("i64".into(), "Option<i64>".into(), false)),
                     Some(SchemaFormat::Standard(StandardFormat::Int32)) => {
-                        ("i32".to_string(), "Option<i32>".to_string(), false)
+                        Ok(("i32".into(), "Option<i32>".into(), false))
                     }
                     Some(SchemaFormat::Standard(StandardFormat::Int64)) => {
-                        ("i64".to_string(), "Option<i64>".to_string(), false)
+                        Ok(("i64".into(), "Option<i64>".into(), false))
                     }
                     Some(SchemaFormat::Standard(StandardFormat::UInt32)) => {
-                        ("u32".to_string(), "Option<u32>".to_string(), false)
+                        Ok(("u32".into(), "Option<u32>".into(), false))
                     }
                     Some(SchemaFormat::Standard(StandardFormat::UInt64)) => {
-                        ("u64".to_string(), "Option<u64>".to_string(), false)
+                        Ok(("u64".into(), "Option<u64>".into(), false))
                     }
-                    Some(_) => ("i64".to_string(), "Option<i64>".to_string(), false),
+                    Some(_) => Ok(("i64".into(), "Option<i64>".into(), false)),
                 },
                 Some(SchemaType::Number) => match schema.format {
-                    None => ("f64".to_string(), "Option<f64>".to_string(), false),
+                    None => Ok(("f64".into(), "Option<f64>".into(), false)),
                     Some(SchemaFormat::Standard(StandardFormat::Float)) => {
-                        ("f32".to_string(), "Option<f32>".to_string(), false)
+                        Ok(("f32".into(), "Option<f32>".into(), false))
                     }
                     Some(SchemaFormat::Standard(StandardFormat::Double)) => {
-                        ("f64".to_string(), "Option<f64>".to_string(), false)
+                        Ok(("f64".into(), "Option<f64>".into(), false))
                     }
-                    Some(_) => ("f64".to_string(), "Option<f64>".to_string(), false),
+                    Some(_) => Ok(("f64".into(), "Option<f64>".into(), false)),
                 },
                 Some(SchemaType::String) => match schema.format {
-                    None => ("String".to_string(), "Option<String>".to_string(), false),
+                    None => Ok(("String".into(), "Option<String>".into(), false)),
                     Some(SchemaFormat::Standard(StandardFormat::Date)) => {
-                        dependencies.push("chrono::NaiveDate".to_string());
-                        (
-                            "NaiveDate".to_string(),
-                            "Option<NaiveDate>".to_string(),
-                            false,
-                        )
+                        dependencies.push("chrono::NaiveDate".into());
+                        Ok(("NaiveDate".into(), "Option<NaiveDate>".into(), false))
                     }
                     Some(SchemaFormat::Standard(StandardFormat::DateTime)) => {
-                        dependencies.push("chrono::{DateTime, Utc}".to_string());
-                        (
-                            "DateTime<Utc>".to_string(),
-                            "Option<DateTime<Utc>>".to_string(),
+                        dependencies.push("chrono::{DateTime, Utc}".into());
+                        Ok((
+                            "DateTime<Utc>".into(),
+                            "Option<DateTime<Utc>>".into(),
                             false,
-                        )
+                        ))
                     }
-                    Some(SchemaFormat::Standard(StandardFormat::Uuid)) => (
-                        "uuid::Uuid".to_string(),
-                        "Option<uuid::Uuid>".to_string(),
-                        false,
-                    ),
-                    Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
+                    Some(SchemaFormat::Standard(StandardFormat::Uuid)) => {
+                        Ok(("uuid::Uuid".into(), "Option<uuid::Uuid>".into(), false))
+                    }
+                    Some(_) => Ok(("String".into(), "Option<String>".into(), false)),
                 },
-                Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
+                Some(_) => Ok(("String".into(), "Option<String>".into(), false)),
             },
             RefOrObject::Ref(r) => {
                 let type_name = r
                     .reference
                     .clone()
                     .split('/')
-                    .last()
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                            r.reference
-                        )
-                    })
+                    .next_back()
+                    .ok_or(format!(
+                        "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                        r.reference
+                    ))?
                     .to_string();
 
                 dependencies.push(format!("crate::dto::schema::{}", type_name));
                 dependencies.push(format!("crate::dto::schema::{}Raw", type_name));
 
-                (type_name.clone(), format!("Option<{}Raw>", type_name), true)
+                Ok((type_name.clone(), format!("Option<{}Raw>", type_name), true))
             }
         }
     }
@@ -214,12 +211,20 @@ impl SchemaGenerator {
         schema_properties: BTreeMap<String, RefOrObject<Schema>>,
         required_fields: Option<Vec<String>>,
         file_path: String,
-    ) -> Result<(), Box<dyn Error>> {
+        spec: &SpecificationRoot,
+    ) -> Result<(), String> {
         let mut properties: Vec<Prop> = vec![];
         let mut dependencies: Vec<String> = vec![];
 
         for (name, property) in schema_properties {
-            let (mut data_type, raw_type, is_ref) = self.schema_to_rs(property, &mut dependencies);
+            let schema = self.schema_extractor.extract(&property, spec)?;
+            let weight = match schema.extension_ui {
+                Some(ref ext) => ext.weight,
+                None => 0,
+            };
+
+            let (mut data_type, raw_type, is_ref) =
+                self.schema_to_rs(property, &mut dependencies)?;
 
             let req = &required_fields.clone().unwrap_or_default();
 
@@ -242,8 +247,11 @@ impl SchemaGenerator {
                 raw_type,
                 required,
                 is_ref,
+                weight,
             })
         }
+
+        properties.sort_by_key(|item| item.weight);
 
         let data = Data {
             dependencies,
@@ -267,10 +275,10 @@ impl SchemaGenerator {
         name: &String,
         items_type: RefOrObject<Schema>,
         file_path: String,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut dependencies: Vec<String> = vec![];
 
-        let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies);
+        let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies)?;
 
         let data = ArrayData {
             dependencies,
@@ -298,10 +306,11 @@ impl SchemaGenerator {
         name: &String,
         additional_type: RefOrObject<Schema>,
         file_path: String,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut dependencies: Vec<String> = vec![];
 
-        let (data_type, raw_type, is_ref) = self.schema_to_rs(additional_type, &mut dependencies);
+        let (data_type, raw_type, is_ref) =
+            self.schema_to_rs(additional_type, &mut dependencies)?;
 
         let data = ArrayData {
             dependencies,
@@ -323,16 +332,12 @@ impl SchemaGenerator {
         Ok(())
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, spec, MOD_PATH)?;
 
         for (name, schema) in &spec.components.schemas {
-            self.generate_item(base_output_path, name, schema)?;
+            self.generate_item(base_output_path, name, schema, spec)?;
         }
 
         Ok(())

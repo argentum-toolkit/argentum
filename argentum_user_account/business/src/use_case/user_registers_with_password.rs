@@ -134,8 +134,8 @@ mod test {
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
-            .unwrap();
-        let email = EmailAddress::try_new("demo@test.com".into()).unwrap();
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = true;
         let result = uc.execute(id.clone(), name, email, password, terms);
@@ -169,8 +169,8 @@ mod test {
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
-            .unwrap();
-        let email = EmailAddress::try_new("demo@test.com".into()).unwrap();
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = false;
         let result = uc.execute(id.clone(), name, email, password, terms);
@@ -206,8 +206,8 @@ mod test {
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
-            .unwrap();
-        let email = EmailAddress::try_new("demo@test.com".into()).unwrap();
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = true;
         let result = uc.execute(id.clone(), name, email, password, terms);

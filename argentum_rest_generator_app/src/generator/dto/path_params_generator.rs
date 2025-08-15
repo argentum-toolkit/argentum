@@ -5,7 +5,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -46,7 +45,7 @@ impl PathParamsGenerator {
         base_output_path: &str,
         operation: &Operation,
         uri_parameters: &Option<Vec<Parameter>>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!(
             "/src/dto/path_params/{}_path_params.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -58,22 +57,16 @@ impl PathParamsGenerator {
         let mut parameters: Vec<Parameter> = vec![];
 
         //TODO: add path_parameters from path.rs
-        match uri_parameters {
-            Some(params) => {
-                for param in params {
-                    parameters.push(param.clone())
-                }
+        if let Some(params) = uri_parameters {
+            for param in params {
+                parameters.push(param.clone())
             }
-            None => {}
         };
 
-        match &operation.parameters {
-            Some(params) => {
-                for param in params {
-                    parameters.push(param.clone())
-                }
+        if let Some(params) = &operation.parameters {
+            for param in params {
+                parameters.push(param.clone())
             }
-            None => {}
         }
 
         for parameter in parameters {
@@ -82,36 +75,32 @@ impl PathParamsGenerator {
             //todo: check $ref
             let (data_type, raw_type, is_ref) = match property {
                 RefOrObject::Object(schema) => match schema.schema_type {
-                    None => ("()".to_string(), "Option<()>".to_string(), false),
+                    None => ("()".into(), "Option<()>".into(), false),
                     Some(SchemaType::String) => match schema.format {
-                        None => ("String".to_string(), "Option<String>".to_string(), false),
-                        Some(SchemaFormat::Standard(StandardFormat::Uuid)) => (
-                            "uuid::Uuid".to_string(),
-                            "Option<uuid::Uuid>".to_string(),
-                            false,
-                        ),
-                        Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
+                        None => ("String".into(), "Option<String>".into(), false),
+                        Some(SchemaFormat::Standard(StandardFormat::Uuid)) => {
+                            ("uuid::Uuid".into(), "Option<uuid::Uuid>".into(), false)
+                        }
+                        Some(_) => ("String".into(), "Option<String>".into(), false),
                     },
-                    Some(_) => ("String".to_string(), "Option<String>".to_string(), false),
+                    Some(_) => ("String".into(), "Option<String>".into(), false),
                 },
                 RefOrObject::Ref(r) => {
                     let type_name = r
                         .reference
                         .clone()
                         .split('/')
-                        .last()
-                        .unwrap_or_else(|| {
-                            panic!(
-                                "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                                r.reference
-                            )
-                        })
+                        .next_back()
+                        .ok_or(format!(
+                            "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                            r.reference
+                        ))?
                         .to_string();
 
-                    dependencies.push(format!("crate::dto::schema::{}", type_name));
-                    dependencies.push(format!("crate::dto::schema::{}Raw", type_name));
+                    dependencies.push(format!("crate::dto::schema::{type_name}"));
+                    dependencies.push(format!("crate::dto::schema::{type_name}Raw"));
 
-                    (type_name.clone(), format!("Option<{}Raw>", type_name), true)
+                    (type_name.clone(), format!("Option<{type_name}Raw>"), true)
                 }
             };
 
@@ -141,18 +130,14 @@ impl PathParamsGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let data = HashMap::from([("operations", operations.as_slice())]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
         self.generate_mod(base_output_path, operations.clone())?;
 

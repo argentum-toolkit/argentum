@@ -27,21 +27,27 @@ use argentum_user_business::repository::user_repository::{
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct BusinessDiC {
+pub struct BusinessDiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
     pub anonymous_registers_uc: Arc<AnonymousRegistersUc>,
     pub user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc>,
-    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc>,
+    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc<L>>,
     pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
-    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc>,
-    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc>,
+    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<L>>,
+    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<L>>,
 }
 
-pub struct UserAccountBusinessDiCBuilder {
+pub struct UserAccountBusinessDiCBuilder<L>
+where
+    L: LoggerTrait,
+{
     id_factory: Arc<dyn IdFactory>,
     encryptor: Arc<dyn Encryptor>,
     validator: Arc<dyn Validator>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
     notificator: Arc<dyn NotificatorTrait>,
 
     anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait>>,
@@ -57,12 +63,15 @@ pub struct UserAccountBusinessDiCBuilder {
     restore_password_front_url: String,
 }
 
-impl UserAccountBusinessDiCBuilder {
+impl<L> UserAccountBusinessDiCBuilder<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         id_factory: Arc<dyn IdFactory>,
         encryptor: Arc<dyn Encryptor>,
         validator: Arc<dyn Validator>,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
         notificator: Arc<dyn NotificatorTrait>,
     ) -> Self {
         Self {
@@ -79,8 +88,8 @@ impl UserAccountBusinessDiCBuilder {
             restore_password_token_repository: None,
             token_generator: None,
             restore_password_token_ttl: 1,
-            product_name: "".to_string(),
-            restore_password_front_url: "".to_string(),
+            product_name: "".into(),
+            restore_password_front_url: "".into(),
         }
     }
 
@@ -100,15 +109,18 @@ impl UserAccountBusinessDiCBuilder {
         self
     }
 
-    pub fn config(
+    pub fn config<S>(
         &mut self,
-        product_name: String,
+        product_name: S,
         restore_password_token_ttl: u32,
-        restore_password_front_url: String,
-    ) -> &mut Self {
-        self.product_name = product_name;
+        restore_password_front_url: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
+        self.product_name = product_name.into();
         self.restore_password_token_ttl = restore_password_token_ttl;
-        self.restore_password_front_url = restore_password_front_url;
+        self.restore_password_front_url = restore_password_front_url.into();
 
         self
     }
@@ -134,49 +146,84 @@ impl UserAccountBusinessDiCBuilder {
         self
     }
 
-    pub fn build(&self) -> BusinessDiC {
+    pub fn build(&self) -> Result<BusinessDiC<L>, String> {
+        let anonymous_user_repository = self
+            .anonymous_user_repository
+            .clone()
+            .ok_or("anonymous_user_repository is not initialized")?;
+
+        let session_repository = self
+            .session_repository
+            .clone()
+            .ok_or("session_repository is not initialized")?;
+
+        let token_generator = self
+            .token_generator
+            .clone()
+            .ok_or("token_generator is not initialized")?;
+
+        let password_credential_repository = self
+            .password_credential_repository
+            .clone()
+            .ok_or("password_credential_repository is not initialized")?;
+
+        let authenticated_user_repository = self
+            .authenticated_user_repository
+            .clone()
+            .ok_or("authenticated_user_repository is not initialized")?;
+
+        let anonymous_binding_repository = self
+            .anonymous_binding_repository
+            .clone()
+            .ok_or("anonymous_binding_repository is not initialized")?;
+
+        let restore_password_token_repository = self
+            .restore_password_token_repository
+            .clone()
+            .ok_or("restore_password_token_repository is not initialized")?;
+
         let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
             self.id_factory.clone(),
-            self.anonymous_user_repository.clone().unwrap(),
-            self.session_repository.clone().unwrap(),
-            self.token_generator.clone().unwrap(),
+            anonymous_user_repository.clone(),
+            session_repository.clone(),
+            token_generator.clone(),
         ));
 
         let password_credential_writer = Arc::new(PasswordCredentialWriter::new(
-            self.password_credential_repository.clone().unwrap(),
+            password_credential_repository.clone(),
         ));
 
         let user_registers_with_password_uc = Arc::new(UserRegistersWithPasswordUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
+            authenticated_user_repository.clone(),
             password_credential_writer.clone(),
             self.encryptor.clone(),
         ));
 
         let password_credential_checker = Arc::new(PasswordCredentialChecker::new(
-            self.password_credential_repository.clone().unwrap(),
+            password_credential_repository,
             self.validator.clone(),
         ));
 
         let user_logins_with_password_uc = Arc::new(UserLoginsWithPasswordUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
-            self.anonymous_binding_repository.clone().unwrap(),
-            self.session_repository.clone().unwrap(),
+            authenticated_user_repository.clone(),
+            anonymous_binding_repository,
+            session_repository.clone(),
             password_credential_checker,
             self.id_factory.clone(),
-            self.token_generator.clone().unwrap(),
+            token_generator.clone(),
             self.logger.clone(),
         ));
 
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
-            self.anonymous_user_repository.clone().unwrap(),
-            self.session_repository.clone().unwrap(),
+            authenticated_user_repository.clone(),
+            anonymous_user_repository,
+            session_repository,
         ));
 
         let anonymous_with_token_changes_password_uc =
             Arc::new(AnonymousWithTokenChangesPasswordUc::new(
-                self.authenticated_user_repository.clone().unwrap(),
-                self.restore_password_token_repository.clone().unwrap(),
+                authenticated_user_repository.clone(),
+                restore_password_token_repository.clone(),
                 self.encryptor.clone(),
                 password_credential_writer,
                 self.restore_password_token_ttl,
@@ -187,20 +234,20 @@ impl UserAccountBusinessDiCBuilder {
             self.product_name.clone(),
             self.restore_password_front_url.clone(),
             self.id_factory.clone(),
-            self.authenticated_user_repository.clone().unwrap(),
-            self.restore_password_token_repository.clone().unwrap(),
-            self.token_generator.clone().unwrap(),
+            authenticated_user_repository,
+            restore_password_token_repository,
+            token_generator,
             self.notificator.clone(),
             self.logger.clone(),
         ));
 
-        BusinessDiC {
+        Ok(BusinessDiC {
             anonymous_registers_uc,
             user_registers_with_password_uc,
             user_logins_with_password_uc,
             user_authenticates_with_token_uc,
             anonymous_with_token_changes_password_uc,
             anonymous_requests_restore_token_uc,
-        }
+        })
     }
 }

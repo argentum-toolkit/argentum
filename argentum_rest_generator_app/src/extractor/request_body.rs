@@ -9,24 +9,31 @@ impl RequestBodyExtractor {
         Self {}
     }
 
-    pub fn extract(&self, operation: &Operation, spec: &SpecificationRoot) -> Option<RequestBody> {
-        let ref_or = operation.clone().request_body?;
+    pub fn extract(
+        &self,
+        operation: &Operation,
+        spec: &SpecificationRoot,
+    ) -> Result<Option<RequestBody>, String> {
+        let ref_or = match operation.clone().request_body {
+            Some(r) => r,
+            None => return Ok(None),
+        };
 
         match ref_or {
             RefOrObject::Ref(r) => {
                 let parts = r.reference.split("#/").collect::<Vec<_>>();
 
                 if parts.clone().len() != 2 {
-                    panic!("Wrong format of reference {}", r.reference)
+                    return Err(format!("Wrong format of reference {}", r.reference));
                 }
 
                 let _file_path = parts
                     .first()
-                    .unwrap_or_else(|| panic!("Wrong file path of reference {}", r.reference));
+                    .ok_or(format!("Wrong file path of reference {}", r.reference))?;
 
                 let component_path = parts
                     .last()
-                    .unwrap_or_else(|| panic!("Wrong component path of reference {}", r.reference));
+                    .ok_or(format!("Wrong component path of reference {}", r.reference))?;
 
                 let component_parts = component_path.split('/').collect::<Vec<_>>();
 
@@ -34,23 +41,22 @@ impl RequestBodyExtractor {
                     || component_parts[0] != "components"
                     || component_parts[1] != "requestBodies"
                 {
-                    panic!(
-                        "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
-                        component_path
-                    )
+                    return Err(format!(
+                        "Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`"
+                    ));
                 }
 
-                let component_name = component_parts.last().unwrap_or_else(|| {
-                    panic!(
-                        "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
-                        component_path
-                    )
-                });
+                let component_name = component_parts.last().ok_or(format!(
+                    "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
+                    component_path
+                ))?;
 
-                Some(spec.components.request_bodies[&component_name.to_string()].clone())
+                Ok(Some(
+                    spec.components.request_bodies[&component_name.to_string()].clone(),
+                ))
             }
 
-            RefOrObject::Object(request_body) => Some(request_body),
+            RefOrObject::Object(request_body) => Ok(Some(request_body)),
         }
     }
 }

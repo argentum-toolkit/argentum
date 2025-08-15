@@ -5,7 +5,8 @@ pub mod app;
 mod di;
 
 fn main() -> Result<(), String> {
-    let di = di_factory();
+    let di = di_factory()?;
+
     let app = App::new(
         di.id_factory.clone(),
         di.anonymous_registers_uc.clone(),
