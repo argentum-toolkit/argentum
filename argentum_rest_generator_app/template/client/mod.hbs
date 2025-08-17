@@ -74,6 +74,7 @@ impl Client {
                     match response.status() {
                         {{#each operation.responses as |resp| }}
                         StatusCode::{{resp.statusName}} => {
+                            {{#if resp.content}}
                             {{#each resp.content as |content| }}
                                 {{#if (eq content.contentType "application/json") }}
                                 match response.json::<{{content.schemaName}}Schema>().await {
@@ -91,6 +92,9 @@ impl Client {
                                 }
                                 {{/if}}
                             {{/each}}
+                            {{else}}
+                            Ok({{ upper_camel operation.operationId }}OperationResponseEnum::Status{{resp.statusCode}}({{resp.responseName}}Response::new_no_content()))
+                            {{/if}}
                         },
                         {{/each}}
 

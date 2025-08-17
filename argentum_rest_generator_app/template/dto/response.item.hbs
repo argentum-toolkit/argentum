@@ -28,17 +28,27 @@ impl ContentTypeResponseTrait for {{content_type_to_type @key}} {
 
 #[derive(Clone)]
 pub enum {{ upper_camel responseName }}Response {
+{{#if content}}
 {{#each content as |schemaName|}}
     {{content_type_to_type @key}}({{content_type_to_type @key}})
 {{/each}}
+{{else}}
+    NoConten(NoContent)
+{{/if}}
 }
 
 impl {{ upper_camel responseName }}Response {
-{{#each content as |schemaName|}}
+{{#if content}}
+    {{#each content as |schemaName|}}
     pub fn new_{{snake (content_type_to_type @key)}}(r: {{trim_mod schemaName}}) -> Self{
         Self::{{content_type_to_type @key}}({{content_type_to_type @key}}(r))
     }
-{{/each}}
+    {{/each}}
+{{else}}
+    pub fn new_no_content() -> Self{
+        Self::NoConten(NoContent {})
+    }
+{{/if}}
 
     pub fn to_content_type_response_trait(&self) -> Box<dyn ContentTypeResponseTrait> {
     {{#if content}}

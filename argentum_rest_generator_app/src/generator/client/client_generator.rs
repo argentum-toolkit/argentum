@@ -164,7 +164,12 @@ impl ClientGenerator {
                 for (code, ref_or_obj) in &operation.responses {
                     let status_name = match StatusCode::from_str(&code.to_string()) {
                         Ok(c) => to_enum_name(c.as_str())?,
-                        Err(e) => return Err(format!("Can't parse status code: {e:?}")),
+                        Err(e) => {
+                            return Err(format!(
+                                "Can't parse status code `{}`. Err: {e:?}",
+                                &code.to_string()
+                            ));
+                        }
                     };
 
                     let mut content_data: Vec<ContentData> = vec![];
