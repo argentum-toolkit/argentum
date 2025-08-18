@@ -6,7 +6,7 @@ info:
   license:
     name: LGPL-3.0
   title: Argentum User Account component API
-  version: 0.3.0-dev
+  version: 0.3.0
 externalDocs:
   description: Find more info here
   url: https://gitlab.com/argentum-toolkit/argentum

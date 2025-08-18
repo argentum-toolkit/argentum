@@ -1,7 +1,7 @@
 [package]
 name = "argentum_user_account_infrastructure"
 description = "Business layer of user account component"
-version = "0.3.0-dev"
+version = "0.3.0"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
 edition = "2024"
@@ -13,17 +13,17 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
-argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_account_business = { path = "../business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_account_rest = { path = "../rest", version = ">=0.3.0-dev,<0.4.0", features = ["server"] }
-argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
+argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.3.0,<0.4.0" }
+argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.3.0,<0.4.0" }
+argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.3.0,<0.4.0" }
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0,<0.4.0" }
+argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.3.0,<0.4.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0,<0.4.0" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0,<0.4.0" }
+argentum_user_account_business = { path = "../business", version = ">=0.3.0,<0.4.0" }
+argentum_user_account_rest = { path = "../rest", version = ">=0.3.0,<0.4.0", features = ["server"] }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0,<0.4.0" }
+argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", version = ">=0.3.0,<0.4.0" }
 
 async-trait = "0.1.*"
 chrono = { version = "0.4.*", features = ["serde"] }

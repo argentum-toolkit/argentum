@@ -111,7 +111,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_db_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_log_business",
  "futures",
@@ -124,7 +124,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_demo_api_app"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_db_infrastructure",
  "argentum_encryption_business",
@@ -151,7 +151,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_demo_app"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",
@@ -171,14 +171,14 @@ dependencies = [
 
 [[package]]
 name = "argentum_encryption_business"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "argentum_encryption_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_encryption_business",
  "data-encoding",
@@ -187,18 +187,18 @@ dependencies = [
 
 [[package]]
 name = "argentum_event_business"
-version = "0.3.0-dev"
+version = "0.3.0"
 
 [[package]]
 name = "argentum_log_business"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "chrono",
 ]
 
 [[package]]
 name = "argentum_log_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_log_business",
  "chrono",
@@ -207,7 +207,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_notification_business"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_standard_business",
  "argentum_user_business",
@@ -216,7 +216,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_notification_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_notification_business",
  "argentum_standard_business",
@@ -226,7 +226,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_openapi_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_rest_generator_app"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_log_business",
  "argentum_log_infrastructure",
@@ -254,7 +254,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_rest_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
@@ -277,7 +277,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_standard_business"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "chrono",
  "compiletime-regex",
@@ -288,7 +288,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_standard_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
@@ -299,7 +299,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_standard_ui"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_standard_infrastructure",
  "dioxus",
@@ -308,7 +308,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_business"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_encryption_business",
  "argentum_log_business",
@@ -323,7 +323,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_db_infrastructure",
  "argentum_encryption_business",
@@ -348,7 +348,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_rest"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
@@ -373,7 +373,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_ui"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_infrastructure",
@@ -389,7 +389,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_business"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_encryption_business",
  "argentum_standard_business",
@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_infrastructure"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_db_infrastructure",
  "argentum_log_business",
@@ -418,7 +418,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_rest"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_ui"
-version = "0.3.0-dev"
+version = "0.3.0"
 dependencies = [
  "argentum_user_rest",
  "dioxus",

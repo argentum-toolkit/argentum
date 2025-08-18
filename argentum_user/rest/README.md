@@ -7,7 +7,7 @@ User API
 
 This server was generated from OpenAPI specification by the link:https://gitlab.com/argentum-toolkit/argentum(argentum-rest-generator).
 
-- API version: 0.3.0-dev
+- API version: 0.3.0
 - Package Name: argentum_user_rest
 - License: **LGPL-3.0**
 
@@ -32,18 +32,18 @@ $ cd app
 [package]
 name = "argentum_user_rest_app"
 description = "Argentum User component API"
-version = "0.3.0-dev"
+version = "0.3.0"
 edition = "2024"
 
 [dependencies]
-argentum_log_business = { version = ">=0.3.0-dev,<0.4.0" }
-argentum_log_infrastructure = { version = ">=0.3.0-dev,<0.4.0" }
-argentum_rest_infrastructure = { version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_business = { version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_business = { version = ">=0.3.0-dev,<0.4.0" }
+argentum_log_business = { version = ">=0.3.0,<0.4.0" }
+argentum_log_infrastructure = { version = ">=0.3.0,<0.4.0" }
+argentum_rest_infrastructure = { version = ">=0.3.0,<0.4.0" }
+argentum_standard_business = { version = ">=0.3.0,<0.4.0" }
+argentum_user_business = { version = ">=0.3.0,<0.4.0" }
 
 argentum_user_rest = { path = "../rest" }
-tokio = { version = "^1.40.*", features = ["full"] }
+tokio = { version = "^1.47.*", features = ["full"] }
 ```
 
 ```rust

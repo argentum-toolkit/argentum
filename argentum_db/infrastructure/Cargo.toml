@@ -1,7 +1,7 @@
 [package]
 name = "argentum_db_infrastructure"
 description = "The infrastructure layer of database component"
-version = "0.3.0-dev"
+version = "0.3.0"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
 edition = "2024"
@@ -11,7 +11,7 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [dependencies]
-argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0-dev,<0.4.0" }
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0,<0.4.0" }
 
 sqlx = { version = "0.8.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "chrono"] }
 sqlx-postgres = { version = "0.8.*" }
