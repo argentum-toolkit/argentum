@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Standard component's types (schemas)
-  version: 0.2.0-dev
+  version: 0.3.0
 paths: { }
 
 components:
@@ -11,10 +11,11 @@ components:
       title: Schema for error response
       description: "RFC 7807 Problem Details for HTTP APIs"
       required:
-        - code
+        - status
         - title
+      type: object
       properties:
-        code:
+        status:
           type: integer
           format: int32
           minimum: 400
@@ -22,12 +23,39 @@ components:
           example: '401'
           # example: 401 will be parsed as int. It causes an error
           # https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=4930c626eb2d70a28db81c0352dcc797
-        message:
+        title:
           type: string
-          example: "{\"some\": \"json\"}"
+          example: "Bad Request"
+        type:
+          type: string
+          example: "about:blank"
+        detail: 
+          type: string
+        body: 
+          $ref: "#/components/schemas/Violation"
+
+    Violation:
+      type: object
+      properties:
+        errors:
+          $ref: "#/components/schemas/ViolationErrors"
+        items:
+          $ref: "#/components/schemas/ViolationItems"
+    
+    ViolationErrors:
+      type: array
+      items:
+        type: string
+        #TODO: examples
+
+    ViolationItems:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/Violation"
 
     EmptyResponse:
       title: Empty response
+      #TODO: add support of empty types
 
     DateRange:
       type: object

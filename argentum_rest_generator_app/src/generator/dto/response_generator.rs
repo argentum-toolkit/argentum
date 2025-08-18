@@ -5,14 +5,14 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data {
-    response_name: String,
     content: BTreeMap<String, String>,
+    is_error: bool,
+    response_name: String,
 }
 
 pub(crate) struct ResponseGenerator {
@@ -32,24 +32,25 @@ impl ResponseGenerator {
         base_output_path: &str,
         response_name: String,
         response: &Response,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
+        let escaped_response_name = self.escape_response_name(&response_name);
         let file_path = format!(
             "/src/dto/response/{}_response.rs",
-            response_name.to_case(Case::Snake)
+            escaped_response_name.to_case(Case::Snake)
         );
 
         let mut content: BTreeMap<String, String> = BTreeMap::new();
 
         for (name, media_type) in &response.content {
-            let schema_type = self.schema_to_rs(&media_type.schema);
+            let schema_type = self.schema_to_rs(&media_type.schema)?;
 
             content.insert(name.clone(), schema_type);
         }
 
         let data = Data {
-            response_name,
+            response_name: escaped_response_name,
+            is_error: self.is_status_error(response_name),
             content,
-            // body_schema,
         };
 
         self.renderer
@@ -58,37 +59,37 @@ impl ResponseGenerator {
         Ok(())
     }
 
-    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> String {
+    fn schema_to_rs(&self, schema: &RefOrObject<Schema>) -> Result<String, String> {
         let schema = match schema {
             RefOrObject::Ref(r) => r
                 .reference
                 .clone()
                 .split('/')
-                .last()
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                        r.reference
-                    )
-                })
+                .next_back()
+                .ok_or(format!(
+                    "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                    r.reference
+                ))?
                 .to_string(),
             RefOrObject::Object(_o) => {
-                todo!("Only reference is supported currently. Embedded objects in response are not supported yet.")
+                todo!(
+                    "Only reference is supported currently. Embedded objects in response are not supported yet."
+                )
             }
         };
 
-        format!("crate::dto::schema::{}", schema)
+        Ok(format!("crate::dto::schema::{schema}"))
     }
 
     fn generate_mod(
         &self,
         base_output_path: &str,
         responses: BTreeMap<String, Response>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let mut response_names: Vec<String> = Vec::new();
 
         for (name, _) in responses {
-            response_names.push(self.escape_response_name(name));
+            response_names.push(self.escape_response_name(&name));
         }
 
         let data = HashMap::from([("responseNames", response_names)]);
@@ -97,25 +98,28 @@ impl ResponseGenerator {
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    fn is_status_error(&self, name: String) -> bool {
+        match name[0..1].parse::<u8>() {
+            Ok(s) => s == 4,
+            Err(_) => false,
+        }
+    }
+
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let responses = spec.clone().components.responses;
 
         self.generate_mod(base_output_path, responses.clone())?;
 
         for (name, response) in responses.into_iter() {
-            self.generate_item(base_output_path, self.escape_response_name(name), &response)?;
+            self.generate_item(base_output_path, name, &response)?;
         }
 
         Ok(())

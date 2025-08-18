@@ -1,5 +1,5 @@
 use crate::data_type::id::{Id, IdFactory, IntId};
-use rand::Rng;
+use fastrand;
 
 pub struct IdFactoryMock {}
 
@@ -17,8 +17,7 @@ impl Default for IdFactoryMock {
 
 impl IdFactory for IdFactoryMock {
     fn create(&self) -> Id {
-        let mut rng = rand::thread_rng();
-        let id = rng.gen_range(1..u64::MAX);
+        let id = fastrand::u64(1..=u64::MAX);
 
         Box::new(IntId::new(id))
     }

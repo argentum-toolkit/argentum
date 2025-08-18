@@ -5,7 +5,6 @@ use argentum_openapi_infrastructure::data_type::{
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -33,7 +32,7 @@ impl RequestGenerator {
         base_output_path: &str,
         operation: &Operation,
         request_body: RequestBody,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!(
             "/src/dto/request/{}_request.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -43,23 +42,23 @@ impl RequestGenerator {
         let body = request_body
             .content
             .get("application/json")
-            .expect("Request body should contain `application/json` mime type");
+            .ok_or("Request body should contain `application/json` mime type")?;
 
         let schema = match &body.schema {
             RefOrObject::Ref(r) => r
                 .reference
                 .clone()
                 .split('/')
-                .last()
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
-                        r.reference
-                    )
-                })
+                .next_back()
+                .ok_or(format!(
+                    "Wrong schema href {}. Expected: `#/components/schemas/{{name}}`",
+                    r.reference
+                ))?
                 .to_string(),
             RefOrObject::Object(_o) => {
-                todo!("Only reference is supported currently. Embedded objects in request are not supported yet.")
+                todo!(
+                    "Only reference is supported currently. Embedded objects in request are not supported yet."
+                )
             }
         };
 
@@ -79,7 +78,7 @@ impl RequestGenerator {
         &self,
         base_output_path: &str,
         operation: &Operation,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let file_path = format!(
             "/src/dto/request/{}_request.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -100,65 +99,65 @@ impl RequestGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let data = HashMap::from([("operations", operations)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
 
         self.generate_mod(base_output_path, operations.clone())?;
 
         for operation in operations.into_iter() {
-            if operation.request_body.is_some() {
-                let request_body = match operation.clone().request_body.unwrap() {
-                    RefOrObject::Ref(r) => {
-                        let parts = r.reference.split("#/").collect::<Vec<_>>();
+            //TODO: RequestBodyExtractor::extract
+            match operation.clone().request_body {
+                Some(b) => {
+                    let request_body = match b {
+                        RefOrObject::Ref(r) => {
+                            let parts = r.reference.split("#/").collect::<Vec<_>>();
 
-                        if parts.clone().len() != 2 {
-                            panic!("Wrong format of reference {}", r.reference)
+                            if parts.clone().len() != 2 {
+                                return Err(format!("Wrong format of reference {}", r.reference));
+                            }
+
+                            let _file_path = parts
+                                .first()
+                                .ok_or(format!("Wrong file path of reference {}", r.reference))?;
+
+                            let component_path = parts.last().ok_or(format!(
+                                "Wrong component path of reference {}",
+                                r.reference
+                            ))?;
+
+                            let component_parts = component_path.split('/').collect::<Vec<_>>();
+
+                            if component_parts.clone().len() != 3
+                                || component_parts[0] != "components"
+                                || component_parts[1] != "requestBodies"
+                            {
+                                return Err(format!(
+                                    "Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`"
+                                ));
+                            }
+
+                            let component_name = component_parts.last()
+                                .ok_or(format!(
+                                    "Wrong component path {component_path}. Expected: `#/components/requestBodies/{{name}}`"
+                                ))?;
+
+                            spec.components.request_bodies[&component_name.to_string()].clone()
                         }
+                        RefOrObject::Object(request_body) => request_body,
+                    };
 
-                        let _file_path = parts.first().unwrap_or_else(|| {
-                            panic!("Wrong file path of reference {}", r.reference)
-                        });
-
-                        let component_path = parts.last().unwrap_or_else(|| {
-                            panic!("Wrong component path of reference {}", r.reference)
-                        });
-
-                        let component_parts = component_path.split('/').collect::<Vec<_>>();
-
-                        if component_parts.clone().len() != 3
-                            || component_parts[0] != "components"
-                            || component_parts[1] != "requestBodies"
-                        {
-                            panic!(
-                                "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
-                                component_path
-                            )
-                        }
-
-                        let component_name = component_parts.last().unwrap_or_else(|| panic!(
-                            "Wrong component path {}. Expected: `#/components/requestBodies/{{name}}`",
-                            component_path
-                        ));
-
-                        spec.components.request_bodies[&component_name.to_string()].clone()
-                    }
-                    RefOrObject::Object(request_body) => request_body,
-                };
-
-                self.generate_item_with_body(base_output_path, &operation, request_body)?;
-            } else {
-                self.generate_item_with_empty_body(base_output_path, &operation)?;
+                    self.generate_item_with_body(base_output_path, &operation, request_body)?;
+                }
+                None => {
+                    self.generate_item_with_empty_body(base_output_path, &operation)?;
+                }
             }
         }
 

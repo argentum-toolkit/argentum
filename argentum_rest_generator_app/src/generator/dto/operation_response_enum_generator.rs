@@ -3,7 +3,6 @@ use argentum_openapi_infrastructure::data_type::{Operation, RefOrObject, Specifi
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -26,19 +25,15 @@ impl OperationResponseEnumGenerator {
         Self { renderer }
     }
 
-    fn escape_response_name(&self, name: String) -> String {
-        if name[0..1].parse::<u8>().is_ok() {
-            "Status".to_owned() + &name
+    fn escape_response_name(&self, name: &str) -> String {
+        if !name.is_empty() && name[0..1].parse::<u8>().is_ok() {
+            "Status".to_owned() + name
         } else {
-            name
+            name.into()
         }
     }
 
-    fn generate_item(
-        &self,
-        base_output_path: &str,
-        operation: &Operation,
-    ) -> Result<(), Box<dyn Error>> {
+    fn generate_item(&self, base_output_path: &str, operation: &Operation) -> Result<(), String> {
         let file_path = format!(
             "/src/dto/operation_response_enum/{}_operation_response_enum.rs",
             operation.operation_id.to_case(Case::Snake)
@@ -52,20 +47,20 @@ impl OperationResponseEnumGenerator {
                     .reference
                     .clone()
                     .split('/')
-                    .last()
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
-                            r.reference
-                        )
-                    })
+                    .next_back()
+                    .ok_or(format!(
+                        "Wrong schema href {}. Expected: `#/components/responses/{{name}}`",
+                        r.reference
+                    ))?
                     .to_string(),
                 RefOrObject::Object(_) => {
-                    todo!("Only reference is supported currently. Embedded objects in response enum are not supported yet.")
+                    todo!(
+                        "Only reference is supported currently. Inline objects in response enum are not supported yet."
+                    )
                 }
             };
 
-            response_names.insert(code.to_string(), self.escape_response_name(response_name));
+            response_names.insert(code.to_string(), self.escape_response_name(&response_name));
         }
 
         let data = Data {
@@ -83,18 +78,14 @@ impl OperationResponseEnumGenerator {
         &self,
         base_output_path: &str,
         operations: Vec<Operation>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let data = HashMap::from([("operations", operations)]);
 
         self.renderer
             .render(base_output_path, MOD_TEMPLATE, data, MOD_PATH)
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let operations = spec.operations();
 
         self.generate_mod(base_output_path, operations.clone())?;

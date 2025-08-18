@@ -3,6 +3,7 @@ use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
 use async_trait::async_trait;
+use compiletime_regex::regex;
 use hyper::{Method, Uri};
 use regex::Regex;
 use std::collections::HashMap;
@@ -12,6 +13,7 @@ pub struct Router {
     pre_handler: Arc<PreHandler>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
+    regex_user_userid: Regex,
 }
 
 impl Router {
@@ -20,10 +22,15 @@ impl Router {
         error_pre_handler: Arc<ErrorPreHandler>,
         url_prefix: String,
     ) -> Self {
+        let regex_user_userid = regex!(
+            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"
+        );
+
         Self {
             pre_handler,
             error_pre_handler,
             url_prefix,
+            regex_user_userid,
         }
     }
 }
@@ -37,12 +44,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(_) = Regex::new(
-            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$",
-        )
-        .unwrap()
-        .captures(path)
-        {
+        if self.regex_user_userid.captures(path).is_some() {
             return match *method {
                 Method::GET => true,
                 _ => false,
@@ -59,12 +61,7 @@ impl RouterTrait for Router {
             Some(path) => path,
         };
 
-        if let Some(caps) = Regex::new(
-            r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$",
-        )
-        .unwrap()
-        .captures(path)
-        {
+        if let Some(caps) = self.regex_user_userid.captures(path) {
             let user_id = caps["userId"].to_string();
 
             let raw_path_params = HashMap::from([("user_id", user_id.as_str())]);

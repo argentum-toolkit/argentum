@@ -30,15 +30,19 @@ impl Serialize for Conflict {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::error::UnprocessableEntity;
+    use std::error::Error;
+
+    use crate::data_type::error::Conflict;
 
     #[test]
-    fn test_serialize() {
-        let ie = UnprocessableEntity::new(Box::new(ErrorMock {}));
+    fn test_serialize() -> Result<(), Box<dyn Error>> {
+        let ie = Conflict::new(Box::new(ErrorMock {}));
 
-        let actual = serde_json::to_string(&ie).unwrap();
+        let actual = serde_json::to_string(&ie)?;
 
-        assert_eq!("\"test error\"", actual)
+        assert_eq!("\"test error\"", actual);
+
+        Ok(())
     }
 
     #[derive(thiserror::Error, Debug)]

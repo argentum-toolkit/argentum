@@ -12,13 +12,15 @@ pub enum ComponentType {
     PathItem,
 }
 
-impl From<&str> for ComponentType {
-    fn from(value: &str) -> Self {
+impl TryFrom<&str> for ComponentType {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "schemas" => Self::Schema,
-            "requestBodies" => Self::RequestBody,
-            "responses" => Self::Response,
-            _ => panic!("wrong schema type"),
+            "schemas" => Ok(Self::Schema),
+            "requestBodies" => Ok(Self::RequestBody),
+            "responses" => Ok(Self::Response),
+            t => Err(format!("wrong schema type `{t}`")),
         }
     }
 }

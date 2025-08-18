@@ -15,14 +15,15 @@ impl SchemaExtractor {
     {
         let result = request.fetch_body().await;
 
-        if result.is_err() {
-            return Err(Violations::new(
-                vec!["Can't receive request body".to_string()],
-                None,
-            ));
-        }
-
-        let mut body = result.unwrap();
+        let mut body = match result {
+            Ok(r) => r,
+            Err(_e) => {
+                return Err(Violations::new(
+                    vec!["Can't receive request body".to_string()],
+                    None,
+                ));
+            }
+        };
 
         if body.is_empty() {
             body = Vec::from("{}");
@@ -91,6 +92,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "server")]
     #[tokio::test]
     pub async fn test_extract() {
         let extractor = SchemaExtractor::new();
@@ -101,6 +103,8 @@ mod tests {
         assert!(result.is_ok());
     }
 
+    //TODO: find the option to test it without tokio
+    #[cfg(feature = "server")]
     #[tokio::test]
     pub async fn test_extract_bad_json() {
         let extractor = SchemaExtractor::new();

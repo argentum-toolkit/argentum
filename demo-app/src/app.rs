@@ -9,25 +9,31 @@ use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct App {
+pub struct App<L>
+where
+    L: LoggerTrait,
+{
     id_factory: Arc<dyn IdFactory>,
     anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-    user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+    user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
     user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
     user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl App {
+impl<L> App<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         id_factory: Arc<dyn IdFactory>,
         anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-        user_logins_with_pw: Arc<UserLoginsWithPasswordUc>,
+        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
         user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
         user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
-        logger: Arc<dyn LoggerTrait>,
-    ) -> App {
-        App {
+        logger: Arc<L>,
+    ) -> Self {
+        Self {
             id_factory,
             anonymous_registers_uc,
             user_logins_with_pw,
@@ -38,12 +44,12 @@ impl App {
     }
 
     pub fn run(&self) -> Result<(), String> {
-        self.logger.trace("Demo trace log".to_string());
-        self.logger.debug("Demo debug log".to_string());
-        self.logger.info("Demo info log".to_string());
-        self.logger.warning("Demo warning log".to_string());
-        self.logger.error("Demo error log".to_string());
-        self.logger.critical("Demo critical log".to_string());
+        self.logger.trace("Demo trace log");
+        self.logger.debug("Demo debug log");
+        self.logger.info("Demo info log");
+        self.logger.warning("Demo warning log");
+        self.logger.error("Demo error log");
+        self.logger.critical("Demo critical log");
 
         // events
         pub struct DemoEvent {}
@@ -71,7 +77,7 @@ impl App {
 
         let anon_auth_result = self
             .user_authenticates_with_token
-            .execute(anon_session.token);
+            .execute(&anon_session.token);
 
         match anon_auth_result {
             Ok(_) => {}
@@ -83,17 +89,17 @@ impl App {
 
         let user_id = self.id_factory.create();
 
-        let name = NameBuilder::new("Sarah".into())
+        let name = NameBuilder::new("Sarah")
             .last(Some("Connor".into()))
             .try_build()
-            .unwrap();
-
-        let email = EmailAddress::try_new("sarah-connor@example.com".into()).unwrap();
+            .map_err(|e| format!("Wrong name: {}", e.errors.concat()))?;
+        let email = EmailAddress::try_new("sarah-connor@example.com")
+            .map_err(|e| format!("Wrong email address: {}", e.errors.concat()))?;
         let password = "111".into();
 
         let res = self
             .user_registers_with_pw
-            .execute(user_id, name, email, password);
+            .execute(user_id, name, email, password, true);
         match res {
             Ok(_) => {
                 println!("Registered")
@@ -105,7 +111,8 @@ impl App {
 
         let anon_id2 = self.id_factory.create();
         let anon2 = AnonymousUser::new(&anon_id2);
-        let email2 = EmailAddress::try_new("sarah-connor@example.com".into()).unwrap();
+        let email2 = EmailAddress::try_new("sarah-connor@example.com")
+            .map_err(|e| format!("Wrong email address: {}", e.errors.concat()))?;
         let password2 = "111".to_string();
 
         let login_result = self
@@ -123,7 +130,7 @@ impl App {
             }
         };
 
-        let aut_result = self.user_authenticates_with_token.execute(login.token);
+        let aut_result = self.user_authenticates_with_token.execute(&login.token);
 
         match aut_result {
             Ok(_) => {

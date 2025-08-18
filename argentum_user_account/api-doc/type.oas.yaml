@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: User Account component's types (schemas)
-  version: 0.2.0-dev
+  version: 0.3.0
 paths: { }
 
 components:
@@ -12,18 +12,34 @@ components:
       properties:
         email:
           type: string
+          title: Email address
           format: email
           example: test-email@test-email.com
+          x-ag-ui:
+            id: email
+            name: email
         name:
           $ref: '../../argentum_user/api-doc/type.oas.yaml#/components/schemas/UserName'
         password:
           type: string
+          title: Password
           format: password
           example: secure-password
+          x-ag-ui:
+            id: password
+            name: password
+        terms:
+          type: boolean
+          title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
+          example: "false"
+          x-ag-ui:
+            id: terms
+            name: terms
       required:
         - email
         - name
         - password
+        - terms
 
     AnonymousRegistrationResult:
       type: object
@@ -68,12 +84,17 @@ components:
       properties:
         email:
           type: string
+          title: Email
           format: email
           example: test-email@test-email.com
         password:
           type: string
+          title: Password
           format: password
           example: secure-password
+          x-ag-ui:
+            id: password
+            name: password
       required:
         - email
         - password

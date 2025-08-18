@@ -2,8 +2,8 @@ use argentum_rest_infrastructure::data_type::error::{BadRequestError, HttpError}
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
 use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
-use argentum_user_business::data_type::builder::NameBuilder;
 use argentum_user_business::data_type::Name;
+use argentum_user_business::data_type::builder::NameBuilder;
 use std::collections::BTreeMap;
 
 pub struct DtoToUserRegistersWithPasswordParams {}
@@ -16,11 +16,11 @@ impl DtoToUserRegistersWithPasswordParams {
     pub fn transform(
         &self,
         req: UserRegistersWithPasswordRequest,
-    ) -> Result<(Name, EmailAddress, String), HttpError> {
+    ) -> Result<(Name, EmailAddress, String, bool), HttpError> {
         let mut vo = BTreeMap::new();
 
         let raw_name = req.body.name.clone();
-        let name_result = NameBuilder::new(raw_name.first)
+        let name_result = NameBuilder::new(&raw_name.first)
             .last(raw_name.last)
             .try_build();
 
@@ -32,7 +32,7 @@ impl DtoToUserRegistersWithPasswordParams {
             }
         };
 
-        let email_result = EmailAddress::try_new(req.body.email);
+        let email_result = EmailAddress::try_new(&req.body.email);
 
         let email = match email_result {
             Ok(e) => Some(e),
@@ -42,8 +42,13 @@ impl DtoToUserRegistersWithPasswordParams {
             }
         };
 
-        if vo.is_empty() {
-            Ok((name.unwrap(), email.unwrap(), req.body.password))
+        let terms_accepted = req.body.terms;
+
+        if vo.is_empty()
+            && let Some(n) = name
+            && let Some(e) = email
+        {
+            Ok((n, e, req.body.password, terms_accepted))
         } else {
             Err(HttpError::BadRequest(BadRequestError::new(
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),

@@ -1,0 +1,26 @@
+{{#each responseNames as |response|~}}
+    use crate::dto::response::{{response}}Response;
+{{/each}}
+
+use dioxus::prelude::*;
+
+#[derive(Clone, PartialEq)]
+pub struct {{upper_camel operation.operationId}}Callbacks {
+    pub on_error: EventHandler<String>,
+
+    {{#each responseNames as |response|}}
+    pub on_{{snake response}}: EventHandler<{{upper_camel response}}Response>,
+    {{/each}}
+}
+
+impl Default for {{upper_camel operation.operationId}}Callbacks {
+    fn default() -> Self {
+        Self {
+            on_error: EventHandler::new(move |e: String| {dioxus_logger::tracing::error!("API error: `{e:?}`");}),
+
+            {{#each responseNames as |response|}}
+            on_{{snake response}}: EventHandler::new(move |_response: {{upper_camel response}}Response| {}),
+            {{/each}} 
+        }
+    }
+}

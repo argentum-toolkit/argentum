@@ -1,0 +1,8 @@
+{{ upper_camel typeName }}Input {
+    value: {{name}}_value(),
+    violations: {{name}}_violations,
+    oninput: move |event: {{ upper_camel typeName }}| {
+        {{name}}_value.set(event);
+        update();
+    }
+}

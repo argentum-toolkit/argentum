@@ -1,5 +1,4 @@
 use argentum_openapi_infrastructure::data_type::SpecificationRoot;
-use std::error::Error;
 
 pub(crate) struct OasYamlGenerator {}
 
@@ -10,24 +9,24 @@ impl OasYamlGenerator {
         Self {}
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let file_path = base_output_path.to_owned() + PATH;
 
         let path = std::path::Path::new(file_path.as_str());
-        let prefix = path.parent().unwrap();
-        std::fs::create_dir_all(prefix).unwrap();
+        let prefix = path
+            .parent()
+            .ok_or(format!("Can't find parent path: {path:?}"))?;
+        std::fs::create_dir_all(prefix).map_err(|e| format!("Can't create dir. Error: {e}"))?;
 
         let f = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(file_path)?;
+            .open(file_path)
+            .map_err(|e| format!("Can't open file. Error: {e}"))?;
 
-        serde_yaml::to_writer(f, &spec)?;
+        serde_yaml_ng::to_writer(f, &spec)
+            .map_err(|e| format!("Can't write yaml file. Error: {e}"))?;
 
         Ok(())
     }

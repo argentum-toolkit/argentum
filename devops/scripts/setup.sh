@@ -16,7 +16,7 @@ docker compose up -d service.user.db service.user_account.db
 sleep 10
 
 ### Migrations
-cd demo-web-app
+cd demo-api-app
 cargo run --bin migration
 cd ..
 

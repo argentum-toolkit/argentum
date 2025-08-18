@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: User Account component's responses
-  version: 0.2.0-dev
+  version: 0.3.0
 
 paths: { }
 
@@ -38,6 +38,13 @@ components:
 
     404:
       description: Unauthorized
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "./type.oas.yaml#/components/schemas/ProblemDetail"
+
+    409:
+      description: Conflict
       content:
         "application/problem+json":
           schema:

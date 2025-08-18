@@ -1,7 +1,8 @@
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_account_business::entity::credential::PasswordCredential;
 use argentum_user_account_business::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,
@@ -11,13 +12,21 @@ use std::sync::Arc;
 use crate::db::dto::PasswordCredentialDto;
 use futures::executor::block_on;
 
-pub struct PasswordCredentialRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+const TABLE_NAME: &str = "ag_user_account_password_credential";
+
+pub struct PasswordCredentialRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl PasswordCredentialRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> PasswordCredentialRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -25,11 +34,14 @@ impl PasswordCredentialRepository {
     }
 }
 
-impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
+impl<L> PasswordCredentialRepositoryTrait for PasswordCredentialRepository<L>
+where
+    L: LoggerTrait,
+{
     fn save(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         let user_id = self.id_factory.id_to_uuid(&cred.user_id);
-        let sql = "INSERT INTO ag_user_account_password_credential (user_id, password, salt) VALUES ($1, $2, $3)";
-        let query = sqlx::query(sql)
+        let sql = format!("INSERT INTO {TABLE_NAME} (user_id, password, salt) VALUES ($1, $2, $3)");
+        let query = sqlx::query(&sql)
             .bind(user_id)
             .bind(cred.password.clone())
             .bind(cred.salt.clone());
@@ -48,8 +60,9 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
     ) -> Result<Option<PasswordCredential>, PasswordCredentialRepositoryError> {
         let id = self.id_factory.id_to_uuid(user_id);
 
-        let sql = "SELECT user_id, password, salt FROM ag_user_account_password_credential WHERE user_id = $1 LIMIT 1";
-        let query_as = sqlx::query_as(sql).bind(id);
+        let sql =
+            format!("SELECT user_id, password, salt FROM {TABLE_NAME} WHERE user_id = $1 LIMIT 1");
+        let query_as = sqlx::query_as(&sql).bind(id);
         let result: Result<Option<PasswordCredentialDto>, DbAdapterError> =
             block_on(self.adapter.fetch_one(query_as));
 
@@ -67,9 +80,9 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepository {
     fn delete(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         let user_id = self.id_factory.id_to_uuid(&cred.user_id);
 
-        let query =
-            sqlx::query("DELETE FROM ag_user_account_password_credential WHERE user_id = $1")
-                .bind(user_id);
+        let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
+
+        let query = sqlx::query(&sql).bind(user_id);
 
         let result = block_on(self.adapter.exec(query));
 

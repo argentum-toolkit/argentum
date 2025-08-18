@@ -1,10 +1,10 @@
-use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
 use argentum_rest_infrastructure::data_type::SerializableBody;
+use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
 
 use crate::dto::schema::User;
 
 #[derive(Clone)]
-pub struct ApplicationJson(User);
+pub struct ApplicationJson(pub User);
 
 impl ContentTypeResponseTrait for ApplicationJson {
     fn content_type(&self) -> Option<String> {
@@ -16,6 +16,7 @@ impl ContentTypeResponseTrait for ApplicationJson {
     }
 }
 
+#[derive(Clone)]
 pub enum GetUserOkResponse {
     ApplicationJson(ApplicationJson),
 }

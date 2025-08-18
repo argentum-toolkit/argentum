@@ -7,12 +7,9 @@ User Account API
 
 This server was generated from OpenAPI specification by the link:https://gitlab.com/argentum-toolkit/argentum(argentum-rest-generator).
 
-- API version: 0.2.0-dev
+- API version: 0.3.0
 - Package Name: argentum_user_account_rest
-    - Home page: https://github.com/argentum-toolkit/argentum
-    - Repository: https://github.com/argentum-toolkit/argentum
-    - Home page: https://github.com/argentum-toolkit/argentum
-    - License: `BSD-3-Clause`
+    - License: `LGPL-3.0`
 
 
 == How to use
@@ -21,10 +18,6 @@ This server was generated from OpenAPI specification by the link:https://gitlab.
 
 ==== Clone this repository or publish it as a crate
 
-    [source,bash]
-    ....
-    $ git clone https://github.com/argentum-toolkit/argentum rest
-    ....
 
 link:https://doc.rust-lang.org/cargo/commands/cargo-publish.html[How to publish]
 
@@ -44,18 +37,18 @@ $ cd app
 [package]
 name = "argentum_user_account_rest_app"
 description = "Argentum User Account component API"
-version = "0.2.0-dev"
-edition = "2021"
+version = "0.3.0"
+edition = "2024"
 
 [dependencies]
-argentum_log_business = { path = "../../argentum_log/business", version = ">=0.2.0-dev,<0.3.0" }
-argentum_log_infrastructure = { path = "../../argentum_log/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
-argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.2.0-dev,<0.3.0" }
-argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
-argentum_user_business = { path = "../../argentum_user/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_log_business = { version = ">=0.3.0,<0.4.0" }
+argentum_log_infrastructure = { version = ">=0.3.0,<0.4.0" }
+argentum_rest_infrastructure = { version = ">=0.3.0,<0.4.0" }
+argentum_standard_business = { version = ">=0.3.0,<0.4.0" }
+argentum_user_business = { version = ">=0.3.0,<0.4.0" }
 
 argentum_user_account_rest = { path = "../rest" }
-tokio = { version = "1.34.*", features = ["full"] }
+tokio = { version = "^1.40.*", features = ["full"] }
 ....
 
 .main.rs

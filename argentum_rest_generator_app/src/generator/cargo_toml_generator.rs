@@ -1,7 +1,6 @@
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{License, SpecificationRoot};
 use serde::Serialize;
-use std::error::Error;
 use std::sync::Arc;
 
 const PATH: &str = "/Cargo.toml";
@@ -38,7 +37,7 @@ impl CargoTomlGenerator {
         repository: Option<String>,
         documentation: Option<String>,
         argentum_path: Option<String>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), String> {
         let data = Data {
             package_name,
             description: spec.info.title.clone(),

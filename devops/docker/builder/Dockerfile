@@ -1,3 +1,4 @@
-FROM rust:1.78
+FROM rust:1.89
 
-RUN rustup component add clippy rustfmt
+RUN rustup component add clippy rustfmt 
+RUN cargo install --locked cargo-deny

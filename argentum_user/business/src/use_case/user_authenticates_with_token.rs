@@ -25,7 +25,7 @@ impl UserAuthenticatesWithTokenUc {
         }
     }
 
-    pub fn execute(&self, token: String) -> Result<User, AuthenticationError> {
+    pub fn execute(&self, token: &str) -> Result<User, AuthenticationError> {
         let session = match self.session_repository.find_by_token(token)? {
             Some(s) => s,
             None => return Err(AuthenticationError::WrongToken),
@@ -93,16 +93,16 @@ mod tests {
         //Data
         let user_id: Id = id_factory.create();
         let session_id = id_factory.create();
-        let token = "test-token".to_string();
+        let token = "test-token";
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
             NameBuilder::new("Dionne".into())
                 .last(Some("Morrison".into()))
                 .try_build()
-                .unwrap(),
-            EmailAddress::try_new("aa@a.com".into()).unwrap(),
+                .expect("Name should be valid"),
+            EmailAddress::try_new("aa@a.com".into()).expect("Email should be valid"),
         );
-        let session = Session::new(session_id, user_id.clone(), token.clone());
+        let session = Session::new(session_id, user_id.clone(), token);
 
         //Prefilling
         authenticated_user_repository
@@ -119,7 +119,7 @@ mod tests {
             session_repository,
         );
 
-        let result = uc.execute(token.clone());
+        let result = uc.execute(token);
 
         match result {
             Ok(u) => match u {
@@ -139,8 +139,8 @@ mod tests {
     }
 
     #[test]
-    fn test_authenticates_with_token_should_returns_error_if_token_invalid(
-    ) -> Result<(), &'static str> {
+    fn test_authenticates_with_token_should_returns_error_if_token_invalid()
+    -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
@@ -149,16 +149,16 @@ mod tests {
         //Data
         let user_id: Id = id_factory.create();
         let session_id = id_factory.create();
-        let token = "test-token".to_string();
+        let token = "test-token";
         let authenticated_user = AuthenticatedUser::new(
             &user_id,
             NameBuilder::new("Dionne".into())
                 .last(Some("Morrison".into()))
                 .try_build()
-                .unwrap(),
-            EmailAddress::try_new("aa@a.com".into()).unwrap(),
+                .expect("Name should be valid"),
+            EmailAddress::try_new("aa@a.com".into()).expect("Email should be valid"),
         );
-        let session = Session::new(session_id, user_id.clone(), token.clone());
+        let session = Session::new(session_id, user_id.clone(), token);
 
         //Prefilling
         authenticated_user_repository
@@ -191,8 +191,8 @@ mod tests {
     }
 
     #[test]
-    fn test_authenticates_with_token_should_returns_error_if_user_doesnt_exist(
-    ) -> Result<(), &'static str> {
+    fn test_authenticates_with_token_should_returns_error_if_user_doesnt_exist()
+    -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
@@ -201,8 +201,8 @@ mod tests {
         //Data
         let user_id: Id = id_factory.create();
         let session_id = id_factory.create();
-        let token = "test-token".to_string();
-        let session = Session::new(session_id, user_id.clone(), token.clone());
+        let token = "test-token";
+        let session = Session::new(session_id, user_id.clone(), token);
 
         //Prefilling
         session_repository
@@ -216,7 +216,7 @@ mod tests {
             session_repository,
         );
 
-        let result = uc.execute(token.clone());
+        let result = uc.execute(token);
 
         match result {
             Ok(_) => {

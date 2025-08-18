@@ -1,7 +1,7 @@
-use hyper::StatusCode;
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
+use http::StatusCode;
 
-{{#each responseNames as |name|}}
+{{#each responseNames as |name|~}}
 use crate::dto::response::{{upper_camel name}}Response;
 {{/each}}
 

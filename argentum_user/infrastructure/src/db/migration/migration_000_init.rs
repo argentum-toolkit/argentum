@@ -10,11 +10,12 @@ pub fn up(table_name_prefix: &str) -> Vec<String> {
     queries.push(format!(
         r#"
             CREATE TABLE {prefix}authenticated (
-                id         uuid PRIMARY KEY,
+                id uuid PRIMARY KEY,
                 created_at timestamptz NOT NULL,
-                first_name varchar     NOT NULL,
-                last_name  varchar     NOT NULL,
-                email      varchar     NOT NULL
+                first_name varchar NOT NULL,
+                last_name varchar,
+                additional_name varchar,
+                email varchar NOT NULL
             );
         "#,
         prefix = table_name_prefix

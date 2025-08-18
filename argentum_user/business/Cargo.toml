@@ -1,18 +1,18 @@
 [package]
 name = "argentum_user_business"
 description = "Business layer of user component"
-version = "0.2.6"
+version = "0.3.0"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
-license = "BSD-3-Clause"
-edition = "2021"
-homepage = "https://github.com/argentum-toolkit/argentum"
-repository = "https://github.com/argentum-toolkit/argentum"
-documentation = "https://github.com/argentum-toolkit/argentum"
-readme = "readme.adoc"
+license = "LGPL-3.0"
+edition = "2024"
+homepage = "https://gitlab.com/argentum-toolkit/argentum"
+repository = "https://gitlab.com/argentum-toolkit/argentum"
+documentation = "https://gitlab.com/argentum-toolkit/argentum"
+readme = "README.md"
 
 [dependencies]
 #argentum_encryption_business = "0.1.0"
-argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.2.0-dev,<0.3.0" }
-argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.2.0-dev,<0.3.0" }
+argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.3.0,<0.4.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0,<0.4.0" }
 chrono = "0.4.*"
-thiserror = "1.0.*"
+thiserror = "2.0.*"

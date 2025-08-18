@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: User component's types (schemas)
-  version: 0.2.0-dev
+  version: 0.3.0
 
 paths: { }
 
@@ -33,15 +33,32 @@ components:
           minLength: 1
           maxLength: 255
           example: Winston
+          title: "First Name"
+          x-ag-ui:
+              id: user_first_name
+              name: user_first_name
+            #TODO: x-ag-type: 
+
         last:
           type: string
           minLength: 1
           maxLength: 255
           example: Marko
-        patronymic:
+          title: "Last Name"
+          x-ag-ui:
+              id: user_last_name
+              name: user_last_name
+
+        additional:
           type: string
           minLength: 1
           maxLength: 255
+          title: "Additional"
+          x-ag-ui:
+            id: user_additional
+            name: user_additional
+            weight: 100
 
       required:
         - first
+  

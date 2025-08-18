@@ -1,0 +1,5 @@
+mod user_logins_with_password_form_processor;
+mod user_registers_with_password_form_processor;
+
+pub use user_logins_with_password_form_processor::UserLoginsWithPasswordFormProcessor;
+pub use user_registers_with_password_form_processor::UserRegistersWithPasswordFormProcessor;

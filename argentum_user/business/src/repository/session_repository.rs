@@ -3,7 +3,7 @@ use argentum_standard_business::data_type::id::Id;
 use std::error::Error;
 
 pub trait SessionRepositoryTrait: Send + Sync {
-    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError>;
+    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError>;
     fn save(&self, session: &Session) -> Result<(), SessionRepositoryError>;
     fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError>;
 }

@@ -5,16 +5,37 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
-pub struct ProblemDetail {
-    pub code: i32,
+use crate::dto::schema::Violation;
+use crate::dto::schema::ViolationRaw;
 
-    pub message: Option<String>,
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
+pub struct ProblemDetail {
+    pub body: Option<Violation>,
+
+    pub detail: Option<String>,
+
+    pub status: i32,
+
+    pub title: String,
+
+    pub r#type: Option<String>,
 }
 
 impl ProblemDetail {
-    pub fn new(code: i32, message: Option<String>) -> Self {
-        Self { code, message }
+    pub fn new(
+        body: Option<Violation>,
+        detail: Option<String>,
+        status: i32,
+        title: String,
+        r#type: Option<String>,
+    ) -> Self {
+        Self {
+            body,
+            detail,
+            status,
+            title,
+            r#type,
+        }
     }
 }
 
@@ -26,17 +47,39 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let code = raw.code;
-        if code.is_none() {
+        let body = match raw.body {
+            Some(raw_body) => match Violation::try_from_raw(raw_body) {
+                Ok(value) => Some(value),
+                Err(v) => {
+                    argentum_violations.insert("body".into(), v);
+
+                    None
+                }
+            },
+            None => None,
+        };
+        let detail = raw.detail;
+        let status = raw.status;
+        if status.is_none() {
             argentum_violations.insert(
-                "code".into(),
+                "status".into(),
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
-        let message = raw.message;
+        let title = raw.title;
+        if title.is_none() {
+            argentum_violations.insert(
+                "title".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
+        let r#type = raw.r#type;
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(code.unwrap(), message))
+        if argentum_violations.is_empty()
+            && let Some(status) = status
+            && let Some(title) = title
+        {
+            Ok(Self::new(body, detail, status, title, r#type))
         } else {
             Err(Violations::new(
                 vec!["wrong data for ProblemDetail".to_string()],
@@ -48,8 +91,14 @@ impl DeserializableSchemaRaw<'_> for ProblemDetail {
 
 #[derive(serde::Deserialize)]
 pub struct ProblemDetailRaw {
-    #[serde(rename = "code")]
-    pub code: Option<i32>,
-    #[serde(rename = "message")]
-    pub message: Option<String>,
+    #[serde(rename = "body")]
+    pub body: Option<ViolationRaw>,
+    #[serde(rename = "detail")]
+    pub detail: Option<String>,
+    #[serde(rename = "status")]
+    pub status: Option<i32>,
+    #[serde(rename = "title")]
+    pub title: Option<String>,
+    #[serde(rename = "type")]
+    pub r#type: Option<String>,
 }

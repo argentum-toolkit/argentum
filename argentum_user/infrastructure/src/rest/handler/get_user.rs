@@ -42,7 +42,7 @@ impl GetUserTrait for GetUserHandler {
                     UserNameDto::new(
                         user.name.first.to_string(),
                         user.name.last.map(|l| l.to_string()),
-                        user.name.patronymic.map(|p| p.to_string()),
+                        user.name.additional.map(|a| a.to_string()),
                     ),
                 );
 

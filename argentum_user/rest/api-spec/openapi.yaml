@@ -4,9 +4,9 @@ info:
     url: https://gitlab.com/argentum-toolkit/argentum
   description: User API
   license:
-    name: BSD-3-Clause
+    name: LGPL-3.0
   title: Argentum User component API
-  version: 0.2.0-dev
+  version: 0.3.0
 servers:
 - description: Dev API Server with CORS
   url: http://localhost:{port}/{basePath}
@@ -23,10 +23,10 @@ servers:
     basePath:
       default: api/v1
     port:
-      default: '8080'
+      default: '8088'
       enum:
       - '80'
-      - '8080'
+      - '8088'
 tags:
 - description: Managing of the users
   name: user
@@ -67,19 +67,26 @@ components:
       title: Schema for error response
       description: RFC 7807 Problem Details for HTTP APIs
       required:
-      - code
+      - status
       - title
       properties:
-        code:
+        body:
+          $ref: '#/components/schemas/Violation'
+        detail:
+          type: string
+        status:
           example: '401'
           maximum: 599.0
           minimum: 400.0
           type: integer
           format: int32
-        message:
-          example: '{"some": "json"}'
+        title:
+          example: Bad Request
           type: string
-      type: null
+        type:
+          example: about:blank
+          type: string
+      type: object
     User:
       required:
       - email
@@ -100,21 +107,51 @@ components:
       required:
       - first
       properties:
+        additional:
+          title: Additional
+          maxLength: 255
+          minLength: 1
+          type: string
+          x-ag-ui:
+            id: user_additional
+            name: user_additional
+            weight: 100
         first:
           example: Winston
+          title: First Name
           maxLength: 255
           minLength: 1
           type: string
+          x-ag-ui:
+            id: user_first_name
+            name: user_first_name
+            weight: 0
         last:
           example: Marko
+          title: Last Name
           maxLength: 255
           minLength: 1
           type: string
-        patronymic:
-          maxLength: 255
-          minLength: 1
-          type: string
+          x-ag-ui:
+            id: user_last_name
+            name: user_last_name
+            weight: 0
       type: object
+    Violation:
+      properties:
+        errors:
+          $ref: '#/components/schemas/ViolationErrors'
+        items:
+          $ref: '#/components/schemas/ViolationItems'
+      type: object
+    ViolationErrors:
+      items:
+        type: string
+      type: array
+    ViolationItems:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Violation'
   responses:
     '401':
       content:

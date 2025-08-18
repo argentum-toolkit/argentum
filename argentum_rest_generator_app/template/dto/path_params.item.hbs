@@ -1,4 +1,4 @@
-{{# each dependencies as |dep|}}
+{{# each dependencies as |dep|~}}
 use {{dep}};
 {{/each}}
 
@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde_valid::Validate;
 use argentum_rest_infrastructure::data_type::HttpPathParams;
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, Clone, PartialEq)]
 pub struct {{upper_camel  operation.operationId }}PathParams {
     {{# each properties as |prop| }}
         pub {{ snake prop.name }}: {{{ prop.dataType }}},

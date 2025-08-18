@@ -14,18 +14,21 @@ pub trait RestorePasswordTokenRepositoryTrait: Sync + Send {
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError>;
 
     fn save(&self, token: &RestorePasswordToken)
-        -> Result<(), RestorePasswordTokenRepositoryError>;
+    -> Result<(), RestorePasswordTokenRepositoryError>;
 
     fn delete_users_tokens(&self, user_id: &Id) -> Result<(), RestorePasswordTokenRepositoryError>;
 }
 
 #[derive(thiserror::Error, Debug)]
 pub enum RestorePasswordTokenRepositoryError {
-    #[error("Can't save session")]
+    #[error("Can't save restore password token")]
     Save(#[source] Option<Box<dyn Error>>),
 
-    #[error("Can't delete session")]
+    #[error("Can't delete restore password token")]
     Delete(#[source] Option<Box<dyn Error>>),
+
+    #[error("Can't find restore password token")]
+    Find(#[source] Option<Box<dyn Error>>),
 
     #[error("Restore Password Token repository error")]
     Other(#[source] Option<Box<dyn Error>>),

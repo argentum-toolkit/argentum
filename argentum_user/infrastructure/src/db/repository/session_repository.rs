@@ -1,8 +1,9 @@
 use crate::db::dto::SessionDto;
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::entity::session::Session;
 use argentum_user_business::repository::session_repository::{
     SessionRepositoryError, SessionRepositoryTrait,
@@ -10,13 +11,21 @@ use argentum_user_business::repository::session_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-pub struct SessionRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+const TABLE_NAME: &str = "ag_user_session";
+
+pub struct SessionRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl SessionRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> SessionRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -24,11 +33,14 @@ impl SessionRepository {
     }
 }
 
-impl SessionRepositoryTrait for SessionRepository {
-    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
+impl<L> SessionRepositoryTrait for SessionRepository<L>
+where
+    L: LoggerTrait,
+{
+    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
         //move todo table name/prefix to const/param
-        let sql = "SELECT id, user_id, token FROM ag_user_session WHERE token = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(token);
+        let sql = format!("SELECT id, user_id, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1");
+        let query = sqlx::query_as(&sql).bind(token);
 
         let result: Result<Option<SessionDto>, DbAdapterError> =
             block_on(self.adapter.fetch_one(query));
@@ -49,8 +61,8 @@ impl SessionRepositoryTrait for SessionRepository {
         let id = self.id_factory.id_to_uuid(&session.id);
         let user_id = self.id_factory.id_to_uuid(&session.user_id);
 
-        let sql = "INSERT INTO ag_user_session (id, user_id, token) VALUES ($1, $2, $3)";
-        let query = sqlx::query(sql)
+        let sql = format!("INSERT INTO {TABLE_NAME} (id, user_id, token) VALUES ($1, $2, $3)");
+        let query = sqlx::query(&sql)
             .bind(id)
             .bind(user_id)
             .bind(session.token.clone());
@@ -65,8 +77,9 @@ impl SessionRepositoryTrait for SessionRepository {
 
     fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
         let id = self.id_factory.id_to_uuid(user_id);
+        let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
 
-        let query = sqlx::query("DELETE FROM ag_user_session WHERE user_id = $1").bind(id);
+        let query = sqlx::query(&sql).bind(id);
 
         let result = block_on(self.adapter.exec(query));
 

@@ -37,13 +37,8 @@ impl EmailAddress {
             return Err(ERR_EMAIL_EMPTY.into());
         }
 
-        let re = Regex::new(
-            r"(?x) # enable insigificant whitespace mode
-            ^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$
-        ")
-        .unwrap();
-
-        if re.is_match(email.as_str()) {
+        //EMAIL_REGEX is defined outside
+        if EMAIL_REGEX.is_match(email.as_str()) {
             Ok(EmailAddress(email))
         } else {
             //Constant will be converted into `Violation`
@@ -85,8 +80,8 @@ pub struct NameBuilder {
 }
 
 impl NameBuilder {
-    pub fn new(first: String) -> Self {
-        let mut violations = HashMap::new();
+    pub fn new(first: &str) -> Self {
+        let mut violations = BTreeMap::new();
 
         let first_name = match NamePart::try_new(first) {
             Ok(f) => Some(f),
@@ -99,6 +94,7 @@ impl NameBuilder {
         Self {
             first: first_name,
             last: None,
+            additional: None,
             violations,
         }
     }
@@ -106,7 +102,7 @@ impl NameBuilder {
     pub fn last(mut self, last: Option<String>) -> Self {
         self.last = match last {
             None => None,
-            Some(l) => match NamePart::try_new(l) {
+            Some(l) => match NamePart::try_new(&l) {
                 Ok(ln) => Some(ln),
                 Err(v) => {
                     self.violations.insert("last".into(), v);
@@ -119,21 +115,32 @@ impl NameBuilder {
         self
     }
 
-    pub fn try_build(&self) -> Result<Name, Violations> {
-        if self.violations.is_empty() {
-            Ok(Name::new(
-                self.first.clone().unwrap(),
-                self.last.clone(),
-            ))
-        } else {
-            Err(Violations::new(
+    pub fn additional(mut self, additional: Option<String>) -> Self {
+        self.additional = match additional {
+            None => None,
+            Some(l) => match NamePart::try_new(&l) {
+                Ok(ln) => Some(ln),
+                Err(v) => {
+                    self.violations.insert("additional".into(), v);
+
+                    None
+                }
+            },
+        };
+
+        self
+    }
+
+    pub fn try_build(&self) -> InvariantResult<Name> {
+        match self.first.clone() {
+            Some(first) => Ok(Name::new(first, self.last.clone(), self.additional.clone())),
+            None => Err(Violations::new(
                 vec![ERR_WRONG_NAME.to_string()],
-                Some(ViolationItems::Object(self.violations.clone())),
-            ))
+                Some(ViolationItem::Object(self.violations.clone())),
+            )),
         }
     }
 }
-
 
 ----
 
@@ -141,14 +148,45 @@ impl NameBuilder {
 
 === Pros (+)
 
-<TBD>
+- *No temporal coupling* — an instance of a type can never be in an invalid state, so there's no need to remember to run a validator before use.
+
+- *Explicit and centralized error handling* — all errors are collected in the Violations structure, with support for nested errors for inner fields.
+
+- *Better UX* — users get detailed, localizable error messages instead of generic "invalid input" errors.
+
+- *Modularity* — each type is responsible for its own consistency, making the codebase easier to maintain and evolve.
+
+- *Type safety* — objects can't exist in a half-initialized state, reducing logical errors and potential vulnerabilities.
 
 === Cons (-)
 
-<TBD>
+- *Complexity with nested structures* - requires a Builder pattern (or similar) to accumulate errors from multiple fields.
 
-== How to check (Validation) <TBD>
+- *Learning curve* - developers unfamiliar with the approach may need time to adapt.
+
+- *Extra allocations* - Builders may create temporary structures to collect errors during object construction.
+
+== How to check (Validation) 
+
+=== In code
+
+- Ensure all public constructors (new, try_new) either create a valid object or return Err(Violations).
+- Verify there are no setters or public methods that can mutate the object into an invalid state.
+- For nested structures, ensure a Builder (or similar mechanism) is used to collect errors.
+
+=== In tests
+
+- Positive tests: valid input creates an object without errors.
+- Negative tests: invalid input returns Err with a correct Violations structure.
+- Complex tests: nested validation errors are grouped correctly under corresponding fields.
+
+=== In code review
+- Check that validation logic lives inside the type’s constructor, not in external validators.
+- Make sure all error messages are clear and localizable.
+- Confirm that constructors do not allow partial initialization without errors.
 
 == Links
 
-<TBD>
+* https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/[Parse, don’t validate — Alexis King]
+* https://medium.com/hoppinger/type-driven-development-for-single-page-applications-bf8ee98d48e2[Type-Driven Development for Single Page Applications]
+* https://github.com/PacktPublishing/Learn-Type-Driven-Development[Learn Type-Driven Development (GitHub)]

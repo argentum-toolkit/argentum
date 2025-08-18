@@ -11,7 +11,7 @@ impl IdTrait for UniqueId {
     fn id_eq(&self, other: &dyn Any) -> bool {
         other
             .downcast_ref::<Self>()
-            .map_or(false, |id| id.value == self.value)
+            .is_some_and(|id| id.value == self.value)
     }
     fn as_any(&self) -> &dyn Any {
         self
@@ -49,7 +49,7 @@ impl UniqueIdFactory {
         id.as_any()
             .downcast_ref::<UniqueId>()
             .map(|id| id.value)
-            .unwrap()
+            .expect("Should be UUID compatible")
     }
 }
 
@@ -71,7 +71,7 @@ pub fn new_unique_id() -> Id {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::unique_id::{new_unique_id, UniqueIdFactory};
+    use crate::data_type::unique_id::{UniqueIdFactory, new_unique_id};
     use argentum_standard_business::data_type::id::IdFactory;
 
     #[test]

@@ -1,0 +1,7 @@
+mod login_with_password_schema_input;
+mod registration_with_password_schema_input;
+mod user_name_input;
+
+pub use login_with_password_schema_input::LoginWithPasswordSchemaInput;
+pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInput;
+pub use user_name_input::UserNameInput;

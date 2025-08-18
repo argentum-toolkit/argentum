@@ -1,5 +1,4 @@
 use crate::template::Renderer;
-use std::error::Error;
 use std::sync::Arc;
 
 pub(crate) struct LibGenerator {
@@ -14,7 +13,7 @@ impl LibGenerator {
         Self { renderer }
     }
 
-    pub fn generate(&self, base_output_path: &str) -> Result<(), Box<dyn Error>> {
+    pub fn generate(&self, base_output_path: &str) -> Result<(), String> {
         let data = "";
 
         self.renderer

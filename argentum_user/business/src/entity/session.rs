@@ -8,7 +8,11 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(id: Id, user_id: Id, token: String) -> Self {
-        Session { id, user_id, token }
+    pub fn new(id: Id, user_id: Id, token: &str) -> Self {
+        Session {
+            id,
+            user_id,
+            token: token.into(),
+        }
     }
 }

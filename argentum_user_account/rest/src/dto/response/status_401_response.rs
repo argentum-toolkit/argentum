@@ -1,10 +1,10 @@
-use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
 use argentum_rest_infrastructure::data_type::SerializableBody;
+use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
 
 use crate::dto::schema::ProblemDetail;
 
 #[derive(Clone)]
-pub struct ApplicationProblemJson(ProblemDetail);
+pub struct ApplicationProblemJson(pub ProblemDetail);
 
 impl ContentTypeResponseTrait for ApplicationProblemJson {
     fn content_type(&self) -> Option<String> {
@@ -16,6 +16,7 @@ impl ContentTypeResponseTrait for ApplicationProblemJson {
     }
 }
 
+#[derive(Clone)]
 pub enum Status401Response {
     ApplicationProblemJson(ApplicationProblemJson),
 }

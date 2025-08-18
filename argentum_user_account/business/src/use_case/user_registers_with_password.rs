@@ -38,7 +38,12 @@ impl UserRegistersWithPasswordUc {
         name: Name,
         email: EmailAddress,
         password: String,
+        terms_accepted: bool,
     ) -> Result<AuthenticatedUser, RegistrationError> {
+        if !terms_accepted {
+            return Err(RegistrationError::TermsNotAccepted);
+        }
+
         let result = self.user_repository.find_by_email(&email);
 
         if result?.is_some() {
@@ -66,7 +71,12 @@ impl UserRegistersWithPasswordUc {
 
 #[derive(thiserror::Error, Debug)]
 pub enum RegistrationError {
-    #[error("User with email Already exists")]
+    #[error(
+        "Please confirm that you agree to the Terms and Conditions and our Privacy Policy to proceed."
+    )]
+    TermsNotAccepted,
+
+    #[error("User with such email already exists")]
     EmailAlreadyExists,
 
     #[error("Can't encrypt password")]
@@ -124,10 +134,11 @@ mod test {
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
-            .unwrap();
-        let email = EmailAddress::try_new("demo@test.com".into()).unwrap();
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
-        let result = uc.execute(id.clone(), name, email, password);
+        let terms = true;
+        let result = uc.execute(id.clone(), name, email, password, terms);
 
         match result {
             Ok(u) => {
@@ -138,6 +149,42 @@ mod test {
             Err(_) => {
                 return Err("Can't register an user");
             }
+        }
+    }
+
+    #[test]
+    fn test_user_registers_without_accepting_of_terms() -> Result<(), &'static str> {
+        let credential_repository = PasswordCredentialRepositoryMock::new();
+        let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
+        let encryptor = EncryptorMock::new();
+        let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
+        let uc = UserRegistersWithPasswordUc::new(
+            Arc::new(authenticated_user_repository),
+            Arc::new(credential_writer),
+            Arc::new(encryptor),
+        );
+        let id_factory = IdFactoryMock::new();
+
+        let id: Id = id_factory.create();
+        let name = NameBuilder::new("John".into())
+            .last(Some("Cooper".into()))
+            .try_build()
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
+        let password = "123".into();
+        let terms = false;
+        let result = uc.execute(id.clone(), name, email, password, terms);
+
+        match result {
+            Ok(u) => {
+                assert_eq!(u.id.to_string(), id.clone().to_string());
+
+                Err("Should return an error")
+            }
+            Err(e) => match e {
+                RegistrationError::TermsNotAccepted => Ok(()),
+                _ => Err("Wrong Error"),
+            },
         }
     }
 
@@ -159,10 +206,11 @@ mod test {
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
-            .unwrap();
-        let email = EmailAddress::try_new("demo@test.com".into()).unwrap();
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
-        let result = uc.execute(id.clone(), name, email, password);
+        let terms = true;
+        let result = uc.execute(id.clone(), name, email, password, terms);
 
         match result {
             Ok(u) => {

@@ -133,37 +133,37 @@ $ devops/scripts/check-item.sh {{package-name}}
 * *thiserror* - errors
 * *chrono* - time
 
+== Dioxus dependencies
+
+As soon as Argentum ToolKit uses Dioxus, we need to have some dependencies such as `perl`
+
+[source,shell]
+....
+cargo install dioxus-cli
+....
+
 == TODO
 
-=== V0.3
+=== V0.4
 
 * DI builders: make it similar
-* behaviour tests
-
-* performance optimization
+* behavior tests
 
 * rest-generator
-** scripts to simplify generation of API library
-** publish generator to hub.docker.com
+** tooling
+*** scripts to simplify generation of API library
+*** publish generator to hub.docker.com
 ** create regex factory for all types of `path params`
-** ?Use Generated response for Error responses instead of `Err(HttpError::Conflict(Conflict::new(Box::new(e))))`?
 ** generate `query params`
-** generate embedded objects
+** ?generate inline objects
 ** tests
 ** fix generator for cases when string field parses as integer
 
-* Configure Cargo for local development and for release as described there https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
-
-* Profiling
-
 * DB
-** table names as a const or as a param
-** Move DB to new database component
 ** ?Foreign key for session
 
 * documentation
 ** ADR
-** codegen
 ** other?
 
 * New type for Password
@@ -172,3 +172,23 @@ $ devops/scripts/check-item.sh {{package-name}}
 
 * notifications
 * macro for creation Id types (for user, for account for event)
+
+
+== License
+* Versions prior to *0.3*: BSD 3-Clause License
+* Version *0.3 and later*: GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+
+See link:LICENSE[LICENSE] for full details.
+
+© 2020–2025 Vital Leshchyk <vitalleshchyk@gmail.com>
+
+
+== Contributing
+
+Please read the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.adoc) before contributing.
+
+To contribute, you **must sign the CLA** by adding a file in the `cla-signatures/` directory as described in the CLA document.
+
+Your pull request or merge request will be accepted only if a valid CLA signature file is present for your GitHub/GitLab username.
+
+Thank you for your contribution!

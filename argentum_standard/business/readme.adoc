@@ -1,1 +1,1 @@
-= Argentum ToolKit Standard. A business logick.
+= Argentum ToolKit Standard. Business logic.

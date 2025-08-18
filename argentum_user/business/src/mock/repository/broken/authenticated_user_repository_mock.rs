@@ -28,7 +28,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrok
         Ok(self
             .users
             .read()
-            .unwrap()
+            .map_err(|_| ExternalUserError::Authenticated(Some("`RwLock` is poisoned".into())))?
             .get(id)
             .map(|u| AuthenticatedUser::new(&u.id().clone(), u.name.clone(), u.email.clone())))
     }
@@ -37,7 +37,12 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrok
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
-        for (_, u) in self.users.read().unwrap().iter() {
+        let guard = self
+            .users
+            .read()
+            .map_err(|_| ExternalUserError::Anonymous(Some("`RwLock` is poisoned".into())))?;
+
+        for (_, u) in guard.iter() {
             if &u.email == email {
                 return Ok(Some(AuthenticatedUser::new(
                     &u.id().clone(),

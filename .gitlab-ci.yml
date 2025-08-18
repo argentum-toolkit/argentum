@@ -11,14 +11,54 @@ variables:
   # See https://github.com/docker-library/docker/pull/166
   DOCKER_TLS_CERTDIR: ""
 
+
 before_script:
   - docker info
   - docker --version
   - docker compose version
   - docker compose pull builder
 
+stages:
+  - build
+  - check
 
 build:
   stage: build
   script:
-    - docker compose run builder devops/scripts/check.sh
+    - docker compose run --rm --build builder devops/scripts/check.sh
+
+check_cla:
+  stage: check
+  image: alpine:3.19
+  before_script:
+    - apk add --no-cache git
+    - git fetch origin $CI_DEFAULT_BRANCH
+  script:
+    - |
+      echo "Detecting commit authors compared to $CI_DEFAULT_BRANCH..."
+      AUTHORS=$(git log origin/$CI_DEFAULT_BRANCH..HEAD --format="%ae" | sort -u)
+
+      if [ -z "$AUTHORS" ]; then
+        echo "No new authors detected. Skipping CLA check."
+        exit 0
+      fi
+
+      echo "Authors detected:"
+      echo "$AUTHORS"
+
+      MISSING=0
+      for EMAIL in $AUTHORS; do
+        USERNAME=$(echo "$EMAIL" | sed 's/@.*//')
+        CLA_FILE="cla-signatures/${USERNAME}.adoc"
+        if [ ! -f "$CLA_FILE" ]; then
+          echo "ERROR: CLA not signed for user $USERNAME ($EMAIL)"
+          MISSING=$((MISSING+1))
+        else
+          echo "CLA found for $USERNAME ($EMAIL)"
+        fi
+      done
+
+      if [ "$MISSING" -gt 0 ]; then
+        echo "FAIL: $MISSING contributor(s) missing CLA signatures."
+        exit 1
+      fi

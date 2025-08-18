@@ -30,8 +30,8 @@ impl ErrorPreHandler {
 }
 #[cfg(test)]
 mod tests {
-    use crate::data_type::error::HttpError;
     use crate::data_type::RequestTrait;
+    use crate::data_type::error::HttpError;
     use crate::service::ErrorPreHandler;
     use async_trait::async_trait;
     use hyper::{Error, HeaderMap, Method};
@@ -54,6 +54,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "server")]
     #[tokio::test]
     async fn test_handle_not_found() {
         let handler = ErrorPreHandler::new();
@@ -68,6 +69,7 @@ mod tests {
         assert!(matches!(res, Err(HttpError::RouteNotFound(_))));
     }
 
+    #[cfg(feature = "server")]
     #[tokio::test]
     async fn test_handle_not_allowed() {
         let handler = ErrorPreHandler::new();

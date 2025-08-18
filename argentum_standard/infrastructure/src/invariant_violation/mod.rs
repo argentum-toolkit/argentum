@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 pub type ViolationObjectDto = BTreeMap<String, ViolationsDto>;
 pub type ViolationArrayDto = Vec<ViolationsDto>;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize)]
+#[serde(untagged)]
 pub enum ViolationItemDto {
     Object(ViolationObjectDto),
     Array(ViolationArrayDto),
@@ -39,13 +40,6 @@ impl From<&ViolationItem> for ViolationItemDto {
     }
 }
 
-impl From<&Violations> for ViolationsDto {
-    fn from(violations: &Violations) -> Self {
-        let items = violations.items.as_ref().map(ViolationItemDto::from);
-        ViolationsDto::new(violations.errors.clone(), items)
-    }
-}
-
 impl From<ViolationItemDto> for ViolationItem {
     fn from(val: ViolationItemDto) -> Self {
         match val {
@@ -67,9 +61,15 @@ impl From<ViolationItemDto> for ViolationItem {
 
 impl From<ViolationsDto> for Violations {
     fn from(val: ViolationsDto) -> Self {
-        // self.items.unwrap()
         let items = val.items.as_ref().map(|v| (*v).clone().into());
         Violations::new(val.errors.clone(), items)
+    }
+}
+
+impl From<&Violations> for ViolationsDto {
+    fn from(violations: &Violations) -> Self {
+        let items = violations.items.as_ref().map(ViolationItemDto::from);
+        ViolationsDto::new(violations.errors.clone(), items)
     }
 }
 
@@ -85,7 +85,7 @@ impl Serialize for ViolationItemDto {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub struct ViolationsDto {
     pub errors: Vec<String>,
 
@@ -105,6 +105,16 @@ impl ViolationsDto {
         };
 
         self.errors.is_empty() && items_empty
+    }
+
+    pub fn get_obj_item(&self, key: String) -> Self {
+        match &self.items {
+            Some(ViolationItemDto::Object(o)) => match o.get(&key) {
+                Some(v) => v.clone(),
+                None => Self::new(vec![], None),
+            },
+            _ => Self::new(vec![], None),
+        }
     }
 }
 
@@ -127,6 +137,12 @@ mod tests {
             let v = ViolationsDto::new(vec![], Some(ViolationItemDto::Array(vec![])));
             assert!(v.is_empty());
         }
+    }
+
+    #[test]
+    fn test_violations_default_are_empty() {
+        let v: ViolationsDto = Default::default();
+        assert!(v.is_empty());
     }
 
     #[test]

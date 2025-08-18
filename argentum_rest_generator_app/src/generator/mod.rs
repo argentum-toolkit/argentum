@@ -9,7 +9,9 @@ mod oas_yaml_generator;
 mod openapi_generator;
 mod readme_adoc_generator;
 pub(crate) mod server;
+pub(crate) mod ui;
 
+pub(crate) mod client;
 pub(crate) mod path_param;
 
 pub(crate) use cargo_toml_generator::CargoTomlGenerator;

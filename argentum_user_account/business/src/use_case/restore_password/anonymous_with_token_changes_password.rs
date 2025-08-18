@@ -8,23 +8,29 @@ use argentum_log_business::LoggerTrait;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use std::sync::Arc;
 
-pub struct AnonymousWithTokenChangesPasswordUc {
+pub struct AnonymousWithTokenChangesPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
     encryptor: Arc<dyn Encryptor>,
     token_ttl: u32, //configurable ttl in seconds
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl AnonymousWithTokenChangesPasswordUc {
+impl<L> AnonymousWithTokenChangesPasswordUc<L>
+where
+    L: LoggerTrait,
+{
     pub fn new(
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
         encryptor: Arc<dyn Encryptor>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
         token_ttl: u32,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
     ) -> Self {
         Self {
             user_repository,
@@ -77,7 +83,7 @@ impl AnonymousWithTokenChangesPasswordUc {
             .delete_users_tokens(&user.id)
         {
             self.logger
-                .warning(format!("Restore password token is not deleted. {:?}", e));
+                .warning(format!("Restore password token is not deleted. {e:?}"));
         }
 
         Ok(())
@@ -106,12 +112,13 @@ mod tests {
     use argentum_user_business::entity::user::AuthenticatedUser;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use std::error::Error;
     use std::sync::Arc;
     use std::thread;
     use std::time::Duration;
 
     #[test]
-    fn anonymous_with_token_changes_password() -> Result<(), &'static str> {
+    fn anonymous_with_token_changes_password() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -136,35 +143,35 @@ mod tests {
         let user_name = NameBuilder::new("Dionne".into())
             .last(Some("Morrison".into()))
             .try_build()
-            .unwrap();
-        let email = EmailAddress::try_new("test@mail.com".into()).unwrap();
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 
-        user_repository.save(&user).unwrap();
+        user_repository.save(&user)?;
 
         let token = token_generator.generate(&user.id);
         let token_id = id_factory.create();
         let restore_token = RestorePasswordToken::new(token_id, user.id.clone(), token.clone());
 
-        token_repository.save(&restore_token).unwrap();
+        token_repository.save(&restore_token)?;
 
         let password = "234".to_string();
         let result = uc.execute(token, password);
 
         if let Err(_) = result {
-            return Err("Password is not changed");
+            return Err("Password is not changed".into());
         }
 
         if let Ok(None) = credential_repository.find_by_user_id(&user_id) {
-            return Err("Can't find new password");
+            return Err("Can't find new password".into());
         }
 
         Ok(())
     }
 
     #[test]
-    fn anonymous_with_expired_token_changes_password() -> Result<(), &'static str> {
+    fn anonymous_with_expired_token_changes_password() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -190,19 +197,19 @@ mod tests {
         let user_name = NameBuilder::new("Dionne".into())
             .last(Some("Morrison".into()))
             .try_build()
-            .unwrap();
+            .expect("Name should be valid");
 
-        let email = EmailAddress::try_new("test@mail.com".into()).unwrap();
+        let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 
-        user_repository.save(&user).unwrap();
+        user_repository.save(&user)?;
 
         let token = token_generator.generate(&user.id);
         let token_id = id_factory.create();
         let restore_token = RestorePasswordToken::new(token_id, user.id.clone(), token.clone());
 
-        token_repository.save(&restore_token).unwrap();
+        token_repository.save(&restore_token)?;
 
         thread::sleep(Duration::from_secs(1));
 
@@ -212,9 +219,9 @@ mod tests {
         match result {
             Err(e) => match e {
                 RestorePasswordError::TokenExpired => Ok(()),
-                _ => Err("Should return 'Token Expired' error"),
+                _ => Err("Should return 'Token Expired' error".into()),
             },
-            _ => Err("Should return 'Token Expired' error."),
+            _ => Err("Should return 'Token Expired' error.".into()),
         }
     }
 }

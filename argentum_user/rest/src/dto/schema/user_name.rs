@@ -5,21 +5,21 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct UserName {
     pub first: String,
 
     pub last: Option<String>,
 
-    pub patronymic: Option<String>,
+    pub additional: Option<String>,
 }
 
 impl UserName {
-    pub fn new(first: String, last: Option<String>, patronymic: Option<String>) -> Self {
+    pub fn new(first: String, last: Option<String>, additional: Option<String>) -> Self {
         Self {
             first,
             last,
-            patronymic,
+            additional,
         }
     }
 }
@@ -40,10 +40,12 @@ impl DeserializableSchemaRaw<'_> for UserName {
             );
         }
         let last = raw.last;
-        let patronymic = raw.patronymic;
+        let additional = raw.additional;
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(first.unwrap(), last, patronymic))
+        if argentum_violations.is_empty()
+            && let Some(first) = first
+        {
+            Ok(Self::new(first, last, additional))
         } else {
             Err(Violations::new(
                 vec!["wrong data for UserName".to_string()],
@@ -59,6 +61,6 @@ pub struct UserNameRaw {
     pub first: Option<String>,
     #[serde(rename = "last")]
     pub last: Option<String>,
-    #[serde(rename = "patronymic")]
-    pub patronymic: Option<String>,
+    #[serde(rename = "additional")]
+    pub additional: Option<String>,
 }

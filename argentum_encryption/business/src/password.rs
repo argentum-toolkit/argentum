@@ -3,11 +3,19 @@ pub trait Encryptor: Send + Sync {
 }
 
 pub trait Validator: Send + Sync {
-    fn validate(&self, password: &str, salt: &str, encoded_password: &str) -> bool;
+    fn validate(
+        &self,
+        password: &str,
+        salt: &str,
+        encoded_password: &str,
+    ) -> Result<bool, EncryptionError>;
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, PartialEq)]
 pub enum EncryptionError {
     #[error("Can't generate a salt")]
     SaltError,
+
+    #[error("Encription error: {0}")]
+    Other(String),
 }

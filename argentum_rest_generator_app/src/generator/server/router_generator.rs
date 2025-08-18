@@ -4,7 +4,6 @@ use argentum_openapi_infrastructure::data_type::{
     InPlace, Operation, Parameter, SpecificationRoot,
 };
 use std::collections::{BTreeMap, HashMap};
-use std::error::Error;
 use std::sync::Arc;
 
 pub(crate) struct RouterGenerator {
@@ -16,8 +15,10 @@ const PATH: &str = "/src/server/router.rs";
 const TEMPLATE: &str = "server/router";
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 struct PathData {
     pub pattern: String,
+    pub const_name: String,
     pub operations: BTreeMap<String, Operation>,
     pub params: Vec<Parameter>,
 }
@@ -30,11 +31,19 @@ impl RouterGenerator {
         }
     }
 
-    pub fn generate(
-        &self,
-        base_output_path: &str,
-        spec: &SpecificationRoot,
-    ) -> Result<(), Box<dyn Error>> {
+    fn path_to_const_name(&self, path: String) -> String {
+        let name = path
+            .trim_start_matches('/')
+            .replace("/", "_")
+            .replace("{", "")
+            .replace("}", "")
+            .replace("-", "_")
+            .to_uppercase();
+
+        name.strip_suffix('_').unwrap_or(&name).to_string()
+    }
+
+    pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
         let mut paths_data: Vec<PathData> = vec![];
 
         for (url, path) in spec.clone().paths {
@@ -75,8 +84,11 @@ impl RouterGenerator {
 
             pattern.push('$');
 
+            let const_name = self.path_to_const_name(url);
+
             let item = PathData {
                 pattern,
+                const_name,
                 operations,
                 params: path_params,
             };

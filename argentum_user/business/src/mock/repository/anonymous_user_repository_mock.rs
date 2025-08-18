@@ -24,7 +24,12 @@ impl Default for AnonymousUserRepositoryMock {
 
 impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
     fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
-        Ok(self.users.read().unwrap().get(id).map(|u| AnonymousUser {
+        let guard = self
+            .users
+            .read()
+            .map_err(|_| ExternalUserError::Anonymous(Some("`RwLock` is poisoned".into())))?;
+
+        Ok(guard.get(id).map(|u| AnonymousUser {
             id: u.id.clone(),
             created_at: u.created_at,
         }))
@@ -41,7 +46,7 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
         match self
             .users
             .write()
-            .unwrap()
+            .map_err(|_| ExternalUserError::Anonymous(Some("`RwLock` is poisoned".into())))?
             .insert(user.id().clone(), u)
             .is_none()
         {

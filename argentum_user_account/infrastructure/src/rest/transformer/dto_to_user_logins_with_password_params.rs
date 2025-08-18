@@ -15,27 +15,20 @@ impl DtoToUserLoginsWithPasswordParams {
         &self,
         req: UserLoginsWithPasswordRequest,
     ) -> Result<(EmailAddress, String), HttpError> {
-        let mut vo = BTreeMap::new();
+        let email_result = EmailAddress::try_new(&req.body.email);
 
-        let email_result = EmailAddress::try_new(req.body.email);
-
-        let email = match email_result {
-            Ok(e) => Some(e),
+        match email_result {
+            Ok(em) => Ok((em, req.body.password)),
             Err(v) => {
-                vo.insert("email".to_string(), v);
-                None
-            }
-        };
+                let vo = BTreeMap::from([("email".into(), v)]);
 
-        if vo.is_empty() {
-            Ok((email.unwrap(), req.body.password))
-        } else {
-            Err(HttpError::BadRequest(BadRequestError::new(
-                Violations::new(vec![], Some(ViolationItem::Object(vo))),
-                Violations::new(vec![], None),
-                Violations::new(vec![], None),
-                Violations::new(vec![], None),
-            )))
+                Err(HttpError::BadRequest(BadRequestError::new(
+                    Violations::new(vec![], Some(ViolationItem::Object(vo))),
+                    Violations::new(vec![], None),
+                    Violations::new(vec![], None),
+                    Violations::new(vec![], None),
+                )))
+            }
         }
     }
 }

@@ -18,4 +18,7 @@ pub enum AnonymousBindingRepositoryError {
 
     #[error("Can't find an anonymous binding")]
     Find(#[source] Option<Box<dyn Error>>),
+
+    #[error("Anonymous binding repository error")]
+    Other(#[source] Option<Box<dyn Error>>),
 }

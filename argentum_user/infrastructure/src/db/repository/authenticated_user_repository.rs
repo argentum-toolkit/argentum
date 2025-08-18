@@ -1,27 +1,36 @@
 use crate::db::dto::AuthenticatedUserDto;
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::data_type::builder::NameBuilder;
 use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{
     AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
 use futures::executor::block_on;
+use sqlx::Postgres;
 use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
-use sqlx::Postgres;
 use std::sync::Arc;
 
-pub struct AuthenticatedUserRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+const TABLE_NAME: &str = "ag_user_authenticated";
+
+pub struct AuthenticatedUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl AuthenticatedUserRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> AuthenticatedUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -37,17 +46,16 @@ impl AuthenticatedUserRepository {
 
         match result {
             Ok(Some(dto)) => {
-                let email = match EmailAddress::try_new(dto.email.clone()) {
+                let email = match EmailAddress::try_new(&dto.email) {
                     Ok(e) => e,
                     Err(_) => {
                         return Err(ExternalUserError::Authenticated(Some(Box::new(
                             BrokenStoredData::Email(dto.email.clone()),
-                        ))))
+                        ))));
                     }
                 };
 
-                let name_builder =
-                    NameBuilder::new(dto.first_name.clone()).last(dto.last_name.clone());
+                let name_builder = NameBuilder::new(&dto.first_name).last(dto.last_name.clone());
 
                 let name = match name_builder.try_build() {
                     Ok(n) => n,
@@ -55,9 +63,9 @@ impl AuthenticatedUserRepository {
                         return Err(ExternalUserError::Authenticated(Some(Box::new(
                             BrokenStoredData::UserName {
                                 first: dto.first_name.clone(),
-                                last: dto.last_name.clone(),
+                                last: dto.last_name,
                             },
-                        ))))
+                        ))));
                     }
                 };
 
@@ -75,11 +83,16 @@ impl AuthenticatedUserRepository {
     }
 }
 
-impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
+impl<L> AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find(&self, user_id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         let id = self.id_factory.id_to_uuid(user_id);
-        let sql = "SELECT id, created_at, first_name, last_name, email FROM ag_user_authenticated WHERE id = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(id);
+        let sql = format!(
+            "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
+        );
+        let query = sqlx::query_as(&sql).bind(id);
 
         self.find_one(query)
     }
@@ -88,8 +101,10 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
-        let sql = "SELECT id, created_at, first_name, last_name, email FROM ag_user_authenticated WHERE email = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(email.as_string());
+        let sql = format!(
+            "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
+        );
+        let query = sqlx::query_as(&sql).bind(email.as_string());
 
         self.find_one(query)
     }
@@ -99,8 +114,10 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository {
 
         let last = user.name.last.as_ref().map(|l| l.to_string());
 
-        let sql = "INSERT INTO ag_user_authenticated (id, created_at, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)";
-        let query = sqlx::query(sql)
+        let sql = format!(
+            "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)"
+        );
+        let query = sqlx::query(&sql)
             .bind(id)
             .bind(user.created_at)
             .bind(user.name.first.to_string())

@@ -1,38 +1,50 @@
 use crate::data_type::error::HttpError;
 use crate::data_type::{HttpResponse, ProblemDetail};
 use argentum_log_business::LoggerTrait;
-use hyper::StatusCode;
+use http::StatusCode;
 use std::sync::Arc;
 
-pub struct ErrorHandler {
-    logger: Arc<dyn LoggerTrait>,
+pub struct ErrorHandler<L>
+where
+    L: LoggerTrait,
+{
+    logger: Arc<L>,
 }
 
-impl ErrorHandler {
-    pub fn new(logger: Arc<dyn LoggerTrait>) -> Self {
+impl<L> ErrorHandler<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(logger: Arc<L>) -> Self {
         Self { logger }
     }
 
     pub fn handle(&self, err: HttpError) -> HttpResponse {
         match err {
             HttpError::NotImplemented(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::NOT_IMPLEMENTED;
                 HttpResponse::new(
                     code,
-                    Box::new(ProblemDetail::new(None, code.to_string(), code, None, None)),
+                    Box::new(ProblemDetail::new(
+                        None,
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
+                        code,
+                        None,
+                        None,
+                    )),
                 )
             }
             HttpError::BadRequest(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::BAD_REQUEST;
                 HttpResponse::new(
                     code,
                     Box::new(ProblemDetail::new(
                         None,
-                        "Bad Request".to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         None,
                         Some(Box::new(e)),
@@ -40,14 +52,14 @@ impl ErrorHandler {
                 )
             }
             HttpError::Unauthorized(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::UNAUTHORIZED;
                 HttpResponse::new(
                     code,
                     Box::new(ProblemDetail::new(
                         None,
-                        "Unauthorized".to_string(),
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
                         code,
                         Some(e.msg),
                         None,
@@ -55,7 +67,7 @@ impl ErrorHandler {
                 )
             }
             HttpError::NotFound(e) | HttpError::RouteNotFound(e) => {
-                self.logger.warning(format!("{:?}", e));
+                self.logger.warning(format!("{e:?}"));
 
                 let code = StatusCode::NOT_FOUND;
                 HttpResponse::new(
@@ -64,7 +76,7 @@ impl ErrorHandler {
                 )
             }
             HttpError::MethodNotAllowed(e) => {
-                self.logger.warning(format!("{:?}", e));
+                self.logger.warning(format!("{e:?}"));
 
                 let code = StatusCode::METHOD_NOT_ALLOWED;
                 HttpResponse::new(
@@ -73,7 +85,7 @@ impl ErrorHandler {
                 )
             }
             HttpError::Conflict(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::CONFLICT;
                 HttpResponse::new(
@@ -88,7 +100,7 @@ impl ErrorHandler {
                 )
             }
             HttpError::UnprocessableEntity(e) => {
-                self.logger.info(format!("{:?}", e));
+                self.logger.info(format!("{e:?}"));
 
                 let code = StatusCode::UNPROCESSABLE_ENTITY;
                 HttpResponse::new(
@@ -97,12 +109,18 @@ impl ErrorHandler {
                 )
             }
             HttpError::InternalServerError(e) => {
-                self.logger.error(format!("Internal server error {:?}", e));
+                self.logger.error(format!("Internal server error {e:?}"));
 
                 let code = StatusCode::INTERNAL_SERVER_ERROR;
                 HttpResponse::new(
                     code,
-                    Box::new(ProblemDetail::new(None, code.to_string(), code, None, None)),
+                    Box::new(ProblemDetail::new(
+                        None,
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
+                        code,
+                        None,
+                        None,
+                    )),
                 )
             }
         }
@@ -115,15 +133,18 @@ mod tests {
         BadRequestError, HttpError, InternalServerError, MethodNotAllowedError, NotFoundError,
         NotImplementedError,
     };
+
     use crate::service::ErrorHandler;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::invariant_violation::Violations;
-    use hyper::{Method, StatusCode};
+    use http::StatusCode;
+    use hyper::Method;
     use serde_json::json;
+    use std::error::Error;
     use std::sync::Arc;
 
     #[test]
-    fn test_handle_not_implemented() {
+    fn test_handle_not_implemented() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -131,20 +152,22 @@ mod tests {
         let response = handler.handle(HttpError::NotImplemented(NotImplementedError::new()));
         assert_eq!(response.code, StatusCode::NOT_IMPLEMENTED);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
-            "title": "501 Not Implemented",
+            "title": "Not Implemented",
             "status": 501,
             "detail": null
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_bad_request() {
+    fn test_handle_bad_request() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -157,7 +180,7 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::BAD_REQUEST);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -167,10 +190,12 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_not_found() {
+    fn test_handle_not_found() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -180,7 +205,7 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::NOT_FOUND);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -190,10 +215,12 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_method_nod_allowed() {
+    fn test_handle_method_nod_allowed() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -203,7 +230,7 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::METHOD_NOT_ALLOWED);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
@@ -213,10 +240,12 @@ mod tests {
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[test]
-    fn test_handle_internal_server_error() {
+    fn test_handle_internal_server_error() -> Result<(), Box<dyn Error>> {
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
         let handler = ErrorHandler::new(logger);
@@ -226,16 +255,18 @@ mod tests {
         )));
         assert_eq!(response.code, StatusCode::INTERNAL_SERVER_ERROR);
 
-        let str = serde_json::to_value(&response.body).unwrap();
+        let str = serde_json::to_value(&response.body)?;
 
         let expected = json!({
             "type": "about:blank",
-            "title": "500 Internal Server Error",
+            "title": "Internal Server Error",
             "status": 500,
             "detail": null
         });
 
         assert_eq!(str, expected);
+
+        Ok(())
     }
 
     #[derive(thiserror::Error, Debug)]

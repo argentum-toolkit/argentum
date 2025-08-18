@@ -1,5 +1,5 @@
 use crate::service::{RawQueryParams, ValidationErrorTransformer};
-use argentum_standard_business::invariant_violation::InvariantResult;
+use argentum_standard_business::invariant_violation::{InvariantResult, Violations};
 use serde::Deserialize;
 use serde_valid::json::FromJsonSlice;
 use std::sync::Arc;
@@ -19,7 +19,13 @@ impl QueryParamsExtractor {
     where
         R: for<'a> Deserialize<'a> + for<'a> FromJsonSlice<'a>,
     {
-        let pp = serde_json::to_string(&raw_query_params).unwrap();
+        //TODO: log error
+        let pp = serde_json::to_string(&raw_query_params).map_err(|_e| {
+            Violations::new(
+                vec!["Internal server error (query param serialization)".to_string()],
+                None,
+            )
+        })?;
         let deserialized = R::from_json_slice(pp.as_ref());
 
         match deserialized {
@@ -39,6 +45,7 @@ mod tests {
     use serde::Deserialize;
     use serde_valid::Validate;
     use std::collections::HashMap;
+    use std::error::Error;
     use std::sync::Arc;
 
     #[derive(Debug, Deserialize, Validate)]
@@ -47,14 +54,16 @@ mod tests {
     }
 
     #[test]
-    pub fn test_extract() {
+    pub fn test_extract() -> Result<(), Box<dyn Error>> {
         let extractor = QueryParamsExtractor::new(Arc::new(ValidationErrorTransformer::new()));
 
         let params = HashMap::from([("title".to_string(), "v".to_string())]);
         let result = extractor.extract::<ExtractMock>(params);
 
         assert!(result.is_ok());
-        assert_eq!(result.unwrap().title, "v".to_string());
+        assert_eq!(result.map_err(|_| "Can't extract")?.title, "v".to_string());
+
+        Ok(())
     }
 
     #[test]

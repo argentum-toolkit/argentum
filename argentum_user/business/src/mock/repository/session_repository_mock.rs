@@ -24,13 +24,18 @@ impl Default for SessionRepositoryMock {
 }
 
 impl SessionRepositoryTrait for SessionRepositoryMock {
-    fn find_by_token(&self, token: String) -> Result<Option<Session>, SessionRepositoryError> {
-        for (_, s) in self.sessions.read().unwrap().iter() {
+    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
+        let guard = self
+            .sessions
+            .read()
+            .map_err(|_| SessionRepositoryError::Other(Some("`RwLock` is poisoned".into())))?;
+
+        for (_, s) in guard.iter() {
             if s.token == token {
                 return Ok(Some(Session::new(
                     s.id.clone(),
                     s.user_id.clone(),
-                    s.token.clone(),
+                    &s.token,
                 )));
             }
         }
@@ -41,16 +46,12 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
     fn save(&self, session: &Session) -> Result<(), SessionRepositoryError> {
         // TODO: check if key exists
 
-        let s = Session::new(
-            session.id.clone(),
-            session.user_id.clone(),
-            session.token.clone(),
-        );
+        let s = Session::new(session.id.clone(), session.user_id.clone(), &session.token);
 
         match self
             .sessions
             .write()
-            .unwrap()
+            .map_err(|_| SessionRepositoryError::Other(Some("`RwLock` is poisoned".into())))?
             .insert(session.id.clone(), s)
             .is_none()
         {
@@ -62,7 +63,12 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
     fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
         let mut id: Option<Id> = None;
 
-        for (k, s) in self.sessions.read().unwrap().iter() {
+        let guard = self
+            .sessions
+            .read()
+            .map_err(|_| SessionRepositoryError::Other(Some("`RwLock` is poisoned".into())))?;
+
+        for (k, s) in guard.iter() {
             if &s.user_id == user_id {
                 id = Some(k.clone());
 
@@ -71,7 +77,10 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
         }
 
         if let Some(id) = id {
-            self.sessions.write().unwrap().remove(&id);
+            self.sessions
+                .write()
+                .map_err(|_| SessionRepositoryError::Other(Some("`RwLock` is poisoned".into())))?
+                .remove(&id);
         }
 
         Ok(())

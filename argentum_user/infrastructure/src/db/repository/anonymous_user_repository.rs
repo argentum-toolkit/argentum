@@ -1,8 +1,9 @@
 use crate::db::dto::AnonymousUserDto;
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
-use argentum_standard_infrastructure::db::adapter::DbAdapterError;
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
 use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, ExternalUserError,
@@ -10,13 +11,21 @@ use argentum_user_business::repository::user_repository::{
 use futures::executor::block_on;
 use std::sync::Arc;
 
-pub struct AnonymousUserRepository {
-    adapter: Arc<SqlxPostgresAdapter>,
+const TABLE_NAME: &str = "ag_user_anonymous";
+
+pub struct AnonymousUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
     id_factory: Arc<UniqueIdFactory>,
 }
 
-impl AnonymousUserRepository {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter>, id_factory: Arc<UniqueIdFactory>) -> Self {
+impl<L> AnonymousUserRepository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
         Self {
             adapter,
             id_factory,
@@ -24,12 +33,15 @@ impl AnonymousUserRepository {
     }
 }
 
-impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
+impl<L> AnonymousUserRepositoryTrait for AnonymousUserRepository<L>
+where
+    L: LoggerTrait,
+{
     fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
         let user_id = self.id_factory.id_to_uuid(id);
         //move todo table name/prefix to const/param
-        let sql = "SELECT id, created_at FROM ag_user_anonymous WHERE id = $1 LIMIT 1";
-        let query = sqlx::query_as(sql).bind(user_id);
+        let sql = format!("SELECT id, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1");
+        let query = sqlx::query_as(&sql).bind(user_id);
 
         let result: Result<Option<AnonymousUserDto>, DbAdapterError> =
             block_on(self.adapter.fetch_one(query));
@@ -48,8 +60,8 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepository {
     fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError> {
         let id = self.id_factory.id_to_uuid(&user.id);
 
-        let sql = "INSERT INTO ag_user_anonymous (id, created_at) VALUES ($1, $2)";
-        let query = sqlx::query(sql).bind(id).bind(user.created_at);
+        let sql = format!("INSERT INTO {TABLE_NAME} (id, created_at) VALUES ($1, $2)");
+        let query = sqlx::query(&sql).bind(id).bind(user.created_at);
 
         let result = block_on(self.adapter.exec(query));
 

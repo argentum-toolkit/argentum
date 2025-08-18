@@ -1,0 +1,24 @@
+= Contributor License Agreement (CLA)
+:doctype: book
+:toc: left
+
+This Contributor License Agreement ("Agreement") is made between the contributor ("You") and Vital Leshchyk ("Project Author") regarding contributions to Argentum ToolKit.
+
+== Grant of Rights
+
+By making a contribution, you agree to grant the Project Author and all users of the Argentum ToolKit project a perpetual, worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and distribute your contributions under the terms of the project's license (LGPL v3.0).
+
+== Representations
+
+You represent that you have the rights to grant this license and that your contribution is your original work or you have the right to submit it under this agreement.
+
+== Agreement
+
+Please sign this agreement by adding a file in the `cla-signatures/` directory of the repository following the naming convention `<git-username>.adoc` with the following content:
+
+----
+I, <Full Name>, agree to the Contributor License Agreement for Argentum ToolKit.
+Date: YYYY-MM-DD
+----
+
+Thank you for contributing!

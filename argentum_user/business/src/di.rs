@@ -6,8 +6,8 @@ use crate::repository::session_repository::SessionRepositoryTrait;
 use crate::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
-use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use crate::use_case::GetUserUc;
+use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct UserBusinessDiC {
@@ -71,24 +71,42 @@ impl UserBusinessDiCBuilder {
         self
     }
 
-    pub fn build(&self) -> UserBusinessDiC {
+    pub fn build(&self) -> Result<UserBusinessDiC, String> {
+        let authenticated_user_repository = self
+            .authenticated_user_repository
+            .clone()
+            .ok_or("authenticated_user_repository not initialized")?;
+
+        let anonymous_user_repository = self
+            .anonymous_user_repository
+            .clone()
+            .ok_or("anonymous_user_repository not initialized")?;
+
+        let anonymous_binding_repository = self
+            .anonymous_binding_repository
+            .clone()
+            .ok_or("anonymous_binding_repository not initialized")?;
+
+        let session_repository = self
+            .session_repository
+            .clone()
+            .ok_or("session_repository not initialized")?;
+
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
-            self.anonymous_user_repository.clone().unwrap(),
-            self.session_repository.clone().unwrap(),
+            authenticated_user_repository.clone(),
+            anonymous_user_repository.clone(),
+            session_repository.clone(),
         ));
 
-        let get_user_uc = Arc::new(GetUserUc::new(
-            self.authenticated_user_repository.clone().unwrap(),
-        ));
+        let get_user_uc = Arc::new(GetUserUc::new(authenticated_user_repository.clone()));
 
-        UserBusinessDiC {
-            anonymous_binding_repository: self.anonymous_binding_repository.clone().unwrap(),
-            anonymous_user_repository: self.anonymous_user_repository.clone().unwrap(),
-            authenticated_user_repository: self.authenticated_user_repository.clone().unwrap(),
+        Ok(UserBusinessDiC {
+            anonymous_binding_repository,
+            anonymous_user_repository,
+            authenticated_user_repository,
             user_authenticates_with_token_uc,
             get_user_uc,
-            session_repository: self.session_repository.clone().unwrap(),
-        }
+            session_repository,
+        })
     }
 }

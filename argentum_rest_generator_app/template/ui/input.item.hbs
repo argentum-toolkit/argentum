@@ -1,0 +1,58 @@
+use std::collections::BTreeMap;
+
+use crate::dto::schema::{{ upper_camel name}};
+
+use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
+{{# each dependencies as |dep|}}
+use {{dep}};
+{{/each}}
+use dioxus::prelude::*;
+
+#[derive(PartialEq, Props, Clone)]
+pub struct {{ upper_camel name}}Props {
+    pub value: {{ upper_camel name}},
+    pub violations: Option<ViolationsDto>,
+
+    oninput: EventHandler<{{ upper_camel name}}>,
+}
+
+#[component]
+pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element {
+    let {{ upper_camel name}}Props {
+        value,
+        violations,
+        ..
+    } = props.clone();
+
+    {{#each inputs as |input|}}
+    let mut {{input.key}}_value = use_signal(|| value.{{input.key}});
+    {{/each}}
+
+    let violation_items = match violations {
+        Some(vv) => match vv.items {
+            Some(ViolationItemDto::Object(items)) => items,
+            _ => BTreeMap::new(),
+        },
+        None => BTreeMap::new(),
+    };
+
+    {{#each inputs as |input|}}
+    let {{input.key}}_violations = violation_items.get("{{input.key}}").cloned();
+    {{/each}}
+    
+    let update = move || {
+        props
+            .oninput
+            .call({{ upper_camel name}}::new(
+            {{#each inputs as |input|}}
+                {{input.key}}_value(),
+            {{/each}}
+            ))
+    };
+
+    rsx! {
+        {{#each inputs as |input|}}
+        {{{input.value}}}
+        {{/each}}
+    }
+}

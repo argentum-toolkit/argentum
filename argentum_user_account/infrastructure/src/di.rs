@@ -22,35 +22,44 @@ use argentum_user_account_rest::server::handler::{
 use argentum_user_infrastructure::di::UserInfrastructureDiC;
 use std::rc::Rc;
 
-use argentum_standard_infrastructure::db::slqx_postgres::SqlxPostgresAdapter;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
-pub struct UserAccountInfrastructureDiC {
+pub struct UserAccountInfrastructureDiC<L>
+where
+    L: LoggerTrait,
+{
     // Public services
     pub anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait>,
-    pub anonymous_requests_restore_token_handler: Arc<AnonymousRequestsRestoreTokenHandler>,
+    pub anonymous_requests_restore_token_handler: Arc<AnonymousRequestsRestoreTokenHandler<L>>,
     pub anonymous_with_token_changes_password_handler:
         Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
     pub user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait>,
     pub user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait>,
 }
 
-pub struct UserAccountInfrastructureDiCBuilder {
+pub struct UserAccountInfrastructureDiCBuilder<L>
+where
+    L: LoggerTrait,
+{
     user_infrastructure_di: Rc<UserInfrastructureDiC>,
-    business_builder: UserAccountBusinessDiCBuilder,
+    business_builder: UserAccountBusinessDiCBuilder<L>,
     id_factory: Arc<UniqueIdFactory>,
-    logger: Arc<dyn LoggerTrait>,
+    logger: Arc<L>,
 }
 
-impl UserAccountInfrastructureDiCBuilder {
+impl<L> UserAccountInfrastructureDiCBuilder<L>
+where
+    L: LoggerTrait + 'static,
+{
     pub fn new(
         user_infrastructure_di: Rc<UserInfrastructureDiC>,
         id_factory: Arc<UniqueIdFactory>,
 
         encryptor: Arc<dyn Encryptor>,
         validator: Arc<dyn Validator>,
-        logger: Arc<dyn LoggerTrait>,
+        logger: Arc<L>,
         notificator: Arc<dyn NotificatorTrait>,
     ) -> Self {
         Self {
@@ -67,12 +76,15 @@ impl UserAccountInfrastructureDiCBuilder {
         }
     }
 
-    pub fn config(
+    pub fn config<S>(
         &mut self,
-        product_name: String,
+        product_name: S,
         restore_password_token_ttl: u32,
-        restore_password_front_url: String,
-    ) -> &mut Self {
+        restore_password_front_url: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
         self.business_builder.config(
             product_name,
             restore_password_token_ttl,
@@ -87,14 +99,14 @@ impl UserAccountInfrastructureDiCBuilder {
         id_factory: Arc<UniqueIdFactory>,
         connection_url: &str,
         max_db_connections: u32,
-        logger: Arc<dyn LoggerTrait>,
-    ) -> &mut Self {
+        logger: Arc<L>,
+    ) -> Result<&mut Self, String> {
         let pool = Arc::new(
             PgPoolOptions::new()
                 .max_connections(max_db_connections)
                 .connect(connection_url)
                 .await
-                .unwrap(),
+                .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?,
         );
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
@@ -121,7 +133,7 @@ impl UserAccountInfrastructureDiCBuilder {
             token_generator,
         );
 
-        self
+        Ok(self)
     }
 
     pub fn mock(&mut self) -> &mut Self {
@@ -130,8 +142,8 @@ impl UserAccountInfrastructureDiCBuilder {
         self
     }
 
-    pub fn build(&self) -> UserAccountInfrastructureDiC {
-        let bdi = self.business_builder.build();
+    pub fn build(&self) -> Result<UserAccountInfrastructureDiC<L>, String> {
+        let bdi = self.business_builder.build()?;
 
         let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(
             bdi.anonymous_registers_uc,
@@ -174,12 +186,12 @@ impl UserAccountInfrastructureDiCBuilder {
             dto_to_anonymous_requests_restore_token_params,
         ));
 
-        UserAccountInfrastructureDiC {
+        Ok(UserAccountInfrastructureDiC {
             anonymous_registers_handler,
             user_registers_with_password_handler,
             user_logins_with_password_handler,
             anonymous_with_token_changes_password_handler: anonymous_with_token_changes_password,
             anonymous_requests_restore_token_handler: anonymous_requests_restore_token,
-        }
+        })
     }
 }

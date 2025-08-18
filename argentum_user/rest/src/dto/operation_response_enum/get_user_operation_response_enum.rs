@@ -1,5 +1,5 @@
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
-use hyper::StatusCode;
+use http::StatusCode;
 
 use crate::dto::response::GetUserOkResponse;
 use crate::dto::response::Status401Response;

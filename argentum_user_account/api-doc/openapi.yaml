@@ -2,11 +2,11 @@ openapi: 3.1.0
 
 info:
   title: Argentum User Account component API
-  version: 0.2.0-dev
+  version: 0.3.0
   description: User Account API
   license:
-    name: BSD-3-Clause
-    identifier: BSD-3-Clause
+    name: LGPL-3.0
+    identifier: LGPL-3.0
 
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum
@@ -64,8 +64,10 @@ paths:
           $ref: "./response.oas.yaml#/components/responses/UserRegisteredSuccessfully"
         '400':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '422':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/422"
+        '409':
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/409"
+      x-ag-form:
+        submit-label: "Sign Up"
 
   /user-account/password-login:
     post:
@@ -86,6 +88,8 @@ paths:
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
         '401':
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
+      x-ag-form:
+        submit-label: "Sign In"
 
   /user-account/restore-password/token-request:
     post:

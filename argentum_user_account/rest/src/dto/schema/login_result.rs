@@ -5,7 +5,7 @@ use argentum_standard_business::invariant_violation::{
 };
 use std::collections::BTreeMap;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct LoginResult {
     pub token: String,
 
@@ -41,8 +41,11 @@ impl DeserializableSchemaRaw<'_> for LoginResult {
             );
         }
 
-        if argentum_violations.is_empty() {
-            Ok(Self::new(token.unwrap(), user_id.unwrap()))
+        if argentum_violations.is_empty()
+            && let Some(token) = token
+            && let Some(user_id) = user_id
+        {
+            Ok(Self::new(token, user_id))
         } else {
             Err(Violations::new(
                 vec!["wrong data for LoginResult".to_string()],

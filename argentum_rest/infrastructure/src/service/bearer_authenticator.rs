@@ -1,5 +1,5 @@
-use crate::data_type::error::{HttpError, InternalServerError, Unauthorized};
 use crate::data_type::AuthHeaderParams;
+use crate::data_type::error::{HttpError, InternalServerError, Unauthorized};
 use argentum_user_business::entity::user::User;
 use argentum_user_business::use_case::user_authenticates_with_token::AuthenticationError;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
@@ -28,7 +28,7 @@ impl BearerAuthenticator {
 
         let token: String = header.chars().skip(7).collect();
 
-        match self.uc.execute(token) {
+        match self.uc.execute(&token) {
             Ok(user) => Ok(user),
             Err(AuthenticationError::UserNotFound) | Err(AuthenticationError::WrongToken) => Err(
                 HttpError::Unauthorized(Unauthorized::new("can't authenticate".to_string())),
