@@ -1,0 +1,9 @@
+Argentum ToolKit REST. Infrastructure layer.
+============================================
+
+Package to create REST API applications.
+
+# Key features
+
+- Parsing instead of validation
+- Clean and human-readable error responses

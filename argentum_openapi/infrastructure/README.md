@@ -1,0 +1,9 @@
+Argentum ToolKit OpenAPI. Infrastructure layer.
+===============================================
+
+This package contains structs with OpenAPI YAML mapping.
+
+# Advantages
+
+- Parsing instead of validation
+- Pretty error messages

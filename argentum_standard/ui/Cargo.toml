@@ -1,17 +1,17 @@
 [package]
 name = "argentum_standard_ui"
 description = "The ui layer of standard component"
-version = "0.3.0-dev"
+version = "0.3.0"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
 edition = "2024"
 homepage = "https://gitlab.com/argentum-toolkit/argentum"
 repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
-readme = "readme.adoc"
+readme = "README.md"
 
 [dependencies]
-argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0,<0.4.0" }
 dioxus = { version = "0.6", features = ["fullstack"]}
 web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
 

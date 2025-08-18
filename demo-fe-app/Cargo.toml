@@ -8,14 +8,14 @@ license = "LGPL-3.0"
 resolver = "2"
 
 [dependencies]
-argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", version = ">=0.3.0-dev,<0.4.0"}
-argentum_standard_business = { path = "../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_ui = { path = "../argentum_standard/ui", version = ">=0.3.0-dev,<0.4.0", default-features = false }
-argentum_user_account_rest = { path = "../argentum_user_account/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client", "ui"] }
-argentum_user_account_ui = { path = "../argentum_user_account/ui", version = ">=0.3.0-dev,<0.4.0"}
-argentum_user_rest = { path = "../argentum_user/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client"] }
-argentum_user_ui = { path = "../argentum_user/ui", version = ">=0.3.0-dev,<0.4.0"}
+argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", version = ">=0.3.0,<0.4.0"}
+argentum_standard_business = { path = "../argentum_standard/business", version = ">=0.3.0,<0.4.0" }
+argentum_standard_infrastructure = { path = "../argentum_standard/infrastructure", version = ">=0.3.0,<0.4.0" }
+argentum_standard_ui = { path = "../argentum_standard/ui", version = ">=0.3.0,<0.4.0", default-features = false }
+argentum_user_account_rest = { path = "../argentum_user_account/rest", version = ">=0.3.0,<0.4.0", features = ["client", "ui"] }
+argentum_user_account_ui = { path = "../argentum_user_account/ui", version = ">=0.3.0,<0.4.0"}
+argentum_user_rest = { path = "../argentum_user/rest", version = ">=0.3.0,<0.4.0", features = ["client"] }
+argentum_user_ui = { path = "../argentum_user/ui", version = ">=0.3.0,<0.4.0"}
 async-trait = "0.1.*"
 serde = { version = "1.0.*", features = ["derive"] }
 serde_json = "1.0.*"

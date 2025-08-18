@@ -1,14 +1,14 @@
 [package]
 name = "argentum_user_ui"
 description = "Argentum User component. UI"
-version = "0.3.0-dev"
+version = "0.3.0"
 license = "LGPL-3.0"
 edition = "2024"
 
-readme = "readme.adoc"
+readme = "README.md"
 
 [dependencies]
-argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.3.0-dev,<0.4.0", features = ["client"] }
+argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.3.0,<0.4.0", features = ["client"] }
 dioxus = { version = "0.6.*", features = ["fullstack"]}
 dioxus-logger = "0.6.*"
 serde = { version = "1.0.*", features = ["derive"] }

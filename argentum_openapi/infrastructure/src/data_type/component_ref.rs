@@ -23,7 +23,7 @@ impl ComponentRef {
 impl TryFrom<String> for ComponentRef {
     type Error = String;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
+    fn try_from(value: String) -> Result<Self, String> {
         let parts = value.split("#/").collect::<Vec<_>>();
 
         if parts.clone().len() != 2 {

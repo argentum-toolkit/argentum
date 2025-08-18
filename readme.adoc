@@ -144,7 +144,7 @@ cargo install dioxus-cli
 
 == TODO
 
-=== V0.3
+=== V0.4
 
 * DI builders: make it similar
 * behavior tests

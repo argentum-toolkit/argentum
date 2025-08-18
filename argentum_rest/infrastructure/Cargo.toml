@@ -1,14 +1,14 @@
 [package]
 name = "argentum_rest_infrastructure"
 description = "The infrastructure layer of REST component"
-version = "0.3.0-dev"
+version = "0.3.0"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
 edition = "2024"
 homepage = "https://gitlab.com/argentum-toolkit/argentum"
 repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
-readme = "readme.adoc"
+readme = "README.md"
 
 [features]
 server = ["dep:tokio"]
@@ -29,8 +29,8 @@ tokio = { version = "^1.40", features = ["full"], optional = true }
 thiserror = "2.0.*"
 
 
-argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_account_business = { path = "../../argentum_user_account/business", version = ">=0.3.0-dev,<0.4.0" }
-argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0-dev,<0.4.0" }
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.3.0,<0.4.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.3.0,<0.4.0" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.3.0,<0.4.0" }
+argentum_user_account_business = { path = "../../argentum_user_account/business", version = ">=0.3.0,<0.4.0" }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.3.0,<0.4.0" }

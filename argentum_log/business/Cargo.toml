@@ -1,14 +1,14 @@
 [package]
 name = "argentum_log_business"
 description = "Business layer of encryption"
-version = "0.3.0-dev"
+version = "0.3.0"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
 edition = "2024"
 homepage = "https://gitlab.com/argentum-toolkit/argentum"
 repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
-readme = "readme.adoc"
+readme = "README.md"
 
 [dependencies]
 chrono = "0.4.*"
