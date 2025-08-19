@@ -32,7 +32,7 @@ $ cd app
 [package]
 name = "argentum_user_account_rest_app"
 description = "Argentum User Account component API"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 
 [dependencies]

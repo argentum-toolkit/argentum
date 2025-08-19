@@ -53,12 +53,11 @@ components:
           type: string
           minLength: 1
           maxLength: 255
-          title: "Additional"
+          title: "Additional name"
           x-ag-ui:
-            id: user_additional
-            name: user_additional
+            id: user_additional_name
+            name: user_additional_name
             weight: 100
 
       required:
         - first
-  

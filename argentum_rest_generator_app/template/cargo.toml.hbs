@@ -30,11 +30,11 @@ ui = ["dep:dioxus", "dep:dioxus-logger", "dep:argentum_standard_infrastructure",
 web = ["dioxus/web", "argentum_standard_ui/web"]
 
 [dependencies]
-argentum_rest_infrastructure = { {{#if argentumPath}}path = "../../argentum_rest/infrastructure", {{/if}}version = ">=0.3.0,<0.4.0" }
-argentum_standard_business = { {{#if argentumPath}}path = "../../argentum_standard/business", {{/if}}version = ">=0.3.0,<0.4.0" }
-argentum_standard_infrastructure = { {{#if argentumPath}}path = "../../argentum_standard/infrastructure", {{/if}}version = ">=0.3.0,<0.4.0", optional = true }
-argentum_standard_ui = { {{#if argentumPath}}path = "../../argentum_standard/ui", {{/if}}version = ">=0.3.0,<0.4.0", optional = true }
-argentum_user_business = { {{#if argentumPath}}path = "../../argentum_user/business", {{/if}}version = ">=0.3.0,<0.4.0" }
+argentum_rest_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_rest/infrastructure", {{/if}}version = ">=0.3.0,<0.4.0" }
+argentum_standard_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/business", {{/if}}version = ">=0.3.0,<0.4.0" }
+argentum_standard_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/infrastructure", {{/if}}version = ">=0.3.0,<0.4.0", optional = true }
+argentum_standard_ui = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/ui", {{/if}}version = ">=0.3.0,<0.4.0", optional = true }
+argentum_user_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_user/business", {{/if}}version = ">=0.3.0,<0.4.0" }
 
 async-trait = "0.1.*"
 chrono = "0.4.*"

@@ -1,7 +1,6 @@
 use crate::dto::schema::LoginWithPasswordSchema;
 use crate::ui::form_processor::UserLoginsWithPasswordFormProcessor;
 use crate::ui::input::LoginWithPasswordSchemaInput;
-use std::rc::Rc;
 
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use argentum_standard_ui::rsx::component::ErrorBlock;
@@ -11,7 +10,7 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn UserLoginsWithPasswordForm(
-    processor: Rc<UserLoginsWithPasswordFormProcessor>,
+    processor: UserLoginsWithPasswordFormProcessor,
     auth_token: String,
 ) -> Element {
     let mut values: Signal<LoginWithPasswordSchema> = use_signal(Default::default);
@@ -51,7 +50,7 @@ pub fn UserLoginsWithPasswordForm(
             }
 
             Submit {
-                title: "Submit".to_string(),
+                title: "Sign In".to_string(),
                 disabled: disabled(),
             }
         }
