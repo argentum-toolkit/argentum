@@ -111,20 +111,20 @@ dependencies = [
 
 [[package]]
 name = "argentum_db_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_log_business",
  "futures",
  "sqlx",
  "sqlx-postgres",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tokio",
  "uuid",
 ]
 
 [[package]]
 name = "argentum_demo_api_app"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_db_infrastructure",
  "argentum_encryption_business",
@@ -151,7 +151,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_demo_app"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",
@@ -166,19 +166,19 @@ dependencies = [
  "argentum_user_account_infrastructure",
  "argentum_user_business",
  "lettre",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
 name = "argentum_encryption_business"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
 name = "argentum_encryption_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_encryption_business",
  "data-encoding",
@@ -187,18 +187,18 @@ dependencies = [
 
 [[package]]
 name = "argentum_event_business"
-version = "0.3.0"
+version = "0.3.1"
 
 [[package]]
 name = "argentum_log_business"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "chrono",
 ]
 
 [[package]]
 name = "argentum_log_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_log_business",
  "chrono",
@@ -207,16 +207,16 @@ dependencies = [
 
 [[package]]
 name = "argentum_notification_business"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_standard_business",
  "argentum_user_business",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
 name = "argentum_notification_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_notification_business",
  "argentum_standard_business",
@@ -226,7 +226,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_openapi_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_rest_generator_app"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_log_business",
  "argentum_log_infrastructure",
@@ -254,7 +254,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_rest_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
@@ -271,35 +271,35 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_valid",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tokio",
 ]
 
 [[package]]
 name = "argentum_standard_business"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "chrono",
  "compiletime-regex",
  "fastrand",
  "regex",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
 name = "argentum_standard_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
  "serde",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "uuid",
 ]
 
 [[package]]
 name = "argentum_standard_ui"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_standard_infrastructure",
  "dioxus",
@@ -308,7 +308,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_business"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_encryption_business",
  "argentum_log_business",
@@ -318,12 +318,12 @@ dependencies = [
  "async-trait",
  "chrono",
  "futures",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
 name = "argentum_user_account_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_db_infrastructure",
  "argentum_encryption_business",
@@ -348,7 +348,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_rest"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
@@ -373,7 +373,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_account_ui"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_infrastructure",
@@ -389,17 +389,17 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_business"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_encryption_business",
  "argentum_standard_business",
  "chrono",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
 name = "argentum_user_infrastructure"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_db_infrastructure",
  "argentum_log_business",
@@ -412,13 +412,13 @@ dependencies = [
  "futures",
  "serde",
  "sqlx",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "uuid",
 ]
 
 [[package]]
 name = "argentum_user_rest"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "argentum_user_ui"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_user_rest",
  "dioxus",
@@ -459,9 +459,9 @@ checksum = "619743e34b5ba4e9703bba34deac3427c72507c7159f5fd030aea8cac0cfe341"
 
 [[package]]
 name = "async-trait"
-version = "0.1.88"
+version = "0.1.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e539d3fca749fcee5236ab05e93a52867dd549cc157c8cb7f99595f3cedffdb5"
+checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -589,9 +589,9 @@ checksum = "55248b47b0caf0546f7988906588779981c43bb1bc9d0c44087278f80cdb44ba"
 
 [[package]]
 name = "bitflags"
-version = "2.9.1"
+version = "2.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b8e56985ec62d17e9c1001dc89c88ecd7dc08e47eba5ec7c29c7b5eeecde967"
+checksum = "6a65b545ab31d687cff52899d4890855fec459eb6afe0da6417b8a18da87aa29"
 dependencies = [
  "serde",
 ]
@@ -625,18 +625,18 @@ checksum = "a2bd12c1caf447e69cd4528f47f94d203fd2582878ecb9e9465484c4148a8223"
 
 [[package]]
 name = "cc"
-version = "1.2.31"
+version = "1.2.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3a42d84bb6b69d3a8b3eaacf0d88f179e1929695e1ad012b6cf64d9caaa5fd2"
+checksum = "3ee0f8803222ba5a7e2777dd72ca451868909b1ac410621b676adf07280e9b5f"
 dependencies = [
  "shlex",
 ]
 
 [[package]]
 name = "cfg-if"
-version = "1.0.1"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
+checksum = "2fd1289c04a9ea8cb22300a459a72a385d7c73d3259e2ed7dcb2af674838cfa9"
 
 [[package]]
 name = "chrono"
@@ -899,8 +899,18 @@ version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc7f46116c46ff9ab3eb1597a45688b6715c6e628b5c133e288e709a29bcb4ee"
 dependencies = [
- "darling_core",
- "darling_macro",
+ "darling_core 0.20.11",
+ "darling_macro 0.20.11",
+]
+
+[[package]]
+name = "darling"
+version = "0.21.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08440b3dd222c3d0433e63e097463969485f112baff337dfdaca043a0d760570"
+dependencies = [
+ "darling_core 0.21.2",
+ "darling_macro 0.21.2",
 ]
 
 [[package]]
@@ -918,12 +928,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "darling_core"
+version = "0.21.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d25b7912bc28a04ab1b7715a68ea03aaa15662b43a1a4b2c480531fd19f8bf7e"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "darling_macro"
 version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc34b93ccb385b40dc71c6fceac4b2ad23662c7eeb248cf10d529b7e055b6ead"
 dependencies = [
- "darling_core",
+ "darling_core 0.20.11",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.21.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce154b9bea7fb0c8e8326e62d00354000c36e79770ff21b8c84e3aa267d9d531"
+dependencies = [
+ "darling_core 0.21.2",
  "quote",
  "syn",
 ]
@@ -949,7 +983,7 @@ checksum = "c2e66c9d817f1720209181c316d28635c050fa304f9c79e47a520882661b7308"
 
 [[package]]
 name = "demo-fe-app"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",
@@ -995,7 +1029,7 @@ version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2d5bcf7b024d6835cfb3d473887cd966994907effbe9227e8c8219824d06c4e8"
 dependencies = [
- "darling",
+ "darling 0.20.11",
  "proc-macro2",
  "quote",
  "syn",
@@ -1527,20 +1561,20 @@ dependencies = [
 
 [[package]]
 name = "enumset"
-version = "1.1.7"
+version = "1.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6ee17054f550fd7400e1906e2f9356c7672643ed34008a9e8abe147ccd2d821"
+checksum = "f50acec76c668b4621fe3694e5ddee53c8fae2a03410026f50947d195eb44dc1"
 dependencies = [
  "enumset_derive",
 ]
 
 [[package]]
 name = "enumset_derive"
-version = "0.12.0"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76d07902c93376f1e96c34abc4d507c0911df3816cef50b01f5a2ff3ad8c370d"
+checksum = "588eaef9dbc5d72c5fa4edf162527e67dab5d14ba61519ef7c8e233d5bdc092c"
 dependencies = [
- "darling",
+ "darling 0.21.2",
  "proc-macro2",
  "quote",
  "syn",
@@ -1882,7 +1916,7 @@ dependencies = [
  "pest_derive",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
@@ -1897,9 +1931,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.15.4"
+version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5971ac85611da7067dbfcabef3c70ebb5606018acd9e2a3903a0da507521e0d5"
+checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 dependencies = [
  "allocator-api2",
  "equivalent",
@@ -1912,7 +1946,7 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7382cf6263419f2d8df38c55d7da83da5c18aef87fc7a7fc1fb1e344edfe14c1"
 dependencies = [
- "hashbrown 0.15.4",
+ "hashbrown 0.15.5",
 ]
 
 [[package]]
@@ -2025,13 +2059,14 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hyper"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc2b571658e38e0c01b1fdca3bbbe93c00d3d71693ff2770043f8c29bc7d6f80"
+checksum = "eb3aa54a13a0dfe7fbe3a59e0c76093041720fdc77b110cc0fc260fafb4dc51e"
 dependencies = [
+ "atomic-waker",
  "bytes",
  "futures-channel",
- "futures-util",
+ "futures-core",
  "h2",
  "http",
  "http-body",
@@ -2039,6 +2074,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
+ "pin-utils",
  "smallvec",
  "tokio",
  "want",
@@ -2240,7 +2276,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe4cd85333e22411419a0bcae1297d25e58c9443848b11dc6a86fefe8c78a661"
 dependencies = [
  "equivalent",
- "hashbrown 0.15.4",
+ "hashbrown 0.15.5",
  "serde",
 ]
 
@@ -2353,15 +2389,26 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.174"
+version = "0.2.175"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1171693293099992e19cddea4e8b849964e9846f4acee11b3948bcc337be8776"
+checksum = "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
 
 [[package]]
 name = "libm"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9fbbcab51052fe104eb5e5d351cf728d30a5be1fe14d9be8a3b097481fb97de"
+
+[[package]]
+name = "libredox"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "391290121bad3d37fbddad76d8f5d1c1c314cfc646d143d7e07a3086ddff0ce3"
+dependencies = [
+ "bitflags",
+ "libc",
+ "redox_syscall",
+]
 
 [[package]]
 name = "libsqlite3-sys"
@@ -2413,7 +2460,7 @@ version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "234cf4f4a04dc1f57e24b96cc0cd600cf2af460d4161ac5ecdd0af8e1f3b2a38"
 dependencies = [
- "hashbrown 0.15.4",
+ "hashbrown 0.15.5",
 ]
 
 [[package]]
@@ -2737,7 +2784,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1db05f56d34358a8b1066f67cbb203ee3e7ed2ba674a6263a1d5ec6db2204323"
 dependencies = [
  "memchr",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "ucd-trie",
 ]
 
@@ -2874,9 +2921,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.95"
+version = "1.0.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02b3e5e68a3a1a02aad3ec490a98007cbc13c37cbe84a3cd7b8e406d76e7f778"
+checksum = "89ae43fd86e4158d6db51ad8e2b80f313af9cc74f5c0e03ccb87de09998732de"
 dependencies = [
  "unicode-ident",
 ]
@@ -3140,9 +3187,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.21"
+version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a0d197bd2c9dc6e53b84da9556a69ba4cdfab8619eb41a8bd1cc2027a0f6b1d"
+checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
 name = "ryu"
@@ -3230,9 +3277,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.142"
+version = "1.0.143"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "030fedb782600dcbd6f02d479bf0d817ac3bb40d644745b769d6a96bc3afc5a7"
+checksum = "d401abef1d108fbd9cbaebc3e46611f4b1021f714a0597a71f41ee463f5f4a5a"
 dependencies = [
  "itoa",
  "memchr",
@@ -3472,9 +3519,9 @@ dependencies = [
 
 [[package]]
 name = "slab"
-version = "0.4.10"
+version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04dc19736151f35336d325007ac991178d504a119863a2fcb3758cdb5e52c50d"
+checksum = "7a2ae44ef20feb57a68b23d846850f861394c2e02dc425a50098ae8c90267589"
 
 [[package]]
 name = "sledgehammer_bindgen"
@@ -3593,7 +3640,7 @@ dependencies = [
  "futures-intrusive",
  "futures-io",
  "futures-util",
- "hashbrown 0.15.4",
+ "hashbrown 0.15.5",
  "hashlink",
  "indexmap",
  "log",
@@ -3605,7 +3652,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "smallvec",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tokio",
  "tokio-stream",
  "tracing",
@@ -3689,7 +3736,7 @@ dependencies = [
  "smallvec",
  "sqlx-core",
  "stringprep",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tracing",
  "uuid",
  "whoami",
@@ -3728,7 +3775,7 @@ dependencies = [
  "smallvec",
  "sqlx-core",
  "stringprep",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tracing",
  "uuid",
  "whoami",
@@ -3754,7 +3801,7 @@ dependencies = [
  "serde",
  "serde_urlencoded",
  "sqlx-core",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tracing",
  "url",
  "uuid",
@@ -3810,9 +3857,9 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "syn"
-version = "2.0.104"
+version = "2.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17b6f705963418cdb9927482fa304bc562ece2fdd4f616084c50b7023b435a40"
+checksum = "ede7c438028d4436d71104916910f5bb611972c5cfd7f89b8300a8186e6fada6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3884,11 +3931,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.12"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+checksum = "80d76d3f064b981389ecb4b6b7f45a0bf9fdac1d5b9204c7bd6714fecc302850"
 dependencies = [
- "thiserror-impl 2.0.12",
+ "thiserror-impl 2.0.15",
 ]
 
 [[package]]
@@ -3904,9 +3951,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.12"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
+checksum = "44d29feb33e986b6ea906bd9c3559a856983f92371b3eaa5e83782a351623de0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3934,9 +3981,9 @@ dependencies = [
 
 [[package]]
 name = "tinyvec"
-version = "1.9.0"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09b3661f17e86524eccd4371ab0429194e0d7c008abb45f7a7495b1719463c71"
+checksum = "bfa5fdc3bce6191a1dbc8c02d5c8bffcf557bafa17c124c5264a458f1b0613fa"
 dependencies = [
  "tinyvec_macros",
 ]
@@ -4323,9 +4370,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.17.0"
+version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cf4199d1e5d15ddd86a694e4d0dffa9c323ce759fea589f00fef9d81cc1931d"
+checksum = "f33196643e165781c20a5ead5582283a7dacbb87855d867fbc2df3f81eddc1be"
 dependencies = [
  "getrandom 0.3.3",
  "js-sys",
@@ -4493,11 +4540,11 @@ dependencies = [
 
 [[package]]
 name = "whoami"
-version = "1.6.0"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6994d13118ab492c3c80c1f81928718159254c53c472bf9ce36f8dae4add02a7"
+checksum = "5d4a4db5077702ca3015d3d02d74974948aba2ad9e12ab7df718ee64ccd7e97d"
 dependencies = [
- "redox_syscall",
+ "libredox",
  "wasite",
 ]
 

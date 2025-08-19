@@ -5,7 +5,7 @@ use argentum_standard_business::invariant_violation::{
 };
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
-pub struct ViolationErrors(Vec<String>);
+pub struct ViolationErrors(pub Vec<String>);
 
 impl ViolationErrors {
     pub fn new(items: Vec<String>) -> Self {

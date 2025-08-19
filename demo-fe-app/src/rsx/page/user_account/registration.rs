@@ -5,7 +5,6 @@ use argentum_user_account_rest::ui::form::UserRegistersWithPasswordForm;
 
 use argentum_user_account_rest::ui::form_processor::UserRegistersWithPasswordFormProcessor;
 use dioxus::prelude::*;
-use std::rc::Rc;
 use std::string::ToString;
 
 #[component]
@@ -17,7 +16,8 @@ pub fn Registration() -> Element {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        authenticator()
+        authenticator
+            .read()
             .get_token()
             .expect("Can't get authentication token")
     };
@@ -30,14 +30,12 @@ pub fn Registration() -> Element {
             success.set(Some("Congratulations! Your account has been created."));
         });
 
-    let callbacks = Rc::new(UserRegistersWithPasswordCallbacks {
+    let callbacks = UserRegistersWithPasswordCallbacks {
         on_user_registered_successfully,
         ..Default::default()
-    });
+    };
 
-    let processor = Rc::new(UserRegistersWithPasswordFormProcessor::new(
-        callbacks.clone(),
-    ));
+    let processor = UserRegistersWithPasswordFormProcessor::new(callbacks);
 
     rsx! {
         section {

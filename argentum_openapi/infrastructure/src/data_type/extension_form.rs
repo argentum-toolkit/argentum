@@ -7,6 +7,6 @@ fn default_submit_port() -> String {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtensionForm {
-    #[serde(default = "default_submit_port")]
+    #[serde(default = "default_submit_port", rename = "submit-label")]
     pub submit_label: String,
 }

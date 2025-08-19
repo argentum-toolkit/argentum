@@ -37,15 +37,15 @@ $ cd app
 [package]
 name = "argentum_user_rest_app"
 description = "Argentum User component API"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 
 [dependencies]
-argentum_log_business = { version = ">=0.3.0,<0.4.0" }
-argentum_log_infrastructure = { version = ">=0.3.0,<0.4.0" }
-argentum_rest_infrastructure = { version = ">=0.3.0,<0.4.0" }
-argentum_standard_business = { version = ">=0.3.0,<0.4.0" }
-argentum_user_business = { version = ">=0.3.0,<0.4.0" }
+argentum_log_business = { path = "../..//argentum_log/business", version = ">=0.3.0,<0.4.0" }
+argentum_log_infrastructure = { path = "../..//argentum_log/infrastructure", version = ">=0.3.0,<0.4.0" }
+argentum_rest_infrastructure = { path = "../..//argentum_rest/infrastructure", version = ">=0.3.0,<0.4.0" }
+argentum_standard_business = { path = "../..//argentum_standard/business", version = ">=0.3.0,<0.4.0" }
+argentum_user_business = { path = "../..//argentum_user/business", version = ">=0.3.0,<0.4.0" }
 
 argentum_user_rest = { path = "../rest" }
 tokio = { version = "^1.47.*", features = ["full"] }

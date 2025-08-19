@@ -5,11 +5,16 @@ LabeledCheckbox {
     {{#if required}}
         value: {{name}}_value(),
     {{else}}
-        value: {{name}}_value().unwrap_or("".to_string()),
+        value: {{name}}_value().unwrap_or(false),
     {{/if}}
     violations: {{name}}_violations,
+    
     oninput: move |event: bool| {
+        {{#if required}}
         {{name}}_value.set(event);
+        {{ else }}
+        {{name}}_value.set(Some(event));
+        {{/if}}
         update();
     }
 }
