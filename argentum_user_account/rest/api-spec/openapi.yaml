@@ -65,7 +65,7 @@ paths:
         '401':
           $ref: '#/components/responses/401'
       x-ag-form:
-        submitLabel: Submit
+        submit-label: Sign In
   /user-account/register:
     post:
       description: User registers with email and password
@@ -85,7 +85,7 @@ paths:
         '409':
           $ref: '#/components/responses/409'
       x-ag-form:
-        submitLabel: Submit
+        submit-label: Sign Up
   /user-account/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email
@@ -298,13 +298,13 @@ components:
       - first
       properties:
         additional:
-          title: Additional
+          title: Additional name
           maxLength: 255
           minLength: 1
           type: string
           x-ag-ui:
-            id: user_additional
-            name: user_additional
+            id: user_additional_name
+            name: user_additional_name
             weight: 100
         first:
           example: Winston

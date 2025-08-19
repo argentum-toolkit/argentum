@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 #[cfg(feature = "web")]
@@ -9,13 +7,13 @@ use crate::dto::schema::LoginWithPasswordSchema;
 use crate::ui::callbacks::UserLoginsWithPasswordCallbacks;
 use dioxus::prelude::*;
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct UserLoginsWithPasswordFormProcessor {
-    callbacks: Rc<UserLoginsWithPasswordCallbacks>,
+    callbacks: UserLoginsWithPasswordCallbacks,
 }
 
 impl UserLoginsWithPasswordFormProcessor {
-    pub fn new(callbacks: Rc<UserLoginsWithPasswordCallbacks>) -> Self {
+    pub fn new(callbacks: UserLoginsWithPasswordCallbacks) -> Self {
         Self { callbacks }
     }
 
@@ -78,8 +76,6 @@ impl UserLoginsWithPasswordFormProcessor {
         mut errors: Signal<Vec<String>>,
         mut disabled: Signal<bool>,
     ) {
-        use std::rc::Rc;
-
         use crate::client::Client;
         use argentum_rest_infrastructure::data_type::AuthHeaderParams;
         use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams, HttpRequest};
@@ -96,7 +92,7 @@ impl UserLoginsWithPasswordFormProcessor {
         errors.set(vec![]);
         violations.set(Default::default());
 
-        let client = use_context::<Signal<Rc<Client>>>();
+        let client = use_context::<Signal<Client>>();
 
         let req = UserLoginsWithPasswordRequest::new(
             values().into(),
@@ -107,7 +103,7 @@ impl UserLoginsWithPasswordFormProcessor {
             ),
         );
 
-        let res = client().user_logins_with_password(req).await;
+        let res = client.read().user_logins_with_password(req).await;
 
         match res {
             Ok(data) => match data {

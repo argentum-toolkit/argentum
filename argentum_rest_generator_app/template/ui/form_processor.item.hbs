@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 
 #[cfg(feature = "web")]
@@ -15,13 +13,13 @@ use crate::dto::schema::{{upper_camel schemaName}};
 use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
 {{/if}}
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct {{upper_camel operation.operationId}}FormProcessor {
-    callbacks: Rc<{{upper_camel operation.operationId}}Callbacks>,
+    callbacks: {{upper_camel operation.operationId}}Callbacks,
 }
 
 impl {{upper_camel operation.operationId}}FormProcessor {
-    pub fn new(callbacks: Rc<{{upper_camel operation.operationId}}Callbacks>) -> Self {
+    pub fn new(callbacks:{{upper_camel operation.operationId}}Callbacks) -> Self {
         Self { callbacks }
     }
 
@@ -99,8 +97,6 @@ impl {{upper_camel operation.operationId}}FormProcessor {
         mut errors: Signal<Vec<String>>,
         mut disabled: Signal<bool>,
     ) {
-        use std::rc::Rc;
-
         {{#unless schemaName}}
         use argentum_rest_infrastructure::data_type::EmptyRequestBody;
         {{/unless}}
@@ -131,7 +127,7 @@ impl {{upper_camel operation.operationId}}FormProcessor {
         errors.set(vec![]);
         violations.set(Default::default());
 
-        let client = use_context::<Signal<Rc<Client>>>();
+        let client = use_context::<Signal<Client>>();
 
         let req = {{upper_camel operation.operationId}}Request::new(
             {{#if schemaName}}
@@ -150,7 +146,7 @@ impl {{upper_camel operation.operationId}}FormProcessor {
             ),
         );
 
-        let res = client().{{snake operation.operationId}}(req).await;
+        let res = client.read().{{snake operation.operationId}}(req).await;
 
         match res {
             Ok(data) => match data {

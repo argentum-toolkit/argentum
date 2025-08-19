@@ -30,7 +30,7 @@ pub fn LabeledCheckbox(props: CheckboxProps) -> Element {
         fieldset { class: "fieldset",
             label {
                 "htmlFor": "checkboxLabel",
-                class: "fieldset-legend {label_class}",
+                class: "label {label_class}",
                 input {
                     "type":"checkbox",
                     id: "checkboxLabel",

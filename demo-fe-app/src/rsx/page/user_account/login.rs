@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::route::Route;
 
 use argentum_user_account_rest::ui::callbacks::UserLoginsWithPasswordCallbacks;
@@ -14,7 +12,8 @@ pub fn Login() -> Element {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        authenticator()
+        authenticator
+            .read()
             .get_token()
             .expect("Can't get authentication token")
     };
@@ -28,30 +27,30 @@ pub fn Login() -> Element {
         use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
         use argentum_user_account_ui::security::ClientSideAuthenticator;
 
-        let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>()();
+        let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         let on_user_logged_in_successfully = EventHandler::new(
             move |response: UserLoggedInSuccessfullyResponse| match response {
                 UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
-                    authenticator.auth_user(j.0.token, j.0.user_id);
+                    authenticator.write().auth_user(j.0.token, j.0.user_id);
 
                     let _ = redirect(Route::Home {});
                 }
             },
         );
 
-        Rc::new(UserLoginsWithPasswordCallbacks {
+        UserLoginsWithPasswordCallbacks {
             on_user_logged_in_successfully,
             ..Default::default()
-        })
+        }
     };
 
     #[cfg(not(feature = "web"))]
-    let callbacks = Rc::new(UserLoginsWithPasswordCallbacks {
+    let callbacks = UserLoginsWithPasswordCallbacks {
         ..Default::default()
-    });
+    };
 
-    let processor = Rc::new(UserLoginsWithPasswordFormProcessor::new(callbacks.clone()));
+    let processor = UserLoginsWithPasswordFormProcessor::new(callbacks);
 
     rsx! {
         section {

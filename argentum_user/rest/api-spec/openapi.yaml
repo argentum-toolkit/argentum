@@ -108,13 +108,13 @@ components:
       - first
       properties:
         additional:
-          title: Additional
+          title: Additional name
           maxLength: 255
           minLength: 1
           type: string
           x-ag-ui:
-            id: user_additional
-            name: user_additional
+            id: user_additional_name
+            name: user_additional_name
             weight: 100
         first:
           example: Winston

@@ -94,6 +94,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
         label: "By creating account means you agree to the Terms and Conditions, and our Privacy Policy",
             value: terms_value(),
         violations: terms_violations,
+
         oninput: move |event: bool| {
             terms_value.set(event);
             update();

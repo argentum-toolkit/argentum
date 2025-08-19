@@ -74,9 +74,9 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
     }
 
             LabeledInput {
-        id: "user_additional",
-        name: "user_additional",
-        label: "Additional",
+        id: "user_additional_name",
+        name: "user_additional_name",
+        label: "Additional name",
         input_type: "text".to_string(),
             value: additional_value().unwrap_or("".to_string()),
 

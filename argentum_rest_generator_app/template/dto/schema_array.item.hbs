@@ -6,7 +6,7 @@ use {{dep}};
 {{/each}}
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
-pub struct {{ name }} (Vec<{{{ itemsType.dataType }}}>);
+pub struct {{ name }} (pub Vec<{{{ itemsType.dataType }}}>);
 
 impl {{ name }} {
     pub fn new(items: Vec<{{{ itemsType.dataType }}}>) -> Self {

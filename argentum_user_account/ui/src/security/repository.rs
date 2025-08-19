@@ -1,13 +1,14 @@
 use super::Security;
-use std::{rc::Rc, str::FromStr};
+
+use std::str::FromStr;
 use web_sys::Storage;
 
 pub struct SecurityRepository {
-    local_storage: Rc<Storage>,
+    local_storage: Storage,
 }
 
 impl SecurityRepository {
-    pub fn new(local_storage: Rc<Storage>) -> Self {
+    pub fn new(local_storage: Storage) -> Self {
         Self { local_storage }
     }
 

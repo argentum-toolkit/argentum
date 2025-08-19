@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use dioxus::prelude::*;
 
@@ -39,7 +39,7 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
 
         let authenticator: Signal<ClientSideAuthenticator> = use_context();
         if let Some(user) = authenticator().get_user() {
-            let client = use_context::<Signal<Arc<Client>>>();
+            let client = use_context::<Signal<Rc<Client>>>();
             let req = GetUserRequest::new(
                 EmptyRequestBody {},
                 GetUserParams::new(
@@ -49,7 +49,7 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
                 ),
             );
 
-            let result = client().clone().get_user(req).await;
+            let result = client.read().get_user(req).await;
             let first = match result {
                 Ok(response) => {
                     match response {

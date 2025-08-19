@@ -16,10 +16,10 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(server_url: String, base_path: String) -> Self {
+    pub fn new(server_url: &str, base_path: &str) -> Self {
         Self {
-            server_url,
-            base_path,
+            server_url: server_url.into(),
+            base_path: base_path.into(),
         }
     }
 
