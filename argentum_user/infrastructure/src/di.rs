@@ -39,13 +39,12 @@ impl UserInfrastructureDiCBuilder {
     where
         L: LoggerTrait + 'static,
     {
-        let pool = Arc::new(
-            PgPoolOptions::new()
-                .max_connections(max_db_connections)
-                .connect(connection_url)
-                .await
-                .map_err(|e| format!("Can't create PG connecion pool. Err: {e}"))?,
-        );
+        let pool = PgPoolOptions::new()
+            .max_connections(max_db_connections)
+            .min_connections(2)
+            .connect(connection_url)
+            .await
+            .map_err(|e| format!("Can't create PG connection pool. Err: {e}"))?;
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
 

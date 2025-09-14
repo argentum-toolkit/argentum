@@ -25,15 +25,15 @@ impl UserAuthenticatesWithTokenUc {
         }
     }
 
-    pub fn execute(&self, token: &str) -> Result<User, AuthenticationError> {
-        let session = match self.session_repository.find_by_token(token)? {
+    pub async fn execute(&self, token: &str) -> Result<User, AuthenticationError> {
+        let session = match self.session_repository.find_by_token(token).await? {
             Some(s) => s,
             None => return Err(AuthenticationError::WrongToken),
         };
 
-        match self.user_repository.find(&session.user_id)? {
+        match self.user_repository.find(&session.user_id).await? {
             Some(u) => Ok(Authenticated(u)),
-            None => match self.anon_repository.find(&session.user_id)? {
+            None => match self.anon_repository.find(&session.user_id).await? {
                 Some(a) => Ok(Anonymous(a)),
                 None => Err(AuthenticationError::UserNotFound),
             },
@@ -83,8 +83,8 @@ mod tests {
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use std::sync::Arc;
 
-    #[test]
-    fn test_authenticates_with_token() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn test_authenticates_with_token() -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
@@ -107,9 +107,11 @@ mod tests {
         //Prefilling
         authenticated_user_repository
             .save(&authenticated_user)
+            .await
             .expect("Can't save a user");
         session_repository
             .save(&session)
+            .await
             .expect("Can't save a session");
 
         //Test
@@ -119,7 +121,7 @@ mod tests {
             session_repository,
         );
 
-        let result = uc.execute(token);
+        let result = uc.execute(token).await;
 
         match result {
             Ok(u) => match u {
@@ -138,8 +140,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_authenticates_with_token_should_returns_error_if_token_invalid()
+    #[tokio::test]
+    async fn test_authenticates_with_token_should_returns_error_if_token_invalid()
     -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -163,9 +165,11 @@ mod tests {
         //Prefilling
         authenticated_user_repository
             .save(&authenticated_user)
+            .await
             .expect("Can't save a user");
         session_repository
             .save(&session)
+            .await
             .expect("Can't save a session");
 
         //Test
@@ -175,7 +179,7 @@ mod tests {
             session_repository,
         );
 
-        let result = uc.execute("wrong-test-token".into());
+        let result = uc.execute("wrong-test-token".into()).await;
 
         match result {
             Ok(_) => {
@@ -190,8 +194,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_authenticates_with_token_should_returns_error_if_user_doesnt_exist()
+    #[tokio::test]
+    async fn test_authenticates_with_token_should_returns_error_if_user_doesnt_exist()
     -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -207,6 +211,7 @@ mod tests {
         //Prefilling
         session_repository
             .save(&session)
+            .await
             .expect("Can't save a session");
 
         //Test
@@ -216,7 +221,7 @@ mod tests {
             session_repository,
         );
 
-        let result = uc.execute(token);
+        let result = uc.execute(token).await;
 
         match result {
             Ok(_) => {

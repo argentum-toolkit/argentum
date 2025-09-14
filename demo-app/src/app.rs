@@ -43,7 +43,7 @@ where
         }
     }
 
-    pub fn run(&self) -> Result<(), String> {
+    pub async fn run(&self) -> Result<(), String> {
         self.logger.trace("Demo trace log");
         self.logger.debug("Demo debug log");
         self.logger.info("Demo info log");
@@ -69,7 +69,7 @@ where
 
         let anon_id = self.id_factory.create();
 
-        let anon_registration_result = self.anonymous_registers_uc.execute(&anon_id);
+        let anon_registration_result = self.anonymous_registers_uc.execute(&anon_id).await;
         let (_, anon_session) = match anon_registration_result {
             Ok(r) => r,
             Err(e) => return Err(e.to_string()),
@@ -77,7 +77,8 @@ where
 
         let anon_auth_result = self
             .user_authenticates_with_token
-            .execute(&anon_session.token);
+            .execute(&anon_session.token)
+            .await;
 
         match anon_auth_result {
             Ok(_) => {}
@@ -99,7 +100,8 @@ where
 
         let res = self
             .user_registers_with_pw
-            .execute(user_id, name, email, password, true);
+            .execute(user_id, name, email, password, true)
+            .await;
         match res {
             Ok(_) => {
                 println!("Registered")
@@ -117,7 +119,8 @@ where
 
         let login_result = self
             .user_logins_with_pw
-            .execute(Some(anon2), email2, password2);
+            .execute(Some(anon2), email2, password2)
+            .await;
 
         let login = match login_result {
             Ok(l) => {
@@ -130,7 +133,10 @@ where
             }
         };
 
-        let aut_result = self.user_authenticates_with_token.execute(&login.token);
+        let aut_result = self
+            .user_authenticates_with_token
+            .execute(&login.token)
+            .await;
 
         match aut_result {
             Ok(_) => {

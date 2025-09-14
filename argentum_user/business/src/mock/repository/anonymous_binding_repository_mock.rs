@@ -7,6 +7,8 @@ use crate::repository::anonymous_binding_repository::{
 use argentum_standard_business::data_type::id::Id;
 use std::sync::RwLock;
 
+use async_trait::async_trait;
+
 pub struct AnonymousBindingRepositoryMock {
     sessions: RwLock<HashMap<Id, AnonymousBinding>>,
 }
@@ -25,8 +27,9 @@ impl Default for AnonymousBindingRepositoryMock {
     }
 }
 
+#[async_trait]
 impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
-    fn find_by_user_id(
+    async fn find_by_user_id(
         &self,
         user_id: &Id,
     ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
@@ -42,7 +45,10 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
         Ok(binding)
     }
 
-    fn save(&self, binding: &AnonymousBinding) -> Result<(), AnonymousBindingRepositoryError> {
+    async fn save(
+        &self,
+        binding: &AnonymousBinding,
+    ) -> Result<(), AnonymousBindingRepositoryError> {
         // TODO: check if key exists; don't save if already bound
 
         let s = AnonymousBinding::new(binding.user_id.clone(), binding.anonymous_id.clone());

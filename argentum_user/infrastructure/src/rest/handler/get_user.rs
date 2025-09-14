@@ -10,6 +10,9 @@ use argentum_user_rest::dto::response::GetUserOkResponse;
 use argentum_user_rest::dto::schema::User as UserDto;
 use argentum_user_rest::dto::schema::UserName as UserNameDto;
 use argentum_user_rest::server::handler::GetUserTrait;
+
+use async_trait::async_trait;
+
 use std::sync::Arc;
 
 pub struct GetUserHandler {
@@ -23,15 +26,16 @@ impl GetUserHandler {
     }
 }
 
+#[async_trait]
 impl GetUserTrait for GetUserHandler {
-    fn handle(
+    async fn handle(
         &self,
         req: GetUserRequest,
         _user: User,
     ) -> Result<GetUserOperationResponseEnum, HttpError> {
         //TODO: check if authenticated user granted to see this resource
         let user_id = self.id_factory.uuid_to_id(req.params.path.user_id);
-        let result = self.uc.execute(user_id);
+        let result = self.uc.execute(user_id).await;
 
         match result {
             Ok(user) => {
@@ -54,7 +58,7 @@ impl GetUserTrait for GetUserHandler {
                 format!("User with id `{}` is not found", req.params.path.user_id),
             ))),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
-                Box::new(e),
+                Arc::new(e),
             ))),
         }
     }

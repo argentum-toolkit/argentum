@@ -8,8 +8,9 @@ use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
 use argentum_user_business::repository::anonymous_binding_repository::{
     AnonymousBindingRepositoryError, AnonymousBindingRepositoryTrait,
 };
-use futures::executor::block_on;
 use std::sync::Arc;
+
+use async_trait::async_trait;
 
 const TABLE_NAME: &str = "ag_user_anonymous_binding";
 
@@ -33,11 +34,12 @@ where
     }
 }
 
+#[async_trait]
 impl<L> AnonymousBindingRepositoryTrait for AnonymousBindingRepository<L>
 where
     L: LoggerTrait,
 {
-    fn find_by_user_id(
+    async fn find_by_user_id(
         &self,
         user_id: &Id,
     ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
@@ -49,7 +51,7 @@ where
         let query = sqlx::query_as(&sql).bind(id);
 
         let result: Result<Option<AnonymousBindingDto>, DbAdapterError> =
-            block_on(self.adapter.fetch_one(query));
+            self.adapter.fetch_one(query).await;
 
         match result {
             Ok(Some(dto)) => Ok(Some(AnonymousBinding {
@@ -63,7 +65,10 @@ where
         }
     }
 
-    fn save(&self, binding: &AnonymousBinding) -> Result<(), AnonymousBindingRepositoryError> {
+    async fn save(
+        &self,
+        binding: &AnonymousBinding,
+    ) -> Result<(), AnonymousBindingRepositoryError> {
         let user_id = self.id_factory.id_to_uuid(&binding.user_id);
         let anonymous_id = self.id_factory.id_to_uuid(&binding.anonymous_id);
 
@@ -75,7 +80,7 @@ where
             .bind(anonymous_id)
             .bind(binding.created_at);
 
-        let result = block_on(self.adapter.exec(query));
+        let result = self.adapter.exec(query).await;
 
         match result {
             Ok(_) => Ok(()),

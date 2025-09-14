@@ -9,6 +9,7 @@ use argentum_user_account_rest::dto::response::EmptyOkResponse;
 use argentum_user_account_rest::dto::schema::EmptyResponse;
 use argentum_user_account_rest::server::handler::AnonymousRequestsRestoreTokenTrait;
 use argentum_user_business::entity::user::User;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct AnonymousRequestsRestoreTokenHandler<L>
@@ -39,11 +40,12 @@ where
     }
 }
 
+#[async_trait]
 impl<L> AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler<L>
 where
     L: LoggerTrait,
 {
-    fn handle(
+    async fn handle(
         &self,
         req: AnonymousRequestsRestoreTokenRequest,
         _user: User,
@@ -52,7 +54,7 @@ where
             .dto_to_anonymous_requests_restore_token_params
             .transform(req)?;
 
-        let result = self.uc.execute(email);
+        let result = self.uc.execute(email).await;
 
         match result {
             Ok(_) => Ok(
@@ -68,7 +70,7 @@ where
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
                 }
                 _ => Err(HttpError::InternalServerError(InternalServerError::new(
-                    Box::new(e),
+                    Arc::new(e),
                 ))),
             },
         }

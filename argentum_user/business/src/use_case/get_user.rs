@@ -12,8 +12,8 @@ impl GetUserUc {
         Self { user_repository }
     }
 
-    pub fn execute(&self, user_id: Id) -> Result<AuthenticatedUser, GetUserError> {
-        match self.user_repository.find(&user_id)? {
+    pub async fn execute(&self, user_id: Id) -> Result<AuthenticatedUser, GetUserError> {
+        match self.user_repository.find(&user_id).await? {
             Some(u) => Ok(u),
             None => Err(GetUserError::UserNotFound),
         }
@@ -47,8 +47,8 @@ mod tests {
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use std::sync::Arc;
 
-    #[test]
-    fn test_get_user() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn test_get_user() -> Result<(), &'static str> {
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let id_factory = IdFactoryMock::new();
 
@@ -66,12 +66,13 @@ mod tests {
         //Prefilling
         authenticated_user_repository
             .save(&authenticated_user)
+            .await
             .expect("Can't save a user");
 
         //Test
         let uc = GetUserUc::new(authenticated_user_repository);
 
-        let result = uc.execute(user_id.clone());
+        let result = uc.execute(user_id.clone()).await;
 
         match result {
             Ok(u) => {
@@ -86,8 +87,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_get_not_registered_user() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn test_get_not_registered_user() -> Result<(), &'static str> {
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let id_factory = IdFactoryMock::new();
 
@@ -105,12 +106,13 @@ mod tests {
         //Prefilling
         authenticated_user_repository
             .save(&authenticated_user)
+            .await
             .expect("Can't save a user");
 
         //Test
         let uc = GetUserUc::new(authenticated_user_repository);
 
-        let result = uc.execute(id_factory.create());
+        let result = uc.execute(id_factory.create()).await;
 
         match result {
             Err(GetUserError::UserNotFound) => Ok(()),

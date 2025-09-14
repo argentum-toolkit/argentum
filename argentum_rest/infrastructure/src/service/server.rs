@@ -86,7 +86,7 @@ where
             let logger = self.logger.clone();
 
             tokio::task::spawn(async move {
-                logger.trace("HTTP request accepted");
+                logger.trace("HTTP request accepted"); //TODO: it is connection. not a request
                 let start = Instant::now();
 
                 let log = logger.clone();

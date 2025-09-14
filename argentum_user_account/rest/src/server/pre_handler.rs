@@ -56,7 +56,7 @@ impl PreHandler {
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-        let r = self.anonymous_registers.handle(req)?;
+        let r = self.anonymous_registers.handle(req).await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),
@@ -74,8 +74,11 @@ impl PreHandler {
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-        let user = self.bearer_auth.auth(&req.params.headers)?;
-        let r = self.anonymous_requests_restore_token.handle(req, user)?;
+        let user = self.bearer_auth.auth(&req.params.headers).await?;
+        let r = self
+            .anonymous_requests_restore_token
+            .handle(req, user)
+            .await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),
@@ -93,10 +96,11 @@ impl PreHandler {
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-        let user = self.bearer_auth.auth(&req.params.headers)?;
+        let user = self.bearer_auth.auth(&req.params.headers).await?;
         let r = self
             .anonymous_with_token_changes_password
-            .handle(req, user)?;
+            .handle(req, user)
+            .await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),
@@ -114,8 +118,8 @@ impl PreHandler {
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-        let user = self.bearer_auth.auth(&req.params.headers)?;
-        let r = self.user_logins_with_password.handle(req, user)?;
+        let user = self.bearer_auth.auth(&req.params.headers).await?;
+        let r = self.user_logins_with_password.handle(req, user).await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),
@@ -133,8 +137,8 @@ impl PreHandler {
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-        let user = self.bearer_auth.auth(&req.params.headers)?;
-        let r = self.user_registers_with_password.handle(req, user)?;
+        let user = self.bearer_auth.auth(&req.params.headers).await?;
+        let r = self.user_registers_with_password.handle(req, user).await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),

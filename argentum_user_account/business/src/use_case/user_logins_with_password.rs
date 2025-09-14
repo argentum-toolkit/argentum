@@ -54,15 +54,15 @@ where
         }
     }
 
-    pub fn execute(
+    pub async fn execute(
         &self,
         anonymous: Option<AnonymousUser>,
         email: EmailAddress,
         password: String,
     ) -> Result<Session, LoginError> {
-        let result = self.user_repository.find_by_email(&email);
+        let result = self.user_repository.find_by_email(&email).await?;
 
-        let user = match result? {
+        let user = match result {
             Some(u) => u,
             None => return Err(LoginError::WrongEmailOrPassword),
         };
@@ -77,19 +77,20 @@ where
             &self.token_generator.generate(&user.id),
         );
 
-        self.session_repository.save(&session)?;
+        self.session_repository.save(&session).await?;
 
         if let Some(anonymous) = anonymous {
             match self
                 .session_repository
-                .delete_users_sessions(&anonymous.id())
+                .delete_users_sessions(anonymous.id())
+                .await
             {
                 Ok(_) => self.logger.info("Anonymous session deleted"),
                 Err(_) => self.logger.warning("Anonymous session is not deleted"),
             };
 
             let binding = AnonymousBinding::new(user.id(), anonymous.id());
-            match self.anonymous_binding_repository.save(&binding) {
+            match self.anonymous_binding_repository.save(&binding).await {
                 Ok(_) => self.logger.info("Anonymous binding saved"),
                 Err(_) => self.logger.warning("Anonymous binding is not saved"),
             }
@@ -151,8 +152,8 @@ mod test {
     use std::error::Error;
     use std::sync::Arc;
 
-    #[test]
-    fn test_user_logins_with_passwodr() -> Result<(), Box<dyn Error>> {
+    #[tokio::test]
+    async fn test_user_logins_with_password() -> Result<(), Box<dyn Error>> {
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let anonymous_binding_repository = Arc::new(AnonymousBindingRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
@@ -194,20 +195,24 @@ mod test {
         let (hashed_password, salt) = encryptor.encrypt(&password)?;
         let cred = PasswordCredential::new(user_id.clone(), hashed_password, salt);
 
-        user_repository.save(&user).expect("Can't save a user");
+        user_repository
+            .save(&user)
+            .await
+            .expect("Can't save a user");
         credential_writer.write(Box::new(cred))?;
 
         let anonymous_id: Id = id_factory.create();
         let anonymous = AnonymousUser::new(&anonymous_id);
 
-        let result = uc.execute(Some(anonymous), email, password);
+        let result = uc.execute(Some(anonymous), email, password).await;
 
         match result {
             Ok(s) => {
                 assert_eq!(s.user_id.to_string(), user_id.to_string());
 
                 let binding = anonymous_binding_repository
-                    .find_by_user_id(&user_id)?
+                    .find_by_user_id(&user_id)
+                    .await?
                     .expect("Should be Some");
                 assert_eq!(binding.anonymous_id.to_string(), anonymous_id.to_string());
 

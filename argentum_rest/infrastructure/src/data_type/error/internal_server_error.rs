@@ -1,13 +1,14 @@
 use serde::{Serialize, Serializer};
 use std::error::Error;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct InternalServerError {
-    pub source: Box<dyn Error>,
+    pub source: Arc<dyn Error + Send + Sync>,
 }
 
 impl InternalServerError {
-    pub fn new(source: Box<dyn Error>) -> Self {
+    pub fn new(source: Arc<dyn Error + Send + Sync>) -> Self {
         Self { source }
     }
 }
@@ -23,13 +24,13 @@ impl Serialize for InternalServerError {
 
 #[cfg(test)]
 mod tests {
-    use std::error::Error;
+    use std::{error::Error, sync::Arc};
 
     use crate::data_type::error::InternalServerError;
 
     #[test]
     fn test_serialize() -> Result<(), Box<dyn Error>> {
-        let ie = InternalServerError::new(Box::new(ErrorMock {}));
+        let ie = InternalServerError::new(Arc::new(ErrorMock {}));
 
         let actual = serde_json::to_string(&ie)?;
 

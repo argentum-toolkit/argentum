@@ -1,0 +1,28 @@
+services:
+  api:
+    image: itcreator/argentum-toolkit-rs-dev
+    build:
+      context: ../../..
+      dockerfile: devops/docker/rust/Dockerfile
+
+    # user: "${HOST_UID}:${HOST_GID}"
+    privileged: true
+    tty: true 
+    stdin_open: true
+    # command: perf record -g --call-graph dwarf cargo run --bin api --release
+    command: cargo run --bin api --release
+    environment:
+      - CARGO_PROFILE_RELEASE_DEBUG=2
+    depends_on:
+      - service.user.db
+      - service.user_account.db
+    working_dir: /code/demo-api-app
+    ports:
+     - "8088:8088"
+    volumes:
+      - ../../..:/code
+      # - ../../../var/cargo/common:/usr/local/cargo/registry
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+# HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose up

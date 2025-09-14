@@ -4,7 +4,8 @@ use crate::di::di_factory;
 pub mod app;
 mod di;
 
-fn main() -> Result<(), String> {
+#[tokio::main]
+async fn main() -> Result<(), String> {
     let di = di_factory()?;
 
     let app = App::new(
@@ -16,5 +17,5 @@ fn main() -> Result<(), String> {
         di.logger.clone(),
     );
 
-    app.run()
+    app.run().await
 }

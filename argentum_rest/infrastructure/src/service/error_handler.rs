@@ -251,7 +251,7 @@ mod tests {
         let handler = ErrorHandler::new(logger);
 
         let response = handler.handle(HttpError::InternalServerError(InternalServerError::new(
-            Box::new(ErrorMock {}),
+            Arc::new(ErrorMock {}),
         )));
         assert_eq!(response.code, StatusCode::INTERNAL_SERVER_ERROR);
 

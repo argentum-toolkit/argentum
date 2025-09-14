@@ -50,7 +50,7 @@ where
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(PasswordCredentialRepositoryError::Save(Box::new(e))),
+            Err(e) => Err(PasswordCredentialRepositoryError::Save(Arc::new(e))),
         }
     }
 
@@ -73,7 +73,7 @@ where
                 dto.salt,
             ))),
             Ok(None) => Ok(None),
-            Err(e) => Err(PasswordCredentialRepositoryError::Find(Box::new(e))),
+            Err(e) => Err(PasswordCredentialRepositoryError::Find(Arc::new(e))),
         }
     }
 
@@ -88,7 +88,7 @@ where
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(PasswordCredentialRepositoryError::Delete(Box::new(e))),
+            Err(e) => Err(PasswordCredentialRepositoryError::Delete(Arc::new(e))),
         }
     }
 }

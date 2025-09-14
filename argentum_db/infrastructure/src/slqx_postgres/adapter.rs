@@ -21,7 +21,7 @@ pub struct SqlxPostgresAdapter<L>
 where
     L: LoggerTrait,
 {
-    pub pool: Arc<PgPool>,
+    pub pool: PgPool,
     logger: Arc<L>,
 }
 
@@ -29,7 +29,7 @@ impl<L> SqlxPostgresAdapter<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(pool: Arc<PgPool>, logger: Arc<L>) -> Self {
+    pub fn new(pool: PgPool, logger: Arc<L>) -> Self {
         Self { pool, logger }
     }
 
@@ -37,19 +37,18 @@ where
         &'q self,
         query: Query<'q, Postgres, PgArguments>,
     ) -> impl Future<Output = Result<u64, DbAdapterError>> + Send + 'q {
-        self.exec_with_executor(query, &*self.pool)
+        self.exec_with_executor(query, &self.pool)
     }
 
     /// Execute query with Executor (transaction or connection pool)
     ///
     /// # Examples
-    /// use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
-    /// use futures::executor::block_on;
+    /// use argentum_db_infrastructure::sqlx_postgres::SqlxPostgresAdapter;
     /// let adapter: SqlxPostgresAdapter = todo!();
-    /// let mut tx = block_on(adapter.begin_transaction()).unwrap();
+    /// let mut tx = adapter.begin_transaction().await.unwrap();
     /// let query = sqlx::query("some query");
-    /// let result = block_on(adapter.exec_with_executor(query, &mut *tx));
-    /// let t_result = block_on(adapter.commit(tx));
+    /// let result = adapter.exec_with_executor(query, &mut *tx).await;
+    /// let t_result = adapter.commit(tx).await;
     /// ```
     pub async fn exec_with_executor<'q, E>(
         &'q self,
@@ -59,15 +58,15 @@ where
     where
         E: Executor<'q, Database = Postgres> + 'q,
     {
-        let sql = query.sql().to_string();
-        self.logger.debug(sql.clone());
+        let sql = query.sql();
+        self.logger.debug(sql);
         let result = query.execute(executor).await;
         self.logger.trace("done");
         match result {
             Ok(r) => Ok(r.rows_affected()),
             Err(e) => Err(DbAdapterError {
                 msg: e.to_string(),
-                sql: Some(sql),
+                sql: Some(sql.to_string()),
             }),
         }
     }
@@ -80,9 +79,10 @@ where
     where
         F: Send + Unpin + for<'r> FromRow<'r, PgRow> + 'q,
     {
-        let sql = query_as.sql().to_string();
-        self.logger.debug(sql.clone());
-        let result: Result<Option<F>, Error> = query_as.fetch_optional(&*self.pool).await;
+        let sql = query_as.sql();
+        self.logger.debug(sql);
+
+        let result: Result<Option<F>, Error> = query_as.fetch_optional(&self.pool).await;
         self.logger.trace("SQL done");
 
         match result {
@@ -90,7 +90,7 @@ where
             Ok(None) => Ok(None),
             Err(e) => Err(DbAdapterError {
                 msg: e.to_string(),
-                sql: Some(sql),
+                sql: Some(sql.to_string()),
             }),
         }
     }

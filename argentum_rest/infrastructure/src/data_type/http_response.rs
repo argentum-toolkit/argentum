@@ -1,6 +1,8 @@
+use async_trait::async_trait;
 use http::StatusCode;
 use serde::Serialize;
 
+#[async_trait]
 pub trait SerializableBody: erased_serde::Serialize {}
 erased_serde::serialize_trait_object!(SerializableBody);
 
@@ -46,6 +48,7 @@ impl HttpResponse {
 #[derive(Debug, Serialize)]
 pub struct EmptyBody {}
 
+#[async_trait]
 impl SerializableBody for EmptyBody {}
 
 impl EmptyBody {

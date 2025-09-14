@@ -1,14 +1,17 @@
 use crate::entity::anonymous_binding::AnonymousBinding;
 use argentum_standard_business::data_type::id::Id;
+use async_trait::async_trait;
 use std::error::Error;
 
+#[async_trait]
 pub trait AnonymousBindingRepositoryTrait: Send + Sync {
-    fn find_by_user_id(
+    async fn find_by_user_id(
         &self,
         user_id: &Id,
     ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError>;
 
-    fn save(&self, binding: &AnonymousBinding) -> Result<(), AnonymousBindingRepositoryError>;
+    async fn save(&self, binding: &AnonymousBinding)
+    -> Result<(), AnonymousBindingRepositoryError>;
 }
 
 #[derive(thiserror::Error, Debug)]

@@ -14,7 +14,7 @@ impl BearerAuthenticator {
         Self { uc }
     }
 
-    pub fn auth(&self, headers: &AuthHeaderParams) -> Result<User, HttpError> {
+    pub async fn auth(&self, headers: &AuthHeaderParams) -> Result<User, HttpError> {
         let header = headers.authorization.clone();
 
         match header.find("Bearer ") {
@@ -28,13 +28,13 @@ impl BearerAuthenticator {
 
         let token: String = header.chars().skip(7).collect();
 
-        match self.uc.execute(&token) {
+        match self.uc.execute(&token).await {
             Ok(user) => Ok(user),
             Err(AuthenticationError::UserNotFound) | Err(AuthenticationError::WrongToken) => Err(
                 HttpError::Unauthorized(Unauthorized::new("can't authenticate".to_string())),
             ),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
-                Box::new(e),
+                Arc::new(e),
             ))),
         }
     }

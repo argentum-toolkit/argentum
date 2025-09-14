@@ -33,11 +33,14 @@ impl AnonymousRegistersUc {
         }
     }
 
-    pub fn execute(&self, id: &Id) -> Result<(AnonymousUser, Session), AnonymousRegistrationError> {
+    pub async fn execute(
+        &self,
+        id: &Id,
+    ) -> Result<(AnonymousUser, Session), AnonymousRegistrationError> {
         let user = {
             let user = AnonymousUser::new(id);
 
-            self.user_repository.save(&user)?;
+            self.user_repository.save(&user).await?;
 
             user
         };
@@ -48,7 +51,7 @@ impl AnonymousRegistersUc {
             &self.token_generator.generate(id),
         );
 
-        self.session_repository.save(&session)?;
+        self.session_repository.save(&session).await?;
 
         Ok((user, session))
     }
@@ -83,8 +86,8 @@ mod tests {
     use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
     use std::sync::Arc;
 
-    #[test]
-    fn anonymous_registers() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn anonymous_registers() -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
         let id_factory = Arc::new(IdFactoryMock::new());
@@ -98,7 +101,7 @@ mod tests {
         );
 
         let anon_id: Id = id_factory.create();
-        let result = uc.execute(&anon_id);
+        let result = uc.execute(&anon_id).await;
 
         match result {
             Ok((anonymous, s)) => {
@@ -113,8 +116,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn anonymous_registers_with_broken_user_repository() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn anonymous_registers_with_broken_user_repository() -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousRepositoryMockWithBrokenSave::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
         let id_factory = Arc::new(IdFactoryMock::new());
@@ -128,7 +131,7 @@ mod tests {
         );
 
         let anon_id: Id = id_factory.create();
-        let result = uc.execute(&anon_id);
+        let result = uc.execute(&anon_id).await;
 
         match result {
             Ok(_) => Err("Should return error"),
@@ -138,8 +141,8 @@ mod tests {
             },
         }
     }
-    #[test]
-    fn anonymous_registers_with_broken_session_repository() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn anonymous_registers_with_broken_session_repository() -> Result<(), &'static str> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMockWithBrokenSave::new());
         let id_factory = Arc::new(IdFactoryMock::new());
@@ -153,7 +156,7 @@ mod tests {
         );
 
         let anon_id: Id = id_factory.create();
-        let result = uc.execute(&anon_id);
+        let result = uc.execute(&anon_id).await;
 
         match result {
             Ok(_) => Err("Should return error"),

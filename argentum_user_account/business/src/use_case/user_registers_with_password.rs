@@ -32,7 +32,7 @@ impl UserRegistersWithPasswordUc {
         }
     }
 
-    pub fn execute(
+    pub async fn execute(
         &self,
         id: Id,
         name: Name,
@@ -44,7 +44,7 @@ impl UserRegistersWithPasswordUc {
             return Err(RegistrationError::TermsNotAccepted);
         }
 
-        let result = self.user_repository.find_by_email(&email);
+        let result = self.user_repository.find_by_email(&email).await;
 
         if result?.is_some() {
             return Err(RegistrationError::EmailAlreadyExists);
@@ -54,7 +54,7 @@ impl UserRegistersWithPasswordUc {
         let user = {
             //it is `temporary mutability` pattern
             let user = AuthenticatedUser::new(&id, name, email);
-            self.user_repository.save(&user)?;
+            self.user_repository.save(&user).await?;
 
             user
         };
@@ -117,8 +117,8 @@ mod test {
     use argentum_user_business::mock::repository::broken::authenticated_user_repository_mock::AuthenticatedUserRepositoryMockWihBrokenSave;
     use std::sync::Arc;
 
-    #[test]
-    fn test_user_registers_with_password() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn test_user_registers_with_password() -> Result<(), &'static str> {
         let credential_repository = PasswordCredentialRepositoryMock::new();
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let encryptor = EncryptorMock::new();
@@ -138,7 +138,7 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = true;
-        let result = uc.execute(id.clone(), name, email, password, terms);
+        let result = uc.execute(id.clone(), name, email, password, terms).await;
 
         match result {
             Ok(u) => {
@@ -152,8 +152,8 @@ mod test {
         }
     }
 
-    #[test]
-    fn test_user_registers_without_accepting_of_terms() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn test_user_registers_without_accepting_of_terms() -> Result<(), &'static str> {
         let credential_repository = PasswordCredentialRepositoryMock::new();
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let encryptor = EncryptorMock::new();
@@ -173,7 +173,7 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = false;
-        let result = uc.execute(id.clone(), name, email, password, terms);
+        let result = uc.execute(id.clone(), name, email, password, terms).await;
 
         match result {
             Ok(u) => {
@@ -188,8 +188,9 @@ mod test {
         }
     }
 
-    #[test]
-    fn test_user_registers_with_password_with_broken_user_repository() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn test_user_registers_with_password_with_broken_user_repository()
+    -> Result<(), &'static str> {
         let credential_repository = PasswordCredentialRepositoryMock::new();
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let encryptor = EncryptorMock::new();
@@ -210,7 +211,7 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = true;
-        let result = uc.execute(id.clone(), name, email, password, terms);
+        let result = uc.execute(id.clone(), name, email, password, terms).await;
 
         match result {
             Ok(u) => {

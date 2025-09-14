@@ -59,10 +59,10 @@ impl PreHandler {
             .transform(request, raw_path_params, raw_query_params)
             .await?;
         {{#if operation.security}}
-            let user = self.bearer_auth.auth(&req.params.headers)?;
-            let r = self.{{snake operation.operationId}}.handle(req, user)?;
+            let user = self.bearer_auth.auth(&req.params.headers).await?;
+            let r = self.{{snake operation.operationId}}.handle(req, user).await?;
         {{else}}
-            let r = self.{{snake operation.operationId}}.handle(req)?;
+            let r = self.{{snake operation.operationId}}.handle(req).await?;
         {{/if}}
 
         Ok(HttpResponse::new(r.to_status_code(), r.to_response().body()))

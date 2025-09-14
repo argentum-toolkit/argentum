@@ -36,8 +36,8 @@ impl PreHandler {
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-        let user = self.bearer_auth.auth(&req.params.headers)?;
-        let r = self.get_user.handle(req, user)?;
+        let user = self.bearer_auth.auth(&req.params.headers).await?;
+        let r = self.get_user.handle(req, user).await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),

@@ -3,7 +3,11 @@ use std::collections::HashMap;
 use crate::entity::session::Session;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use argentum_standard_business::data_type::id::Id;
+use std::error::Error;
+use std::sync::Arc;
 use std::sync::RwLock;
+
+use async_trait::async_trait;
 
 pub struct SessionRepositoryMockWithBrokenSave {
     sessions: RwLock<HashMap<Id, Session>>,
@@ -23,12 +27,24 @@ impl Default for SessionRepositoryMockWithBrokenSave {
     }
 }
 
+#[derive(Debug)]
+struct PoisonedLockError;
+
+impl std::fmt::Display for PoisonedLockError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "`RwLock` is poisoned")
+    }
+}
+
+impl Error for PoisonedLockError {}
+
+#[async_trait]
 impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
-    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
+    async fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
         let guard = self
             .sessions
             .read()
-            .map_err(|_| SessionRepositoryError::Other(Some("`RwLock` is poisoned".into())))?;
+            .map_err(|_| SessionRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?;
 
         for (_, s) in guard.iter() {
             if s.token == token {
@@ -43,20 +59,20 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
         Ok(None)
     }
 
-    fn save(&self, _session: &Session) -> Result<(), SessionRepositoryError> {
+    async fn save(&self, _session: &Session) -> Result<(), SessionRepositoryError> {
         Err(SessionRepositoryError::Save(None))
     }
 
-    fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
+    async fn delete_users_sessions(&self, user_id: Id) -> Result<(), SessionRepositoryError> {
         let mut id: Option<Id> = None;
 
         let read_guard = self
             .sessions
             .read()
-            .map_err(|_| SessionRepositoryError::Other(Some("`RwLock` is poisoned".into())))?;
+            .map_err(|_| SessionRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?;
 
         for (k, s) in read_guard.iter() {
-            if &s.user_id == user_id {
+            if s.user_id.id_eq(&user_id) {
                 id = Some(k.clone());
 
                 break;
@@ -66,7 +82,7 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
         if let Some(id) = id {
             self.sessions
                 .write()
-                .map_err(|_| SessionRepositoryError::Other(Some("`RwLock` is poisoned".into())))?
+                .map_err(|_| SessionRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?
                 .remove(&id);
         }
 

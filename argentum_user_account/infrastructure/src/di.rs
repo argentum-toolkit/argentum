@@ -101,13 +101,12 @@ where
         max_db_connections: u32,
         logger: Arc<L>,
     ) -> Result<&mut Self, String> {
-        let pool = Arc::new(
-            PgPoolOptions::new()
-                .max_connections(max_db_connections)
-                .connect(connection_url)
-                .await
-                .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?,
-        );
+        let pool = PgPoolOptions::new()
+            .max_connections(max_db_connections)
+            .min_connections(2)
+            .connect(connection_url)
+            .await
+            .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?;
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
 

@@ -52,11 +52,11 @@ where
         }
     }
 
-    pub fn execute(
+    pub async fn execute(
         &self,
         email: EmailAddress,
     ) -> Result<RestorePasswordToken, RestorePasswordError> {
-        let result = self.user_repository.find_by_email(&email);
+        let result = self.user_repository.find_by_email(&email).await;
         let user = match result {
             Err(err) => return Err(RestorePasswordError::GetUserError(err)),
             Ok(o) => match o {
@@ -73,11 +73,16 @@ where
         if let Err(e) = self
             .restore_password_token_repository
             .delete_users_tokens(&user.id)
+            .await
         {
             return Err(RestorePasswordError::TokenRepositoryError(e));
         }
 
-        if let Err(e) = self.restore_password_token_repository.save(&restore_token) {
+        if let Err(e) = self
+            .restore_password_token_repository
+            .save(&restore_token)
+            .await
+        {
             return Err(RestorePasswordError::TokenRepositoryError(e));
         }
 
@@ -110,7 +115,7 @@ where
 
         let subject = format!("Reset password {}", self.product_name);
         let notification = Notification::new(user.id, body, subject);
-        if let Err(e) = self.notificator.send(notification) {
+        if let Err(e) = self.notificator.send(notification).await {
             self.logger
                 .error(format!("Restore token is not sent. {e:?}"));
         }
@@ -140,8 +145,8 @@ mod tests {
     use std::error::Error;
     use std::sync::Arc;
 
-    #[test]
-    fn anonymous_requests_restore_token() -> Result<(), Box<dyn Error>> {
+    #[tokio::test]
+    async fn anonymous_requests_restore_token() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -172,9 +177,9 @@ mod tests {
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 
-        user_repository.save(&user)?;
+        user_repository.save(&user).await?;
 
-        let result = uc.execute(email);
+        let result = uc.execute(email).await;
 
         if let Err(_) = result {
             return Err("User is not registered".into());
@@ -184,7 +189,7 @@ mod tests {
 
         assert!(user_id.eq(&token.user_id), "Wrong user id in token");
 
-        match token_repository.find_by_token(token.token)? {
+        match token_repository.find_by_token(token.token).await? {
             Some(stored_token) => {
                 assert!(stored_token.id.eq(&token.id), "Wrong token id");
                 assert!(user_id.eq(&stored_token.user_id), "Wrong user id in token");
@@ -195,8 +200,9 @@ mod tests {
         }
     }
 
-    #[test]
-    fn anonymous_requests_restore_token_for_not_registered_email() -> Result<(), &'static str> {
+    #[tokio::test]
+    async fn anonymous_requests_restore_token_for_not_registered_email() -> Result<(), &'static str>
+    {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -219,7 +225,7 @@ mod tests {
 
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
-        let result = uc.execute(email);
+        let result = uc.execute(email).await;
 
         match result {
             Err(e) => match e {

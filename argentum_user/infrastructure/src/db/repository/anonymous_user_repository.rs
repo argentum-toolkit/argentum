@@ -8,8 +8,9 @@ use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, ExternalUserError,
 };
-use futures::executor::block_on;
 use std::sync::Arc;
+
+use async_trait::async_trait;
 
 const TABLE_NAME: &str = "ag_user_anonymous";
 
@@ -33,18 +34,19 @@ where
     }
 }
 
+#[async_trait]
 impl<L> AnonymousUserRepositoryTrait for AnonymousUserRepository<L>
 where
     L: LoggerTrait,
 {
-    fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
+    async fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
         let user_id = self.id_factory.id_to_uuid(id);
         //move todo table name/prefix to const/param
         let sql = format!("SELECT id, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1");
         let query = sqlx::query_as(&sql).bind(user_id);
 
         let result: Result<Option<AnonymousUserDto>, DbAdapterError> =
-            block_on(self.adapter.fetch_one(query));
+            self.adapter.fetch_one(query).await;
 
         match result {
             Ok(Some(dto)) => Ok(Some(AnonymousUser {
@@ -53,21 +55,21 @@ where
             })),
 
             Ok(None) => Ok(None),
-            Err(e) => Err(ExternalUserError::Anonymous(Some(Box::new(e)))),
+            Err(e) => Err(ExternalUserError::Anonymous(Some(Arc::new(e)))),
         }
     }
 
-    fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError> {
+    async fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError> {
         let id = self.id_factory.id_to_uuid(&user.id);
 
         let sql = format!("INSERT INTO {TABLE_NAME} (id, created_at) VALUES ($1, $2)");
         let query = sqlx::query(&sql).bind(id).bind(user.created_at);
 
-        let result = block_on(self.adapter.exec(query));
+        let result = self.adapter.exec(query).await;
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(ExternalUserError::Anonymous(Some(Box::new(e)))),
+            Err(e) => Err(ExternalUserError::Anonymous(Some(Arc::new(e)))),
         }
     }
 }

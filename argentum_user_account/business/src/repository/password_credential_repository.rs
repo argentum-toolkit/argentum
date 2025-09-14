@@ -1,6 +1,6 @@
 use crate::entity::credential::PasswordCredential;
 use argentum_standard_business::data_type::id::Id;
-use std::error::Error;
+use std::{error::Error, sync::Arc};
 
 pub trait PasswordCredentialRepositoryTrait: Sync + Send {
     fn save(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError>;
@@ -16,14 +16,14 @@ pub trait PasswordCredentialRepositoryTrait: Sync + Send {
 #[derive(thiserror::Error, Debug)]
 pub enum PasswordCredentialRepositoryError {
     #[error("Can't save password credentials")]
-    Save(#[source] Box<dyn Error>),
+    Save(#[source] Arc<dyn Error + Send + Sync>),
 
     #[error("Can't delete password credentials")]
-    Delete(#[source] Box<dyn Error>),
+    Delete(#[source] Arc<dyn Error + Send + Sync>),
 
-    #[error("Can't fidn password credentials. Db error.")]
-    Find(#[source] Box<dyn Error>),
+    #[error("Can't find password credentials. Db error.")]
+    Find(#[source] Arc<dyn Error + Send + Sync>),
 
-    #[error("Password credentioals error")]
-    Other(#[source] Box<dyn Error>),
+    #[error("Password credentials error")]
+    Other(#[source] Arc<dyn Error + Send + Sync>),
 }

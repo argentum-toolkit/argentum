@@ -14,6 +14,8 @@ use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
 
+use async_trait::async_trait;
+
 const TABLE_NAME: &str = "ag_user_account_restore_password_token";
 
 pub struct RestorePasswordTokenRepository<L>
@@ -51,16 +53,17 @@ where
             })),
 
             Ok(None) => Ok(None),
-            Err(e) => Err(RestorePasswordTokenRepositoryError::Find(Some(Box::new(e)))),
+            Err(e) => Err(RestorePasswordTokenRepositoryError::Find(Some(Arc::new(e)))),
         }
     }
 }
 
+#[async_trait]
 impl<L> RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepository<L>
 where
     L: LoggerTrait,
 {
-    fn find(
+    async fn find(
         &self,
         token_id: &Id,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
@@ -73,7 +76,7 @@ where
         self.find_one(query)
     }
 
-    fn find_by_token(
+    async fn find_by_token(
         &self,
         token: String,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
@@ -85,7 +88,7 @@ where
         self.find_one(query)
     }
 
-    fn save(
+    async fn save(
         &self,
         token: &RestorePasswordToken,
     ) -> Result<(), RestorePasswordTokenRepositoryError> {
@@ -106,11 +109,14 @@ where
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(RestorePasswordTokenRepositoryError::Save(Some(Box::new(e)))),
+            Err(e) => Err(RestorePasswordTokenRepositoryError::Save(Some(Arc::new(e)))),
         }
     }
 
-    fn delete_users_tokens(&self, user_id: &Id) -> Result<(), RestorePasswordTokenRepositoryError> {
+    async fn delete_users_tokens(
+        &self,
+        user_id: &Id,
+    ) -> Result<(), RestorePasswordTokenRepositoryError> {
         let id = &self.id_factory.id_to_uuid(user_id);
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
         let query = sqlx::query(&sql).bind(id);
@@ -119,7 +125,7 @@ where
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(RestorePasswordTokenRepositoryError::Delete(Some(Box::new(
+            Err(e) => Err(RestorePasswordTokenRepositoryError::Delete(Some(Arc::new(
                 e,
             )))),
         }

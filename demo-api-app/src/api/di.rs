@@ -44,12 +44,12 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
     let log_writer = Arc::new(PrettyWriter::new());
-    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+    let logger = Arc::new(DefaultLogger::new(Level::Warning, log_writer));
 
     let u_di = Rc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
             //todo: use params
-            .default_services(&u_database_url, 5, logger.clone())
+            .default_services(&u_database_url, 10, logger.clone())
             .await?
             .build()?,
     );
@@ -85,7 +85,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         logger.clone(),
         notificator,
     )
-    .services(unique_id_factory, &database_url, 5, logger.clone())
+    .services(unique_id_factory, &database_url, 10, logger.clone())
     .await?
     .config(
         "Argentum ToolKit demo web application".to_string(),

@@ -11,6 +11,7 @@ use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyRespons
 use argentum_user_account_rest::dto::schema::RegistrationWithPasswordResult;
 use argentum_user_account_rest::server::handler::UserRegistersWithPasswordTrait;
 use argentum_user_business::entity::user::User;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct UserRegistersWithPasswordHandler {
@@ -33,8 +34,9 @@ impl UserRegistersWithPasswordHandler {
     }
 }
 
+#[async_trait]
 impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
-    fn handle(
+    async fn handle(
         &self,
         req: UserRegistersWithPasswordRequest,
         _user: User,
@@ -47,7 +49,8 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
 
         let result = self
             .uc
-            .execute(user_id, name, email, password, terms_accepted);
+            .execute(user_id, name, email, password, terms_accepted)
+            .await;
 
         match result {
             Ok(user) => {
@@ -67,7 +70,7 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
                 }
                 _ => Err(HttpError::InternalServerError(InternalServerError::new(
-                    Box::new(e),
+                    Arc::new(e),
                 ))),
             },
         }

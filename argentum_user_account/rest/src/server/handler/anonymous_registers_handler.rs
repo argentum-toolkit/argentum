@@ -3,8 +3,11 @@ use argentum_rest_infrastructure::data_type::error::{HttpError, NotImplementedEr
 
 use crate::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
 
+use async_trait::async_trait;
+
+#[async_trait]
 pub trait AnonymousRegistersTrait: Send + Sync {
-    fn handle(
+    async fn handle(
         &self,
         _req: AnonymousRegistersRequest,
     ) -> Result<AnonymousRegistersOperationResponseEnum, HttpError> {

@@ -5,11 +5,18 @@ services:
       - POSTGRES_DB=${POSTGRES_DB_FOR_ARGENTUM_USER_ACCOUNT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_LOGGING=verbose
     #    user: $HOST_UID:$HOST_GID
     volumes:
       - ../../../var/db/user_account/data:/var/lib/postgresql/data
     tmpfs:
-      - /tmp:exec,size=1G
+      - /tmp:exec,size=8G
     ports:
       - "54322:5432"
     #TODO: close ports for production mode
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8888:8080
