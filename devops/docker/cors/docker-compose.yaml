@@ -4,6 +4,8 @@ services:
     build:
       context: ../../..
       dockerfile: devops/docker/cors/Dockerfile
+    depends_on:
+      - api
     volumes:
       - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:

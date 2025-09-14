@@ -10,11 +10,12 @@ use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{
     AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
-use futures::executor::block_on;
 use sqlx::Postgres;
 use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
+
+use async_trait::async_trait;
 
 const TABLE_NAME: &str = "ag_user_authenticated";
 
@@ -37,19 +38,19 @@ where
         }
     }
 
-    fn find_one<'q>(
+    async fn find_one<'q>(
         &'q self,
         query: QueryAs<'q, Postgres, AuthenticatedUserDto, PgArguments>,
     ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         let result: Result<Option<AuthenticatedUserDto>, DbAdapterError> =
-            block_on(self.adapter.fetch_one(query));
+            self.adapter.fetch_one(query).await;
 
         match result {
             Ok(Some(dto)) => {
                 let email = match EmailAddress::try_new(&dto.email) {
                     Ok(e) => e,
                     Err(_) => {
-                        return Err(ExternalUserError::Authenticated(Some(Box::new(
+                        return Err(ExternalUserError::Authenticated(Some(Arc::new(
                             BrokenStoredData::Email(dto.email.clone()),
                         ))));
                     }
@@ -60,7 +61,7 @@ where
                 let name = match name_builder.try_build() {
                     Ok(n) => n,
                     Err(_) => {
-                        return Err(ExternalUserError::Authenticated(Some(Box::new(
+                        return Err(ExternalUserError::Authenticated(Some(Arc::new(
                             BrokenStoredData::UserName {
                                 first: dto.first_name.clone(),
                                 last: dto.last_name,
@@ -78,26 +79,27 @@ where
                 }))
             }
             Ok(None) => Ok(None),
-            Err(e) => Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
+            Err(e) => Err(ExternalUserError::Authenticated(Some(Arc::new(e)))),
         }
     }
 }
 
+#[async_trait]
 impl<L> AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository<L>
 where
     L: LoggerTrait,
 {
-    fn find(&self, user_id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
+    async fn find(&self, user_id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         let id = self.id_factory.id_to_uuid(user_id);
         let sql = format!(
             "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
         let query = sqlx::query_as(&sql).bind(id);
 
-        self.find_one(query)
+        self.find_one(query).await
     }
 
-    fn find_by_email(
+    async fn find_by_email(
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
@@ -106,10 +108,10 @@ where
         );
         let query = sqlx::query_as(&sql).bind(email.as_string());
 
-        self.find_one(query)
+        self.find_one(query).await
     }
 
-    fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
+    async fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
         let id = self.id_factory.id_to_uuid(&user.id);
 
         let last = user.name.last.as_ref().map(|l| l.to_string());
@@ -124,11 +126,11 @@ where
             .bind(last)
             .bind(user.email.as_string());
 
-        let result = block_on(self.adapter.exec(query));
+        let result = self.adapter.exec(query).await;
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(ExternalUserError::Authenticated(Some(Box::new(e)))),
+            Err(e) => Err(ExternalUserError::Authenticated(Some(Arc::new(e)))),
         }
     }
 }

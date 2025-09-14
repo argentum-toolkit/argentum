@@ -1,7 +1,7 @@
 use crate::entity::credential::Credential;
 use argentum_standard_business::data_type::id::Id;
 use async_trait::async_trait;
-use std::error::Error;
+use std::{error::Error, sync::Arc};
 
 #[async_trait]
 pub trait CredentialWriterTrait: Sync {
@@ -13,7 +13,7 @@ pub trait CredentialWriterTrait: Sync {
 #[derive(thiserror::Error, Debug)]
 pub enum CredentialWriterError {
     #[error("Can't write credentials")]
-    Credential(#[source] Box<dyn Error>),
+    Credential(#[source] Arc<dyn Error + Send + Sync>),
 }
 
 pub type CredentialWriterResult = Result<(), CredentialWriterError>;

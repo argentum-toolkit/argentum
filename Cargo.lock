@@ -167,6 +167,7 @@ dependencies = [
  "argentum_user_business",
  "lettre",
  "thiserror 2.0.15",
+ "tokio",
 ]
 
 [[package]]
@@ -211,6 +212,7 @@ version = "0.3.1"
 dependencies = [
  "argentum_standard_business",
  "argentum_user_business",
+ "async-trait",
  "thiserror 2.0.15",
 ]
 
@@ -221,6 +223,7 @@ dependencies = [
  "argentum_notification_business",
  "argentum_standard_business",
  "argentum_user_business",
+ "async-trait",
  "lettre",
 ]
 
@@ -319,6 +322,7 @@ dependencies = [
  "chrono",
  "futures",
  "thiserror 2.0.15",
+ "tokio",
 ]
 
 [[package]]
@@ -343,6 +347,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
+ "tokio",
  "uuid",
 ]
 
@@ -393,8 +398,10 @@ version = "0.3.1"
 dependencies = [
  "argentum_encryption_business",
  "argentum_standard_business",
+ "async-trait",
  "chrono",
  "thiserror 2.0.15",
+ "tokio",
 ]
 
 [[package]]
@@ -408,17 +415,19 @@ dependencies = [
  "argentum_standard_infrastructure",
  "argentum_user_business",
  "argentum_user_rest",
+ "async-trait",
  "chrono",
  "futures",
  "serde",
  "sqlx",
  "thiserror 2.0.15",
+ "tokio",
  "uuid",
 ]
 
 [[package]]
 name = "argentum_user_rest"
-version = "0.3.1"
+version = "0.3.0"
 dependencies = [
  "argentum_rest_infrastructure",
  "argentum_standard_business",

@@ -3,7 +3,11 @@ use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, Exter
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use std::collections::HashMap;
+use std::error::Error;
+use std::sync::Arc;
 use std::sync::RwLock;
+
+use async_trait::async_trait;
 
 pub struct AuthenticatedUserRepositoryMock {
     users: RwLock<HashMap<Id, AuthenticatedUser>>,
@@ -23,24 +27,36 @@ impl Default for AuthenticatedUserRepositoryMock {
     }
 }
 
+#[derive(Debug)]
+struct PoisonedLockError;
+
+impl std::fmt::Display for PoisonedLockError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "`RwLock` is poisoned")
+    }
+}
+
+impl Error for PoisonedLockError {}
+
+#[async_trait]
 impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
-    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
+    async fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         Ok(self
             .users
             .read()
-            .map_err(|_| ExternalUserError::Authenticated(Some("`RwLock` is poisoned".into())))?
+            .map_err(|_| ExternalUserError::Authenticated(Some(Arc::new(PoisonedLockError))))?
             .get(id)
             .map(|u| AuthenticatedUser::new(&u.id().clone(), u.name.clone(), u.email.clone())))
     }
 
-    fn find_by_email(
+    async fn find_by_email(
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
         let guard = self
             .users
             .read()
-            .map_err(|_| ExternalUserError::Authenticated(Some("`RwLock` is poisoned".into())))?;
+            .map_err(|_| ExternalUserError::Authenticated(Some(Arc::new(PoisonedLockError))))?;
 
         for (_, u) in guard.iter() {
             if &u.email == email {
@@ -55,7 +71,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
         Ok(None)
     }
 
-    fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
+    async fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
         // TODO: check if key exists. Eg:
         // if self.users. contains_key(user.get_id().clone()) {
         //     return Err("Already exists");
@@ -71,7 +87,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
         match self
             .users
             .write()
-            .map_err(|_| ExternalUserError::Authenticated(Some("`RwLock` is poisoned".into())))?
+            .map_err(|_| ExternalUserError::Authenticated(Some(Arc::new(PoisonedLockError))))?
             .insert(user.id().clone(), u)
             .is_none()
         {

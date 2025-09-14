@@ -3,8 +3,11 @@ use crate::dto::request::AnonymousRequestsRestoreTokenRequest;
 use argentum_rest_infrastructure::data_type::error::{HttpError, NotImplementedError};
 use argentum_user_business::entity::user::User;
 
+use async_trait::async_trait;
+
+#[async_trait]
 pub trait AnonymousRequestsRestoreTokenTrait: Send + Sync {
-    fn handle(
+    async fn handle(
         &self,
         _req: AnonymousRequestsRestoreTokenRequest,
         _user: User,

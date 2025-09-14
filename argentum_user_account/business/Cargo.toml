@@ -22,3 +22,5 @@ argentum_notification_business = { path = "../../argentum_notification/business"
 
 chrono = "0.4.*"
 thiserror = "2.0.*"
+
+tokio = { version = "^1.40", features = ["full"]}

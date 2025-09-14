@@ -3,19 +3,24 @@ use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 
 use std::error::Error;
+use std::sync::Arc;
 
+use async_trait::async_trait;
+
+#[async_trait]
 pub trait AuthenticatedUserRepositoryTrait: Send + Sync {
-    fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError>;
-    fn find_by_email(
+    async fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError>;
+    async fn find_by_email(
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser>, ExternalUserError>;
-    fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError>;
+    async fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError>;
 }
 
+#[async_trait]
 pub trait AnonymousUserRepositoryTrait: Send + Sync {
-    fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError>;
-    fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError>;
+    async fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError>;
+    async fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError>;
 }
 
 // Not business errors.
@@ -23,8 +28,8 @@ pub trait AnonymousUserRepositoryTrait: Send + Sync {
 #[derive(thiserror::Error, Debug)]
 pub enum ExternalUserError {
     #[error("Can't save an user")]
-    Authenticated(#[source] Option<Box<dyn Error>>),
+    Authenticated(#[source] Option<Arc<dyn Error + Send + Sync>>),
 
     #[error("Can't save an anonymous")]
-    Anonymous(#[source] Option<Box<dyn Error>>),
+    Anonymous(#[source] Option<Arc<dyn Error + Send + Sync>>),
 }

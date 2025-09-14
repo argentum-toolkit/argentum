@@ -13,6 +13,7 @@ use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
 use argentum_user_account_rest::dto::schema::LoginResult;
 use argentum_user_account_rest::server::handler::UserLoginsWithPasswordTrait;
 use argentum_user_business::entity::user::User;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct UserLoginsWithPasswordHandler<L>
@@ -41,11 +42,12 @@ where
     }
 }
 
+#[async_trait]
 impl<L> UserLoginsWithPasswordTrait for UserLoginsWithPasswordHandler<L>
 where
     L: LoggerTrait,
 {
-    fn handle(
+    async fn handle(
         &self,
         req: UserLoginsWithPasswordRequest,
         user: User,
@@ -63,7 +65,7 @@ where
             .dto_to_user_logins_with_password_params
             .transform(req)?;
 
-        let result = self.uc.execute(Some(anonymous), email, password);
+        let result = self.uc.execute(Some(anonymous), email, password).await;
 
         match result {
             Ok(session) => {
@@ -79,7 +81,7 @@ where
                 Unauthorized::new(format!("{}", LoginError::WrongEmailOrPassword)),
             )),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
-                Box::new(e),
+                Arc::new(e),
             ))),
         }
     }

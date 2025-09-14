@@ -3,7 +3,7 @@ services:
     image: itcreator/argentum-toolkit-rs-dev
     build:
       context: ../../..
-      dockerfile: devops/docker/builder/Dockerfile
+      dockerfile: devops/docker/rust/Dockerfile
     working_dir: /code
     volumes:
       - ../../..:/code

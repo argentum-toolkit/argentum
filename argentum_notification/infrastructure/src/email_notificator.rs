@@ -3,6 +3,8 @@ use argentum_user_business::repository::user_repository::AuthenticatedUserReposi
 
 use lettre::{Message, SmtpTransport, Transport, address::AddressError};
 
+use async_trait::async_trait;
+
 ///
 /// How to init notificator via `lettre`
 ///
@@ -49,9 +51,10 @@ impl<'s> EmailNotificator<'s> {
     }
 }
 
+#[async_trait]
 impl<'s> NotificatorTrait for EmailNotificator<'s> {
-    fn send(&self, notification: Notification) -> Result<(), NotificationError> {
-        let user = match self.user_repository.find(&notification.user_id) {
+    async fn send(&self, notification: Notification) -> Result<(), NotificationError> {
+        let user = match self.user_repository.find(&notification.user_id).await {
             Ok(o) => match o {
                 Some(u) => u,
                 None => return Err(NotificationError::UserNotFoundError),

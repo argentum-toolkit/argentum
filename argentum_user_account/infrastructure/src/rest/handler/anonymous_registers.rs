@@ -9,6 +9,8 @@ use argentum_user_account_rest::dto::schema::AnonymousRegistrationResult;
 use argentum_user_account_rest::server::handler::AnonymousRegistersTrait;
 use std::sync::Arc;
 
+use async_trait::async_trait;
+
 pub struct AnonymousRegistersHandler {
     uc: Arc<AnonymousRegistersUc>,
     id_factory: Arc<UniqueIdFactory>,
@@ -20,14 +22,15 @@ impl AnonymousRegistersHandler {
     }
 }
 
+#[async_trait]
 impl AnonymousRegistersTrait for AnonymousRegistersHandler {
-    fn handle(
+    async fn handle(
         &self,
         _req: AnonymousRegistersRequest,
     ) -> Result<AnonymousRegistersOperationResponseEnum, HttpError> {
         let anonymous_id = self.id_factory.create();
 
-        let result = self.uc.execute(&anonymous_id);
+        let result = self.uc.execute(&anonymous_id).await;
 
         match result {
             Ok((anonymous, session)) => {
@@ -40,7 +43,7 @@ impl AnonymousRegistersTrait for AnonymousRegistersHandler {
             }
 
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
-                Box::new(e),
+                Arc::new(e),
             ))),
         }
     }

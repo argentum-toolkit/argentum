@@ -11,6 +11,8 @@ use argentum_user_account_business::use_case::restore_password::anonymous_with_t
 use argentum_user_account_rest::dto::operation_response_enum::AnonymousWithTokenChangesPasswordOperationResponseEnum;
 use argentum_user_account_rest::dto::response::EmptyOkResponse;
 
+use async_trait::async_trait;
+
 pub struct AnonymousWithTokenChangesPasswordHandler<L>
 where
     L: LoggerTrait,
@@ -37,11 +39,12 @@ where
     }
 }
 
+#[async_trait]
 impl<L> AnonymousWithTokenChangesPasswordTrait for AnonymousWithTokenChangesPasswordHandler<L>
 where
     L: LoggerTrait,
 {
-    fn handle(
+    async fn handle(
         &self,
         req: AnonymousWithTokenChangesPasswordRequest,
         _user: User,
@@ -50,7 +53,7 @@ where
             .dto_to_anonymous_with_token_changes_password_params
             .transform(req)?;
 
-        let result = self.uc.execute(token, pw);
+        let result = self.uc.execute(token, pw).await;
 
         match result {
             Ok(_) => Ok(
@@ -65,7 +68,7 @@ where
                     )))
                 }
                 _ => Err(HttpError::InternalServerError(InternalServerError::new(
-                    Box::new(e),
+                    Arc::new(e),
                 ))),
             },
         }

@@ -8,6 +8,8 @@ pub mod mock;
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::repository::user_repository::ExternalUserError;
 
+use async_trait::async_trait;
+
 pub struct Notification {
     pub user_id: Id,
     pub body: String,
@@ -42,6 +44,7 @@ pub enum NotificationError {
     MessageSendingExternalError,
 }
 
+#[async_trait]
 pub trait NotificatorTrait: Sync + Send {
-    fn send(&self, notification: Notification) -> Result<(), NotificationError>;
+    async fn send(&self, notification: Notification) -> Result<(), NotificationError>;
 }

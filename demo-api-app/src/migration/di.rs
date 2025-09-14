@@ -42,13 +42,11 @@ async fn create_migrator<'a, L>(
 where
     L: LoggerTrait,
 {
-    let pool = Arc::new(
-        PgPoolOptions::new()
-            .max_connections(max_db_connections)
-            .connect(u_database_url)
-            .await
-            .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?,
-    );
+    let pool = PgPoolOptions::new()
+        .max_connections(max_db_connections)
+        .connect(u_database_url)
+        .await
+        .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?;
 
     let adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger.clone()));
 

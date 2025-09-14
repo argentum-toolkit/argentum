@@ -37,3 +37,8 @@ inherits = "dev"
 
 [profile.android-dev]
 inherits = "dev"
+
+
+[profile.release]
+debug = 2
+

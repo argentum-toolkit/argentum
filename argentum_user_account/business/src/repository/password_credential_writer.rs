@@ -6,6 +6,7 @@ use crate::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,
 };
 use argentum_standard_business::data_type::id::Id;
+use std::error::Error;
 use std::sync::Arc;
 
 pub trait PasswordCredentialWriterTrait: CredentialWriterTrait + Send + Sync {
@@ -25,19 +26,19 @@ impl<T: PasswordCredentialWriterTrait> CredentialWriterTrait for T {
         let pass_cred = match cred.as_any().downcast_ref::<PasswordCredential>() {
             Some(b) => b,
             None => {
-                return CredentialWriterResult::Err(CredentialWriterError::Credential(
-                    "Accepted only PasswordCredential type".into(),
-                ));
+                return CredentialWriterResult::Err(CredentialWriterError::Credential(Arc::new(
+                    InvalidCredentialTypeError,
+                )));
             }
         };
 
         self.write_password_credentials(pass_cred)
-            .map_err(|e| CredentialWriterError::Credential(Box::new(e)))
+            .map_err(|e| CredentialWriterError::Credential(Arc::new(e)))
     }
 
     fn delete_for_user(&self, user_id: &Id) -> CredentialWriterResult {
         self.delete_password_credentials_for_user(user_id)
-            .map_err(|e| CredentialWriterError::Credential(Box::new(e)))
+            .map_err(|e| CredentialWriterError::Credential(Arc::new(e)))
     }
 }
 
@@ -80,6 +81,17 @@ impl PasswordCredentialWriterTrait for PasswordCredentialWriter {
         }
     }
 }
+
+#[derive(Debug)]
+struct InvalidCredentialTypeError;
+
+impl std::fmt::Display for InvalidCredentialTypeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Accepted only PasswordCredential type")
+    }
+}
+
+impl Error for InvalidCredentialTypeError {}
 
 #[derive(thiserror::Error, Debug)]
 pub enum PasswordCredentialWriterError {

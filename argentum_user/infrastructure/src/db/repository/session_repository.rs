@@ -8,8 +8,9 @@ use argentum_user_business::entity::session::Session;
 use argentum_user_business::repository::session_repository::{
     SessionRepositoryError, SessionRepositoryTrait,
 };
-use futures::executor::block_on;
 use std::sync::Arc;
+
+use async_trait::async_trait;
 
 const TABLE_NAME: &str = "ag_user_session";
 
@@ -33,17 +34,18 @@ where
     }
 }
 
+#[async_trait]
 impl<L> SessionRepositoryTrait for SessionRepository<L>
 where
     L: LoggerTrait,
 {
-    fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
+    async fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
         //move todo table name/prefix to const/param
         let sql = format!("SELECT id, user_id, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1");
         let query = sqlx::query_as(&sql).bind(token);
 
         let result: Result<Option<SessionDto>, DbAdapterError> =
-            block_on(self.adapter.fetch_one(query));
+            self.adapter.fetch_one(query).await;
 
         match result {
             Ok(Some(dto)) => Ok(Some(Session {
@@ -53,11 +55,11 @@ where
             })),
 
             Ok(None) => Ok(None),
-            Err(e) => Err(SessionRepositoryError::Other(Some(Box::new(e)))),
+            Err(e) => Err(SessionRepositoryError::Other(Some(Arc::new(e)))),
         }
     }
 
-    fn save(&self, session: &Session) -> Result<(), SessionRepositoryError> {
+    async fn save(&self, session: &Session) -> Result<(), SessionRepositoryError> {
         let id = self.id_factory.id_to_uuid(&session.id);
         let user_id = self.id_factory.id_to_uuid(&session.user_id);
 
@@ -67,25 +69,25 @@ where
             .bind(user_id)
             .bind(session.token.clone());
 
-        let result = block_on(self.adapter.exec(query));
+        let result = self.adapter.exec(query).await;
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(SessionRepositoryError::Save(Some(Box::new(e)))),
+            Err(e) => Err(SessionRepositoryError::Save(Some(Arc::new(e)))),
         }
     }
 
-    fn delete_users_sessions(&self, user_id: &Id) -> Result<(), SessionRepositoryError> {
-        let id = self.id_factory.id_to_uuid(user_id);
+    async fn delete_users_sessions(&self, user_id: Id) -> Result<(), SessionRepositoryError> {
+        let id = self.id_factory.id_to_uuid(&user_id);
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
 
         let query = sqlx::query(&sql).bind(id);
 
-        let result = block_on(self.adapter.exec(query));
+        let result = self.adapter.exec(query).await;
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(SessionRepositoryError::Delete(Some(Box::new(e)))),
+            Err(e) => Err(SessionRepositoryError::Delete(Some(Arc::new(e)))),
         }
     }
 }

@@ -5,7 +5,11 @@ use crate::repository::restore_password_token_repository::{
     RestorePasswordTokenRepositoryError, RestorePasswordTokenRepositoryTrait,
 };
 use argentum_standard_business::data_type::id::Id;
+use std::error::Error;
+use std::sync::Arc;
 use std::sync::RwLock;
+
+use async_trait::async_trait;
 
 pub struct RestorePasswordTokenRepositoryMock {
     tokens: RwLock<HashMap<Id, RestorePasswordToken>>,
@@ -25,13 +29,25 @@ impl Default for RestorePasswordTokenRepositoryMock {
     }
 }
 
+#[derive(Debug)]
+struct PoisonedLockError;
+
+impl std::fmt::Display for PoisonedLockError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "`RwLock` is poisoned")
+    }
+}
+
+impl Error for PoisonedLockError {}
+
+#[async_trait]
 impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock {
-    fn find(
+    async fn find(
         &self,
         id: &Id,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
         let guard = self.tokens.read().map_err(|_| {
-            RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+            RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
         })?;
 
         let result = guard
@@ -41,12 +57,12 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
         Ok(result)
     }
 
-    fn find_by_token(
+    async fn find_by_token(
         &self,
         token: String,
     ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError> {
         let guard = self.tokens.read().map_err(|_| {
-            RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+            RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
         })?;
 
         for (_, t) in guard.iter() {
@@ -63,7 +79,7 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
         Ok(None)
     }
 
-    fn save(
+    async fn save(
         &self,
         token: &RestorePasswordToken,
     ) -> Result<(), RestorePasswordTokenRepositoryError> {
@@ -80,7 +96,7 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
             .tokens
             .write()
             .map_err(|_| {
-                RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+                RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
             })?
             .insert(token.id.clone(), t)
             .is_none()
@@ -90,11 +106,14 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
         }
     }
 
-    fn delete_users_tokens(&self, user_id: &Id) -> Result<(), RestorePasswordTokenRepositoryError> {
+    async fn delete_users_tokens(
+        &self,
+        user_id: &Id,
+    ) -> Result<(), RestorePasswordTokenRepositoryError> {
         let mut id: Option<Id> = None;
 
         let guard = self.tokens.read().map_err(|_| {
-            RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+            RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
         })?;
 
         for (k, t) in guard.iter() {
@@ -111,7 +130,7 @@ impl RestorePasswordTokenRepositoryTrait for RestorePasswordTokenRepositoryMock 
             self.tokens
                 .write()
                 .map_err(|_| {
-                    RestorePasswordTokenRepositoryError::Other(Some("`RwLock` is poisoned".into()))
+                    RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
                 })?
                 .remove(&id);
         }

@@ -42,9 +42,16 @@ where
         }
     }
 
-    pub fn execute(&self, token: String, password: String) -> Result<(), RestorePasswordError> {
+    pub async fn execute(
+        &self,
+        token: String,
+        password: String,
+    ) -> Result<(), RestorePasswordError> {
         let restore_token = {
-            let restore_token = self.restore_password_token_repository.find_by_token(token);
+            let restore_token = self
+                .restore_password_token_repository
+                .find_by_token(token)
+                .await;
 
             match restore_token {
                 Err(e) => {
@@ -61,7 +68,7 @@ where
             return Err(RestorePasswordError::TokenExpired);
         }
 
-        let result = self.user_repository.find(&restore_token.user_id);
+        let result = self.user_repository.find(&restore_token.user_id).await;
         let user = match result {
             Err(err) => return Err(RestorePasswordError::GetUserError(err)),
             Ok(o) => match o {
@@ -81,6 +88,7 @@ where
         if let Err(e) = self
             .restore_password_token_repository
             .delete_users_tokens(&user.id)
+            .await
         {
             self.logger
                 .warning(format!("Restore password token is not deleted. {e:?}"));
@@ -117,8 +125,8 @@ mod tests {
     use std::thread;
     use std::time::Duration;
 
-    #[test]
-    fn anonymous_with_token_changes_password() -> Result<(), Box<dyn Error>> {
+    #[tokio::test]
+    async fn anonymous_with_token_changes_password() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -148,16 +156,16 @@ mod tests {
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 
-        user_repository.save(&user)?;
+        user_repository.save(&user).await?;
 
         let token = token_generator.generate(&user.id);
         let token_id = id_factory.create();
         let restore_token = RestorePasswordToken::new(token_id, user.id.clone(), token.clone());
 
-        token_repository.save(&restore_token)?;
+        token_repository.save(&restore_token).await?;
 
         let password = "234".to_string();
-        let result = uc.execute(token, password);
+        let result = uc.execute(token, password).await;
 
         if let Err(_) = result {
             return Err("Password is not changed".into());
@@ -170,8 +178,8 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn anonymous_with_expired_token_changes_password() -> Result<(), Box<dyn Error>> {
+    #[tokio::test]
+    async fn anonymous_with_expired_token_changes_password() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
@@ -203,18 +211,18 @@ mod tests {
 
         let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
 
-        user_repository.save(&user)?;
+        user_repository.save(&user).await?;
 
         let token = token_generator.generate(&user.id);
         let token_id = id_factory.create();
         let restore_token = RestorePasswordToken::new(token_id, user.id.clone(), token.clone());
 
-        token_repository.save(&restore_token)?;
+        token_repository.save(&restore_token).await?;
 
         thread::sleep(Duration::from_secs(1));
 
         let password = "234".to_string();
-        let result = uc.execute(token, password);
+        let result = uc.execute(token, password).await;
 
         match result {
             Err(e) => match e {

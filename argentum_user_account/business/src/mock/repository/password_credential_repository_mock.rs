@@ -4,6 +4,8 @@ use crate::repository::password_credential_repository::{
 };
 use argentum_standard_business::data_type::id::Id;
 use std::collections::HashMap;
+use std::error::Error;
+use std::sync::Arc;
 use std::sync::RwLock;
 
 pub struct PasswordCredentialRepositoryMock {
@@ -16,12 +18,6 @@ impl PasswordCredentialRepositoryMock {
             credentials: RwLock::new(HashMap::new()),
         }
     }
-
-    // pub fn new<PasswordR: PasswordCredentialRepositoryTrait>() -> PasswordR {
-    //     PasswordCredentialRepositoryMock {
-    //         credentials: RwLock::new(HashMap::new()),
-    //     }
-    // }
 }
 
 impl Default for PasswordCredentialRepositoryMock {
@@ -30,11 +26,22 @@ impl Default for PasswordCredentialRepositoryMock {
     }
 }
 
+#[derive(Debug)]
+struct PoisonedLockError;
+
+impl std::fmt::Display for PoisonedLockError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "`RwLock` is poisoned")
+    }
+}
+
+impl Error for PoisonedLockError {}
+
 impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
     fn save(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         self.credentials
             .write()
-            .map_err(|_| PasswordCredentialRepositoryError::Other("`RwLock` is poisoned".into()))?
+            .map_err(|_| PasswordCredentialRepositoryError::Other(Arc::new(PoisonedLockError)))?
             .insert(cred.user_id.to_string(), cred.clone());
 
         Ok(())
@@ -47,7 +54,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
         let credentials = self
             .credentials
             .read()
-            .map_err(|_| PasswordCredentialRepositoryError::Other("`RwLock` is poisoned".into()))?
+            .map_err(|_| PasswordCredentialRepositoryError::Other(Arc::new(PoisonedLockError)))?
             .get(&*id.to_string())
             .map(|c| {
                 PasswordCredential::new(c.user_id.clone(), c.password.clone(), c.salt.clone())
@@ -59,7 +66,7 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
     fn delete(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
         self.credentials
             .write()
-            .map_err(|_| PasswordCredentialRepositoryError::Other("`RwLock` is poisoned".into()))?
+            .map_err(|_| PasswordCredentialRepositoryError::Other(Arc::new(PoisonedLockError)))?
             .remove(&cred.user_id.to_string());
 
         Ok(())
