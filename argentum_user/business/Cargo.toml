@@ -10,6 +10,9 @@ repository = "https://gitlab.com/argentum-toolkit/argentum"
 documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
+[features]
+server = ["dep:tokio"]
+
 [dependencies]
 async-trait = "0.1.*"
 
@@ -19,4 +22,4 @@ argentum_standard_business = { path = "../../argentum_standard/business", versio
 chrono = "0.4.*"
 thiserror = "2.0.*"
 
-tokio = { version = "^1.40", features = ["full"] }
+tokio = { version = "^1.40", features = ["full"], optional = true }

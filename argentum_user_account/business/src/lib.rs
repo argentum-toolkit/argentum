@@ -1,6 +1,9 @@
+#[cfg(feature = "server")]
 pub mod di;
 pub mod entity;
 pub mod mock;
+#[cfg(feature = "server")]
 pub mod repository;
 pub mod token;
+#[cfg(feature = "server")]
 pub mod use_case;

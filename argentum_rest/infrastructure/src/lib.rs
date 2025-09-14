@@ -1,5 +1,8 @@
 pub mod data_type;
-mod di;
-pub mod service;
 
+#[cfg(feature = "server")]
+mod di;
+#[cfg(feature = "server")]
+pub mod service;
+#[cfg(feature = "server")]
 pub use di::RestDiC;

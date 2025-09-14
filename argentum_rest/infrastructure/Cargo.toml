@@ -11,7 +11,7 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [features]
-server = ["dep:tokio"]
+server = ["dep:tokio", "argentum_user_account_business/server"]
 
 [dependencies]
 async-trait = "0.1.*"
