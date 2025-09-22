@@ -3,20 +3,27 @@ use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
+use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
-pub struct ApiDiC {
-    pub router: Arc<Router>,
+pub struct ApiDiC<I>
+where
+    I: Id,
+{
+    pub router: Arc<Router<I>>,
 }
 
-impl ApiDiC {
+impl<I> ApiDiC<I>
+where
+    I: Id,
+{
     pub fn new(
         //config
         url_prefix: String,
         //services
         request_transformer: Arc<RequestTransformer>,
-        bearer_auth: Arc<BearerAuthenticator>,
-        get_user_handler: Arc<dyn GetUserTrait>,
+        bearer_auth: Arc<BearerAuthenticator<I>>,
+        get_user_handler: Arc<dyn GetUserTrait<Id = I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
         let pre_handler = Arc::new(PreHandler::new(

@@ -18,15 +18,21 @@ use argentum_standard_business::data_type::id::Id;
 #[cfg(feature = "server")]
 use async_trait::async_trait;
 
-pub struct Notification {
-    pub user_id: Id,
+pub struct Notification<I>
+where
+    I: Id,
+{
+    pub user_id: I,
     pub body: String,
     pub subject: String,
 }
 
-impl Notification {
-    pub fn new(user_id: Id, body: String, subject: String) -> Notification {
-        Notification {
+impl<I> Notification<I>
+where
+    I: Id,
+{
+    pub fn new(user_id: I, body: String, subject: String) -> Self {
+        Self {
             user_id,
             body,
             subject,
@@ -37,5 +43,7 @@ impl Notification {
 #[cfg(feature = "server")]
 #[async_trait]
 pub trait NotificatorTrait: Sync + Send {
-    async fn send(&self, notification: Notification) -> Result<(), NotificationError>;
+    type Id: Id;
+
+    async fn send(&self, notification: Notification<Self::Id>) -> Result<(), NotificationError>;
 }

@@ -2,57 +2,55 @@ use crate::entity::user::{AuthenticatedUser, UserTrait};
 use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::error::PoisonedLockError;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::RwLock;
 
 use async_trait::async_trait;
 
-pub struct AuthenticatedUserRepositoryMock {
-    users: RwLock<HashMap<Id, AuthenticatedUser>>,
+#[derive(Default)]
+pub struct AuthenticatedUserRepositoryMock<I>
+where
+    I: Id,
+{
+    users: RwLock<HashMap<I, AuthenticatedUser<I>>>,
 }
 
-impl AuthenticatedUserRepositoryMock {
-    pub fn new() -> AuthenticatedUserRepositoryMock {
-        AuthenticatedUserRepositoryMock {
+impl<I> AuthenticatedUserRepositoryMock<I>
+where
+    I: Id,
+{
+    pub fn new() -> Self {
+        Self {
             users: RwLock::new(HashMap::new()),
         }
     }
 }
 
-impl Default for AuthenticatedUserRepositoryMock {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[derive(Debug)]
-struct PoisonedLockError;
-
-impl std::fmt::Display for PoisonedLockError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "`RwLock` is poisoned")
-    }
-}
-
-impl Error for PoisonedLockError {}
-
 #[async_trait]
-impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
-    async fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
+impl<I> AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock<I>
+where
+    I: Id,
+{
+    type Id = I;
+
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError> {
         Ok(self
             .users
             .read()
             .map_err(|_| ExternalUserError::Authenticated(Some(Arc::new(PoisonedLockError))))?
-            .get(id)
-            .map(|u| AuthenticatedUser::new(&u.id().clone(), u.name.clone(), u.email.clone())))
+            .get(&id)
+            .map(|u| AuthenticatedUser::<Self::Id>::new(u.id(), u.name.clone(), u.email.clone())))
     }
 
     async fn find_by_email(
         &self,
         email: &EmailAddress,
-    ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
+    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError> {
         let guard = self
             .users
             .read()
@@ -60,8 +58,8 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
 
         for (_, u) in guard.iter() {
             if &u.email == email {
-                return Ok(Some(AuthenticatedUser::new(
-                    &u.id().clone(),
+                return Ok(Some(AuthenticatedUser::<Self::Id>::new(
+                    u.id(),
                     u.name.clone(),
                     u.email.clone(),
                 )));
@@ -71,14 +69,14 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
         Ok(None)
     }
 
-    async fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
+    async fn save(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
         // TODO: check if key exists. Eg:
         // if self.users. contains_key(user.get_id().clone()) {
         //     return Err("Already exists");
         // }
 
-        let u = AuthenticatedUser {
-            id: user.id().clone(),
+        let u = AuthenticatedUser::<Self::Id> {
+            id: user.id(),
             created_at: user.created_at,
             name: user.name.clone(),
             email: user.email.clone(),
@@ -88,7 +86,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMock {
             .users
             .write()
             .map_err(|_| ExternalUserError::Authenticated(Some(Arc::new(PoisonedLockError))))?
-            .insert(user.id().clone(), u)
+            .insert(user.id(), u)
             .is_none()
         {
             true => Ok(()),

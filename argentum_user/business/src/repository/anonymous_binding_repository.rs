@@ -5,13 +5,16 @@ use std::error::Error;
 
 #[async_trait]
 pub trait AnonymousBindingRepositoryTrait: Send + Sync {
+    type Id: Id;
     async fn find_by_user_id(
         &self,
-        user_id: &Id,
-    ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError>;
+        user_id: Self::Id,
+    ) -> Result<Option<AnonymousBinding<Self::Id>>, AnonymousBindingRepositoryError>;
 
-    async fn save(&self, binding: &AnonymousBinding)
-    -> Result<(), AnonymousBindingRepositoryError>;
+    async fn save(
+        &self,
+        binding: &AnonymousBinding<Self::Id>,
+    ) -> Result<(), AnonymousBindingRepositoryError>;
 }
 
 #[derive(thiserror::Error, Debug)]

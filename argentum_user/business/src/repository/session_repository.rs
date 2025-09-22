@@ -7,9 +7,14 @@ use std::{error::Error, sync::Arc};
 
 #[async_trait]
 pub trait SessionRepositoryTrait: Send + Sync {
-    async fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError>;
-    async fn save(&self, session: &Session) -> Result<(), SessionRepositoryError>;
-    async fn delete_users_sessions(&self, user_id: Id) -> Result<(), SessionRepositoryError>;
+    type Id: Id;
+
+    async fn find_by_token(
+        &self,
+        token: &str,
+    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError>;
+    async fn save(&self, session: &Session<Self::Id>) -> Result<(), SessionRepositoryError>;
+    async fn delete_users_sessions(&self, user_id: Self::Id) -> Result<(), SessionRepositoryError>;
 }
 
 #[derive(thiserror::Error, Debug)]

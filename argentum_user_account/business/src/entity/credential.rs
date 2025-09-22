@@ -1,29 +1,28 @@
 use argentum_standard_business::data_type::id::Id;
-use std::any::Any;
 
-pub trait Credential: Send {
-    fn as_any(&self) -> &dyn Any;
-}
+pub trait Credential: Send {}
 
 #[derive(Clone)]
-pub struct PasswordCredential {
-    pub user_id: Id,
+pub struct PasswordCredential<I>
+where
+    I: Id,
+{
+    pub user_id: I,
     pub password: String,
     pub salt: String,
 }
 
-impl Credential for PasswordCredential {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-}
+impl<I> Credential for PasswordCredential<I> where I: Id {}
 
-impl PasswordCredential {
-    pub fn new(user_id: Id, password: String, salt: String) -> Self {
+impl<I> PasswordCredential<I>
+where
+    I: Id,
+{
+    pub fn new(user_id: I, password: &str, salt: &str) -> Self {
         PasswordCredential {
             user_id,
-            password,
-            salt,
+            password: password.into(),
+            salt: salt.into(),
         }
     }
 }

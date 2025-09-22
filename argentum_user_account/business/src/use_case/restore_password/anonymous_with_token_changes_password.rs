@@ -5,30 +5,33 @@ use crate::use_case::restore_password::error::RestorePasswordError;
 
 use argentum_encryption_business::password::Encryptor;
 use argentum_log_business::LoggerTrait;
+use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use std::sync::Arc;
 
-pub struct AnonymousWithTokenChangesPasswordUc<L>
+pub struct AnonymousWithTokenChangesPasswordUc<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-    restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
-    credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
+    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
+    credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
     encryptor: Arc<dyn Encryptor>,
     token_ttl: u32, //configurable ttl in seconds
     logger: Arc<L>,
 }
 
-impl<L> AnonymousWithTokenChangesPasswordUc<L>
+impl<I, L> AnonymousWithTokenChangesPasswordUc<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
     pub fn new(
-        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-        restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
+        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         encryptor: Arc<dyn Encryptor>,
-        credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
+        credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
         token_ttl: u32,
         logger: Arc<L>,
     ) -> Self {
@@ -42,11 +45,7 @@ where
         }
     }
 
-    pub async fn execute(
-        &self,
-        token: String,
-        password: String,
-    ) -> Result<(), RestorePasswordError> {
+    pub async fn execute(&self, token: &str, password: &str) -> Result<(), RestorePasswordError> {
         let restore_token = {
             let restore_token = self
                 .restore_password_token_repository
@@ -68,7 +67,7 @@ where
             return Err(RestorePasswordError::TokenExpired);
         }
 
-        let result = self.user_repository.find(&restore_token.user_id).await;
+        let result = self.user_repository.find(restore_token.user_id).await;
         let user = match result {
             Err(err) => return Err(RestorePasswordError::GetUserError(err)),
             Ok(o) => match o {
@@ -77,17 +76,17 @@ where
             },
         };
 
-        self.credential_writer.delete_for_user(&user.id)?;
+        self.credential_writer.delete_for_user(user.id).await?;
 
         //save credentials
-        let (hashed_password, salt) = self.encryptor.encrypt(&password)?;
+        let (hashed_password, salt) = self.encryptor.encrypt(password)?;
 
-        let cred = PasswordCredential::new(user.id.clone(), hashed_password, salt);
-        self.credential_writer.write(Box::new(cred))?;
+        let cred = PasswordCredential::new(user.id, &hashed_password, &salt);
+        self.credential_writer.write(&cred).await?;
 
         if let Err(e) = self
             .restore_password_token_repository
-            .delete_users_tokens(&user.id)
+            .delete_users_tokens(user.id)
             .await
         {
             self.logger
@@ -114,7 +113,7 @@ mod tests {
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::email::EmailAddress;
-    use argentum_standard_business::data_type::id::IdFactory;
+    use argentum_standard_business::data_type::id::{IdFactory, UIntId};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::entity::user::AuthenticatedUser;
@@ -130,7 +129,8 @@ mod tests {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
-        let token_generator: Arc<dyn GeneratorTrait> = Arc::new(TokenGeneratorMock::new());
+        let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
+            Arc::new(TokenGeneratorMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
         let credential_writer =
             Arc::new(PasswordCredentialWriter::new(credential_repository.clone()));
@@ -154,24 +154,24 @@ mod tests {
             .expect("Name should be valid");
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
+        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
 
         user_repository.save(&user).await?;
 
-        let token = token_generator.generate(&user.id);
+        let token = token_generator.generate(user.id);
         let token_id = id_factory.create();
-        let restore_token = RestorePasswordToken::new(token_id, user.id.clone(), token.clone());
+        let restore_token = RestorePasswordToken::new(token_id, user.id.clone(), &token);
 
         token_repository.save(&restore_token).await?;
 
-        let password = "234".to_string();
-        let result = uc.execute(token, password).await;
+        let password = "234";
+        let result = uc.execute(&token, password).await;
 
         if let Err(_) = result {
             return Err("Password is not changed".into());
         }
 
-        if let Ok(None) = credential_repository.find_by_user_id(&user_id) {
+        if let Ok(None) = credential_repository.find_by_user_id(user_id).await {
             return Err("Can't find new password".into());
         }
 
@@ -183,7 +183,8 @@ mod tests {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
-        let token_generator: Arc<dyn GeneratorTrait> = Arc::new(TokenGeneratorMock::new());
+        let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
+            Arc::new(TokenGeneratorMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
         let credential_writer =
             Arc::new(PasswordCredentialWriter::new(credential_repository.clone()));
@@ -202,27 +203,27 @@ mod tests {
         );
 
         let user_id = id_factory.create();
-        let user_name = NameBuilder::new("Dionne".into())
-            .last(Some("Morrison".into()))
+        let user_name = NameBuilder::new("Dionne")
+            .last(Some("Morrison"))
             .try_build()
             .expect("Name should be valid");
 
-        let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
+        let email = EmailAddress::try_new("test@mail.com").expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
+        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
 
         user_repository.save(&user).await?;
 
-        let token = token_generator.generate(&user.id);
+        let token = token_generator.generate(user.id);
         let token_id = id_factory.create();
-        let restore_token = RestorePasswordToken::new(token_id, user.id.clone(), token.clone());
+        let restore_token = RestorePasswordToken::new(token_id, user.id, &token);
 
         token_repository.save(&restore_token).await?;
 
         thread::sleep(Duration::from_secs(1));
 
-        let password = "234".to_string();
-        let result = uc.execute(token, password).await;
+        let password = "234";
+        let result = uc.execute(&token, password).await;
 
         match result {
             Err(e) => match e {

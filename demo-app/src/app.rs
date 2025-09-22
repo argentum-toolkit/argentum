@@ -1,6 +1,6 @@
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
-use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
 use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
 use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
@@ -9,28 +9,30 @@ use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct App<L>
+pub struct App<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
-    id_factory: Arc<dyn IdFactory>,
-    anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-    user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
-    user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
-    user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
+    id_factory: Arc<dyn IdFactory<Id = I>>,
+    anonymous_registers_uc: Arc<AnonymousRegistersUc<I>>,
+    user_logins_with_pw: Arc<UserLoginsWithPasswordUc<I, L>>,
+    user_registers_with_pw: Arc<UserRegistersWithPasswordUc<I>>,
+    user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc<I>>,
     logger: Arc<L>,
 }
 
-impl<L> App<L>
+impl<I, L> App<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
     pub fn new(
-        id_factory: Arc<dyn IdFactory>,
-        anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
-        user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
-        user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
+        id_factory: Arc<dyn IdFactory<Id = I>>,
+        anonymous_registers_uc: Arc<AnonymousRegistersUc<I>>,
+        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<I, L>>,
+        user_registers_with_pw: Arc<UserRegistersWithPasswordUc<I>>,
+        user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc<I>>,
         logger: Arc<L>,
     ) -> Self {
         Self {
@@ -69,7 +71,7 @@ where
 
         let anon_id = self.id_factory.create();
 
-        let anon_registration_result = self.anonymous_registers_uc.execute(&anon_id).await;
+        let anon_registration_result = self.anonymous_registers_uc.execute(anon_id).await;
         let (_, anon_session) = match anon_registration_result {
             Ok(r) => r,
             Err(e) => return Err(e.to_string()),
@@ -91,12 +93,12 @@ where
         let user_id = self.id_factory.create();
 
         let name = NameBuilder::new("Sarah")
-            .last(Some("Connor".into()))
+            .last(Some("Connor"))
             .try_build()
             .map_err(|e| format!("Wrong name: {}", e.errors.concat()))?;
         let email = EmailAddress::try_new("sarah-connor@example.com")
             .map_err(|e| format!("Wrong email address: {}", e.errors.concat()))?;
-        let password = "111".into();
+        let password = "111";
 
         let res = self
             .user_registers_with_pw
@@ -112,10 +114,10 @@ where
         }
 
         let anon_id2 = self.id_factory.create();
-        let anon2 = AnonymousUser::new(&anon_id2);
+        let anon2 = AnonymousUser::new(anon_id2);
         let email2 = EmailAddress::try_new("sarah-connor@example.com")
             .map_err(|e| format!("Wrong email address: {}", e.errors.concat()))?;
-        let password2 = "111".to_string();
+        let password2 = "111";
 
         let login_result = self
             .user_logins_with_pw

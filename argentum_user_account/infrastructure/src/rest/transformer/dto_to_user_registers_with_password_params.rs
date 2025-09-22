@@ -21,7 +21,7 @@ impl DtoToUserRegistersWithPasswordParams {
 
         let raw_name = req.body.name.clone();
         let name_result = NameBuilder::new(&raw_name.first)
-            .last(raw_name.last)
+            .last(raw_name.last.as_deref())
             .try_build();
 
         let name = match name_result {

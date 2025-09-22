@@ -1,14 +1,20 @@
 use argentum_standard_business::data_type::id::Id;
 
-pub struct Session {
-    pub id: Id,
-    pub user_id: Id,
+pub struct Session<I>
+where
+    I: Id,
+{
+    pub id: I,
+    pub user_id: I,
     pub token: String,
     //device_information???
 }
 
-impl Session {
-    pub fn new(id: Id, user_id: Id, token: &str) -> Self {
+impl<I> Session<I>
+where
+    I: Id,
+{
+    pub fn new(id: I, user_id: I, token: &str) -> Self {
         Session {
             id,
             user_id,

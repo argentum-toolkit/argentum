@@ -1,3 +1,5 @@
+use argentum_standard_business::data_type::id::Id;
+
 use crate::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
 use crate::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
 use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
@@ -10,37 +12,57 @@ use crate::use_case::GetUserUc;
 use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct UserBusinessDiC {
-    pub anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
-    pub anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-    pub authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-    pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
-    pub get_user_uc: Arc<GetUserUc>,
-    pub session_repository: Arc<dyn SessionRepositoryTrait>,
+pub struct UserBusinessDiC<I>
+where
+    I: Id,
+{
+    pub anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
+    pub anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
+    pub authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc<I>>,
+    pub get_user_uc: Arc<GetUserUc<I>>,
+    pub session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
 }
 
 #[derive(Default)]
-pub struct UserBusinessDiCBuilder {
-    anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait>>,
-    anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait>>,
-    authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait>>,
-    session_repository: Option<Arc<dyn SessionRepositoryTrait>>,
+pub struct UserBusinessDiCBuilder<I>
+where
+    I: Id,
+{
+    anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>>,
+    anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait<Id = I>>>,
+    authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>>,
+    session_repository: Option<Arc<dyn SessionRepositoryTrait<Id = I>>>,
 }
 
-impl UserBusinessDiCBuilder {
+impl<I> UserBusinessDiCBuilder<I>
+where
+    I: Id + 'static,
+{
+    pub fn new() -> Self {
+        Self {
+            anonymous_binding_repository: None,
+            anonymous_user_repository: None,
+            authenticated_user_repository: None,
+            session_repository: None,
+        }
+    }
+
     pub fn mock(&mut self) -> &mut Self {
-        self.anonymous_user_repository = Some(Arc::new(AnonymousUserRepositoryMock::new()));
+        self.anonymous_user_repository = Some(Arc::new(AnonymousUserRepositoryMock::<I>::new()));
 
-        self.authenticated_user_repository = Some(Arc::new(AuthenticatedUserRepositoryMock::new()));
+        self.authenticated_user_repository =
+            Some(Arc::new(AuthenticatedUserRepositoryMock::<I>::new()));
 
-        self.anonymous_binding_repository = Some(Arc::new(AnonymousBindingRepositoryMock::new()));
+        self.anonymous_binding_repository =
+            Some(Arc::new(AnonymousBindingRepositoryMock::<I>::new()));
 
         self
     }
 
     pub fn anonymous_binding_repository(
         &mut self,
-        repository: Arc<dyn AnonymousBindingRepositoryTrait>,
+        repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
     ) -> &mut Self {
         self.anonymous_binding_repository = Some(repository);
 
@@ -49,7 +71,7 @@ impl UserBusinessDiCBuilder {
 
     pub fn anonymous_user_repository(
         &mut self,
-        repository: Arc<dyn AnonymousUserRepositoryTrait>,
+        repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
     ) -> &mut Self {
         self.anonymous_user_repository = Some(repository);
 
@@ -58,20 +80,23 @@ impl UserBusinessDiCBuilder {
 
     pub fn authenticated_user_repository(
         &mut self,
-        repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
+        repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
     ) -> &mut Self {
         self.authenticated_user_repository = Some(repository);
 
         self
     }
 
-    pub fn session_repository(&mut self, repository: Arc<dyn SessionRepositoryTrait>) -> &mut Self {
+    pub fn session_repository(
+        &mut self,
+        repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
+    ) -> &mut Self {
         self.session_repository = Some(repository);
 
         self
     }
 
-    pub fn build(&self) -> Result<UserBusinessDiC, String> {
+    pub fn build(&self) -> Result<UserBusinessDiC<I>, String> {
         let authenticated_user_repository = self
             .authenticated_user_repository
             .clone()

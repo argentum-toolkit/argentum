@@ -1,61 +1,67 @@
 use crate::entity::user::{AnonymousUser, UserTrait};
 use crate::repository::user_repository::{AnonymousUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::error::PoisonedLockError;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::RwLock;
 
 use async_trait::async_trait;
 
-pub struct AnonymousUserRepositoryMock {
-    users: RwLock<HashMap<Id, AnonymousUser>>,
+pub struct AnonymousUserRepositoryMock<I>
+where
+    I: Id,
+{
+    users: RwLock<HashMap<I, AnonymousUser<I>>>,
 }
 
-impl AnonymousUserRepositoryMock {
-    pub fn new() -> AnonymousUserRepositoryMock {
-        AnonymousUserRepositoryMock {
+impl<I> AnonymousUserRepositoryMock<I>
+where
+    I: Id,
+{
+    pub fn new() -> Self {
+        Self {
             users: RwLock::new(HashMap::new()),
         }
     }
 }
 
-impl Default for AnonymousUserRepositoryMock {
+impl<I> Default for AnonymousUserRepositoryMock<I>
+where
+    I: Id,
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-#[derive(Debug)]
-struct PoisonedLockError;
-
-impl std::fmt::Display for PoisonedLockError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "`RwLock` is poisoned")
-    }
-}
-
-impl Error for PoisonedLockError {}
-
 #[async_trait]
-impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
-    async fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
+impl<I> AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock<I>
+where
+    I: Id,
+{
+    type Id = I;
+
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<AnonymousUser<Self::Id>>, ExternalUserError> {
         let guard = self
             .users
             .read()
-            .map_err(|_| ExternalUserError::Anonymous(Some(Arc::new(PoisonedLockError))))?;
+            .map_err(|_| ExternalUserError::Anonymous(Some(PoisonedLockError::new_arc())))?;
 
-        Ok(guard.get(id).map(|u| AnonymousUser {
-            id: u.id.clone(),
+        Ok(guard.get(&id).map(|u| AnonymousUser {
+            id: u.id,
             created_at: u.created_at,
         }))
     }
 
-    async fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError> {
+    async fn save(&self, user: &AnonymousUser<Self::Id>) -> Result<(), ExternalUserError> {
         // TODO: check if key exists
 
         let u = AnonymousUser {
-            id: user.id().clone(),
+            id: user.id(),
             created_at: user.created_at,
         };
 
@@ -63,7 +69,7 @@ impl AnonymousUserRepositoryTrait for AnonymousUserRepositoryMock {
             .users
             .write()
             .map_err(|_| ExternalUserError::Anonymous(Some(Arc::new(PoisonedLockError))))?
-            .insert(user.id().clone(), u)
+            .insert(user.id(), u)
             .is_none()
         {
             true => Ok(()),

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::entity::session::Session;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
-use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::data_type::id::UIntId;
 use std::error::Error;
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -10,7 +10,7 @@ use std::sync::RwLock;
 use async_trait::async_trait;
 
 pub struct SessionRepositoryMockWithBrokenSave {
-    sessions: RwLock<HashMap<Id, Session>>,
+    sessions: RwLock<HashMap<UIntId, Session<UIntId>>>,
 }
 
 impl SessionRepositoryMockWithBrokenSave {
@@ -40,7 +40,12 @@ impl Error for PoisonedLockError {}
 
 #[async_trait]
 impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
-    async fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
+    type Id = UIntId;
+
+    async fn find_by_token(
+        &self,
+        token: &str,
+    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError> {
         let guard = self
             .sessions
             .read()
@@ -48,23 +53,19 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
 
         for (_, s) in guard.iter() {
             if s.token == token {
-                return Ok(Some(Session::new(
-                    s.id.clone(),
-                    s.user_id.clone(),
-                    &s.token,
-                )));
+                return Ok(Some(Session::<Self::Id>::new(s.id, s.user_id, &s.token)));
             }
         }
 
         Ok(None)
     }
 
-    async fn save(&self, _session: &Session) -> Result<(), SessionRepositoryError> {
+    async fn save(&self, _session: &Session<Self::Id>) -> Result<(), SessionRepositoryError> {
         Err(SessionRepositoryError::Save(None))
     }
 
-    async fn delete_users_sessions(&self, user_id: Id) -> Result<(), SessionRepositoryError> {
-        let mut id: Option<Id> = None;
+    async fn delete_users_sessions(&self, user_id: Self::Id) -> Result<(), SessionRepositoryError> {
+        let mut id: Option<Self::Id> = None;
 
         let read_guard = self
             .sessions
@@ -72,8 +73,8 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
             .map_err(|_| SessionRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?;
 
         for (k, s) in read_guard.iter() {
-            if s.user_id.id_eq(&user_id) {
-                id = Some(k.clone());
+            if s.user_id == user_id {
+                id = Some(*k);
 
                 break;
             }

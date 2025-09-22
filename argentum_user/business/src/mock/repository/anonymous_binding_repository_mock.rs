@@ -9,49 +9,55 @@ use std::sync::RwLock;
 
 use async_trait::async_trait;
 
-pub struct AnonymousBindingRepositoryMock {
-    sessions: RwLock<HashMap<Id, AnonymousBinding>>,
+#[derive(Default)]
+pub struct AnonymousBindingRepositoryMock<I>
+where
+    I: Id,
+{
+    sessions: RwLock<HashMap<I, AnonymousBinding<I>>>,
 }
 
-impl AnonymousBindingRepositoryMock {
-    pub fn new() -> AnonymousBindingRepositoryMock {
-        AnonymousBindingRepositoryMock {
+impl<I> AnonymousBindingRepositoryMock<I>
+where
+    I: Id,
+{
+    pub fn new() -> Self {
+        Self {
             sessions: RwLock::new(HashMap::new()),
         }
     }
 }
 
-impl Default for AnonymousBindingRepositoryMock {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[async_trait]
-impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
+impl<I> AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock<I>
+where
+    I: Id,
+{
+    type Id = I;
+
     async fn find_by_user_id(
         &self,
-        user_id: &Id,
-    ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
+        user_id: Self::Id,
+    ) -> Result<Option<AnonymousBinding<Self::Id>>, AnonymousBindingRepositoryError> {
         let binding = self
             .sessions
             .read()
             .map_err(|_| {
                 AnonymousBindingRepositoryError::Other(Some("`RwLock` is poisoned".into()))
             })?
-            .get(user_id)
-            .map(|b| AnonymousBinding::new(b.user_id.clone(), b.anonymous_id.clone()));
+            .get(&user_id)
+            .map(|b| AnonymousBinding::<Self::Id>::new(b.user_id, b.anonymous_id));
 
         Ok(binding)
     }
 
     async fn save(
         &self,
-        binding: &AnonymousBinding,
+        binding: &AnonymousBinding<Self::Id>,
     ) -> Result<(), AnonymousBindingRepositoryError> {
         // TODO: check if key exists; don't save if already bound
 
-        let s = AnonymousBinding::new(binding.user_id.clone(), binding.anonymous_id.clone());
+        let s = AnonymousBinding::<Self::Id>::new(binding.user_id, binding.anonymous_id);
 
         match self
             .sessions
@@ -59,7 +65,7 @@ impl AnonymousBindingRepositoryTrait for AnonymousBindingRepositoryMock {
             .map_err(|_| {
                 AnonymousBindingRepositoryError::Other(Some("`RwLock` is poisoned".into()))
             })?
-            .insert(binding.user_id.clone(), s)
+            .insert(binding.user_id, s)
             .is_none()
         {
             true => Ok(()),

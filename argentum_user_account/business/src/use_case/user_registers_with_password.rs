@@ -13,16 +13,22 @@ use crate::repository::credential_writer::CredentialWriterError;
 use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
-pub struct UserRegistersWithPasswordUc {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-    credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
+pub struct UserRegistersWithPasswordUc<I>
+where
+    I: Id,
+{
+    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
     encryptor: Arc<dyn Encryptor>,
 }
 
-impl UserRegistersWithPasswordUc {
+impl<I> UserRegistersWithPasswordUc<I>
+where
+    I: Id,
+{
     pub fn new(
-        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-        credential_writer: Arc<dyn PasswordCredentialWriterTrait>,
+        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
         encryptor: Arc<dyn Encryptor>,
     ) -> Self {
         Self {
@@ -34,12 +40,12 @@ impl UserRegistersWithPasswordUc {
 
     pub async fn execute(
         &self,
-        id: Id,
+        id: I,
         name: Name,
         email: EmailAddress,
-        password: String,
+        password: &str,
         terms_accepted: bool,
-    ) -> Result<AuthenticatedUser, RegistrationError> {
+    ) -> Result<AuthenticatedUser<I>, RegistrationError> {
         if !terms_accepted {
             return Err(RegistrationError::TermsNotAccepted);
         }
@@ -53,17 +59,17 @@ impl UserRegistersWithPasswordUc {
         //save user
         let user = {
             //it is `temporary mutability` pattern
-            let user = AuthenticatedUser::new(&id, name, email);
+            let user = AuthenticatedUser::new(id, name, email);
             self.user_repository.save(&user).await?;
 
             user
         };
 
         //save credentials
-        let (hashed_password, salt) = self.encryptor.encrypt(&password)?;
+        let (hashed_password, salt) = self.encryptor.encrypt(password)?;
 
-        let cred = PasswordCredential::new(id.clone(), hashed_password, salt);
-        self.credential_writer.write(Box::new(cred))?;
+        let cred = PasswordCredential::new(id, &hashed_password, &salt);
+        self.credential_writer.write(&cred).await?;
 
         Ok(user)
     }
@@ -110,7 +116,7 @@ mod test {
     };
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_standard_business::data_type::email::EmailAddress;
-    use argentum_standard_business::data_type::id::{Id, IdFactory};
+    use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
@@ -130,19 +136,19 @@ mod test {
         );
         let id_factory = IdFactoryMock::new();
 
-        let id: Id = id_factory.create();
-        let name = NameBuilder::new("John".into())
-            .last(Some("Cooper".into()))
+        let id = id_factory.create();
+        let name = NameBuilder::new("John")
+            .last(Some("Cooper"))
             .try_build()
             .expect("Name should be valid");
-        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
-        let password = "123".into();
+        let email = EmailAddress::try_new("demo@test.com").expect("Email should be valid");
+        let password = "123";
         let terms = true;
         let result = uc.execute(id.clone(), name, email, password, terms).await;
 
         match result {
             Ok(u) => {
-                assert_eq!(u.id.to_string(), id.clone().to_string());
+                assert_eq!(u.id, id);
 
                 return Ok(());
             }
@@ -165,7 +171,7 @@ mod test {
         );
         let id_factory = IdFactoryMock::new();
 
-        let id: Id = id_factory.create();
+        let id = id_factory.create();
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
@@ -203,7 +209,7 @@ mod test {
 
         let id_factory = IdFactoryMock::new();
 
-        let id: Id = id_factory.create();
+        let id = id_factory.create();
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()

@@ -13,10 +13,10 @@ pub struct AnonymousRegistrationResult {
 }
 
 impl AnonymousRegistrationResult {
-    pub fn new(anonymous_id: uuid::Uuid, token: String) -> Self {
+    pub fn new(anonymous_id: uuid::Uuid, token: &str) -> Self {
         Self {
             anonymous_id,
-            token,
+            token: token.into(),
         }
     }
 }
@@ -48,7 +48,7 @@ impl DeserializableSchemaRaw<'_> for AnonymousRegistrationResult {
             && let Some(anonymous_id) = anonymous_id
             && let Some(token) = token
         {
-            Ok(Self::new(anonymous_id, token))
+            Ok(Self::new(anonymous_id, &token))
         } else {
             Err(Violations::new(
                 vec!["wrong data for AnonymousRegistrationResult".to_string()],

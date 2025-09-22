@@ -3,17 +3,23 @@ use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, Exter
 use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
-pub struct GetUserUc {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
+pub struct GetUserUc<I>
+where
+    I: Id,
+{
+    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
 }
 
-impl GetUserUc {
-    pub fn new(user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>) -> Self {
+impl<I> GetUserUc<I>
+where
+    I: Id,
+{
+    pub fn new(user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>) -> Self {
         Self { user_repository }
     }
 
-    pub async fn execute(&self, user_id: Id) -> Result<AuthenticatedUser, GetUserError> {
-        match self.user_repository.find(&user_id).await? {
+    pub async fn execute(&self, user_id: I) -> Result<AuthenticatedUser<I>, GetUserError> {
+        match self.user_repository.find(user_id).await? {
             Some(u) => Ok(u),
             None => Err(GetUserError::UserNotFound),
         }
@@ -36,7 +42,7 @@ pub enum GetUserError {
 #[cfg(test)]
 mod tests {
     use argentum_standard_business::data_type::email::EmailAddress;
-    use argentum_standard_business::data_type::id::{Id, IdFactory};
+    use argentum_standard_business::data_type::id::IdFactory;
 
     use crate::data_type::builder::NameBuilder;
     use crate::entity::user::AuthenticatedUser;
@@ -53,14 +59,14 @@ mod tests {
         let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Id = id_factory.create();
+        let user_id = id_factory.create();
         let authenticated_user = AuthenticatedUser::new(
-            &user_id,
-            NameBuilder::new("Dionne".into())
-                .last(Some("Morrison".into()))
+            user_id,
+            NameBuilder::new("Dionne")
+                .last(Some("Morrison"))
                 .try_build()
                 .expect("Name should be valid"),
-            EmailAddress::try_new("dionne@examples.com".into()).expect("Email should be valid"),
+            EmailAddress::try_new("dionne@examples.com").expect("Email should be valid"),
         );
 
         //Prefilling
@@ -72,11 +78,11 @@ mod tests {
         //Test
         let uc = GetUserUc::new(authenticated_user_repository);
 
-        let result = uc.execute(user_id.clone()).await;
+        let result = uc.execute(user_id).await;
 
         match result {
             Ok(u) => {
-                assert_eq!(u.id.to_string(), user_id.clone().to_string());
+                assert_eq!(u.id.to_string(), user_id.to_string());
                 assert_eq!(u.email.as_string(), "dionne@examples.com");
 
                 return Ok(());
@@ -93,14 +99,14 @@ mod tests {
         let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Id = id_factory.create();
+        let user_id = id_factory.create();
         let authenticated_user = AuthenticatedUser::new(
-            &user_id,
-            NameBuilder::new("Dionne".into())
-                .last(Some("Morrison".into()))
+            user_id,
+            NameBuilder::new("Dionne")
+                .last(Some("Morrison"))
                 .try_build()
                 .expect("Name should be valid"),
-            EmailAddress::try_new("dionne@examples.com".into()).expect("Email should be valid"),
+            EmailAddress::try_new("dionne@examples.com").expect("Email should be valid"),
         );
 
         //Prefilling

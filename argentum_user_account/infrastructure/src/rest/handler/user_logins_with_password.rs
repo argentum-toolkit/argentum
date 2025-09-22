@@ -3,7 +3,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{
     HttpError, InternalServerError, Unauthorized,
 };
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::use_case::user_logins_with_password::{
     LoginError, UserLoginsWithPasswordUc,
 };
@@ -20,8 +20,7 @@ pub struct UserLoginsWithPasswordHandler<L>
 where
     L: LoggerTrait,
 {
-    uc: Arc<UserLoginsWithPasswordUc<L>>,
-    id_factory: Arc<UniqueIdFactory>,
+    uc: Arc<UserLoginsWithPasswordUc<UniqueId, L>>,
     dto_to_user_logins_with_password_params: Arc<DtoToUserLoginsWithPasswordParams>,
 }
 
@@ -30,13 +29,11 @@ where
     L: LoggerTrait,
 {
     pub fn new(
-        uc: Arc<UserLoginsWithPasswordUc<L>>,
-        id_factory: Arc<UniqueIdFactory>,
+        uc: Arc<UserLoginsWithPasswordUc<UniqueId, L>>,
         dto_to_user_logins_with_password_params: Arc<DtoToUserLoginsWithPasswordParams>,
     ) -> Self {
         Self {
             uc,
-            id_factory,
             dto_to_user_logins_with_password_params,
         }
     }
@@ -47,16 +44,18 @@ impl<L> UserLoginsWithPasswordTrait for UserLoginsWithPasswordHandler<L>
 where
     L: LoggerTrait,
 {
+    type Id = UniqueId;
+
     async fn handle(
         &self,
         req: UserLoginsWithPasswordRequest,
-        user: User,
+        user: User<Self::Id>,
     ) -> Result<UserLoginsWithPasswordOperationResponseEnum, HttpError> {
         let anonymous = match user {
             User::Anonymous(a) => a,
             User::Authenticated(_) => {
                 return Err(HttpError::Unauthorized(Unauthorized::new(
-                    "Endpoint is available only for anonymous users".to_string(),
+                    "Endpoint is available only for anonymous users",
                 )));
             }
         };
@@ -65,20 +64,18 @@ where
             .dto_to_user_logins_with_password_params
             .transform(req)?;
 
-        let result = self.uc.execute(Some(anonymous), email, password).await;
+        let result = self.uc.execute(Some(anonymous), email, &password).await;
 
         match result {
             Ok(session) => {
-                let id = self.id_factory.id_to_uuid(&session.user_id);
-
-                let dto = LoginResult::new(session.token, id);
+                let dto = LoginResult::new(session.token, session.user_id.into());
 
                 Ok(UserLoginsWithPasswordOperationResponseEnum::Status200(
                     UserLoggedInSuccessfullyResponse::new_application_json(dto),
                 ))
             }
             Err(LoginError::WrongEmailOrPassword) => Err(HttpError::Unauthorized(
-                Unauthorized::new(format!("{}", LoginError::WrongEmailOrPassword)),
+                Unauthorized::new(&format!("{}", LoginError::WrongEmailOrPassword)),
             )),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
                 Arc::new(e),

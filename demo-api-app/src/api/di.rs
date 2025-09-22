@@ -6,7 +6,6 @@ use argentum_rest_infrastructure::service::{BearerAuthenticator, RouterCombinato
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use std::env;
 use std::net::SocketAddr;
-use std::rc::Rc;
 
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiCBuilder;
@@ -44,9 +43,9 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
     let log_writer = Arc::new(PrettyWriter::new());
-    let logger = Arc::new(DefaultLogger::new(Level::Warning, log_writer));
+    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
-    let u_di = Rc::new(
+    let u_di = Arc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
             //todo: use params
             .default_services(&u_database_url, 10, logger.clone())
@@ -85,7 +84,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         logger.clone(),
         notificator,
     )
-    .services(unique_id_factory, &database_url, 10, logger.clone())
+    .services(&database_url, 10, logger.clone())
     .await?
     .config(
         "Argentum ToolKit demo web application".to_string(),

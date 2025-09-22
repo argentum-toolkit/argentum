@@ -5,27 +5,31 @@ use crate::db::repository::SessionRepository;
 use crate::rest::handler::GetUserHandler;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::di::{UserBusinessDiC, UserBusinessDiCBuilder};
 use argentum_user_rest::server::handler::GetUserTrait;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
-pub struct UserInfrastructureDiC {
-    pub business_dic: UserBusinessDiC,
-    pub get_user_handler: Arc<dyn GetUserTrait>,
+pub struct UserInfrastructureDiC<I>
+where
+    I: Id + 'static, //todo: not static
+{
+    pub business_dic: UserBusinessDiC<I>,
+    pub get_user_handler: Arc<dyn GetUserTrait<Id = I>>,
 }
 
-#[derive(Default)]
 pub struct UserInfrastructureDiCBuilder {
-    pub business_builder: UserBusinessDiCBuilder,
-    pub id_factory: Arc<UniqueIdFactory>,
+    pub business_builder: UserBusinessDiCBuilder<UniqueId>,
+    pub id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
 }
 
 impl UserInfrastructureDiCBuilder {
-    pub fn new(id_factory: Arc<UniqueIdFactory>) -> Self {
+    pub fn new(id_factory: Arc<dyn IdFactory<Id = UniqueId>>) -> Self {
         Self {
-            business_builder: UserBusinessDiCBuilder::default(),
+            business_builder: UserBusinessDiCBuilder::new(),
             id_factory,
         }
     }
@@ -51,31 +55,28 @@ impl UserInfrastructureDiCBuilder {
         self.business_builder
             .anonymous_binding_repository(Arc::new(AnonymousBindingRepository::new(
                 pg_adapter.clone(),
-                self.id_factory.clone(),
+                // self.id_factory.clone(),
             )))
             .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(
                 pg_adapter.clone(),
-                self.id_factory.clone(),
+                // self.id_factory.clone(),
             )))
             .authenticated_user_repository(Arc::new(AuthenticatedUserRepository::new(
                 pg_adapter.clone(),
-                self.id_factory.clone(),
+                // self.id_factory.clone(),
             )))
             .session_repository(Arc::new(SessionRepository::new(
                 pg_adapter,
-                self.id_factory.clone(),
+                // self.id_factory.clone(),
             )));
 
         Ok(self)
     }
 
-    pub fn build(&self) -> Result<UserInfrastructureDiC, String> {
+    pub fn build(&self) -> Result<UserInfrastructureDiC<UniqueId>, String> {
         let business_dic = self.business_builder.build()?;
 
-        let get_user_handler = Arc::new(GetUserHandler::new(
-            business_dic.get_user_uc.clone(),
-            self.id_factory.clone(),
-        ));
+        let get_user_handler = Arc::new(GetUserHandler::new(business_dic.get_user_uc.clone()));
 
         Ok(UserInfrastructureDiC {
             business_dic,

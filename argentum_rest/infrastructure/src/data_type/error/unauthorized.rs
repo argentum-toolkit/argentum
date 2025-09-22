@@ -6,8 +6,8 @@ pub struct Unauthorized {
 }
 
 impl Unauthorized {
-    pub fn new(msg: String) -> Self {
-        Self { msg }
+    pub fn new(msg: &str) -> Self {
+        Self { msg: msg.into() }
     }
 }
 
@@ -17,8 +17,8 @@ mod tests {
 
     #[test]
     fn test_constructor() {
-        let msg = "test msg".to_string();
-        let err = Unauthorized::new(msg.clone());
+        let msg = "test msg";
+        let err = Unauthorized::new(msg);
         assert_eq!(msg, err.msg);
     }
 }

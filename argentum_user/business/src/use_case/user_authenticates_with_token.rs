@@ -1,3 +1,5 @@
+use argentum_standard_business::data_type::id::Id;
+
 use crate::entity::user::User;
 use crate::entity::user::User::{Anonymous, Authenticated};
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
@@ -6,17 +8,23 @@ use crate::repository::user_repository::{
 };
 use std::sync::Arc;
 
-pub struct UserAuthenticatesWithTokenUc {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-    anon_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-    session_repository: Arc<dyn SessionRepositoryTrait>,
+pub struct UserAuthenticatesWithTokenUc<I>
+where
+    I: Id,
+{
+    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    anon_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
+    session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
 }
 
-impl UserAuthenticatesWithTokenUc {
+impl<I> UserAuthenticatesWithTokenUc<I>
+where
+    I: Id,
+{
     pub fn new(
-        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-        anon_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-        session_repository: Arc<dyn SessionRepositoryTrait>,
+        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        anon_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
+        session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
     ) -> Self {
         Self {
             user_repository,
@@ -25,15 +33,15 @@ impl UserAuthenticatesWithTokenUc {
         }
     }
 
-    pub async fn execute(&self, token: &str) -> Result<User, AuthenticationError> {
+    pub async fn execute(&self, token: &str) -> Result<User<I>, AuthenticationError> {
         let session = match self.session_repository.find_by_token(token).await? {
             Some(s) => s,
             None => return Err(AuthenticationError::WrongToken),
         };
 
-        match self.user_repository.find(&session.user_id).await? {
+        match self.user_repository.find(session.user_id).await? {
             Some(u) => Ok(Authenticated(u)),
-            None => match self.anon_repository.find(&session.user_id).await? {
+            None => match self.anon_repository.find(session.user_id).await? {
                 Some(a) => Ok(Anonymous(a)),
                 None => Err(AuthenticationError::UserNotFound),
             },
@@ -67,7 +75,7 @@ pub enum AuthenticationError {
 #[cfg(test)]
 mod tests {
     use argentum_standard_business::data_type::email::EmailAddress;
-    use argentum_standard_business::data_type::id::{Id, IdFactory};
+    use argentum_standard_business::data_type::id::IdFactory;
 
     use crate::data_type::builder::NameBuilder;
     use crate::entity::session::Session;
@@ -91,18 +99,18 @@ mod tests {
         let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Id = id_factory.create();
+        let user_id = id_factory.create();
         let session_id = id_factory.create();
         let token = "test-token";
         let authenticated_user = AuthenticatedUser::new(
-            &user_id,
-            NameBuilder::new("Dionne".into())
-                .last(Some("Morrison".into()))
+            user_id,
+            NameBuilder::new("Dionne")
+                .last(Some("Morrison"))
                 .try_build()
                 .expect("Name should be valid"),
-            EmailAddress::try_new("aa@a.com".into()).expect("Email should be valid"),
+            EmailAddress::try_new("aa@a.com").expect("Email should be valid"),
         );
-        let session = Session::new(session_id, user_id.clone(), token);
+        let session = Session::new(session_id, user_id, token);
 
         //Prefilling
         authenticated_user_repository
@@ -149,18 +157,18 @@ mod tests {
         let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Id = id_factory.create();
+        let user_id = id_factory.create();
         let session_id = id_factory.create();
         let token = "test-token";
         let authenticated_user = AuthenticatedUser::new(
-            &user_id,
-            NameBuilder::new("Dionne".into())
-                .last(Some("Morrison".into()))
+            user_id,
+            NameBuilder::new("Dionne")
+                .last(Some("Morrison"))
                 .try_build()
                 .expect("Name should be valid"),
-            EmailAddress::try_new("aa@a.com".into()).expect("Email should be valid"),
+            EmailAddress::try_new("aa@a.com").expect("Email should be valid"),
         );
-        let session = Session::new(session_id, user_id.clone(), token);
+        let session = Session::new(session_id, user_id, token);
 
         //Prefilling
         authenticated_user_repository
@@ -179,7 +187,7 @@ mod tests {
             session_repository,
         );
 
-        let result = uc.execute("wrong-test-token".into()).await;
+        let result = uc.execute("wrong-test-token").await;
 
         match result {
             Ok(_) => {
@@ -203,10 +211,10 @@ mod tests {
         let id_factory = IdFactoryMock::new();
 
         //Data
-        let user_id: Id = id_factory.create();
+        let user_id = id_factory.create();
         let session_id = id_factory.create();
         let token = "test-token";
-        let session = Session::new(session_id, user_id.clone(), token);
+        let session = Session::new(session_id, user_id, token);
 
         //Prefilling
         session_repository

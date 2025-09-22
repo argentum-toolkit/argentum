@@ -3,7 +3,7 @@ use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
 use argentum_standard_business::data_type::id::IdFactory;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::{UniqueId, UniqueIdFactory};
 use argentum_user_account_business::di::UserAccountBusinessDiCBuilder;
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
 use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
@@ -16,11 +16,11 @@ where
     L: LoggerTrait,
 {
     // Public services
-    pub id_factory: Arc<dyn IdFactory>,
-    pub anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-    pub user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
-    pub user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
-    pub user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
+    pub id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
+    pub anonymous_registers_uc: Arc<AnonymousRegistersUc<UniqueId>>,
+    pub user_logins_with_pw: Arc<UserLoginsWithPasswordUc<UniqueId, L>>,
+    pub user_registers_with_pw: Arc<UserRegistersWithPasswordUc<UniqueId>>,
+    pub user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc<UniqueId>>,
     pub logger: Arc<L>,
 }
 
@@ -29,11 +29,11 @@ where
     L: LoggerTrait,
 {
     pub fn new(
-        id_factory: Arc<dyn IdFactory>,
-        anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<L>>,
-        user_registers_with_pw: Arc<UserRegistersWithPasswordUc>,
-        user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc>,
+        id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
+        anonymous_registers_uc: Arc<AnonymousRegistersUc<UniqueId>>,
+        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<UniqueId, L>>,
+        user_registers_with_pw: Arc<UserRegistersWithPasswordUc<UniqueId>>,
+        user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc<UniqueId>>,
         logger: Arc<L>,
     ) -> Self {
         Self {
@@ -64,9 +64,9 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     )
     .mock()
     .config(
-        "Argentum ToolKit demo web application".to_string(),
+        "Argentum ToolKit demo web application",
         3600, // TTL 1h
-        "http://localhost:8082/change-password/".to_string(),
+        "http://localhost:8082/change-password/",
     )
     .build()?;
 

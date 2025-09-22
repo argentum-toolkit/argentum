@@ -78,7 +78,7 @@ pub fn DarkModeToggle(theme_config: ThemeConfig) -> Element {
                             "false"
                         };
 
-                        local_storage.set_item(STORAGE_KEY, s);
+                        let _ = local_storage.set_item(STORAGE_KEY, s);
                     }
                 },
             }

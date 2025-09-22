@@ -29,12 +29,12 @@ pub fn di_init(user_accoutn_server_url: &str) -> Result<(), String> {
 
         //TODO: don't initialize client twice
         let client = Rc::new(Client::new(user_accoutn_server_url, "/api/v1"));
-        let mut auth = ClientSideAuthenticator::new(client, security_repository);
+        let auth = ClientSideAuthenticator::new(client, security_repository);
 
         use_context_provider(|| Signal::new(auth));
 
         spawn(async move {
-            let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+            let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
             authenticator().init().await;
         });
     }

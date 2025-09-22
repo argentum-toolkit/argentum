@@ -1,19 +1,25 @@
 use argentum_standard_business::data_type::id::Id;
 use chrono::{DateTime, Duration, Utc};
 
-pub struct RestorePasswordToken {
-    pub id: Id,
-    pub user_id: Id,
+pub struct RestorePasswordToken<I>
+where
+    I: Id,
+{
+    pub id: I,
+    pub user_id: I,
     pub token: String,
     pub created_at: DateTime<Utc>,
 }
 
-impl RestorePasswordToken {
-    pub fn new(id: Id, user_id: Id, token: String) -> Self {
+impl<I> RestorePasswordToken<I>
+where
+    I: Id,
+{
+    pub fn new(id: I, user_id: I, token: &str) -> Self {
         RestorePasswordToken {
             id,
             user_id,
-            token,
+            token: token.into(),
             created_at: Utc::now(),
         }
     }

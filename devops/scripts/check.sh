@@ -21,6 +21,5 @@ cargo deny check sources
 cargo check
 cargo clippy
 cargo fmt --all -- --check
-cargo test
+cargo test --workspace --all-targets --all-features
 #cargo publish --dry-run
-

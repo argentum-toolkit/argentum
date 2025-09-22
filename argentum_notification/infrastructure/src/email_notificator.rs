@@ -3,7 +3,9 @@ use argentum_user_business::repository::user_repository::AuthenticatedUserReposi
 
 use lettre::{Message, SmtpTransport, Transport, address::AddressError};
 
+use argentum_standard_business::data_type::id::Id;
 use async_trait::async_trait;
+use std::sync::Arc;
 
 ///
 /// How to init notificator via `lettre`
@@ -11,7 +13,8 @@ use async_trait::async_trait;
 ///```rust
 /// use argentum_notification_infrastructure::email_notificator::EmailNotificator;
 /// use lettre::SmtpTransport;
-/// use lettre::transport::smtp::authentication::Credentials;use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+/// use lettre::transport::smtp::authentication::Credentials;
+/// use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
 ///
 /// let smtp_creds = Credentials::new(
 ///     "smtp_username".to_string(),
@@ -31,20 +34,26 @@ use async_trait::async_trait;
 ///     &mailer,
 /// );
 /// ```
-pub struct EmailNotificator<'s> {
+pub struct EmailNotificator<I>
+where
+    I: Id,
+{
     from: String,
-    user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
-    smtp_transport: &'s SmtpTransport,
+    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    smtp_transport: Arc<SmtpTransport>,
 }
 
-impl<'s> EmailNotificator<'s> {
+impl<I> EmailNotificator<I>
+where
+    I: Id,
+{
     pub fn new(
-        from: String,
-        user_repository: &'s dyn AuthenticatedUserRepositoryTrait,
-        smtp_transport: &'s SmtpTransport,
-    ) -> EmailNotificator<'s> {
-        EmailNotificator {
-            from,
+        from: &str,
+        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        smtp_transport: Arc<SmtpTransport>,
+    ) -> Self {
+        Self {
+            from: from.into(),
             user_repository,
             smtp_transport,
         }
@@ -52,9 +61,14 @@ impl<'s> EmailNotificator<'s> {
 }
 
 #[async_trait]
-impl<'s> NotificatorTrait for EmailNotificator<'s> {
-    async fn send(&self, notification: Notification) -> Result<(), NotificationError> {
-        let user = match self.user_repository.find(&notification.user_id).await {
+impl<I> NotificatorTrait for EmailNotificator<I>
+where
+    I: Id,
+{
+    type Id = I;
+
+    async fn send(&self, notification: Notification<I>) -> Result<(), NotificationError> {
+        let user = match self.user_repository.find(notification.user_id).await {
             Ok(o) => match o {
                 Some(u) => u,
                 None => return Err(NotificationError::UserNotFoundError),

@@ -14,7 +14,7 @@ use crate::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
 use argentum_encryption_business::password::{Encryptor, Validator};
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotificatorTrait;
-use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
 use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
 use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
@@ -27,52 +27,56 @@ use argentum_user_business::repository::user_repository::{
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct BusinessDiC<L>
+pub struct BusinessDiC<I, L>
 where
+    I: Id + 'static,
     L: LoggerTrait,
 {
     // Public services
-    pub anonymous_registers_uc: Arc<AnonymousRegistersUc>,
-    pub user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc>,
-    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc<L>>,
-    pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>,
-    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<L>>,
-    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<L>>,
+    pub anonymous_registers_uc: Arc<AnonymousRegistersUc<I>>,
+    pub user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc<I>>,
+    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc<I, L>>,
+    pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc<I>>,
+    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<I, L>>,
+    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<I, L>>,
 }
 
-pub struct UserAccountBusinessDiCBuilder<L>
+pub struct UserAccountBusinessDiCBuilder<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
-    id_factory: Arc<dyn IdFactory>,
+    id_factory: Arc<dyn IdFactory<Id = I>>,
     encryptor: Arc<dyn Encryptor>,
     validator: Arc<dyn Validator>,
     logger: Arc<L>,
-    notificator: Arc<dyn NotificatorTrait>,
+    notificator: Arc<dyn NotificatorTrait<Id = I>>,
 
-    anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait>>,
-    anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait>>,
-    authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait>>,
-    session_repository: Option<Arc<dyn SessionRepositoryTrait>>,
-    password_credential_repository: Option<Arc<dyn PasswordCredentialRepositoryTrait>>,
-    restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait>>,
-    token_generator: Option<Arc<dyn GeneratorTrait>>,
+    anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>>,
+    anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait<Id = I>>>,
+    authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>>,
+    session_repository: Option<Arc<dyn SessionRepositoryTrait<Id = I>>>,
+    password_credential_repository: Option<Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>>,
+    restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
+    token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
 
     restore_password_token_ttl: u32,
     product_name: String,
     restore_password_front_url: String,
 }
 
-impl<L> UserAccountBusinessDiCBuilder<L>
+impl<I, L> UserAccountBusinessDiCBuilder<I, L>
 where
+    //TODO: not static
+    I: Id + 'static,
     L: LoggerTrait,
 {
     pub fn new(
-        id_factory: Arc<dyn IdFactory>,
+        id_factory: Arc<dyn IdFactory<Id = I>>,
         encryptor: Arc<dyn Encryptor>,
         validator: Arc<dyn Validator>,
         logger: Arc<L>,
-        notificator: Arc<dyn NotificatorTrait>,
+        notificator: Arc<dyn NotificatorTrait<Id = I>>,
     ) -> Self {
         Self {
             id_factory,
@@ -127,13 +131,13 @@ where
 
     pub fn services(
         &mut self,
-        anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait>,
-        anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-        session_repository: Arc<dyn SessionRepositoryTrait>,
-        password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait>,
-        restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
-        token_generator: Arc<dyn GeneratorTrait>,
+        anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
+        anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
+        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
+        password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
+        restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
+        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
     ) -> &mut Self {
         self.anonymous_binding_repository = Some(anonymous_binding_repository);
         self.anonymous_user_repository = Some(anonymous_user_repository);
@@ -146,7 +150,7 @@ where
         self
     }
 
-    pub fn build(&self) -> Result<BusinessDiC<L>, String> {
+    pub fn build(&self) -> Result<BusinessDiC<I, L>, String> {
         let anonymous_user_repository = self
             .anonymous_user_repository
             .clone()
@@ -231,8 +235,8 @@ where
             ));
 
         let anonymous_requests_restore_token_uc = Arc::new(AnonymousRequestsRestoreTokenUc::new(
-            self.product_name.clone(),
-            self.restore_password_front_url.clone(),
+            &self.product_name,
+            &self.restore_password_front_url.clone(),
             self.id_factory.clone(),
             authenticated_user_repository,
             restore_password_token_repository,

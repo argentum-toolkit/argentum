@@ -12,28 +12,37 @@ use crate::server::handler::UserRegistersWithPasswordTrait;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
 use argentum_rest_infrastructure::service::{BearerAuthenticator, RequestTransformer};
+use argentum_standard_business::data_type::id::Id;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct PreHandler {
+pub struct PreHandler<I>
+where
+    I: Id,
+{
     request_transformer: Arc<RequestTransformer>,
-    bearer_auth: Arc<BearerAuthenticator>,
-    anonymous_registers: Arc<dyn AnonymousRegistersTrait>,
-    anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
-    anonymous_with_token_changes_password: Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
-    user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
-    user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
+    bearer_auth: Arc<BearerAuthenticator<I>>,
+    anonymous_registers: Arc<dyn AnonymousRegistersTrait<Id = I>>,
+    anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait<Id = I>>,
+    anonymous_with_token_changes_password: Arc<dyn AnonymousWithTokenChangesPasswordTrait<Id = I>>,
+    user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait<Id = I>>,
+    user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait<Id = I>>,
 }
 
-impl PreHandler {
+impl<I> PreHandler<I>
+where
+    I: Id,
+{
     pub fn new(
         request_transformer: Arc<RequestTransformer>,
-        bearer_auth: Arc<BearerAuthenticator>,
-        anonymous_registers: Arc<dyn AnonymousRegistersTrait>,
-        anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
-        anonymous_with_token_changes_password: Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
-        user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait>,
-        user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait>,
+        bearer_auth: Arc<BearerAuthenticator<I>>,
+        anonymous_registers: Arc<dyn AnonymousRegistersTrait<Id = I>>,
+        anonymous_requests_restore_token: Arc<dyn AnonymousRequestsRestoreTokenTrait<Id = I>>,
+        anonymous_with_token_changes_password: Arc<
+            dyn AnonymousWithTokenChangesPasswordTrait<Id = I>,
+        >,
+        user_logins_with_password: Arc<dyn UserLoginsWithPasswordTrait<Id = I>>,
+        user_registers_with_password: Arc<dyn UserRegistersWithPasswordTrait<Id = I>>,
     ) -> Self {
         Self {
             request_transformer,

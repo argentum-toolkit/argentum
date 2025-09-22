@@ -2,13 +2,13 @@ use crate::db::dto::SessionDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::id::Id;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::entity::session::Session;
 use argentum_user_business::repository::session_repository::{
     SessionRepositoryError, SessionRepositoryTrait,
 };
 use std::sync::Arc;
+use uuid::Uuid;
 
 use async_trait::async_trait;
 
@@ -19,18 +19,14 @@ where
     L: LoggerTrait,
 {
     adapter: Arc<SqlxPostgresAdapter<L>>,
-    id_factory: Arc<UniqueIdFactory>,
 }
 
 impl<L> SessionRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
-        Self {
-            adapter,
-            id_factory,
-        }
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+        Self { adapter }
     }
 }
 
@@ -39,8 +35,12 @@ impl<L> SessionRepositoryTrait for SessionRepository<L>
 where
     L: LoggerTrait,
 {
-    async fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
-        //move todo table name/prefix to const/param
+    type Id = UniqueId;
+
+    async fn find_by_token(
+        &self,
+        token: &str,
+    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError> {
         let sql = format!("SELECT id, user_id, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1");
         let query = sqlx::query_as(&sql).bind(token);
 
@@ -48,9 +48,9 @@ where
             self.adapter.fetch_one(query).await;
 
         match result {
-            Ok(Some(dto)) => Ok(Some(Session {
-                id: self.id_factory.uuid_to_id(dto.id),
-                user_id: self.id_factory.uuid_to_id(dto.user_id),
+            Ok(Some(dto)) => Ok(Some(Session::<Self::Id> {
+                id: dto.id.into(),
+                user_id: dto.user_id.into(),
                 token: dto.token,
             })),
 
@@ -59,13 +59,13 @@ where
         }
     }
 
-    async fn save(&self, session: &Session) -> Result<(), SessionRepositoryError> {
-        let id = self.id_factory.id_to_uuid(&session.id);
-        let user_id = self.id_factory.id_to_uuid(&session.user_id);
+    async fn save(&self, session: &Session<Self::Id>) -> Result<(), SessionRepositoryError> {
+        let session_id: Uuid = session.id.into();
+        let user_id: Uuid = session.user_id.into();
 
         let sql = format!("INSERT INTO {TABLE_NAME} (id, user_id, token) VALUES ($1, $2, $3)");
         let query = sqlx::query(&sql)
-            .bind(id)
+            .bind(session_id)
             .bind(user_id)
             .bind(session.token.clone());
 
@@ -77,8 +77,8 @@ where
         }
     }
 
-    async fn delete_users_sessions(&self, user_id: Id) -> Result<(), SessionRepositoryError> {
-        let id = self.id_factory.id_to_uuid(&user_id);
+    async fn delete_users_sessions(&self, user_id: Self::Id) -> Result<(), SessionRepositoryError> {
+        let id: Uuid = user_id.into();
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
 
         let query = sqlx::query(&sql).bind(id);

@@ -1,55 +1,44 @@
-use argentum_standard_business::data_type::id::{Id, IdFactory, IdTrait, Printable};
-use std::any::Any;
+use std::fmt::Display;
+
+use argentum_standard_business::data_type::id::IdFactory;
 use uuid::Uuid;
 
-/// Unique id is Uuid binding for IdTrait
-pub struct UniqueId {
-    pub value: Uuid,
-}
+/// UniqueId is Uuid binding for Id trait
 
-impl IdTrait for UniqueId {
-    fn id_eq(&self, other: &dyn Any) -> bool {
-        other
-            .downcast_ref::<Self>()
-            .is_some_and(|id| id.value == self.value)
-    }
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-    fn id_clone(&self) -> Id {
-        Box::new(UniqueId::new(self.value))
-    }
-}
-
-impl Printable for UniqueId {
-    fn to_string(&self) -> String {
-        self.value.to_string()
-    }
-}
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash, Default)]
+pub struct UniqueId(Uuid);
 
 impl UniqueId {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new(id: Uuid) -> impl IdTrait {
-        UniqueId { value: id }
+    pub fn new() -> Self {
+        UniqueId(Uuid::new_v4())
+    }
+}
+
+// impl Id for UniqueId { }
+
+impl Display for UniqueId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl From<Uuid> for UniqueId {
+    fn from(value: Uuid) -> Self {
+        UniqueId(value)
+    }
+}
+
+impl From<UniqueId> for Uuid {
+    fn from(val: UniqueId) -> Self {
+        val.0
     }
 }
 
 pub struct UniqueIdFactory {}
 
 impl UniqueIdFactory {
-    pub fn new() -> UniqueIdFactory {
-        UniqueIdFactory {}
-    }
-
-    pub fn uuid_to_id(&self, uuid: Uuid) -> Id {
-        Box::new(UniqueId::new(uuid))
-    }
-
-    pub fn id_to_uuid(&self, id: &Id) -> Uuid {
-        id.as_any()
-            .downcast_ref::<UniqueId>()
-            .map(|id| id.value)
-            .expect("Should be UUID compatible")
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -60,24 +49,17 @@ impl Default for UniqueIdFactory {
 }
 
 impl IdFactory for UniqueIdFactory {
-    fn create(&self) -> Id {
-        Box::new(UniqueId::new(Uuid::new_v4()))
-    }
-}
+    type Id = UniqueId;
 
-pub fn new_unique_id() -> Id {
-    Box::new(UniqueId::new(Uuid::new_v4()))
+    fn create(&self) -> UniqueId {
+        UniqueId(Uuid::new_v4())
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::unique_id::{UniqueIdFactory, new_unique_id};
+    use crate::data_type::unique_id::UniqueIdFactory;
     use argentum_standard_business::data_type::id::IdFactory;
-
-    #[test]
-    fn test_new_unique_id() {
-        new_unique_id();
-    }
 
     #[test]
     fn test_factory_create() {
@@ -90,7 +72,7 @@ mod tests {
         let f = UniqueIdFactory {};
         let id = f.create();
 
-        assert_eq!(id.clone().to_string(), id.to_string())
+        assert_eq!(id.clone(), id)
     }
 
     #[test]
@@ -98,7 +80,7 @@ mod tests {
         let f = UniqueIdFactory {};
         let id = f.create();
 
-        assert_eq!(id.clone().to_string(), id.to_string())
+        assert_eq!(id.clone(), id)
     }
 
     #[test]
@@ -107,14 +89,6 @@ mod tests {
         let id1 = f.create();
         let id2 = f.create();
 
-        assert_ne!(id1.to_string(), id2.to_string())
-    }
-
-    #[test]
-    fn test_printable_for_unique_id() {
-        let f = UniqueIdFactory {};
-        let id = f.create();
-
-        assert_eq!(id.to_string().len(), 36)
+        assert_ne!(id1, id2)
     }
 }
