@@ -1,8 +1,7 @@
+use crate::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
 use crate::dto::request::AnonymousRegistersRequest;
 use argentum_rest_infrastructure::data_type::error::{HttpError, NotImplementedError};
 use argentum_standard_business::data_type::id::Id;
-
-use crate::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
 
 use async_trait::async_trait;
 

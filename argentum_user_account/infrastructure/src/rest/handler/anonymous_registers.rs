@@ -34,7 +34,8 @@ impl AnonymousRegistersTrait for AnonymousRegistersHandler {
 
         match result {
             Ok((anonymous, session)) => {
-                let schema = AnonymousRegistrationResult::new(anonymous.id.into(), &session.token);
+                let schema =
+                    AnonymousRegistrationResult::new(anonymous.id.into(), session.token.clone());
 
                 Ok(AnonymousRegistersOperationResponseEnum::Status201(
                     AnonymousRegisteredSuccessfullyResponse::new_application_json(schema.clone()),

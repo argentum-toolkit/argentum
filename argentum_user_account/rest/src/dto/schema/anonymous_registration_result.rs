@@ -8,15 +8,14 @@ use std::collections::BTreeMap;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct AnonymousRegistrationResult {
     pub anonymous_id: uuid::Uuid,
-
     pub token: String,
 }
 
 impl AnonymousRegistrationResult {
-    pub fn new(anonymous_id: uuid::Uuid, token: &str) -> Self {
+    pub fn new(anonymous_id: uuid::Uuid, token: String) -> Self {
         Self {
             anonymous_id,
-            token: token.into(),
+            token,
         }
     }
 }
@@ -48,7 +47,7 @@ impl DeserializableSchemaRaw<'_> for AnonymousRegistrationResult {
             && let Some(anonymous_id) = anonymous_id
             && let Some(token) = token
         {
-            Ok(Self::new(anonymous_id, &token))
+            Ok(Self::new(anonymous_id, token))
         } else {
             Err(Violations::new(
                 vec!["wrong data for AnonymousRegistrationResult".to_string()],

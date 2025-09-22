@@ -17,7 +17,6 @@ use {{dep}};
 pub struct {{ name }} {
 {{# each properties as |prop| }}
     pub {{ escape_var_name (snake prop.name) }}: {{{ prop.dataType }}},
-
 {{/each}}
 }
 

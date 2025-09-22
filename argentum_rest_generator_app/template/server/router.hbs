@@ -2,6 +2,7 @@ use crate::server::PreHandler;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, Request};
 use argentum_rest_infrastructure::service::{ErrorPreHandler, RouterTrait};
+use argentum_standard_business::data_type::id::Id;
 use async_trait::async_trait;
 use compiletime_regex::regex;
 use hyper::{Method, Uri};
@@ -9,8 +10,11 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct Router {
-    pre_handler: Arc<PreHandler>,
+pub struct Router<I>
+where
+    I: Id,
+{
+    pre_handler: Arc<PreHandler<I>>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
     {{#each paths as |path|}}
@@ -18,9 +22,12 @@ pub struct Router {
     {{/each}}
 }
 
-impl Router {
+impl<I> Router<I>
+where
+    I: Id,
+{
     pub fn new(
-        pre_handler: Arc<PreHandler>,
+        pre_handler: Arc<PreHandler<I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
         url_prefix: String,
     ) -> Self {
@@ -40,7 +47,10 @@ impl Router {
 }
 
 #[async_trait]
-impl RouterTrait for Router {
+impl<I> RouterTrait for Router<I>
+where
+    I: Id,
+{
     fn is_route_supported(&self, uri: &Uri, method: &Method) -> bool {
         let path = uri.path();
         let path = match path.strip_prefix(self.url_prefix.as_str()) {

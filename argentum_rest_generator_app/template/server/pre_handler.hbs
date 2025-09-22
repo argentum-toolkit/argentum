@@ -13,27 +13,35 @@ use argentum_rest_infrastructure::service::{
 {{/if}}
     RequestTransformer
 };
+use argentum_standard_business::data_type::id::Id;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct PreHandler {
+pub struct PreHandler
+<I>
+where
+    I: Id,
+{
     request_transformer: Arc<RequestTransformer>,
     {{#if securityEnabled}}
-        bearer_auth: Arc<BearerAuthenticator>,
+        bearer_auth: Arc<BearerAuthenticator<I>>,
     {{/if}}
     {{#each operations as |operation|}}
-    {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait>,
+    {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait<Id = I>>,
     {{/each}}
 }
 
-impl PreHandler {
+impl <I> PreHandler<I>
+where
+    I: Id,
+{
     pub fn new(
         request_transformer: Arc<RequestTransformer>,
         {{#if securityEnabled}}
-            bearer_auth: Arc<BearerAuthenticator>,
+            bearer_auth: Arc<BearerAuthenticator<I>>,
         {{/if}}
         {{#each operations as |operation|}}
-        {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait>,
+        {{snake operation.operationId}}: Arc<dyn {{upper_camel operation.operationId}}Trait<Id = I>>,
         {{/each}}
     ) -> Self {
         Self {
