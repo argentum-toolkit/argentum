@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::entity::session::Session;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use argentum_standard_business::data_type::id::UIntId;
-use std::error::Error;
+use argentum_standard_business::error::PoisonedLockError;
 use std::sync::Arc;
 use std::sync::RwLock;
 
@@ -26,17 +26,6 @@ impl Default for SessionRepositoryMockWithBrokenSave {
         Self::new()
     }
 }
-
-#[derive(Debug)]
-struct PoisonedLockError;
-
-impl std::fmt::Display for PoisonedLockError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "`RwLock` is poisoned")
-    }
-}
-
-impl Error for PoisonedLockError {}
 
 #[async_trait]
 impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {

@@ -3,9 +3,9 @@ use crate::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,
 };
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::error::PoisonedLockError;
 use async_trait::async_trait;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::RwLock;
 
@@ -27,17 +27,6 @@ where
         }
     }
 }
-
-#[derive(Debug)]
-struct PoisonedLockError;
-
-impl std::fmt::Display for PoisonedLockError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "`RwLock` is poisoned")
-    }
-}
-
-impl Error for PoisonedLockError {}
 
 #[async_trait]
 impl<I> PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock<I>

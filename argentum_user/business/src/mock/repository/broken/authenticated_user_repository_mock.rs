@@ -2,9 +2,9 @@ use crate::entity::user::{AuthenticatedUser, UserTrait};
 use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::email::EmailAddress;
 use argentum_standard_business::data_type::id::UIntId;
+use argentum_standard_business::error::PoisonedLockError;
 use async_trait::async_trait;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::RwLock;
 
@@ -25,17 +25,6 @@ impl Default for AuthenticatedUserRepositoryMockWihBrokenSave {
         Self::new()
     }
 }
-
-#[derive(Debug)]
-struct PoisonedLockError;
-
-impl std::fmt::Display for PoisonedLockError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "`RwLock` is poisoned")
-    }
-}
-
-impl Error for PoisonedLockError {}
 
 #[async_trait]
 impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrokenSave {
