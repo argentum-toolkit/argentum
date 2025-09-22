@@ -2,13 +2,13 @@ use crate::db::dto::AnonymousUserDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::id::Id;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::entity::user::AnonymousUser;
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, ExternalUserError,
 };
 use std::sync::Arc;
+use uuid::Uuid;
 
 use async_trait::async_trait;
 
@@ -19,18 +19,14 @@ where
     L: LoggerTrait,
 {
     adapter: Arc<SqlxPostgresAdapter<L>>,
-    id_factory: Arc<UniqueIdFactory>,
 }
 
 impl<L> AnonymousUserRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
-        Self {
-            adapter,
-            id_factory,
-        }
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+        Self { adapter }
     }
 }
 
@@ -39,18 +35,21 @@ impl<L> AnonymousUserRepositoryTrait for AnonymousUserRepository<L>
 where
     L: LoggerTrait,
 {
-    async fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError> {
-        let user_id = self.id_factory.id_to_uuid(id);
-        //move todo table name/prefix to const/param
+    type Id = UniqueId;
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<AnonymousUser<Self::Id>>, ExternalUserError> {
+        let anonymous_id: Uuid = id.into();
         let sql = format!("SELECT id, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1");
-        let query = sqlx::query_as(&sql).bind(user_id);
+        let query = sqlx::query_as(&sql).bind(anonymous_id);
 
         let result: Result<Option<AnonymousUserDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
 
         match result {
             Ok(Some(dto)) => Ok(Some(AnonymousUser {
-                id: self.id_factory.uuid_to_id(dto.id),
+                id: dto.id.into(),
                 created_at: dto.created_at,
             })),
 
@@ -59,11 +58,10 @@ where
         }
     }
 
-    async fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError> {
-        let id = self.id_factory.id_to_uuid(&user.id);
-
+    async fn save(&self, user: &AnonymousUser<Self::Id>) -> Result<(), ExternalUserError> {
         let sql = format!("INSERT INTO {TABLE_NAME} (id, created_at) VALUES ($1, $2)");
-        let query = sqlx::query(&sql).bind(id).bind(user.created_at);
+        let user_id: Uuid = user.id.into();
+        let query = sqlx::query(&sql).bind(user_id).bind(user.created_at);
 
         let result = self.adapter.exec(query).await;
 

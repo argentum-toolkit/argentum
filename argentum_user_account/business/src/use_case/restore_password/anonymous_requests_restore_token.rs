@@ -6,43 +6,45 @@ use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::{Notification, NotificatorTrait};
 use argentum_standard_business::data_type::email::EmailAddress;
-use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use std::sync::Arc;
 
-pub struct AnonymousRequestsRestoreTokenUc<L>
+pub struct AnonymousRequestsRestoreTokenUc<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
     //configurable param
     product_name: String,
     /// First part of url
     restore_password_front_url: String,
-    id_factory: Arc<dyn IdFactory>,
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-    restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
-    token_generator: Arc<dyn GeneratorTrait>,
-    notificator: Arc<dyn NotificatorTrait>,
+    id_factory: Arc<dyn IdFactory<Id = I>>,
+    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
+    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+    notificator: Arc<dyn NotificatorTrait<Id = I>>,
     logger: Arc<L>,
 }
 
-impl<L> AnonymousRequestsRestoreTokenUc<L>
+impl<I, L> AnonymousRequestsRestoreTokenUc<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
     pub fn new(
-        product_name: String,
-        restore_password_front_url: String,
-        id_factory: Arc<dyn IdFactory>,
-        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait>,
-        restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait>,
-        token_generator: Arc<dyn GeneratorTrait>,
-        notificator: Arc<dyn NotificatorTrait>,
+        product_name: &str,
+        restore_password_front_url: &str,
+        id_factory: Arc<dyn IdFactory<Id = I>>,
+        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
+        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        notificator: Arc<dyn NotificatorTrait<Id = I>>,
         logger: Arc<L>,
     ) -> Self {
         Self {
-            product_name,
-            restore_password_front_url,
+            product_name: product_name.into(),
+            restore_password_front_url: restore_password_front_url.into(),
             id_factory,
             user_repository,
             restore_password_token_repository,
@@ -55,7 +57,7 @@ where
     pub async fn execute(
         &self,
         email: EmailAddress,
-    ) -> Result<RestorePasswordToken, RestorePasswordError> {
+    ) -> Result<RestorePasswordToken<I>, RestorePasswordError> {
         let result = self.user_repository.find_by_email(&email).await;
         let user = match result {
             Err(err) => return Err(RestorePasswordError::GetUserError(err)),
@@ -65,14 +67,14 @@ where
             },
         };
 
-        let token = self.token_generator.generate(&user.id);
+        let token = self.token_generator.generate(user.id);
         let id = self.id_factory.create();
 
-        let restore_token = RestorePasswordToken::new(id, user.id.clone(), token.clone());
+        let restore_token = RestorePasswordToken::new(id, user.id, &token);
 
         if let Err(e) = self
             .restore_password_token_repository
-            .delete_users_tokens(&user.id)
+            .delete_users_tokens(user.id)
             .await
         {
             return Err(RestorePasswordError::TokenRepositoryError(e));
@@ -157,8 +159,8 @@ mod tests {
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
         let uc = AnonymousRequestsRestoreTokenUc::new(
-            "Test company".to_string(),
-            "http://localhost/reset-password".to_string(),
+            "Test company",
+            "http://localhost/reset-password",
             id_factory.clone(),
             user_repository.clone(),
             token_repository.clone(),
@@ -175,7 +177,7 @@ mod tests {
 
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(&user_id, user_name, email.clone());
+        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
 
         user_repository.save(&user).await?;
 
@@ -189,10 +191,10 @@ mod tests {
 
         assert!(user_id.eq(&token.user_id), "Wrong user id in token");
 
-        match token_repository.find_by_token(token.token).await? {
+        match token_repository.find_by_token(&token.token).await? {
             Some(stored_token) => {
-                assert!(stored_token.id.eq(&token.id), "Wrong token id");
-                assert!(user_id.eq(&stored_token.user_id), "Wrong user id in token");
+                assert_eq!(stored_token.id, token.id, "Wrong token id");
+                assert_eq!(user_id, stored_token.user_id, "Wrong user id in token");
 
                 Ok(())
             }
@@ -213,8 +215,8 @@ mod tests {
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
         let uc = AnonymousRequestsRestoreTokenUc::new(
-            "Test company".to_string(),
-            "http://localhost/reset-password".to_string(),
+            "Test company",
+            "http://localhost/reset-password",
             id_factory.clone(),
             user_repository.clone(),
             token_repository.clone(),
@@ -223,7 +225,7 @@ mod tests {
             logger.clone(),
         );
 
-        let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
+        let email = EmailAddress::try_new("test@mail.com").expect("Email should be valid");
 
         let result = uc.execute(email).await;
 

@@ -4,22 +4,30 @@ use argentum_standard_business::data_type::id::Id;
 use chrono::{DateTime, Utc};
 
 pub trait UserTrait {
-    fn id(&self) -> Id;
+    type Id: Id;
+
+    fn id(&self) -> Self::Id;
 }
 
 //============== AUTHENTICATED USER
 #[derive(Clone)]
-pub struct AuthenticatedUser {
-    pub id: Id,
+pub struct AuthenticatedUser<I>
+where
+    I: Id,
+{
+    pub id: I,
     pub created_at: DateTime<Utc>,
     pub name: Name,
     pub email: EmailAddress,
 }
 
-impl AuthenticatedUser {
-    pub fn new(id: &Id, name: Name, email: EmailAddress) -> Self {
+impl<I> AuthenticatedUser<I>
+where
+    I: Id,
+{
+    pub fn new(id: I, name: Name, email: EmailAddress) -> Self {
         AuthenticatedUser {
-            id: id.clone(),
+            id,
             created_at: Utc::now(),
             name,
             email,
@@ -27,38 +35,55 @@ impl AuthenticatedUser {
     }
 }
 
-impl UserTrait for AuthenticatedUser {
-    fn id(&self) -> Id {
-        self.id.clone()
+impl<I> UserTrait for AuthenticatedUser<I>
+where
+    I: Id,
+{
+    type Id = I;
+    fn id(&self) -> Self::Id {
+        self.id
     }
 }
 
 //============== ANONYMOUS USER
 
 #[derive(Clone)]
-pub struct AnonymousUser {
-    pub id: Id,
+pub struct AnonymousUser<I>
+where
+    I: Id,
+{
+    pub id: I,
     pub created_at: DateTime<Utc>,
 }
 
-impl AnonymousUser {
-    pub fn new(id: &Id) -> Self {
+impl<I> AnonymousUser<I>
+where
+    I: Id,
+{
+    pub fn new(id: I) -> Self {
         AnonymousUser {
-            id: id.clone(),
+            id,
             created_at: Utc::now(),
         }
     }
 }
 
-impl UserTrait for AnonymousUser {
-    fn id(&self) -> Id {
-        self.id.clone()
+impl<I> UserTrait for AnonymousUser<I>
+where
+    I: Id,
+{
+    type Id = I;
+    fn id(&self) -> Self::Id {
+        self.id
     }
 }
 
 //============== ENUM USER allows operating with anonymous as with authenticated users
 #[derive(Clone)]
-pub enum User {
-    Anonymous(AnonymousUser),
-    Authenticated(AuthenticatedUser),
+pub enum User<I>
+where
+    I: Id,
+{
+    Anonymous(AnonymousUser<I>),
+    Authenticated(AuthenticatedUser<I>),
 }

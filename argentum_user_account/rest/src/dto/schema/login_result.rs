@@ -8,7 +8,6 @@ use std::collections::BTreeMap;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct LoginResult {
     pub token: String,
-
     pub user_id: uuid::Uuid,
 }
 

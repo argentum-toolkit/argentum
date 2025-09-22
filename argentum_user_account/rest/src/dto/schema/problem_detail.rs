@@ -11,13 +11,9 @@ use crate::dto::schema::ViolationRaw;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ProblemDetail {
     pub body: Option<Violation>,
-
     pub detail: Option<String>,
-
     pub status: i32,
-
     pub title: String,
-
     pub r#type: Option<String>,
 }
 

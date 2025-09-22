@@ -4,20 +4,27 @@ use crate::server::handler::GetUserTrait;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
 use argentum_rest_infrastructure::service::{BearerAuthenticator, RequestTransformer};
+use argentum_standard_business::data_type::id::Id;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct PreHandler {
+pub struct PreHandler<I>
+where
+    I: Id,
+{
     request_transformer: Arc<RequestTransformer>,
-    bearer_auth: Arc<BearerAuthenticator>,
-    get_user: Arc<dyn GetUserTrait>,
+    bearer_auth: Arc<BearerAuthenticator<I>>,
+    get_user: Arc<dyn GetUserTrait<Id = I>>,
 }
 
-impl PreHandler {
+impl<I> PreHandler<I>
+where
+    I: Id,
+{
     pub fn new(
         request_transformer: Arc<RequestTransformer>,
-        bearer_auth: Arc<BearerAuthenticator>,
-        get_user: Arc<dyn GetUserTrait>,
+        bearer_auth: Arc<BearerAuthenticator<I>>,
+        get_user: Arc<dyn GetUserTrait<Id = I>>,
     ) -> Self {
         Self {
             request_transformer,

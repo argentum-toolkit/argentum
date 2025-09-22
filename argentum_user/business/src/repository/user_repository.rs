@@ -9,18 +9,28 @@ use async_trait::async_trait;
 
 #[async_trait]
 pub trait AuthenticatedUserRepositoryTrait: Send + Sync {
-    async fn find(&self, id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError>;
+    type Id: Id;
+
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError>;
     async fn find_by_email(
         &self,
         email: &EmailAddress,
-    ) -> Result<Option<AuthenticatedUser>, ExternalUserError>;
-    async fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError>;
+    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError>;
+    async fn save(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError>;
 }
 
 #[async_trait]
 pub trait AnonymousUserRepositoryTrait: Send + Sync {
-    async fn find(&self, id: &Id) -> Result<Option<AnonymousUser>, ExternalUserError>;
-    async fn save(&self, user: &AnonymousUser) -> Result<(), ExternalUserError>;
+    type Id: Id;
+
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<AnonymousUser<Self::Id>>, ExternalUserError>;
+    async fn save(&self, user: &AnonymousUser<Self::Id>) -> Result<(), ExternalUserError>;
 }
 
 // Not business errors.

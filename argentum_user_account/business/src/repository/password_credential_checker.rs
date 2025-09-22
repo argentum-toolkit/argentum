@@ -5,14 +5,20 @@ use argentum_encryption_business::password::{EncryptionError, Validator};
 use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
-pub struct PasswordCredentialChecker {
-    repository: Arc<dyn PasswordCredentialRepositoryTrait>,
+pub struct PasswordCredentialChecker<I>
+where
+    I: Id,
+{
+    repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
     validator: Arc<dyn Validator>,
 }
 
-impl PasswordCredentialChecker {
+impl<I> PasswordCredentialChecker<I>
+where
+    I: Id,
+{
     pub fn new(
-        repository: Arc<dyn PasswordCredentialRepositoryTrait>,
+        repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
         validator: Arc<dyn Validator>,
     ) -> Self {
         PasswordCredentialChecker {
@@ -21,17 +27,17 @@ impl PasswordCredentialChecker {
         }
     }
 
-    pub fn check(
+    pub async fn check(
         &self,
-        user_id: Id,
+        user_id: I,
         password: &str,
     ) -> Result<bool, PasswordCredentialCheckerError> {
-        match self.repository.find_by_user_id(&user_id) {
+        match self.repository.find_by_user_id(user_id).await {
             Ok(None) => Ok(false),
             Ok(Some(cred)) => {
-                let res =
-                    self.validator
-                        .validate(password, cred.salt.as_str(), cred.password.as_str());
+                let res = self
+                    .validator
+                    .validate(password, &cred.salt, &cred.password);
 
                 match res {
                     Ok(r) => Ok(r),

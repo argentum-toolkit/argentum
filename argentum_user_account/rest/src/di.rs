@@ -7,26 +7,35 @@ use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
+use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
-pub struct ApiDiC {
-    pub router: Arc<Router>,
+pub struct ApiDiC<I>
+where
+    I: Id,
+{
+    pub router: Arc<Router<I>>,
 }
 
-impl ApiDiC {
+impl<I> ApiDiC<I>
+where
+    I: Id,
+{
     pub fn new(
         //config
         url_prefix: String,
         //services
         request_transformer: Arc<RequestTransformer>,
-        bearer_auth: Arc<BearerAuthenticator>,
-        anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait>,
-        anonymous_requests_restore_token_handler: Arc<dyn AnonymousRequestsRestoreTokenTrait>,
-        anonymous_with_token_changes_password_handler: Arc<
-            dyn AnonymousWithTokenChangesPasswordTrait,
+        bearer_auth: Arc<BearerAuthenticator<I>>,
+        anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait<Id = I>>,
+        anonymous_requests_restore_token_handler: Arc<
+            dyn AnonymousRequestsRestoreTokenTrait<Id = I>,
         >,
-        user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait>,
-        user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait>,
+        anonymous_with_token_changes_password_handler: Arc<
+            dyn AnonymousWithTokenChangesPasswordTrait<Id = I>,
+        >,
+        user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait<Id = I>>,
+        user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait<Id = I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
     ) -> Self {
         let pre_handler = Arc::new(PreHandler::new(

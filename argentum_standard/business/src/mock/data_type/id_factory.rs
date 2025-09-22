@@ -1,6 +1,7 @@
-use crate::data_type::id::{Id, IdFactory, IntId};
+use crate::data_type::id::{IdFactory, UIntId};
 use fastrand;
 
+#[derive(Default)]
 pub struct IdFactoryMock {}
 
 impl IdFactoryMock {
@@ -9,16 +10,10 @@ impl IdFactoryMock {
     }
 }
 
-impl Default for IdFactoryMock {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl IdFactory for IdFactoryMock {
-    fn create(&self) -> Id {
-        let id = fastrand::u64(1..=u64::MAX);
+    type Id = UIntId;
 
-        Box::new(IntId::new(id))
+    fn create(&self) -> self::UIntId {
+        fastrand::u64(1..=u64::MAX)
     }
 }

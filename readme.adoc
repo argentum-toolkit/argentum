@@ -146,8 +146,6 @@ cargo install dioxus-cli
 
 === V0.4
 
-* Don't copy/paste PoisonedLockError
-
 * DI builders: make it similar
 * behavior tests
 

@@ -34,10 +34,10 @@ impl NameBuilder {
         }
     }
 
-    pub fn last(mut self, last: Option<String>) -> Self {
+    pub fn last(mut self, last: Option<&str>) -> Self {
         self.last = match last {
             None => None,
-            Some(l) => match NamePart::try_new(&l) {
+            Some(l) => match NamePart::try_new(l) {
                 Ok(ln) => Some(ln),
                 Err(v) => {
                     self.violations.insert("last".into(), v);
@@ -50,11 +50,11 @@ impl NameBuilder {
         self
     }
 
-    pub fn additional(mut self, additional: Option<String>) -> Self {
+    pub fn additional(mut self, additional: Option<&str>) -> Self {
         self.additional = match additional {
             None => None,
-            Some(l) => match NamePart::try_new(&l) {
-                Ok(ln) => Some(ln),
+            Some(a) => match NamePart::try_new(a) {
+                Ok(an) => Some(an),
                 Err(v) => {
                     self.violations.insert("additional".into(), v);
 
@@ -85,40 +85,49 @@ mod tests {
 
     #[test]
     fn test_new_full() {
-        let first = "First".to_string();
-        let last = Some("Last".into());
-        let additional = Some("Additional".into());
+        let first = "First";
+        let last = Some("Last");
+        let additional = Some("Additional");
 
-        let builder = NameBuilder::new(&first);
+        let builder = NameBuilder::new(first);
         let res = builder
-            .last(last.clone())
+            .last(last)
             .additional(additional.clone())
             .try_build();
 
         let name = res.expect("Name should be valid");
 
         assert_eq!(name.first.to_string(), first);
-        assert_eq!(name.last.map(|n| n.to_string()), last);
-        assert_eq!(name.additional.map(|n| n.to_string()), additional);
+        assert_eq!(
+            name.last.map(|n| n.to_string()),
+            last.map(|n| n.to_string())
+        );
+        assert_eq!(
+            name.additional.map(|n| n.to_string()),
+            additional.map(|n| n.to_string())
+        );
     }
 
     #[test]
     fn test_new_minimal() {
-        let first = "First".to_string();
-        let last = Some("Last".into());
-        let additional = Some("Additional".into());
+        let first = "First";
+        let last = Some("Last");
+        let additional = Some("Additional");
 
-        let builder = NameBuilder::new(&first);
-        let res = builder
-            .last(last.clone())
-            .additional(additional.clone())
-            .try_build();
+        let builder = NameBuilder::new(first);
+        let res = builder.last(last).additional(additional).try_build();
 
         let name = res.expect("Name be valid");
 
         assert_eq!(name.first.to_string(), first);
-        assert_eq!(name.last.map(|n| n.to_string()), last);
-        assert_eq!(name.additional.map(|n| n.to_string()), additional);
+        assert_eq!(
+            name.last.map(|n| n.to_string()),
+            last.map(|n| n.to_string())
+        );
+        assert_eq!(
+            name.additional.map(|n| n.to_string()),
+            additional.map(|n| n.to_string())
+        );
     }
 
     #[test]

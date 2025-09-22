@@ -2,13 +2,13 @@ use crate::db::dto::AnonymousBindingDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::id::Id;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
 use argentum_user_business::repository::anonymous_binding_repository::{
     AnonymousBindingRepositoryError, AnonymousBindingRepositoryTrait,
 };
 use std::sync::Arc;
+use uuid::Uuid;
 
 use async_trait::async_trait;
 
@@ -19,18 +19,14 @@ where
     L: LoggerTrait,
 {
     adapter: Arc<SqlxPostgresAdapter<L>>,
-    id_factory: Arc<UniqueIdFactory>,
 }
 
 impl<L> AnonymousBindingRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
-        Self {
-            adapter,
-            id_factory,
-        }
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+        Self { adapter }
     }
 }
 
@@ -39,15 +35,17 @@ impl<L> AnonymousBindingRepositoryTrait for AnonymousBindingRepository<L>
 where
     L: LoggerTrait,
 {
+    type Id = UniqueId;
+
     async fn find_by_user_id(
         &self,
-        user_id: &Id,
-    ) -> Result<Option<AnonymousBinding>, AnonymousBindingRepositoryError> {
-        let id = self.id_factory.id_to_uuid(user_id);
-        //move todo table name/prefix to const/param
+        user_id: Self::Id,
+    ) -> Result<Option<AnonymousBinding<Self::Id>>, AnonymousBindingRepositoryError> {
         let sql = format!(
             "SELECT user_id, anonymous_id, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
+
+        let id: Uuid = user_id.into();
         let query = sqlx::query_as(&sql).bind(id);
 
         let result: Result<Option<AnonymousBindingDto>, DbAdapterError> =
@@ -55,8 +53,8 @@ where
 
         match result {
             Ok(Some(dto)) => Ok(Some(AnonymousBinding {
-                user_id: self.id_factory.uuid_to_id(dto.user_id),
-                anonymous_id: self.id_factory.uuid_to_id(dto.anonymous_id),
+                user_id: dto.user_id.into(),
+                anonymous_id: dto.anonymous_id.into(),
                 created_at: dto.created_at,
             })),
 
@@ -67,10 +65,10 @@ where
 
     async fn save(
         &self,
-        binding: &AnonymousBinding,
+        binding: &AnonymousBinding<Self::Id>,
     ) -> Result<(), AnonymousBindingRepositoryError> {
-        let user_id = self.id_factory.id_to_uuid(&binding.user_id);
-        let anonymous_id = self.id_factory.id_to_uuid(&binding.anonymous_id);
+        let user_id: Uuid = binding.user_id.into();
+        let anonymous_id: Uuid = binding.anonymous_id.into();
 
         let sql = format!(
             "INSERT INTO {TABLE_NAME} (user_id, anonymous_id, created_at) VALUES ($1, $2, $3)"

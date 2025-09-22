@@ -2,45 +2,43 @@ use std::collections::HashMap;
 
 use crate::entity::session::Session;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
-use argentum_standard_business::data_type::id::Id;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::RwLock;
 
+use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::error::PoisonedLockError;
 use async_trait::async_trait;
 
-pub struct SessionRepositoryMock {
-    sessions: RwLock<HashMap<Id, Session>>,
+#[derive(Default)]
+pub struct SessionRepositoryMock<I>
+where
+    I: Id,
+{
+    sessions: RwLock<HashMap<I, Session<I>>>,
 }
 
-impl SessionRepositoryMock {
-    pub fn new() -> SessionRepositoryMock {
-        SessionRepositoryMock {
+impl<I> SessionRepositoryMock<I>
+where
+    I: Id,
+{
+    pub fn new() -> Self {
+        Self {
             sessions: RwLock::new(HashMap::new()),
         }
     }
 }
 
-impl Default for SessionRepositoryMock {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[derive(Debug)]
-struct PoisonedLockError;
-
-impl std::fmt::Display for PoisonedLockError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "`RwLock` is poisoned")
-    }
-}
-
-impl Error for PoisonedLockError {}
-
 #[async_trait]
-impl SessionRepositoryTrait for SessionRepositoryMock {
-    async fn find_by_token(&self, token: &str) -> Result<Option<Session>, SessionRepositoryError> {
+impl<I> SessionRepositoryTrait for SessionRepositoryMock<I>
+where
+    I: Id,
+{
+    type Id = I;
+
+    async fn find_by_token(
+        &self,
+        token: &str,
+    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError> {
         let guard = self
             .sessions
             .read()
@@ -48,27 +46,23 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
 
         for (_, s) in guard.iter() {
             if s.token == token {
-                return Ok(Some(Session::new(
-                    s.id.clone(),
-                    s.user_id.clone(),
-                    &s.token,
-                )));
+                return Ok(Some(Session::new(s.id, s.user_id, &s.token)));
             }
         }
 
         Ok(None)
     }
 
-    async fn save(&self, session: &Session) -> Result<(), SessionRepositoryError> {
+    async fn save(&self, session: &Session<Self::Id>) -> Result<(), SessionRepositoryError> {
         // TODO: check if key exists
 
-        let s = Session::new(session.id.clone(), session.user_id.clone(), &session.token);
+        let s = Session::<Self::Id>::new(session.id, session.user_id, &session.token);
 
         match self
             .sessions
             .write()
             .map_err(|_| SessionRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?
-            .insert(session.id.clone(), s)
+            .insert(session.id, s)
             .is_none()
         {
             true => Ok(()),
@@ -76,8 +70,8 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
         }
     }
 
-    async fn delete_users_sessions(&self, user_id: Id) -> Result<(), SessionRepositoryError> {
-        let mut id: Option<Id> = None;
+    async fn delete_users_sessions(&self, user_id: Self::Id) -> Result<(), SessionRepositoryError> {
+        let mut id: Option<Self::Id> = None;
 
         let guard = self
             .sessions
@@ -85,8 +79,8 @@ impl SessionRepositoryTrait for SessionRepositoryMock {
             .map_err(|_| SessionRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?;
 
         for (k, s) in guard.iter() {
-            if s.user_id.id_eq(&user_id) {
-                id = Some(k.clone());
+            if s.user_id == user_id {
+                id = Some(*k);
 
                 break;
             }

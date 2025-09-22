@@ -11,19 +11,25 @@ use argentum_user_business::repository::user_repository::{
 use crate::token::GeneratorTrait;
 use std::sync::Arc;
 
-pub struct AnonymousRegistersUc {
-    id_factory: Arc<dyn IdFactory>,
-    user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-    session_repository: Arc<dyn SessionRepositoryTrait>,
-    token_generator: Arc<dyn GeneratorTrait>,
+pub struct AnonymousRegistersUc<I>
+where
+    I: Id,
+{
+    id_factory: Arc<dyn IdFactory<Id = I>>,
+    user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
+    session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
+    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
 }
 
-impl AnonymousRegistersUc {
+impl<I> AnonymousRegistersUc<I>
+where
+    I: Id,
+{
     pub fn new(
-        id_factory: Arc<dyn IdFactory>,
-        user_repository: Arc<dyn AnonymousUserRepositoryTrait>,
-        session_repository: Arc<dyn SessionRepositoryTrait>,
-        token_generator: Arc<dyn GeneratorTrait>,
+        id_factory: Arc<dyn IdFactory<Id = I>>,
+        user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
+        session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
+        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
     ) -> Self {
         Self {
             id_factory,
@@ -35,8 +41,8 @@ impl AnonymousRegistersUc {
 
     pub async fn execute(
         &self,
-        id: &Id,
-    ) -> Result<(AnonymousUser, Session), AnonymousRegistrationError> {
+        id: I,
+    ) -> Result<(AnonymousUser<I>, Session<I>), AnonymousRegistrationError> {
         let user = {
             let user = AnonymousUser::new(id);
 
@@ -47,7 +53,7 @@ impl AnonymousRegistersUc {
 
         let session = Session::new(
             self.id_factory.create(),
-            user.id().clone(),
+            user.id(),
             &self.token_generator.generate(id),
         );
 
@@ -78,7 +84,7 @@ pub enum AnonymousRegistrationError {
 mod tests {
     use crate::mock::token::TokenGeneratorMock;
     use crate::use_case::anonymous_registers::{AnonymousRegistersUc, AnonymousRegistrationError};
-    use argentum_standard_business::data_type::id::{Id, IdFactory};
+    use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
     use argentum_user_business::mock::repository::broken::anonymous_user_repository_mock::AnonymousRepositoryMockWithBrokenSave;
@@ -100,8 +106,8 @@ mod tests {
             token_generator,
         );
 
-        let anon_id: Id = id_factory.create();
-        let result = uc.execute(&anon_id).await;
+        let anon_id = id_factory.create();
+        let result = uc.execute(anon_id).await;
 
         match result {
             Ok((anonymous, s)) => {
@@ -130,8 +136,8 @@ mod tests {
             token_generator.clone(),
         );
 
-        let anon_id: Id = id_factory.create();
-        let result = uc.execute(&anon_id).await;
+        let anon_id = id_factory.create();
+        let result = uc.execute(anon_id).await;
 
         match result {
             Ok(_) => Err("Should return error"),
@@ -155,8 +161,8 @@ mod tests {
             token_generator.clone(),
         );
 
-        let anon_id: Id = id_factory.create();
-        let result = uc.execute(&anon_id).await;
+        let anon_id = id_factory.create();
+        let result = uc.execute(anon_id).await;
 
         match result {
             Ok(_) => Err("Should return error"),

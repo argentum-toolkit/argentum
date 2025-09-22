@@ -31,7 +31,7 @@ pub(crate) fn AuthMenu<R: Routable + std::cmp::PartialEq>(props: AuthMenuProps<R
                     link {
                         onclick: move |_| {
                             authenticator().logout();
-                            redirect(props.logout_redirect.clone());
+                            let _ = redirect(props.logout_redirect.clone());
                         },
                         href: "javascript:void(0)",
                         "Sign out",

@@ -3,8 +3,7 @@ use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::email::EmailAddress;
-use argentum_standard_business::data_type::id::Id;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::data_type::builder::NameBuilder;
 use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{
@@ -14,6 +13,7 @@ use sqlx::Postgres;
 use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
 use std::sync::Arc;
+use uuid::Uuid;
 
 use async_trait::async_trait;
 
@@ -24,24 +24,20 @@ where
     L: LoggerTrait,
 {
     adapter: Arc<SqlxPostgresAdapter<L>>,
-    id_factory: Arc<UniqueIdFactory>,
 }
 
 impl<L> AuthenticatedUserRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, id_factory: Arc<UniqueIdFactory>) -> Self {
-        Self {
-            adapter,
-            id_factory,
-        }
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+        Self { adapter }
     }
 
     async fn find_one<'q>(
         &'q self,
         query: QueryAs<'q, Postgres, AuthenticatedUserDto, PgArguments>,
-    ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
+    ) -> Result<Option<AuthenticatedUser<UniqueId>>, ExternalUserError> {
         let result: Result<Option<AuthenticatedUserDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
 
@@ -56,7 +52,8 @@ where
                     }
                 };
 
-                let name_builder = NameBuilder::new(&dto.first_name).last(dto.last_name.clone());
+                let name_builder =
+                    NameBuilder::new(&dto.first_name).last(dto.last_name.clone().as_deref());
 
                 let name = match name_builder.try_build() {
                     Ok(n) => n,
@@ -72,7 +69,7 @@ where
 
                 //TODO: handle errors instead of unwrap
                 Ok(Some(AuthenticatedUser {
-                    id: self.id_factory.uuid_to_id(dto.id),
+                    id: dto.id.into(),
                     created_at: dto.created_at,
                     name,
                     email,
@@ -89,8 +86,14 @@ impl<L> AuthenticatedUserRepositoryTrait for AuthenticatedUserRepository<L>
 where
     L: LoggerTrait,
 {
-    async fn find(&self, user_id: &Id) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
-        let id = self.id_factory.id_to_uuid(user_id);
+    type Id = UniqueId;
+
+    async fn find(
+        &self,
+        user_id: Self::Id,
+    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError> {
+        let id: Uuid = user_id.into();
+
         let sql = format!(
             "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
@@ -102,7 +105,7 @@ where
     async fn find_by_email(
         &self,
         email: &EmailAddress,
-    ) -> Result<Option<AuthenticatedUser>, ExternalUserError> {
+    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError> {
         let sql = format!(
             "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
         );
@@ -111,16 +114,15 @@ where
         self.find_one(query).await
     }
 
-    async fn save(&self, user: &AuthenticatedUser) -> Result<(), ExternalUserError> {
-        let id = self.id_factory.id_to_uuid(&user.id);
-
+    async fn save(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
         let last = user.name.last.as_ref().map(|l| l.to_string());
+        let user_id: Uuid = user.id.into();
 
         let sql = format!(
             "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)"
         );
         let query = sqlx::query(&sql)
-            .bind(id)
+            .bind(user_id)
             .bind(user.created_at)
             .bind(user.name.first.to_string())
             .bind(last)

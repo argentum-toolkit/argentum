@@ -8,7 +8,6 @@ use std::collections::BTreeMap;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct AnonymousRegistrationResult {
     pub anonymous_id: uuid::Uuid,
-
     pub token: String,
 }
 

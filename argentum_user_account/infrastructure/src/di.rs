@@ -13,39 +13,40 @@ use crate::token::StringTokenGenerator;
 use argentum_encryption_business::password::{Encryptor, Validator};
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotificatorTrait;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::di::UserAccountBusinessDiCBuilder;
 use argentum_user_account_rest::server::handler::{
     AnonymousRegistersTrait, AnonymousWithTokenChangesPasswordTrait, UserLoginsWithPasswordTrait,
     UserRegistersWithPasswordTrait,
 };
 use argentum_user_infrastructure::di::UserInfrastructureDiC;
-use std::rc::Rc;
 
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
-pub struct UserAccountInfrastructureDiC<L>
+pub struct UserAccountInfrastructureDiC<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
     // Public services
-    pub anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait>,
-    pub anonymous_requests_restore_token_handler: Arc<AnonymousRequestsRestoreTokenHandler<L>>,
+    pub anonymous_registers_handler: Arc<dyn AnonymousRegistersTrait<Id = I>>,
+    pub anonymous_requests_restore_token_handler: Arc<AnonymousRequestsRestoreTokenHandler<I, L>>,
     pub anonymous_with_token_changes_password_handler:
-        Arc<dyn AnonymousWithTokenChangesPasswordTrait>,
-    pub user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait>,
-    pub user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait>,
+        Arc<dyn AnonymousWithTokenChangesPasswordTrait<Id = I>>,
+    pub user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait<Id = I>>,
+    pub user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait<Id = I>>,
 }
 
 pub struct UserAccountInfrastructureDiCBuilder<L>
 where
     L: LoggerTrait,
 {
-    user_infrastructure_di: Rc<UserInfrastructureDiC>,
-    business_builder: UserAccountBusinessDiCBuilder<L>,
-    id_factory: Arc<UniqueIdFactory>,
+    user_infrastructure_di: Arc<UserInfrastructureDiC<UniqueId>>,
+    business_builder: UserAccountBusinessDiCBuilder<UniqueId, L>,
     logger: Arc<L>,
 }
 
@@ -54,13 +55,13 @@ where
     L: LoggerTrait + 'static,
 {
     pub fn new(
-        user_infrastructure_di: Rc<UserInfrastructureDiC>,
-        id_factory: Arc<UniqueIdFactory>,
+        user_infrastructure_di: Arc<UserInfrastructureDiC<UniqueId>>,
+        id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
 
         encryptor: Arc<dyn Encryptor>,
         validator: Arc<dyn Validator>,
         logger: Arc<L>,
-        notificator: Arc<dyn NotificatorTrait>,
+        notificator: Arc<dyn NotificatorTrait<Id = UniqueId>>,
     ) -> Self {
         Self {
             user_infrastructure_di,
@@ -71,7 +72,6 @@ where
                 logger.clone(),
                 notificator,
             ),
-            id_factory,
             logger,
         }
     }
@@ -96,7 +96,6 @@ where
 
     pub async fn services(
         &mut self,
-        id_factory: Arc<UniqueIdFactory>,
         connection_url: &str,
         max_db_connections: u32,
         logger: Arc<L>,
@@ -110,13 +109,11 @@ where
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
 
-        let password_credential_repository = Arc::new(PasswordCredentialRepository::new(
-            pg_adapter.clone(),
-            id_factory.clone(),
-        ));
+        let password_credential_repository =
+            Arc::new(PasswordCredentialRepository::new(pg_adapter.clone()));
 
         let restore_password_token_repository =
-            Arc::new(RestorePasswordTokenRepository::new(pg_adapter, id_factory));
+            Arc::new(RestorePasswordTokenRepository::new(pg_adapter));
 
         let token_generator = Arc::new(StringTokenGenerator::new());
 
@@ -141,20 +138,17 @@ where
         self
     }
 
-    pub fn build(&self) -> Result<UserAccountInfrastructureDiC<L>, String> {
+    pub fn build(&self) -> Result<UserAccountInfrastructureDiC<UniqueId, L>, String> {
         let bdi = self.business_builder.build()?;
 
-        let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(
-            bdi.anonymous_registers_uc,
-            self.id_factory.clone(),
-        ));
+        let anonymous_registers_handler =
+            Arc::new(AnonymousRegistersHandler::new(bdi.anonymous_registers_uc));
 
         let dto_to_user_registers_with_password_params =
             Arc::new(DtoToUserRegistersWithPasswordParams::new());
 
         let user_registers_with_password_handler = Arc::new(UserRegistersWithPasswordHandler::new(
             bdi.user_registers_with_password_uc,
-            self.id_factory.clone(),
             dto_to_user_registers_with_password_params,
         ));
 
@@ -163,7 +157,6 @@ where
 
         let user_logins_with_password_handler = Arc::new(UserLoginsWithPasswordHandler::new(
             bdi.user_logins_with_password_uc,
-            self.id_factory.clone(),
             dto_to_user_logins_with_password_params,
         ));
 

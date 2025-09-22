@@ -3,42 +3,42 @@ use crate::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,
 };
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::error::PoisonedLockError;
+use async_trait::async_trait;
 use std::collections::HashMap;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::RwLock;
 
-pub struct PasswordCredentialRepositoryMock {
-    credentials: RwLock<HashMap<String, PasswordCredential>>,
+#[derive(Default)]
+pub struct PasswordCredentialRepositoryMock<I>
+where
+    I: Id,
+{
+    credentials: RwLock<HashMap<String, PasswordCredential<I>>>,
 }
 
-impl PasswordCredentialRepositoryMock {
+impl<I> PasswordCredentialRepositoryMock<I>
+where
+    I: Id,
+{
     pub fn new() -> Self {
-        PasswordCredentialRepositoryMock {
+        Self {
             credentials: RwLock::new(HashMap::new()),
         }
     }
 }
 
-impl Default for PasswordCredentialRepositoryMock {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+#[async_trait]
+impl<I> PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock<I>
+where
+    I: Id,
+{
+    type Id = I;
 
-#[derive(Debug)]
-struct PoisonedLockError;
-
-impl std::fmt::Display for PoisonedLockError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "`RwLock` is poisoned")
-    }
-}
-
-impl Error for PoisonedLockError {}
-
-impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
-    fn save(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
+    async fn save(
+        &self,
+        cred: &PasswordCredential<Self::Id>,
+    ) -> Result<(), PasswordCredentialRepositoryError> {
         self.credentials
             .write()
             .map_err(|_| PasswordCredentialRepositoryError::Other(Arc::new(PoisonedLockError)))?
@@ -47,23 +47,24 @@ impl PasswordCredentialRepositoryTrait for PasswordCredentialRepositoryMock {
         Ok(())
     }
 
-    fn find_by_user_id(
+    async fn find_by_user_id(
         &self,
-        id: &Id,
-    ) -> Result<Option<PasswordCredential>, PasswordCredentialRepositoryError> {
+        id: Self::Id,
+    ) -> Result<Option<PasswordCredential<Self::Id>>, PasswordCredentialRepositoryError> {
         let credentials = self
             .credentials
             .read()
             .map_err(|_| PasswordCredentialRepositoryError::Other(Arc::new(PoisonedLockError)))?
             .get(&*id.to_string())
-            .map(|c| {
-                PasswordCredential::new(c.user_id.clone(), c.password.clone(), c.salt.clone())
-            });
+            .map(|c| PasswordCredential::new(c.user_id, &c.password, &c.salt));
 
         Ok(credentials)
     }
 
-    fn delete(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError> {
+    async fn delete(
+        &self,
+        cred: &PasswordCredential<Self::Id>,
+    ) -> Result<(), PasswordCredentialRepositoryError> {
         self.credentials
             .write()
             .map_err(|_| PasswordCredentialRepositoryError::Other(Arc::new(PoisonedLockError)))?

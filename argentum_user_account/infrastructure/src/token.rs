@@ -1,4 +1,4 @@
-use argentum_standard_business::data_type::id::Id;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::token::GeneratorTrait;
 use fastrand;
 
@@ -6,13 +6,15 @@ pub struct StringTokenGenerator {}
 
 impl StringTokenGenerator {
     #[allow(clippy::new_without_default)]
-    pub fn new() -> StringTokenGenerator {
-        StringTokenGenerator {}
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
 impl GeneratorTrait for StringTokenGenerator {
-    fn generate(&self, _user_id: &Id) -> String {
+    type Id = UniqueId;
+
+    fn generate(&self, _user_id: Self::Id) -> String {
         const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                                 abcdefghijklmnopqrstuvwxyz\
                                 0123456789-_";

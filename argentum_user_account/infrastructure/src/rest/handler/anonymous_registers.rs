@@ -1,6 +1,5 @@
 use argentum_rest_infrastructure::data_type::error::{HttpError, InternalServerError};
-use argentum_standard_business::data_type::id::IdFactory;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
 use argentum_user_account_rest::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
 use argentum_user_account_rest::dto::request::AnonymousRegistersRequest;
@@ -12,30 +11,31 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 pub struct AnonymousRegistersHandler {
-    uc: Arc<AnonymousRegistersUc>,
-    id_factory: Arc<UniqueIdFactory>,
+    uc: Arc<AnonymousRegistersUc<UniqueId>>,
 }
 
 impl AnonymousRegistersHandler {
-    pub fn new(uc: Arc<AnonymousRegistersUc>, id_factory: Arc<UniqueIdFactory>) -> Self {
-        AnonymousRegistersHandler { uc, id_factory }
+    pub fn new(uc: Arc<AnonymousRegistersUc<UniqueId>>) -> Self {
+        AnonymousRegistersHandler { uc }
     }
 }
 
 #[async_trait]
 impl AnonymousRegistersTrait for AnonymousRegistersHandler {
+    type Id = UniqueId;
+
     async fn handle(
         &self,
         _req: AnonymousRegistersRequest,
     ) -> Result<AnonymousRegistersOperationResponseEnum, HttpError> {
-        let anonymous_id = self.id_factory.create();
+        let anonymous_id = UniqueId::new();
 
-        let result = self.uc.execute(&anonymous_id).await;
+        let result = self.uc.execute(anonymous_id).await;
 
         match result {
             Ok((anonymous, session)) => {
-                let id = self.id_factory.id_to_uuid(&anonymous.id);
-                let schema = AnonymousRegistrationResult::new(id, session.token);
+                let schema =
+                    AnonymousRegistrationResult::new(anonymous.id.into(), session.token.clone());
 
                 Ok(AnonymousRegistersOperationResponseEnum::Status201(
                     AnonymousRegisteredSuccessfullyResponse::new_application_json(schema.clone()),

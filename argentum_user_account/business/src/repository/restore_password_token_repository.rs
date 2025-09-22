@@ -6,24 +6,26 @@ use async_trait::async_trait;
 
 #[async_trait]
 pub trait RestorePasswordTokenRepositoryTrait: Sync + Send {
+    type Id: Id;
+
     async fn find(
         &self,
-        id: &Id,
-    ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError>;
+        id: Self::Id,
+    ) -> Result<Option<RestorePasswordToken<Self::Id>>, RestorePasswordTokenRepositoryError>;
 
     async fn find_by_token(
         &self,
-        token: String,
-    ) -> Result<Option<RestorePasswordToken>, RestorePasswordTokenRepositoryError>;
+        token: &str,
+    ) -> Result<Option<RestorePasswordToken<Self::Id>>, RestorePasswordTokenRepositoryError>;
 
     async fn save(
         &self,
-        token: &RestorePasswordToken,
+        token: &RestorePasswordToken<Self::Id>,
     ) -> Result<(), RestorePasswordTokenRepositoryError>;
 
     async fn delete_users_tokens(
         &self,
-        user_id: &Id,
+        user_id: Self::Id,
     ) -> Result<(), RestorePasswordTokenRepositoryError>;
 }
 

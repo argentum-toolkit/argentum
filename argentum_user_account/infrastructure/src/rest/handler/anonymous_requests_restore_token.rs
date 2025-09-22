@@ -1,6 +1,7 @@
 use crate::rest::transformer::DtoToAnonymousRequestsRestoreTokenParams;
 use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
+use argentum_standard_business::data_type::id::Id;
 use argentum_user_account_business::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
 use argentum_user_account_rest::dto::operation_response_enum::AnonymousRequestsRestoreTokenOperationResponseEnum;
@@ -12,21 +13,23 @@ use argentum_user_business::entity::user::User;
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct AnonymousRequestsRestoreTokenHandler<L>
+pub struct AnonymousRequestsRestoreTokenHandler<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
-    uc: Arc<AnonymousRequestsRestoreTokenUc<L>>,
+    uc: Arc<AnonymousRequestsRestoreTokenUc<I, L>>,
     logger: Arc<L>,
     dto_to_anonymous_requests_restore_token_params: Arc<DtoToAnonymousRequestsRestoreTokenParams>,
 }
 
-impl<L> AnonymousRequestsRestoreTokenHandler<L>
+impl<I, L> AnonymousRequestsRestoreTokenHandler<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
     pub fn new(
-        uc: Arc<AnonymousRequestsRestoreTokenUc<L>>,
+        uc: Arc<AnonymousRequestsRestoreTokenUc<I, L>>,
         logger: Arc<L>,
         dto_to_anonymous_requests_restore_token_params: Arc<
             DtoToAnonymousRequestsRestoreTokenParams,
@@ -41,14 +44,17 @@ where
 }
 
 #[async_trait]
-impl<L> AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler<L>
+impl<I, L> AnonymousRequestsRestoreTokenTrait for AnonymousRequestsRestoreTokenHandler<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
+    type Id = I;
+
     async fn handle(
         &self,
         req: AnonymousRequestsRestoreTokenRequest,
-        _user: User,
+        _user: User<I>,
     ) -> Result<AnonymousRequestsRestoreTokenOperationResponseEnum, HttpError> {
         let email = self
             .dto_to_anonymous_requests_restore_token_params

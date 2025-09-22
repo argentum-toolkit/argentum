@@ -2,15 +2,26 @@ use crate::entity::credential::PasswordCredential;
 use argentum_standard_business::data_type::id::Id;
 use std::{error::Error, sync::Arc};
 
+use async_trait::async_trait;
+
+#[async_trait]
 pub trait PasswordCredentialRepositoryTrait: Sync + Send {
-    fn save(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError>;
+    type Id: Id;
 
-    fn find_by_user_id(
+    async fn save(
         &self,
-        id: &Id,
-    ) -> Result<Option<PasswordCredential>, PasswordCredentialRepositoryError>;
+        cred: &PasswordCredential<Self::Id>,
+    ) -> Result<(), PasswordCredentialRepositoryError>;
 
-    fn delete(&self, cred: &PasswordCredential) -> Result<(), PasswordCredentialRepositoryError>;
+    async fn find_by_user_id(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<PasswordCredential<Self::Id>>, PasswordCredentialRepositoryError>;
+
+    async fn delete(
+        &self,
+        cred: &PasswordCredential<Self::Id>,
+    ) -> Result<(), PasswordCredentialRepositoryError>;
 }
 
 #[derive(thiserror::Error, Debug)]
