@@ -1,5 +1,5 @@
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
 use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;

@@ -112,7 +112,7 @@ mod tests {
     use crate::token::GeneratorTrait;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
-    use argentum_standard_business::data_type::email::EmailAddress;
+    use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::{IdFactory, UIntId};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;

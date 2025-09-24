@@ -12,7 +12,7 @@ pub static EMAIL_REGEX: LazyLock<regex::Regex> =
 pub struct EmailAddress(String);
 
 impl EmailAddress {
-    pub fn try_new(email: &str) -> InvariantResult<EmailAddress> {
+    pub fn try_new(email: &str) -> InvariantResult<Self> {
         if email.is_empty() {
             //Constant will be converted into `Violation`
             return Err(ERR_EMAIL_EMPTY.into());
@@ -33,7 +33,7 @@ impl EmailAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::email::{ERR_EMAIL_EMPTY, ERR_WRONG_EMAIL, EmailAddress};
+    use crate::data_type::email_address::{ERR_EMAIL_EMPTY, ERR_WRONG_EMAIL, EmailAddress};
 
     #[test]
     fn test_new_valid_email_address() {

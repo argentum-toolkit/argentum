@@ -3,7 +3,7 @@ use crate::repository::password_credential_checker::{
 };
 use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
 use argentum_user_business::entity::session::Session;
@@ -141,7 +141,7 @@ mod test {
     use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
     use argentum_encryption_business::password::Encryptor;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
-    use argentum_standard_business::data_type::email::EmailAddress;
+    use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;

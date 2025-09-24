@@ -74,7 +74,7 @@ pub enum AuthenticationError {
 
 #[cfg(test)]
 mod tests {
-    use argentum_standard_business::data_type::email::EmailAddress;
+    use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
 
     use crate::data_type::builder::NameBuilder;

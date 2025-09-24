@@ -5,7 +5,7 @@ use crate::use_case::restore_password::error::RestorePasswordError;
 use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::{Notification, NotificatorTrait};
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 use std::sync::Arc;
@@ -137,7 +137,7 @@ mod tests {
 
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_notification_business::mock::StdoutNotificator;
-    use argentum_standard_business::data_type::email::EmailAddress;
+    use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;

@@ -1,5 +1,5 @@
 use crate::data_type::Name;
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use chrono::{DateTime, Utc};
 

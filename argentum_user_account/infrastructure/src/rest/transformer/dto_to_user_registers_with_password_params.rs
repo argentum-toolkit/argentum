@@ -1,5 +1,5 @@
 use argentum_rest_infrastructure::data_type::error::{BadRequestError, HttpError};
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
 use argentum_user_account_rest::dto::request::UserRegistersWithPasswordRequest;
 use argentum_user_business::data_type::Name;
