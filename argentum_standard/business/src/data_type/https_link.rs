@@ -11,7 +11,7 @@ pub static LINK_REGEX: LazyLock<regex::Regex> = LazyLock::new(|| {
     )
 });
 
-#[derive(Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct HttpsLink(String);
 
 impl HttpsLink {

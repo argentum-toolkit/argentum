@@ -1,5 +1,6 @@
 mod bad_request;
 mod conflict;
+mod forbidden;
 mod http_error;
 mod internal_server_error;
 mod method_not_allowed;
@@ -10,6 +11,7 @@ mod unprocessable_entity;
 
 pub use bad_request::BadRequestError;
 pub use conflict::Conflict;
+pub use forbidden::Forbidden;
 pub use http_error::HttpError;
 pub use internal_server_error::InternalServerError;
 pub use method_not_allowed::MethodNotAllowedError;

@@ -66,6 +66,21 @@ where
                     )),
                 )
             }
+            HttpError::Forbidden(e) => {
+                self.logger.warning(format!("{e:?}"));
+
+                let code = StatusCode::FORBIDDEN;
+                HttpResponse::new(
+                    code,
+                    Box::new(ProblemDetail::new(
+                        None,
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
+                        code,
+                        None,
+                        None,
+                    )),
+                )
+            }
             HttpError::NotFound(e) | HttpError::RouteNotFound(e) => {
                 self.logger.warning(format!("{e:?}"));
 

@@ -84,6 +84,6 @@ pub enum User<I>
 where
     I: Id,
 {
-    Anonymous(AnonymousUser<I>),
-    Authenticated(AuthenticatedUser<I>),
+    Anonymous(AnonymousUser<I>),         //Guest
+    Authenticated(AuthenticatedUser<I>), //Member
 }

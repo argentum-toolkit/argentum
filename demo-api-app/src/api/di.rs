@@ -9,7 +9,7 @@ use std::net::SocketAddr;
 
 use argentum_rest_infrastructure::RestDiC;
 use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiCBuilder;
-use argentum_user_account_rest::ApiDiC;
+use argentum_user_account_rest::ApiDiC as UserAccountApiDiC;
 use argentum_user_infrastructure::di::UserInfrastructureDiCBuilder;
 use argentum_user_rest::ApiDiC as UserApiDiC;
 use dotenvy::dotenv;
@@ -93,7 +93,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     )
     .build()?;
 
-    let ua_api_di = ApiDiC::new(
+    let ua_api_di = UserAccountApiDiC::new(
         "/api/v1".to_string(),
         rest_di.request_transformer,
         bearer_authenticator,

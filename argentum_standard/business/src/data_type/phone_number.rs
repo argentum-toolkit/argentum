@@ -1,5 +1,6 @@
 use crate::invariant_violation::{InvariantResult, Violations};
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct PhoneNumber {
     pub country_code: u32,
     pub number: u64,
