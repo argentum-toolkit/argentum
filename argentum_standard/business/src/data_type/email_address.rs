@@ -1,6 +1,6 @@
 use crate::invariant_violation::InvariantResult;
 use compiletime_regex::regex;
-use std::sync::LazyLock;
+use std::{fmt::Debug, sync::LazyLock};
 
 const ERR_EMAIL_EMPTY: &str = "Email should not be empty";
 const ERR_WRONG_EMAIL: &str = "Wrong email address";
@@ -8,11 +8,11 @@ const ERR_WRONG_EMAIL: &str = "Wrong email address";
 pub static EMAIL_REGEX: LazyLock<regex::Regex> =
     LazyLock::new(|| regex!(r"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$"));
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct EmailAddress(String);
 
 impl EmailAddress {
-    pub fn try_new(email: &str) -> InvariantResult<EmailAddress> {
+    pub fn try_new(email: &str) -> InvariantResult<Self> {
         if email.is_empty() {
             //Constant will be converted into `Violation`
             return Err(ERR_EMAIL_EMPTY.into());
@@ -33,7 +33,7 @@ impl EmailAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_type::email::{ERR_EMAIL_EMPTY, ERR_WRONG_EMAIL, EmailAddress};
+    use crate::data_type::email_address::{ERR_EMAIL_EMPTY, ERR_WRONG_EMAIL, EmailAddress};
 
     #[test]
     fn test_new_valid_email_address() {

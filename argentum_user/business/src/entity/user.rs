@@ -1,5 +1,5 @@
 use crate::data_type::Name;
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use chrono::{DateTime, Utc};
 
@@ -84,6 +84,6 @@ pub enum User<I>
 where
     I: Id,
 {
-    Anonymous(AnonymousUser<I>),
-    Authenticated(AuthenticatedUser<I>),
+    Anonymous(AnonymousUser<I>),         //Guest
+    Authenticated(AuthenticatedUser<I>), //Member
 }

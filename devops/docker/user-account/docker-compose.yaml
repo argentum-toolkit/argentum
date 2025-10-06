@@ -15,8 +15,8 @@ services:
       - "54322:5432"
     #TODO: close ports for production mode
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8888:8080
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8888:8080

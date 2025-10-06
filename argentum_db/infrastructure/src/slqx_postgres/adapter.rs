@@ -43,6 +43,7 @@ where
     /// Execute query with Executor (transaction or connection pool)
     ///
     /// # Examples
+    /// ```rust
     /// use argentum_db_infrastructure::sqlx_postgres::SqlxPostgresAdapter;
     /// let adapter: SqlxPostgresAdapter = todo!();
     /// let mut tx = adapter.begin_transaction().await.unwrap();

@@ -9,5 +9,6 @@ pub struct AuthenticatedUserDto {
     pub first_name: String,
     //TODO: optional???
     pub last_name: Option<String>,
+    //TODO: additional name
     pub email: String,
 }

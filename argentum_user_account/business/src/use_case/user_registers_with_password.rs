@@ -2,7 +2,7 @@ use crate::entity::credential::PasswordCredential;
 use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
 
 use argentum_encryption_business::password::{EncryptionError, Encryptor};
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_user_business::data_type::Name;
 use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{
@@ -115,7 +115,7 @@ mod test {
         RegistrationError, UserRegistersWithPasswordUc,
     };
     use argentum_encryption_business::mock::password::EncryptorMock;
-    use argentum_standard_business::data_type::email::EmailAddress;
+    use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;

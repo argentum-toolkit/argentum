@@ -1,5 +1,5 @@
 use crate::entity::user::{AnonymousUser, AuthenticatedUser};
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 
 use std::error::Error;

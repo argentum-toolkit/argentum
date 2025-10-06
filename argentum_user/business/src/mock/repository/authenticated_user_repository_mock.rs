@@ -1,6 +1,6 @@
 use crate::entity::user::{AuthenticatedUser, UserTrait};
 use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
-use argentum_standard_business::data_type::email::EmailAddress;
+use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::error::PoisonedLockError;
 use std::collections::HashMap;
