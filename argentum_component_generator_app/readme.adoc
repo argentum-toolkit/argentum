@@ -1,0 +1,58 @@
+= Argentum ToolKit. Component Generator.
+
+Component Generator is a tools that creates components and it's parts from templates.
+
+Supported generators
+
+- component structure
+- business layer #TODO
+-- use case #TODO
+- infrastructure
+-- repository implementation #TODO
+-- HTTP handler implementation #TODO
+
+
+
+
+== How to install
+
+=== Via cargo install
+
+[source,shell]
+----
+cargo install argentum_component_generator_app
+----
+
+.From source codes
+.Clone
+[source,shell]
+----
+git clone git@gitlab.com:argentum-toolkit/argentum.git
+
+----
+
+.Install binary
+[source,shell]
+----
+cargo install --path argentum_component_generator_app/
+
+----
+
+== How to use
+
+.Generate REST API server library
+[source,shell]
+----
+argentum_component_generator_app pg-repository --name user
+----
+
+Or you can generate via `cargo run` (sources should be cloned)
+
+.Example
+[source,shell]
+----
+cd argentum/argentum_component_generator_app
+
+----
+
+// TODO: add example

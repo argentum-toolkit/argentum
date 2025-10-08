@@ -1,0 +1,22 @@
+[package]
+name = "argentum_component_generator_app"
+description = "Argentum toolkit. Component generator"
+version = "0.4.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "LGPL-3.0"
+edition = "2024"
+homepage = "https://gitlab.com/argentum-toolkit/argentum"
+repository = "https://gitlab.com/argentum-toolkit/argentum"
+documentation = "https://gitlab.com/argentum-toolkit/argentum"
+readme = "README.md"
+
+[dependencies]
+clap = { version = "4.4.*", features = ["derive"] }
+convert_case = "0.8.*"
+handlebars = "6.3.*"
+serde = { version = "1.0.*", features = ["derive"] }
+serde_json = "1.0.*"
+
+argentum_log_business = { path = "../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_log_infrastructure = { path = "../argentum_log/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_template_infrastructure = { path = "../argentum_template/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
