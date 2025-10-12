@@ -1,0 +1,41 @@
+use std::sync::Arc;
+
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
+use {{componentName}}_business::{
+    entity::{{entityName}},
+    repository::{{entityName}}RepositoryTrait, error::{{entityName}}RepositoryError,
+};
+
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
+
+use async_trait::async_trait;
+use uuid::Uuid;
+
+use crate::db::dto::{{entityName}}Dto;
+const TABLE_NAME: &str = "{{componentName}}_{{snake entityName}}";
+
+pub struct {{entityName}}Repository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<SqlxPostgresAdapter<L>>,
+}
+
+impl<L> {{entityName}}Repository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+        Self { adapter }
+    }
+}
+
+#[async_trait]
+impl<L> {{entityName}}RepositoryTrait for {{entityName}}Repository<L>
+where
+    L: LoggerTrait,
+{
+    type Id = UniqueId;
+}

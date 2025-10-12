@@ -43,7 +43,9 @@ cargo install --path argentum_component_generator_app/
 .Generate REST API server library
 [source,shell]
 ----
-argentum_component_generator_app pg-repository --name user
+argentum_component_generator_app pg-repository --component-name pro_pro --entity-name=Skill
+#OR
+cargo run -- pg-repository --component-name pro_pro --entity-name=Skill
 ----
 
 Or you can generate via `cargo run` (sources should be cloned)

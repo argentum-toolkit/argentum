@@ -1,3 +1,3 @@
-mod pg_repository;
+mod db_infrastructure;
 
-pub(crate) use pg_repository::PgRepositoryGenerator;
+pub(crate) use db_infrastructure::DbInfrastructureGenerator;

@@ -1,4 +1,4 @@
-use crate::generator::PgRepositoryGenerator;
+use crate::generator::DbInfrastructureGenerator;
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_template_infrastructure::di::template_infrastructure_di_factory;
@@ -10,25 +10,31 @@ where
     L: LoggerTrait,
 {
     // Public services
-    pub pg_repository_generator: Arc<PgRepositoryGenerator<L>>,
+    pub db_repository_generator: Arc<DbInfrastructureGenerator<L>>,
 }
 
 impl<L> DiC<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(pg_repository_generator: Arc<PgRepositoryGenerator<L>>) -> Self {
+    pub fn new(db_repository_generator: Arc<DbInfrastructureGenerator<L>>) -> Self {
         Self {
-            pg_repository_generator,
+            db_repository_generator,
         }
     }
 }
 
 pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
-    let templates = vec![(
-        "dto/operation_response_enum.item",
-        include_str!("../template/infrastructure/pg_repository.hbs"),
-    )];
+    let templates = vec![
+        (
+            "infrastructure/db_dto",
+            include_str!("../template/infrastructure/db_dto.hbs"),
+        ),
+        (
+            "infrastructure/db_repository",
+            include_str!("../template/infrastructure/db_repository.hbs"),
+        ),
+    ];
 
     let template_di = template_infrastructure_di_factory(templates)?;
 
@@ -36,12 +42,12 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> 
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
     // let renderer = Arc::new(Renderer::new(Arc::new(reg)));
-    let pg_repository_generator = Arc::new(PgRepositoryGenerator::new(
+    let db_repository_generator = Arc::new(DbInfrastructureGenerator::new(
         logger.clone(),
         template_di.renderer.clone(),
     ));
 
     Ok(DiC::<DefaultLogger<PrettyWriter>>::new(
-        pg_repository_generator,
+        db_repository_generator,
     ))
 }

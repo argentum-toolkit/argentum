@@ -14,9 +14,12 @@ pub enum GenerateCommand {
     PgRepository(PgRepositoryParams),
 }
 
-#[derive(Args, Debug)]
+#[derive(Args, Debug, Clone)]
 #[command(about = "Generate Postgres repository")]
 pub(crate) struct PgRepositoryParams {
     #[arg(short, long)]
-    name: String,
+    pub entity_name: String,
+
+    #[arg(short, long)]
+    pub component_name: String,
 }

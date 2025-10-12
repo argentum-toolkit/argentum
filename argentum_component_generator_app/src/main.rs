@@ -15,6 +15,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let di = di_factory()?;
 
     match cli.command {
-        GenerateCommand::PgRepository(params) => Ok(di.pg_repository_generator.generate(params)?),
+        GenerateCommand::PgRepository(params) => Ok(di.db_repository_generator.generate(params)?),
     }
 }
