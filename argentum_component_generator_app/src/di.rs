@@ -10,16 +10,16 @@ where
     L: LoggerTrait,
 {
     // Public services
-    pub db_repository_generator: Arc<DbInfrastructureGenerator<L>>,
+    pub db_infrastructure_generator: Arc<DbInfrastructureGenerator<L>>,
 }
 
 impl<L> DiC<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(db_repository_generator: Arc<DbInfrastructureGenerator<L>>) -> Self {
+    pub fn new(db_infrastructure_generator: Arc<DbInfrastructureGenerator<L>>) -> Self {
         Self {
-            db_repository_generator,
+            db_infrastructure_generator,
         }
     }
 }
@@ -42,12 +42,12 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> 
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
     // let renderer = Arc::new(Renderer::new(Arc::new(reg)));
-    let db_repository_generator = Arc::new(DbInfrastructureGenerator::new(
+    let db_infrastructure_generator = Arc::new(DbInfrastructureGenerator::new(
         logger.clone(),
         template_di.renderer.clone(),
     ));
 
     Ok(DiC::<DefaultLogger<PrettyWriter>>::new(
-        db_repository_generator,
+        db_infrastructure_generator,
     ))
 }

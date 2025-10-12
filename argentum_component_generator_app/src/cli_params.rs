@@ -11,12 +11,12 @@ pub struct CliParams {
 
 #[derive(Subcommand, Debug)]
 pub enum GenerateCommand {
-    PgRepository(PgRepositoryParams),
+    DbInfrastructure(DbInfrastructureParams),
 }
 
 #[derive(Args, Debug, Clone)]
 #[command(about = "Generate Postgres repository")]
-pub(crate) struct PgRepositoryParams {
+pub(crate) struct DbInfrastructureParams {
     #[arg(short, long)]
     pub entity_name: String,
 

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use argentum_log_business::LoggerTrait;
 use argentum_template_infrastructure::Renderer;
 
-use crate::cli_params::PgRepositoryParams;
+use crate::cli_params::DbInfrastructureParams;
 use convert_case::{Case, Casing};
 use serde::Serialize;
 
@@ -53,9 +53,9 @@ where
         Ok(())
     }
 
-    fn generate_repository(&self, params: PgRepositoryParams) -> Result<(), String> {
+    fn generate_repository(&self, params: DbInfrastructureParams) -> Result<(), String> {
         let output_path = format!(
-            "infrastructure/src/repository/{}_repository.rs",
+            "infrastructure/src/db/repository/{}_repository.rs",
             params.entity_name.to_case(Case::Snake)
         );
 
@@ -68,22 +68,25 @@ where
             .render("", REPO_TEMPLATE, &data, &output_path)?;
 
         let lines = vec![
-            format!("pub mod {}_repository;", params.entity_name.to_lowercase()),
+            format!(
+                "mod {}_repository;",
+                params.entity_name.to_case(Case::Snake)
+            ),
             format!(
                 "pub use {}_repository::{}Repository;",
-                params.entity_name.to_lowercase(),
+                params.entity_name.to_case(Case::Snake),
                 params.entity_name
             ),
         ];
 
-        let mod_path = "infrastructure/src/repository/mod.rs";
+        let mod_path = "infrastructure/src/db/repository/mod.rs";
 
         self.append_mod(mod_path, lines)
     }
 
-    pub fn generate_dto(&self, params: PgRepositoryParams) -> Result<(), String> {
+    pub fn generate_dto(&self, params: DbInfrastructureParams) -> Result<(), String> {
         let output_path = format!(
-            "infrastructure/src/dto/{}_dto.rs",
+            "infrastructure/src/db/dto/{}_dto.rs",
             params.entity_name.to_case(Case::Snake)
         );
 
@@ -96,20 +99,20 @@ where
             .render("", DTO_TEMPLATE, &data, &output_path)?;
 
         let lines = vec![
-            format!("pub mod {}_dto;", params.entity_name.to_lowercase()),
+            format!("mod {}_dto;", params.entity_name.to_case(Case::Snake)),
             format!(
                 "pub use {}_dto::{}Dto;",
-                params.entity_name.to_lowercase(),
+                params.entity_name.to_case(Case::Snake),
                 params.entity_name
             ),
         ];
 
-        let mod_path = "infrastructure/src/dto/mod.rs";
+        let mod_path = "infrastructure/src/db/dto/mod.rs";
 
         self.append_mod(mod_path, lines)
     }
 
-    pub fn generate(&self, params: PgRepositoryParams) -> Result<(), String> {
+    pub fn generate(&self, params: DbInfrastructureParams) -> Result<(), String> {
         self.generate_dto(params.clone())?;
         self.generate_repository(params)
     }
