@@ -44,6 +44,7 @@ where
             .open(mod_path)
             .map_err(|e| e.to_string())?;
         let content = std::fs::read_to_string(mod_path).map_err(|e| e.to_string())?;
+
         for line in lines {
             if !&content.contains(&line) {
                 writeln!(file, "{}", line).map_err(|e| e.to_string())?
@@ -101,7 +102,7 @@ where
         let lines = vec![
             format!("mod {}_dto;", params.entity_name.to_case(Case::Snake)),
             format!(
-                "pub use {}_dto::{}Dto;",
+                "pub(crate) use {}_dto::{}Dto;",
                 params.entity_name.to_case(Case::Snake),
                 params.entity_name
             ),
@@ -114,6 +115,10 @@ where
 
     pub fn generate(&self, params: DbInfrastructureParams) -> Result<(), String> {
         self.generate_dto(params.clone())?;
-        self.generate_repository(params)
+        self.logger.info("DTO generated.");
+        self.generate_repository(params)?;
+        self.logger.info("Repository generated.");
+
+        Ok(())
     }
 }
