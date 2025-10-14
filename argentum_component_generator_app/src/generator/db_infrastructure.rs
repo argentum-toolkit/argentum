@@ -55,62 +55,73 @@ where
     }
 
     fn generate_repository(&self, params: DbInfrastructureParams) -> Result<(), String> {
+        let component_name = params.component_name;
+        let entity_name = params.entity_name;
+
         let output_path = format!(
-            "infrastructure/src/db/repository/{}_repository.rs",
-            params.entity_name.to_case(Case::Snake)
+            "{}/infrastructure/src/db/repository/{}_repository.rs",
+            component_name.to_case(Case::Snake),
+            entity_name.to_case(Case::Snake)
         );
 
         let data = Data {
-            component_name: params.component_name,
-            entity_name: params.entity_name.clone(),
+            component_name: component_name.clone(),
+            entity_name: entity_name.clone(),
         };
 
         self.renderer
             .render("", REPO_TEMPLATE, &data, &output_path)?;
 
         let lines = vec![
-            format!(
-                "mod {}_repository;",
-                params.entity_name.to_case(Case::Snake)
-            ),
+            format!("mod {}_repository;", entity_name.to_case(Case::Snake)),
             format!(
                 "pub use {}_repository::{}Repository;",
-                params.entity_name.to_case(Case::Snake),
-                params.entity_name
+                entity_name.to_case(Case::Snake),
+                entity_name
             ),
         ];
 
-        let mod_path = "infrastructure/src/db/repository/mod.rs";
+        let mod_path = format!(
+            "{}/infrastructure/src/db/repository/mod.rs",
+            component_name.to_case(Case::Snake)
+        );
 
-        self.append_mod(mod_path, lines)
+        self.append_mod(&mod_path, lines)
     }
 
     pub fn generate_dto(&self, params: DbInfrastructureParams) -> Result<(), String> {
+        let component_name = params.component_name;
+        let entity_name = params.entity_name;
+
         let output_path = format!(
-            "infrastructure/src/db/dto/{}_dto.rs",
-            params.entity_name.to_case(Case::Snake)
+            "{}/infrastructure/src/db/dto/{}_dto.rs",
+            component_name.to_case(Case::Snake),
+            entity_name.to_case(Case::Snake),
         );
 
         let data = Data {
-            component_name: params.component_name,
-            entity_name: params.entity_name.clone(),
+            component_name: component_name.clone(),
+            entity_name: entity_name.clone(),
         };
 
         self.renderer
             .render("", DTO_TEMPLATE, &data, &output_path)?;
 
         let lines = vec![
-            format!("mod {}_dto;", params.entity_name.to_case(Case::Snake)),
+            format!("mod {}_dto;", entity_name.to_case(Case::Snake)),
             format!(
                 "pub(crate) use {}_dto::{}Dto;",
-                params.entity_name.to_case(Case::Snake),
-                params.entity_name
+                entity_name.to_case(Case::Snake),
+                entity_name
             ),
         ];
 
-        let mod_path = "infrastructure/src/db/dto/mod.rs";
+        let mod_path = format!(
+            "{}/infrastructure/src/db/dto/mod.rs",
+            component_name.to_case(Case::Snake)
+        );
 
-        self.append_mod(mod_path, lines)
+        self.append_mod(&mod_path, lines)
     }
 
     pub fn generate(&self, params: DbInfrastructureParams) -> Result<(), String> {
