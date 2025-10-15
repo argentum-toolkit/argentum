@@ -253,6 +253,8 @@ impl SchemaGenerator {
 
         properties.sort_by_key(|item| item.weight);
 
+        dependencies.dedup();
+
         let data = Data {
             dependencies,
             name,
@@ -279,6 +281,8 @@ impl SchemaGenerator {
         let mut dependencies: Vec<String> = vec![];
 
         let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies)?;
+
+        dependencies.dedup();
 
         let data = ArrayData {
             dependencies,
@@ -311,6 +315,8 @@ impl SchemaGenerator {
 
         let (data_type, raw_type, is_ref) =
             self.schema_to_rs(additional_type, &mut dependencies)?;
+
+        dependencies.dedup();
 
         let data = ArrayData {
             dependencies,
