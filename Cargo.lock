@@ -245,6 +245,7 @@ dependencies = [
 name = "argentum_openapi_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
+ "indexmap",
  "serde",
  "serde_json",
  "serde_yaml_ng 0.9.36",
@@ -263,6 +264,7 @@ dependencies = [
  "handlebars",
  "http",
  "hyper",
+ "indexmap",
  "reqwest",
  "serde",
  "serde_json",

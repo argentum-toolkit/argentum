@@ -3,7 +3,8 @@ use argentum_log_business::LoggerTrait;
 use argentum_openapi_infrastructure::data_type::{
     ComponentRef, RefOrObject, RequestBody, Response, Schema, SchemaType, SpecificationRoot,
 };
-use std::collections::{BTreeMap, HashMap};
+use indexmap::IndexMap;
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
 
@@ -359,7 +360,7 @@ where
 
     fn collect_properties(
         &self,
-        properties: &mut BTreeMap<String, RefOrObject<Schema>>,
+        properties: &mut IndexMap<String, RefOrObject<Schema>>,
         to_spec: &mut SpecificationRoot,
         current_file_path: &str,
     ) -> Result<(), String> {
