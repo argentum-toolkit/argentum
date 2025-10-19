@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct Schema {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub example: Option<String>,
+    pub example: Option<String>, //TODO: String | int
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,

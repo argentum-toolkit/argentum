@@ -28,7 +28,7 @@ impl Display for ViolationItem {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Violations {
     pub errors: Vec<String>,
 
