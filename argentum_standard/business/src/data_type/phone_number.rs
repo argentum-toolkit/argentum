@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::invariant_violation::{InvariantResult, Violations};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -7,14 +9,48 @@ pub struct PhoneNumber {
 }
 
 impl PhoneNumber {
-    pub fn try_new(country_code: u32, number: u64) -> InvariantResult<PhoneNumber> {
-        let full_number = format!("+{}{}", country_code, number);
-        match phonenumber::parse(None, &full_number) {
-            Ok(_) => Ok(Self {
-                country_code,
-                number,
-            }),
-            Err(_e) => Err(Violations::new(vec!["wrong phone number".into()], None)),
+    pub fn try_new(country_code: i32, local_number: i64) -> InvariantResult<PhoneNumber> {
+        let mut vo = BTreeMap::new();
+
+        let code = match u32::try_from(country_code) {
+            Ok(c) => Some(c),
+            Err(_) => {
+                vo.insert(
+                    "country_code",
+                    Violations::new(vec!["country code should be more than 0".into()], None),
+                );
+
+                None
+            }
+        };
+
+        let number = match u64::try_from(local_number) {
+            Ok(c) => Some(c),
+            Err(_) => {
+                vo.insert(
+                    "number",
+                    Violations::new(vec!["number should be more than 0".into()], None),
+                );
+
+                None
+            }
+        };
+
+        if vo.is_empty()
+            && let Some(c) = code
+            && let Some(n) = number
+        {
+            let full_number = format!("+{}{}", c, n);
+
+            match phonenumber::parse(None, &full_number) {
+                Ok(_) => Ok(Self {
+                    country_code: c,
+                    number: n,
+                }),
+                Err(_e) => Err(Violations::new(vec!["wrong phone number".into()], None)),
+            }
+        } else {
+            Err(Violations::new(vec!["wrong phone number".into()], None))
         }
     }
 }

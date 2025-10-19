@@ -110,6 +110,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "argentum_component_generator_app"
+version = "0.4.0-dev"
+dependencies = [
+ "argentum_log_business",
+ "argentum_log_infrastructure",
+ "argentum_template_infrastructure",
+ "clap",
+ "convert_case 0.8.0",
+ "handlebars",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "argentum_db_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
@@ -231,6 +245,7 @@ dependencies = [
 name = "argentum_openapi_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
+ "indexmap",
  "serde",
  "serde_json",
  "serde_yaml_ng 0.9.36",
@@ -245,10 +260,11 @@ dependencies = [
  "argentum_openapi_infrastructure",
  "argentum_rest_infrastructure",
  "clap",
- "convert_case",
+ "convert_case 0.6.0",
  "handlebars",
  "http",
  "hyper",
+ "indexmap",
  "reqwest",
  "serde",
  "serde_json",
@@ -308,6 +324,17 @@ dependencies = [
  "argentum_standard_infrastructure",
  "dioxus",
  "web-sys",
+]
+
+[[package]]
+name = "argentum_template_infrastructure"
+version = "0.4.0-dev"
+dependencies = [
+ "convert_case 0.6.0",
+ "handlebars",
+ "serde",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]
@@ -842,6 +869,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "convert_case"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "baaaa0ecca5b51987b9423ccdc971514dd8b0bb7b4060b983d3664dad3f1f89f"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1149,7 +1185,7 @@ version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "105c954caaaedf8cd10f3d1ba576b01e18aa8d33ad435182125eefe488cf0064"
 dependencies = [
- "convert_case",
+ "convert_case 0.6.0",
  "dioxus-rsx",
  "proc-macro2",
  "quote",
@@ -1310,7 +1346,7 @@ version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43ba87b53688a2c9f619ecdf4b3b955bc1f08bd0570a80a0d626c405f6d14a76"
 dependencies = [
- "convert_case",
+ "convert_case 0.6.0",
  "proc-macro2",
  "quote",
  "syn",
@@ -3561,7 +3597,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "faaaf648c6967aef78177c0610478abb5a3455811f401f3c62d10ae9bd3901a1"
 dependencies = [
  "const_format",
- "convert_case",
+ "convert_case 0.6.0",
  "proc-macro2",
  "quote",
  "syn",

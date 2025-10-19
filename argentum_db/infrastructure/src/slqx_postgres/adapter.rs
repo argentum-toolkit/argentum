@@ -96,6 +96,28 @@ where
         }
     }
 
+    pub async fn fetch_all<'q, F>(
+        &'q self,
+        query_as: QueryAs<'q, Postgres, F, PgArguments>,
+    ) -> Result<Vec<F>, DbAdapterError>
+    where
+        F: Send + Unpin + for<'r> FromRow<'r, PgRow> + 'q,
+    {
+        let sql = query_as.sql();
+        self.logger.debug(sql);
+
+        let result: Result<Vec<F>, Error> = query_as.fetch_all(&self.pool).await;
+        self.logger.trace("SQL done");
+
+        match result {
+            Ok(rows) => Ok(rows),
+            Err(e) => Err(DbAdapterError {
+                msg: e.to_string(),
+                sql: Some(sql.to_string()),
+            }),
+        }
+    }
+
     pub async fn begin_transaction(
         &self,
     ) -> Result<Transaction<'static, Postgres>, DbAdapterError> {

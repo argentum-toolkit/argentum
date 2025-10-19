@@ -1,12 +1,12 @@
 use crate::data_type::{ExtensionUi, RefOrObject};
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Schema {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub example: Option<String>,
+    pub example: Option<String>, //TODO: String | int
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
@@ -18,7 +18,7 @@ pub struct Schema {
     pub required: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub properties: Option<BTreeMap<String, RefOrObject<Self>>>,
+    pub properties: Option<IndexMap<String, RefOrObject<Self>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Box<Option<RefOrObject<Self>>>,

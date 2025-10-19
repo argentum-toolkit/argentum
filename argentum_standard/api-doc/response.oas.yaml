@@ -15,6 +15,9 @@ components:
           schema:
             $ref: "./type.oas.yaml#/components/schemas/EmptyResponse"
 
+    204:
+      description: No Content
+
     400:
       description: Bad request
       content:

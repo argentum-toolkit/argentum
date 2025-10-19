@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt::Display};
 
 pub type ViolationObject = BTreeMap<String, Violations>;
 pub type ViolationArray = Vec<Violations>;
@@ -19,7 +19,16 @@ impl ViolationItem {
     }
 }
 
-#[derive(Debug, Clone)]
+impl Display for ViolationItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ViolationItem::Object(o) => write!(f, "Object({:?})", o),
+            ViolationItem::Array(a) => write!(f, "Array({:?})", a),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct Violations {
     pub errors: Vec<String>,
 
@@ -38,6 +47,25 @@ impl Violations {
         };
 
         self.errors.is_empty() && items_empty
+    }
+}
+
+impl Display for Violations {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Violations(errors: {:?}, items: {:?})",
+            self.errors, self.items
+        )
+    }
+}
+impl std::error::Error for Violations {
+    fn description(&self) -> &str {
+        if let Some(first_error) = self.errors.first() {
+            first_error
+        } else {
+            "Validation error"
+        }
     }
 }
 

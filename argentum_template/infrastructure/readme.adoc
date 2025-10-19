@@ -1,0 +1,3 @@
+= Argentum ToolKit. Template component.
+
+Helps to initialize and to use Handlebars.

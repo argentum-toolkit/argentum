@@ -4,8 +4,8 @@ use argentum_openapi_infrastructure::data_type::{
     RefOrObject, Schema, SchemaFormat, SchemaType, SpecificationRoot, StandardFormat,
 };
 use convert_case::{Case, Casing};
+use indexmap::IndexMap;
 use serde::Serialize;
-use std::collections::BTreeMap;
 use std::sync::Arc;
 
 #[derive(Serialize)]
@@ -208,7 +208,7 @@ impl SchemaGenerator {
         &self,
         base_output_path: &str,
         name: &String,
-        schema_properties: BTreeMap<String, RefOrObject<Schema>>,
+        schema_properties: IndexMap<String, RefOrObject<Schema>>,
         required_fields: Option<Vec<String>>,
         file_path: String,
         spec: &SpecificationRoot,
@@ -216,11 +216,16 @@ impl SchemaGenerator {
         let mut properties: Vec<Prop> = vec![];
         let mut dependencies: Vec<String> = vec![];
 
+        let mut old_weight = 0;
         for (name, property) in schema_properties {
             let schema = self.schema_extractor.extract(&property, spec)?;
+
             let weight = match schema.extension_ui {
                 Some(ref ext) => ext.weight,
-                None => 0,
+                None => {
+                    old_weight += 1;
+                    old_weight
+                }
             };
 
             let (mut data_type, raw_type, is_ref) =
@@ -240,6 +245,7 @@ impl SchemaGenerator {
             }
 
             properties.push(Prop {
+                // name: name.clone().to_case(Case::Snake),
                 name: name.clone().to_case(Case::Snake),
                 rename: name,
                 clean_type,
@@ -252,6 +258,8 @@ impl SchemaGenerator {
         }
 
         properties.sort_by_key(|item| item.weight);
+
+        dependencies.dedup();
 
         let data = Data {
             dependencies,
@@ -279,6 +287,8 @@ impl SchemaGenerator {
         let mut dependencies: Vec<String> = vec![];
 
         let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies)?;
+
+        dependencies.dedup();
 
         let data = ArrayData {
             dependencies,
@@ -311,6 +321,8 @@ impl SchemaGenerator {
 
         let (data_type, raw_type, is_ref) =
             self.schema_to_rs(additional_type, &mut dependencies)?;
+
+        dependencies.dedup();
 
         let data = ArrayData {
             dependencies,

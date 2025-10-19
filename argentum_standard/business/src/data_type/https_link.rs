@@ -1,6 +1,6 @@
 use crate::invariant_violation::InvariantResult;
 use compiletime_regex::regex;
-use std::sync::LazyLock;
+use std::{fmt::Display, sync::LazyLock};
 
 const ERR_LINK_TOO_SHORT: &str = "Link is too short";
 const ERR_WRONG_EMAIL: &str = "Wrong email address";
@@ -25,6 +25,12 @@ impl HttpsLink {
         } else {
             Err(ERR_WRONG_EMAIL.into())
         }
+    }
+}
+
+impl Display for HttpsLink {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

@@ -1,4 +1,7 @@
 mod bad_request;
+
+pub mod builder;
+
 mod conflict;
 mod forbidden;
 mod http_error;

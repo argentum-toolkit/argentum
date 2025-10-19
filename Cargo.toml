@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "argentum_component_generator_app",
     "argentum_db/infrastructure",
     "argentum_encryption/business",
     "argentum_encryption/infrastructure",
@@ -14,6 +15,7 @@ members = [
     "argentum_standard/business",
     "argentum_standard/infrastructure",
     "argentum_standard/ui",
+    "argentum_template/infrastructure",
     "argentum_user/business",
     "argentum_user/infrastructure",
     "argentum_user/ui",
