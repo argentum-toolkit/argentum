@@ -213,7 +213,6 @@ components:
           x-ag-ui:
             id: password
             name: password
-            weight: 0
       type: object
     ProblemDetail:
       title: Schema for error response
@@ -306,7 +305,6 @@ components:
           x-ag-ui:
             id: user_first_name
             name: user_first_name
-            weight: 20
         last:
           example: Marko
           title: Last Name
@@ -316,7 +314,6 @@ components:
           x-ag-ui:
             id: user_last_name
             name: user_last_name
-            weight: 0
         additional:
           title: Additional name
           maxLength: 255

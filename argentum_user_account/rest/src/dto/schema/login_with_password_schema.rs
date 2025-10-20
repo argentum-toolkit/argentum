@@ -7,13 +7,13 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct LoginWithPasswordSchema {
-    pub password: String,
     pub email: String,
+    pub password: String,
 }
 
 impl LoginWithPasswordSchema {
-    pub fn new(password: String, email: String) -> Self {
-        Self { password, email }
+    pub fn new(email: String, password: String) -> Self {
+        Self { email, password }
     }
 }
 
@@ -25,13 +25,6 @@ impl DeserializableSchemaRaw<'_> for LoginWithPasswordSchema {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let password = raw.password;
-        if password.is_none() {
-            argentum_violations.insert(
-                "password".into(),
-                Violations::new(vec!["field is required".to_string()], None),
-            );
-        }
         let email = raw.email;
         if email.is_none() {
             argentum_violations.insert(
@@ -39,12 +32,19 @@ impl DeserializableSchemaRaw<'_> for LoginWithPasswordSchema {
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
+        let password = raw.password;
+        if password.is_none() {
+            argentum_violations.insert(
+                "password".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
 
         if argentum_violations.is_empty()
-            && let Some(password) = password
             && let Some(email) = email
+            && let Some(password) = password
         {
-            Ok(Self::new(password, email))
+            Ok(Self::new(email, password))
         } else {
             Err(Violations::new(
                 vec!["wrong data for LoginWithPasswordSchema".to_string()],
@@ -56,8 +56,8 @@ impl DeserializableSchemaRaw<'_> for LoginWithPasswordSchema {
 
 #[derive(serde::Deserialize)]
 pub struct LoginWithPasswordSchemaRaw {
-    #[serde(rename = "password")]
-    pub password: Option<String>,
     #[serde(rename = "email")]
     pub email: Option<String>,
+    #[serde(rename = "password")]
+    pub password: Option<String>,
 }

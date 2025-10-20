@@ -3,6 +3,8 @@ use crate::route::Route;
 use argentum_standard_ui::rsx::component::dark_mode::use_dark_mode;
 use dioxus::prelude::*;
 
+static CSS: Asset = asset!("/assets/tailwind.css");
+
 pub(crate) fn App() -> Element {
     #[cfg(feature = "web")]
     {
@@ -22,9 +24,7 @@ pub(crate) fn App() -> Element {
     use_dark_mode();
 
     rsx! {
-        document::Stylesheet {
-            href: asset!("/assets/tailwind.css")
-        }
+        document::Stylesheet { href: CSS }
         Router::<Route> {}
     }
 }

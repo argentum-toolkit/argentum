@@ -26,8 +26,8 @@ async-trait = "0.1.*"
 serde = { version = "1.*", features = ["derive"] }
 serde_json = "1.*"
 
-dioxus = { version = "0.6.*", features = ["fullstack", "router"] }
-dioxus-logger = "0.6.*"
+dioxus = { version = "0.7.0-rc", features = ["fullstack", "router"] }
+dioxus-logger = "0.7.0-rc"
 
 uuid = { version = "1.*", features = ["serde", "v4", "js"] }
 log = "0.4.*"

@@ -116,7 +116,6 @@ components:
           x-ag-ui:
             id: user_first_name
             name: user_first_name
-            weight: 0
         last:
           example: Marko
           title: Last Name
@@ -126,7 +125,6 @@ components:
           x-ag-ui:
             id: user_last_name
             name: user_last_name
-            weight: 0
         additional:
           title: Additional name
           maxLength: 255

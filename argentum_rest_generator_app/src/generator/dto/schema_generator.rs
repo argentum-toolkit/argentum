@@ -221,7 +221,13 @@ impl SchemaGenerator {
             let schema = self.schema_extractor.extract(&property, spec)?;
 
             let weight = match schema.extension_ui {
-                Some(ref ext) => ext.weight,
+                Some(ref ext) => match ext.weight {
+                    Some(w) => w,
+                    None => {
+                        old_weight += 1;
+                        old_weight
+                    }
+                },
                 None => {
                     old_weight += 1;
                     old_weight

@@ -23,7 +23,9 @@ pub fn UserLoginsWithPasswordForm(
             action:"#",
             class:"space-y-6",
             "novalidate": true,
-            onsubmit: move |_| {
+            onsubmit: move |e| {
+                e.prevent_default();
+
                 let processor = processor.clone();
                 let auth_token = auth_token.clone();
 
