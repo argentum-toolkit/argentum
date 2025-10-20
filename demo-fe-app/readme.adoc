@@ -12,7 +12,7 @@ Launch the Dioxus Fullstack app:
 
 [source,bash]
 ----
-dx serve --platform web
+dx serve --web
 ----
 
 theme:

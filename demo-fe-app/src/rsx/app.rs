@@ -3,7 +3,7 @@ use crate::route::Route;
 use argentum_standard_ui::rsx::component::dark_mode::use_dark_mode;
 use dioxus::prelude::*;
 
-static CSS: Asset = asset!("/assets/tailwind.css");
+static CSS: Asset = asset!("/assets/main.css");
 
 pub(crate) fn App() -> Element {
     #[cfg(feature = "web")]
