@@ -7,13 +7,13 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct LoginResult {
-    pub token: String,
     pub user_id: uuid::Uuid,
+    pub token: String,
 }
 
 impl LoginResult {
-    pub fn new(token: String, user_id: uuid::Uuid) -> Self {
-        Self { token, user_id }
+    pub fn new(user_id: uuid::Uuid, token: String) -> Self {
+        Self { user_id, token }
     }
 }
 
@@ -25,13 +25,6 @@ impl DeserializableSchemaRaw<'_> for LoginResult {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let token = raw.token;
-        if token.is_none() {
-            argentum_violations.insert(
-                "token".into(),
-                Violations::new(vec!["field is required".to_string()], None),
-            );
-        }
         let user_id = raw.user_id;
         if user_id.is_none() {
             argentum_violations.insert(
@@ -39,12 +32,19 @@ impl DeserializableSchemaRaw<'_> for LoginResult {
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
+        let token = raw.token;
+        if token.is_none() {
+            argentum_violations.insert(
+                "token".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
 
         if argentum_violations.is_empty()
-            && let Some(token) = token
             && let Some(user_id) = user_id
+            && let Some(token) = token
         {
-            Ok(Self::new(token, user_id))
+            Ok(Self::new(user_id, token))
         } else {
             Err(Violations::new(
                 vec!["wrong data for LoginResult".to_string()],
@@ -56,8 +56,8 @@ impl DeserializableSchemaRaw<'_> for LoginResult {
 
 #[derive(serde::Deserialize)]
 pub struct LoginResultRaw {
-    #[serde(rename = "token")]
-    pub token: Option<String>,
     #[serde(rename = "user_id")]
     pub user_id: Option<uuid::Uuid>,
+    #[serde(rename = "token")]
+    pub token: Option<String>,
 }

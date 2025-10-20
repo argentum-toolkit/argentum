@@ -113,9 +113,7 @@ mod tests {
 
         let e: serde_valid::Error<MockError> = serde_valid::Error::ValidationError(
             serde_valid::validation::Errors::Array(ArrayErrors::new(
-                vec![serde_valid::validation::Error::Custom(
-                    "Some err".to_string(),
-                )],
+                vec![serde_valid::validation::Error::Custom("Some err".into())],
                 ItemErrorsMap::new(),
             )),
         );
@@ -140,9 +138,7 @@ mod tests {
                 ItemErrorsMap::from([(
                     1,
                     serde_valid::validation::Errors::Array(ArrayErrors::new(
-                        vec![serde_valid::validation::Error::Custom(
-                            "Some err".to_string(),
-                        )],
+                        vec![serde_valid::validation::Error::Custom("Some err".into())],
                         ItemErrorsMap::new(),
                     )),
                 )]),
@@ -181,9 +177,7 @@ mod tests {
 
         let e: serde_valid::Error<MockError> = serde_valid::Error::ValidationError(
             serde_valid::validation::Errors::Object(ObjectErrors::new(
-                vec![serde_valid::validation::Error::Custom(
-                    "Some err".to_string(),
-                )],
+                vec![serde_valid::validation::Error::Custom("Some err".into())],
                 PropertyErrorsMap::new(),
             )),
         );
@@ -206,11 +200,9 @@ mod tests {
             serde_valid::validation::Errors::Object(ObjectErrors::new(
                 vec![],
                 PropertyErrorsMap::from([(
-                    "some-field".to_string(),
+                    "some-field".into(),
                     serde_valid::validation::Errors::Object(ObjectErrors::new(
-                        vec![serde_valid::validation::Error::Custom(
-                            "Some err".to_string(),
-                        )],
+                        vec![serde_valid::validation::Error::Custom("Some err".into())],
                         PropertyErrorsMap::new(),
                     )),
                 )]),
@@ -254,7 +246,7 @@ mod tests {
 
         let e: serde_valid::Error<MockError> =
             serde_valid::Error::ValidationError(serde_valid::validation::Errors::NewType(vec![
-                serde_valid::validation::Error::Custom("Some err".to_string()),
+                serde_valid::validation::Error::Custom("Some err".into()),
             ]));
         let v = transformer.transform(e);
 

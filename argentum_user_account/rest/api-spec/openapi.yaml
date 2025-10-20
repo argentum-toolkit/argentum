@@ -171,13 +171,13 @@ components:
       - token
       - password
       properties:
+        token:
+          example: token-example
+          type: string
         password:
           example: secure-password
           type: string
           format: password
-        token:
-          example: token-example
-          type: string
       type: object
     EmptyResponse:
       title: Empty response
@@ -187,13 +187,13 @@ components:
       - user_id
       - token
       properties:
-        token:
-          example: token-example
-          type: string
         user_id:
           example: dd7ea831-ad64-429f-9839-a44c84c74550
           type: string
           format: uuid
+        token:
+          example: token-example
+          type: string
       type: object
     LoginWithPasswordSchema:
       required:
@@ -222,10 +222,6 @@ components:
       - status
       - title
       properties:
-        body:
-          $ref: '#/components/schemas/Violation'
-        detail:
-          type: string
         status:
           example: '401'
           maximum: 599.0
@@ -238,6 +234,10 @@ components:
         type:
           example: about:blank
           type: string
+        detail:
+          type: string
+        body:
+          $ref: '#/components/schemas/Violation'
       type: object
     RegistrationWithPasswordResult:
       required:
@@ -263,7 +263,7 @@ components:
           x-ag-ui:
             id: email
             name: email
-            weight: 0
+            weight: 10
         name:
           $ref: '#/components/schemas/UserName'
         password:
@@ -274,7 +274,7 @@ components:
           x-ag-ui:
             id: password
             name: password
-            weight: 0
+            weight: 30
         terms:
           example: 'false'
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
@@ -282,7 +282,7 @@ components:
           x-ag-ui:
             id: terms
             name: terms
-            weight: 0
+            weight: 40
       type: object
     RequestRestoreTokenSchema:
       required:
@@ -297,15 +297,6 @@ components:
       required:
       - first
       properties:
-        additional:
-          title: Additional name
-          maxLength: 255
-          minLength: 1
-          type: string
-          x-ag-ui:
-            id: user_additional_name
-            name: user_additional_name
-            weight: 100
         first:
           example: Winston
           title: First Name
@@ -315,7 +306,7 @@ components:
           x-ag-ui:
             id: user_first_name
             name: user_first_name
-            weight: 0
+            weight: 20
         last:
           example: Marko
           title: Last Name
@@ -326,6 +317,15 @@ components:
             id: user_last_name
             name: user_last_name
             weight: 0
+        additional:
+          title: Additional name
+          maxLength: 255
+          minLength: 1
+          type: string
+          x-ag-ui:
+            id: user_additional_name
+            name: user_additional_name
+            weight: 100
       type: object
     Violation:
       properties:

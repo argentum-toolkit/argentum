@@ -10,17 +10,17 @@ use crate::dto::schema::UserNameRaw;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct RegistrationWithPasswordSchema {
-    pub email: String,
     pub name: UserName,
+    pub email: String,
     pub password: String,
     pub terms: bool,
 }
 
 impl RegistrationWithPasswordSchema {
-    pub fn new(email: String, name: UserName, password: String, terms: bool) -> Self {
+    pub fn new(name: UserName, email: String, password: String, terms: bool) -> Self {
         Self {
-            email,
             name,
+            email,
             password,
             terms,
         }
@@ -35,13 +35,6 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
-        let email = raw.email;
-        if email.is_none() {
-            argentum_violations.insert(
-                "email".into(),
-                Violations::new(vec!["field is required".to_string()], None),
-            );
-        }
         let name = match raw.name {
             Some(raw_name) => match UserName::try_from_raw(raw_name) {
                 Ok(value) => Some(value),
@@ -59,6 +52,13 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
                 None
             }
         };
+        let email = raw.email;
+        if email.is_none() {
+            argentum_violations.insert(
+                "email".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
         let password = raw.password;
         if password.is_none() {
             argentum_violations.insert(
@@ -75,12 +75,12 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
         }
 
         if argentum_violations.is_empty()
-            && let Some(email) = email
             && let Some(name) = name
+            && let Some(email) = email
             && let Some(password) = password
             && let Some(terms) = terms
         {
-            Ok(Self::new(email, name, password, terms))
+            Ok(Self::new(name, email, password, terms))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordSchema".to_string()],
@@ -92,10 +92,10 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
 
 #[derive(serde::Deserialize)]
 pub struct RegistrationWithPasswordSchemaRaw {
-    #[serde(rename = "email")]
-    pub email: Option<String>,
     #[serde(rename = "name")]
     pub name: Option<UserNameRaw>,
+    #[serde(rename = "email")]
+    pub email: Option<String>,
     #[serde(rename = "password")]
     pub password: Option<String>,
     #[serde(rename = "terms")]

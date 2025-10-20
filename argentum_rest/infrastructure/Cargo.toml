@@ -16,17 +16,17 @@ server = ["dep:tokio", "argentum_user_account_business/server"]
 [dependencies]
 async-trait = "0.1.*"
 
-bytes = "1.5.*"
+bytes = "1.*"
 erased-serde = "0.4.*"
 http = "1.*"
 http-body-util = "0.1.*"
 hyper = { version = "1.*", features = ["full"] }
 pin-project-lite = "0.2.*"
-serde = { version = "1.0.*", features = ["derive"] }
-serde_json = "1.0.*"
-serde_valid = "1.*"
-tokio = { version = "^1.40", features = ["full"], optional = true }
-thiserror = "2.0.*"
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
+serde_valid = "2.*"
+tokio = { version = "1.*", features = ["full"], optional = true }
+thiserror = "2.*"
 
 
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }

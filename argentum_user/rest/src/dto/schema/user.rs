@@ -10,16 +10,14 @@ use crate::dto::schema::UserNameRaw;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct User {
-    pub email: String,
-
     pub id: Option<uuid::Uuid>,
-
+    pub email: String,
     pub name: UserName,
 }
 
 impl User {
-    pub fn new(email: String, id: Option<uuid::Uuid>, name: UserName) -> Self {
-        Self { email, id, name }
+    pub fn new(id: Option<uuid::Uuid>, email: String, name: UserName) -> Self {
+        Self { id, email, name }
     }
 }
 
@@ -31,6 +29,7 @@ impl DeserializableSchemaRaw<'_> for User {
     fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
+        let id = raw.id;
         let email = raw.email;
         if email.is_none() {
             argentum_violations.insert(
@@ -38,7 +37,6 @@ impl DeserializableSchemaRaw<'_> for User {
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
-        let id = raw.id;
         let name = match raw.name {
             Some(raw_name) => match UserName::try_from_raw(raw_name) {
                 Ok(value) => Some(value),
@@ -61,7 +59,7 @@ impl DeserializableSchemaRaw<'_> for User {
             && let Some(email) = email
             && let Some(name) = name
         {
-            Ok(Self::new(email, id, name))
+            Ok(Self::new(id, email, name))
         } else {
             Err(Violations::new(
                 vec!["wrong data for User".to_string()],
@@ -73,10 +71,10 @@ impl DeserializableSchemaRaw<'_> for User {
 
 #[derive(serde::Deserialize)]
 pub struct UserRaw {
-    #[serde(rename = "email")]
-    pub email: Option<String>,
     #[serde(rename = "id")]
     pub id: Option<uuid::Uuid>,
+    #[serde(rename = "email")]
+    pub email: Option<String>,
     #[serde(rename = "name")]
     pub name: Option<UserNameRaw>,
 }

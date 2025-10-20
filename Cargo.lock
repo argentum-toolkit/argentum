@@ -128,7 +128,6 @@ name = "argentum_db_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
  "argentum_log_business",
- "futures",
  "sqlx",
  "sqlx-postgres",
  "thiserror 2.0.15",
@@ -248,7 +247,7 @@ dependencies = [
  "indexmap",
  "serde",
  "serde_json",
- "serde_yaml_ng 0.9.36",
+ "serde_yaml_ng",
 ]
 
 [[package]]
@@ -260,7 +259,7 @@ dependencies = [
  "argentum_openapi_infrastructure",
  "argentum_rest_infrastructure",
  "clap",
- "convert_case 0.6.0",
+ "convert_case 0.8.0",
  "handlebars",
  "http",
  "hyper",
@@ -268,7 +267,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "serde_yaml_ng 0.10.0",
+ "serde_yaml_ng",
 ]
 
 [[package]]
@@ -330,7 +329,7 @@ dependencies = [
 name = "argentum_template_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
- "convert_case 0.6.0",
+ "convert_case 0.8.0",
  "handlebars",
  "serde",
  "serde_json",
@@ -348,7 +347,6 @@ dependencies = [
  "argentum_user_business",
  "async-trait",
  "chrono",
- "futures",
  "thiserror 2.0.15",
  "tokio",
 ]
@@ -445,7 +443,6 @@ dependencies = [
  "argentum_user_rest",
  "async-trait",
  "chrono",
- "futures",
  "serde",
  "sqlx",
  "thiserror 2.0.15",
@@ -2371,9 +2368,9 @@ checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
 
 [[package]]
 name = "itertools"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
 dependencies = [
  "either",
 ]
@@ -3134,9 +3131,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.10.6"
+version = "1.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4219d74c6b67a3654a9fbebc4b419e22126d13d2f3c4a07ee0cb61ff79a79619"
+checksum = "843bc0191f75f3e22651ae5f1e72939ab2f72a4bc30fa80a066bd66edefc24d4"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -3146,9 +3143,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.9"
+version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "809e8dc61f6de73b46c85f4c96486310fe304c434cfa43669d7b40f711150908"
+checksum = "5276caf25ac86c8d810222b3dbb938e512c55c6831a10f3e6ed1c93b84041f1c"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -3486,9 +3483,9 @@ dependencies = [
 
 [[package]]
 name = "serde_valid"
-version = "1.0.5"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b615bed66931a7a9809b273937adc8a402d038b1e509d027fcaf62f084d33d1"
+checksum = "de7f50148816c0fbeab7089476c91dbfae94bd891cc4e2c535f30b54ceb90ad2"
 dependencies = [
  "indexmap",
  "itertools",
@@ -3506,9 +3503,9 @@ dependencies = [
 
 [[package]]
 name = "serde_valid_derive"
-version = "1.0.5"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fa1a5a21ea5aab06d2e6a6b59837d450fb2be9695be97735a711edfbe79ea07"
+checksum = "c030af8a53ec37caf1ed98e5ce02cf7d4f65e637e8eaa089ed785689e86c9046"
 dependencies = [
  "itertools",
  "paste",
@@ -3521,25 +3518,12 @@ dependencies = [
 
 [[package]]
 name = "serde_valid_literal"
-version = "1.0.5"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd07331596ea967dccf9a35bde71ecd757490e09827b938a5c6226c648e3a25e"
+checksum = "50b2fb68eefc69006cebe74b0f672ae68464c72b150dacd00d0877227c1300f7"
 dependencies = [
  "paste",
  "regex",
-]
-
-[[package]]
-name = "serde_yaml_ng"
-version = "0.9.36"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd24347956e682cf958c95e82deb9914cad4010d3efc035d579f81f4c426038c"
-dependencies = [
- "indexmap",
- "itoa",
- "ryu",
- "serde",
- "unsafe-libyaml",
 ]
 
 [[package]]

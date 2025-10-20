@@ -11,16 +11,16 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [dependencies]
-clap = { version = "4.4.*", features = ["derive"] }
-convert_case = "0.6.*"
-handlebars = "6.3.*"
+clap = { version = "4.*", features = ["derive"] }
+convert_case = "0.8.*"
+handlebars = "6.*"
 http = "1.*"
 hyper = { version = "1.*", features = ["full"] }
-indexmap = { version = "2", features = ["serde"] }
-serde = { version = "1.0.*", features = ["derive"] }
-serde_json = "1.0.*"
+indexmap = { version = "2.*", features = ["serde"] }
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
 serde_yaml_ng = "0.10.*"
-reqwest = "^0.12"
+reqwest = "0.12.*"
 
 argentum_rest_infrastructure = { path = "../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_openapi_infrastructure = { path = "../argentum_openapi/infrastructure", version = ">=0.4.0-dev,<0.5.0" }

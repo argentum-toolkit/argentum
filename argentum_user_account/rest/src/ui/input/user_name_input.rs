@@ -20,8 +20,8 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         value, violations, ..
     } = props.clone();
 
-    let mut first_value = use_signal(|| value.first);
     let mut last_value = use_signal(|| value.last);
+    let mut first_value = use_signal(|| value.first);
     let mut additional_value = use_signal(|| value.additional);
 
     let violation_items = match violations {
@@ -32,33 +32,19 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         None => BTreeMap::new(),
     };
 
-    let first_violations = violation_items.get("first").cloned();
     let last_violations = violation_items.get("last").cloned();
+    let first_violations = violation_items.get("first").cloned();
     let additional_violations = violation_items.get("additional").cloned();
 
     let update = move || {
         props.oninput.call(UserName::new(
-            first_value(),
             last_value(),
+            first_value(),
             additional_value(),
         ))
     };
 
     rsx! {
-            LabeledInput {
-        id: "user_first_name",
-        name: "user_first_name",
-        label: "First Name",
-        input_type: "text".to_string(),
-            value: first_value,
-
-        violations: first_violations,
-        oninput: move |event: String| {
-            first_value.set(event);
-            update();
-        },
-    }
-
             LabeledInput {
         id: "user_last_name",
         name: "user_last_name",
@@ -69,6 +55,20 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         violations: last_violations,
         oninput: move |event: String| {
             last_value.set(Some(event));
+            update();
+        },
+    }
+
+            LabeledInput {
+        id: "user_first_name",
+        name: "user_first_name",
+        label: "First Name",
+        input_type: "text".to_string(),
+            value: first_value,
+
+        violations: first_violations,
+        oninput: move |event: String| {
+            first_value.set(event);
             update();
         },
     }
