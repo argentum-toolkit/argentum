@@ -68,7 +68,7 @@ where
 
         match result {
             Ok(session) => {
-                let dto = LoginResult::new(session.token, session.user_id.into());
+                let dto = LoginResult::new(session.user_id.into(), session.token);
 
                 Ok(UserLoginsWithPasswordOperationResponseEnum::Status200(
                     UserLoggedInSuccessfullyResponse::new_application_json(dto),

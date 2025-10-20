@@ -38,15 +38,15 @@ argentum_user_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum
 
 async-trait = "0.1.*"
 chrono = "0.4.*"
-dioxus = { version = "0.6", features = ["fullstack", "router"], optional = true }
-dioxus-logger = { version = "0.6", optional = true }
+dioxus = { version = "0.7.0-rc", features = ["fullstack", "router"], optional = true }
+dioxus-logger = { version = "0.7.0-rc", optional = true }
 erased-serde = "0.4.*"
 http = "1.*"
 hyper = { version = "1.*", features = ["full"], optional = true }
-regex = "1.10.*"
-compiletime-regex = "1.0.*"
+regex = "1.*"
+compiletime-regex = "1.*"
 reqwest = { version = "0.12.*", features = ["json"], optional = true}
-serde = { version = "1.0.*", features = ["derive"] }
-serde_json = "1.0.133"
-serde_valid = "1.*"
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
+serde_valid = "2.*"
 uuid = { version = "1.*", features = ["serde", "v4", "js"] }

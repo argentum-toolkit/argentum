@@ -23,8 +23,8 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
         value, violations, ..
     } = props.clone();
 
-    let mut email_value = use_signal(|| value.email);
     let mut name_value = use_signal(|| value.name);
+    let mut email_value = use_signal(|| value.email);
     let mut password_value = use_signal(|| value.password);
     let mut terms_value = use_signal(|| value.terms);
 
@@ -36,21 +36,30 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
         None => BTreeMap::new(),
     };
 
-    let email_violations = violation_items.get("email").cloned();
     let name_violations = violation_items.get("name").cloned();
+    let email_violations = violation_items.get("email").cloned();
     let password_violations = violation_items.get("password").cloned();
     let terms_violations = violation_items.get("terms").cloned();
 
     let update = move || {
         props.oninput.call(RegistrationWithPasswordSchema::new(
-            email_value(),
             name_value(),
+            email_value(),
             password_value(),
             terms_value(),
         ))
     };
 
     rsx! {
+            UserNameInput {
+        value: name_value(),
+        violations: name_violations,
+        oninput: move |event: UserName| {
+            name_value.set(event);
+            update();
+        }
+    }
+
             LabeledInput {
         id: "email",
         name: "email",
@@ -63,15 +72,6 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             email_value.set(event);
             update();
         },
-    }
-
-            UserNameInput {
-        value: name_value(),
-        violations: name_violations,
-        oninput: move |event: UserName| {
-            name_value.set(event);
-            update();
-        }
     }
 
             LabeledInput {

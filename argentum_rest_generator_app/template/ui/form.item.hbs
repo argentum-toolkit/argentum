@@ -35,7 +35,9 @@ pub fn {{upper_camel operation.operationId}}Form(
             action:"#",
             class:"space-y-6",
             "novalidate": true,
-            onsubmit: move |_| {
+            onsubmit: move |e| {
+                e.prevent_default();
+
                 let processor = processor.clone();
                 {{#if needPathParams}}
                 let path_params = path_params.clone();

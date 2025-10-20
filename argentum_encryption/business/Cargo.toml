@@ -11,4 +11,4 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [dependencies]
-thiserror = "2.0.*"
+thiserror = "2.*"

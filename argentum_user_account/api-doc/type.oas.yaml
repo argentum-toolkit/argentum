@@ -3,7 +3,7 @@ openapi: 3.1.0
 info:
   title: User Account component's types (schemas)
   version: 0.4.0-dev
-paths: { }
+paths: {}
 
 components:
   schemas:
@@ -18,8 +18,10 @@ components:
           x-ag-ui:
             id: email
             name: email
+            weight: 10
+
         name:
-          $ref: '../../argentum_user/api-doc/type.oas.yaml#/components/schemas/UserName'
+          $ref: "../../argentum_user/api-doc/type.oas.yaml#/components/schemas/UserName"
         password:
           type: string
           title: Password
@@ -28,6 +30,7 @@ components:
           x-ag-ui:
             id: password
             name: password
+            weight: 30
         terms:
           type: boolean
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
@@ -35,6 +38,7 @@ components:
           x-ag-ui:
             id: terms
             name: terms
+            weight: 40
       required:
         - email
         - name

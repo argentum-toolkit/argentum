@@ -3,7 +3,7 @@ use compiletime_regex::regex;
 use std::{fmt::Display, sync::LazyLock};
 
 const ERR_LINK_TOO_SHORT: &str = "Link is too short";
-const ERR_WRONG_EMAIL: &str = "Wrong email address";
+const ERR_HTTPS_LINK: &str = "Wrong https link";
 
 pub static LINK_REGEX: LazyLock<regex::Regex> = LazyLock::new(|| {
     regex!(
@@ -23,7 +23,7 @@ impl HttpsLink {
         if LINK_REGEX.is_match(link) {
             Ok(Self(link.into()))
         } else {
-            Err(ERR_WRONG_EMAIL.into())
+            Err(ERR_HTTPS_LINK.into())
         }
     }
 }
@@ -89,6 +89,6 @@ mod tests {
         let invalid_link = "definitely-not-a-link";
         let result = HttpsLink::try_new(invalid_link);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().errors[0].to_string(), ERR_WRONG_EMAIL);
+        assert_eq!(result.unwrap_err().errors[0].to_string(), ERR_HTTPS_LINK);
     }
 }

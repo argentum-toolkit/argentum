@@ -12,6 +12,6 @@ pub struct ExtensionUi {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
 
-    #[serde(default = "Default::default")]
-    pub weight: i16,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weight: Option<i16>,
 }

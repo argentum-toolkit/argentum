@@ -12,8 +12,8 @@ readme = "README.md"
 
 [dependencies]
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
-dioxus = { version = "0.6", features = ["fullstack"]}
-web-sys = { version = "0.3.*", features = [ "Navigator", "Window"] }
+dioxus = { version = "0.7.0-rc", features = ["fullstack"] }
+web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
 
 [features]
 default = []

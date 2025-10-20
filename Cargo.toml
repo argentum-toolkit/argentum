@@ -43,4 +43,3 @@ inherits = "dev"
 
 [profile.release]
 debug = 2
-

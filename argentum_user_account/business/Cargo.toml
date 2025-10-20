@@ -11,11 +11,14 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [features]
-server = ["dep:tokio", "argentum_user_business/server", "argentum_notification_business/server"]
+server = [
+    "dep:tokio",
+    "argentum_user_business/server",
+    "argentum_notification_business/server",
+]
 
 [dependencies]
 async-trait = "0.1.*"
-futures = "0.3.*"
 
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
@@ -24,6 +27,6 @@ argentum_user_business = { path = "../../argentum_user/business", version = ">=0
 argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.4.0-dev,<0.5.0" }
 
 chrono = "0.4.*"
-thiserror = "2.0.*"
+thiserror = "2.*"
 
-tokio = { version = "^1.40", features = ["full"], optional = true }
+tokio = { version = "1.*", features = ["full"], optional = true }
