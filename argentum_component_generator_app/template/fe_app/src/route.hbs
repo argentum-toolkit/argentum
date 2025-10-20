@@ -1,0 +1,15 @@
+use crate::rsx::page::Home;
+use crate::rsx::wrapper::Wrapper;
+use argentum_standard_ui::rsx::page::NotFound;
+use dioxus::prelude::*;
+
+#[derive(Clone, Routable, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[rustfmt::skip]
+pub enum Route {
+    #[layout(Wrapper)]
+        #[route("/")]
+        Home {},
+    #[end_layout]
+    #[route("/:..route")]
+    NotFound { route: Vec<String> },
+}

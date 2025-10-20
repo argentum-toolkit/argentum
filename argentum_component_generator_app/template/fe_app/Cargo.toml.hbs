@@ -1,0 +1,46 @@
+[package]
+name = "{{appName}}"
+version = "0.1.0-dev"
+edition = "2024"
+
+resolver = "2"
+
+[dependencies]
+argentum_rest_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_rest/infrastructure", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_standard_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/business", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_standard_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/infrastructure", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_standard_ui = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/ui", {{/if}}version = ">=0.4.0-dev,<0.5.0", default-features = false }
+
+argentum_user_account_rest = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_user_account/rest", {{/if}}version = ">=0.4.0-dev,<0.5.0", features = [
+    "client",
+    "ui",
+] }
+argentum_user_account_ui = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_user_account/ui", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_user_rest = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_user/rest", {{/if}}version = ">=0.4.0-dev,<0.5.0", features = [
+    "client",
+] }
+argentum_user_ui = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_user/ui", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+async-trait = "0.1.*"
+
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
+
+dioxus = { version = "0.7.0-rc", features = ["fullstack", "router"] }
+dioxus-logger = "0.7.0-rc"
+
+uuid = { version = "1.*", features = ["serde", "v4", "js"] }
+log = "0.4.*"
+
+web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
+
+
+[features]
+default = []
+server = ["dioxus/server"]
+web = [
+    "dioxus/web",
+    "argentum_standard_ui/web",
+    "argentum_user_account_ui/web",
+    "argentum_user_account_rest/web",
+    "argentum_user_account_rest/client",
+]
