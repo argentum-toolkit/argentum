@@ -1,6 +1,6 @@
 services:
   service.user_account.db:
-    image: 'postgres:17.5'
+    image: "postgres:18.0-alpine"
     environment:
       - POSTGRES_DB=${POSTGRES_DB_FOR_ARGENTUM_USER_ACCOUNT}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -8,7 +8,7 @@ services:
       - POSTGRES_LOGGING=verbose
     #    user: $HOST_UID:$HOST_GID
     volumes:
-      - ../../../var/db/user_account/data:/var/lib/postgresql/data
+      - ../../../var/db/user_account:/var/lib/postgresql
     tmpfs:
       - /tmp:exec,size=8G
     ports:

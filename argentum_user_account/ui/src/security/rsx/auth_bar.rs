@@ -1,5 +1,7 @@
 use std::rc::Rc;
 
+use argentum_user_rest::dto::response::Status404Response;
+use dioxus::html::tr;
 use dioxus::prelude::*;
 
 use crate::security::rsx::AuthMenu;
@@ -14,6 +16,7 @@ use argentum_user_rest::dto::params::GetUserParams;
 use argentum_user_rest::dto::path_params::GetUserPathParams;
 use argentum_user_rest::dto::request::GetUserRequest;
 use argentum_user_rest::dto::response::GetUserOkResponse;
+use argentum_user_rest::dto::response::Status401Response;
 
 #[derive(Clone, PartialEq, Props)]
 pub struct AuthBarProps<R>
@@ -28,8 +31,21 @@ where
 #[component]
 pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Element {
     let mut first_name: Signal<Option<String>> = use_signal(|| None);
+    use argentum_standard_ui::service::redirect;
 
+    let logout_redirect = props.logout_redirect.clone();
+    let logout_redirect_spawn = props.logout_redirect.clone();
+
+    let mut user_loaded = false;
+    let mut user_loaded: Signal<bool> = use_signal(|| false);
     spawn(async move {
+        if user_loaded() {
+            //prevent multiple requests
+            return;
+        }
+
+        user_loaded.set(true);
+
         use crate::security::ClientSideAuthenticator;
         use dioxus_logger::tracing::error;
 
@@ -56,6 +72,36 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
                         GetUserOperationResponseEnum::Status200(r) => match r {
                             GetUserOkResponse::ApplicationJson(j) => Some(j.0.name.first.clone()),
                         },
+                        GetUserOperationResponseEnum::Status401(r) => match r {
+                            Status401Response::ApplicationProblemJson(j) => {
+                                error!(
+                                    "UNAUTHORIZED {}: {}",
+                                    j.0.title,
+                                    j.0.detail.unwrap_or_default()
+                                );
+
+                                //todo: show error in pop-up
+                                authenticator().logout();
+                                let _ = redirect(logout_redirect_spawn);
+
+                                None
+                            }
+                        },
+                        GetUserOperationResponseEnum::Status404(r) => match r {
+                            Status404Response::ApplicationProblemJson(j) => {
+                                error!(
+                                    "NOT FOUND {}: {}",
+                                    j.0.title,
+                                    j.0.detail.unwrap_or_default()
+                                );
+
+                                //todo: show error in pop-up
+                                authenticator().logout();
+                                let _ = redirect(logout_redirect_spawn);
+
+                                None
+                            }
+                        },
                         _en => {
                             //TODO: process other statuses
                             error!("Bad data. Error: ?????");
@@ -77,7 +123,7 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
         return rsx! {
             AuthMenu {
                 name: first_name().unwrap_or_else(|| "".to_string()),
-                logout_redirect: props.logout_redirect,
+                logout_redirect,
             }
         };
     }

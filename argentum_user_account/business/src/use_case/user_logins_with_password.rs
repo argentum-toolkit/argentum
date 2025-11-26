@@ -6,7 +6,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
-use argentum_user_business::entity::session::Session;
+use argentum_user_business::entity::session::GuestSession;
 use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use argentum_user_business::repository::session_repository::{
@@ -61,7 +61,7 @@ where
         anonymous: Option<AnonymousUser<I>>,
         email: EmailAddress,
         password: &str,
-    ) -> Result<Session<I>, LoginError> {
+    ) -> Result<GuestSession<I>, LoginError> {
         let result = self.user_repository.find_by_email(&email).await?;
 
         let user = match result {
@@ -73,7 +73,7 @@ where
             return Err(LoginError::WrongEmailOrPassword);
         }
 
-        let session = Session::new(
+        let session = GuestSession::new(
             self.id_factory.create(),
             user.id(),
             &self.token_generator.generate(user.id),
@@ -143,6 +143,7 @@ mod test {
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
+    use argentum_standard_business::mock::data_type::id_factory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::entity::user::{AnonymousUser, AuthenticatedUser};
@@ -157,7 +158,9 @@ mod test {
 
     #[tokio::test]
     async fn test_user_logins_with_password() -> Result<(), Box<dyn Error>> {
-        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let id_factory = Arc::new(IdFactoryMock::new());
+
+        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
         let anonymous_binding_repository = Arc::new(AnonymousBindingRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
@@ -166,7 +169,7 @@ mod test {
             credential_repository.clone(),
             validator.clone(),
         ));
-        let id_factory = Arc::new(IdFactoryMock::new());
+
         let token_generator = Arc::new(TokenGeneratorMock::new());
         let credential_writer = PasswordCredentialWriter::new(credential_repository.clone());
 
@@ -183,24 +186,25 @@ mod test {
             logger.clone(),
         );
 
-        let id_factory = IdFactoryMock::new();
-
-        let user_id = id_factory.create();
+        // let user_id = id_factory.create();
         let name = NameBuilder::new("Dionne")
             .last(Some("Morrison"))
             .try_build()
             .expect("Name should be valid");
         let email = EmailAddress::try_new("test@test-mail.com").expect("Email should be valid");
+
+        let user = user_repository
+            .create(&name, &email)
+            .await
+            .expect("Can't save a user");
+        let user_id = user.id;
+
         let password = "12345";
-        let user = AuthenticatedUser::new(user_id, name, email.clone());
+        // let user: AuthenticatedUser<u64> = AuthenticatedUser::new(user_id, name, email.clone());
         let encryptor = EncryptorMock::new();
         let (hashed_password, salt) = encryptor.encrypt(password)?;
         let cred = PasswordCredential::new(user_id, &hashed_password, &salt);
 
-        user_repository
-            .save(&user)
-            .await
-            .expect("Can't save a user");
         credential_writer.write(&cred).await?;
 
         let anonymous_id = id_factory.create();
@@ -220,8 +224,8 @@ mod test {
 
                 return Ok(());
             }
-            Err(_) => {
-                return Err("User can't login".into());
+            Err(e) => {
+                return Err(format!("User can't login. Error: `{}`", e).into());
             }
         }
     }

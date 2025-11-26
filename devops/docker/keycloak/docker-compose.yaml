@@ -1,0 +1,58 @@
+services:
+  service.keycloak.db:
+    image: "postgres:18.0-alpine"
+    volumes:
+      - ../../../var/db/keycloak:/var/lib/postgresql
+    environment:
+      # TODO: use .env
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: 123456
+    tmpfs:
+      - /tmp:exec,size=8G
+    healthcheck:
+      test: "exit 0"
+    ports:
+      - 54329:5432
+    # networks:
+    #   - keycloak_demo
+
+  service.keycloak:
+    image: quay.io/keycloak/keycloak
+    # command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: service.keycloak.db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_PASSWORD: 123456
+      KC_DB_USERNAME: keycloak
+      KC_DB_SCHEMA: public
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: password
+      KC_EMAIL_HOST: mailhog
+      KC_EMAIL_PORT: 1025
+      KC_EMAIL_FROM: "no-reply@example.com"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: true
+      LOGIN_URL: ${LOGIN_URL}
+
+    command: ["start-dev", "--spi-email-template-provider=freemarker"]
+    volumes:
+      - ../../../argentum_oidc/themes/argentum/assets:/opt/keycloak/themes/argentum
+    ports:
+      - 8099:8080
+    # volumes:
+    #   - ./realms:/opt/keycloak/data/import
+    depends_on:
+      service.keycloak.db:
+        condition: service_healthy
+    # networks:
+    #   - keycloak_demo
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+# networks:
+#   keycloak_demo:
+#     driver: bridge

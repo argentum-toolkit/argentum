@@ -1,3 +1,4 @@
+use crate::rsx::page::oidc::AuthCallback;
 use crate::rsx::page::user_account::{Login, Registration};
 use crate::rsx::page::{Blog, Home};
 use crate::rsx::wrapper::Wrapper;
@@ -16,9 +17,16 @@ pub enum Route {
             #[route("/register")]
             Registration {},
         #[end_nest]
+    
+        #[nest("/oidc")]
+            #[route("/auth/callback?:code&:state")]
+            AuthCallback { code: String, state: Option<String> },
+        #[end_nest]
         #[route("/blog/:id")]
         Blog { id: i32 },
+
     #[end_layout]
+    
     #[route("/:..route")]
     NotFound { route: Vec<String> },
 }

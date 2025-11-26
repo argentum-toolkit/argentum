@@ -40,7 +40,6 @@ where
 
     pub async fn execute(
         &self,
-        id: I,
         name: Name,
         email: EmailAddress,
         password: &str,
@@ -59,16 +58,16 @@ where
         //save user
         let user = {
             //it is `temporary mutability` pattern
-            let user = AuthenticatedUser::new(id, name, email);
-            self.user_repository.save(&user).await?;
-
-            user
+            // let user = AuthenticatedUser::new(id, name, email);
+            self.user_repository.create(&name, &email).await?
         };
 
         //save credentials
-        let (hashed_password, salt) = self.encryptor.encrypt(password)?;
+        // let (hashed_password, salt) = self.encryptor.encrypt(password)?;
 
-        let cred = PasswordCredential::new(id, &hashed_password, &salt);
+        // let cred = PasswordCredential::new(user.id, &hashed_password, &salt);
+
+        let cred = PasswordCredential::new(user.id, password, "empty");
         self.credential_writer.write(&cred).await?;
 
         Ok(user)
@@ -125,18 +124,19 @@ mod test {
 
     #[tokio::test]
     async fn test_user_registers_with_password() -> Result<(), &'static str> {
+        let id_factory = Arc::new(IdFactoryMock::new());
         let credential_repository = PasswordCredentialRepositoryMock::new();
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let encryptor = EncryptorMock::new();
-        let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
+        let authenticated_user_repository =
+            AuthenticatedUserRepositoryMock::new(id_factory.clone());
         let uc = UserRegistersWithPasswordUc::new(
             Arc::new(authenticated_user_repository),
             Arc::new(credential_writer),
             Arc::new(encryptor),
         );
-        let id_factory = IdFactoryMock::new();
 
-        let id = id_factory.create();
+        // let id = id_factory.create();
         let name = NameBuilder::new("John")
             .last(Some("Cooper"))
             .try_build()
@@ -144,11 +144,11 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com").expect("Email should be valid");
         let password = "123";
         let terms = true;
-        let result = uc.execute(id.clone(), name, email, password, terms).await;
+        let result = uc.execute(name, email, password, terms).await;
 
         match result {
             Ok(u) => {
-                assert_eq!(u.id, id);
+                // assert_eq!(u.id, id);
 
                 return Ok(());
             }
@@ -160,18 +160,19 @@ mod test {
 
     #[tokio::test]
     async fn test_user_registers_without_accepting_of_terms() -> Result<(), &'static str> {
+        let id_factory = Arc::new(IdFactoryMock::new());
         let credential_repository = PasswordCredentialRepositoryMock::new();
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let encryptor = EncryptorMock::new();
-        let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
+        let authenticated_user_repository =
+            AuthenticatedUserRepositoryMock::new(id_factory.clone());
         let uc = UserRegistersWithPasswordUc::new(
             Arc::new(authenticated_user_repository),
             Arc::new(credential_writer),
             Arc::new(encryptor),
         );
-        let id_factory = IdFactoryMock::new();
 
-        let id = id_factory.create();
+        // let id = id_factory.create();
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
@@ -179,11 +180,11 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = false;
-        let result = uc.execute(id.clone(), name, email, password, terms).await;
+        let result = uc.execute(name, email, password, terms).await;
 
         match result {
             Ok(u) => {
-                assert_eq!(u.id.to_string(), id.clone().to_string());
+                // assert_eq!(u.id.to_string(), id.clone().to_string());
 
                 Err("Should return an error")
             }
@@ -207,9 +208,9 @@ mod test {
             Arc::new(encryptor),
         );
 
-        let id_factory = IdFactoryMock::new();
+        // let id_factory = IdFactoryMock::new();
 
-        let id = id_factory.create();
+        // let id = id_factory.create();
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
@@ -217,11 +218,11 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123".into();
         let terms = true;
-        let result = uc.execute(id.clone(), name, email, password, terms).await;
+        let result = uc.execute(name, email, password, terms).await;
 
         match result {
             Ok(u) => {
-                assert_eq!(u.id.to_string(), id.clone().to_string());
+                // assert_eq!(u.id.to_string(), id.clone().to_string());
 
                 Err("Should return an error")
             }

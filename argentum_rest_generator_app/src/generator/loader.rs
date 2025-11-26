@@ -25,7 +25,7 @@ where
             .map_err(|_| format!("Should have been able to read the file {file_path}"))?;
 
         let spec: SpecificationRoot = serde_yaml_ng::from_reader(f)
-            .map_err(|_| format!("Could not read values from '{file_path}'."))?;
+            .map_err(|e| format!("Could not read values from '{file_path}'. Error: {e}"))?;
 
         Ok(spec)
     }

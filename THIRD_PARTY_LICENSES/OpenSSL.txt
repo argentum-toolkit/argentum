@@ -1,0 +1,19 @@
+OpenSSL License and SSLeay License
+
+This product includes software developed by the OpenSSL Project for use
+in the OpenSSL Toolkit (https://www.openssl.org/).
+
+OpenSSL License:
+
+/* ====================================================================
+* Copyright (c) 1998-2019 The OpenSSL Project. All rights reserved. *
+* (Full OpenSSL License text goes here.)
+* ====================================================================
+*/
+
+SSLeay License:
+
+/* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+*
+* (Full SSLeay License text goes here.)
+*/

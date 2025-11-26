@@ -1,0 +1,39 @@
+openapi: 3.1.0
+
+info:
+  title: Argentum OIDC. Keycloak customization API
+  version: 0.4.0-dev
+paths: {}
+
+components:
+  schemas:
+    ExchangeCodeSchema:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Authorization code from Keycloak redirect
+          example: "abc123def456"
+        state:
+          type: string
+          description: CSRF state nonce (optional, for security)
+          example: "uuid-1234-5678"
+
+    ExchangeCodeResult:
+      type: object
+      required:
+        - accessToken
+        - userId
+
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token for API calls
+          example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+        userId:
+          type: string
+          format: uuid
+          description: User ID (sub claim from JWT)
+          example: "12345678-1234-1234-1234-123456789abc"

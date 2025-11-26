@@ -128,7 +128,7 @@ mod tests {
     async fn anonymous_with_token_changes_password() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
-        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
         let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
             Arc::new(TokenGeneratorMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
@@ -147,16 +147,13 @@ mod tests {
             logger.clone(),
         );
 
-        let user_id = id_factory.create();
         let user_name = NameBuilder::new("Dionne".into())
             .last(Some("Morrison".into()))
             .try_build()
             .expect("Name should be valid");
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
-
-        user_repository.save(&user).await?;
+        let user = user_repository.create(&user_name, &email).await?;
 
         let token = token_generator.generate(user.id);
         let token_id = id_factory.create();
@@ -171,7 +168,7 @@ mod tests {
             return Err("Password is not changed".into());
         }
 
-        if let Ok(None) = credential_repository.find_by_user_id(user_id).await {
+        if let Ok(None) = credential_repository.find_by_user_id(user.id).await {
             return Err("Can't find new password".into());
         }
 
@@ -182,7 +179,7 @@ mod tests {
     async fn anonymous_with_expired_token_changes_password() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
-        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
         let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
             Arc::new(TokenGeneratorMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
@@ -210,9 +207,9 @@ mod tests {
 
         let email = EmailAddress::try_new("test@mail.com").expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
+        let user = AuthenticatedUser::new(user_id, user_name.clone(), email.clone());
 
-        user_repository.save(&user).await?;
+        user_repository.create(&user_name, &email).await?;
 
         let token = token_generator.generate(user.id);
         let token_id = id_factory.create();

@@ -3,7 +3,7 @@ use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_business::entity::session::Session;
+use argentum_user_business::entity::session::GuestSession;
 use argentum_user_business::repository::session_repository::{
     SessionRepositoryError, SessionRepositoryTrait,
 };
@@ -40,17 +40,20 @@ where
     async fn find_by_token(
         &self,
         token: &str,
-    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError> {
-        let sql = format!("SELECT id, user_id, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1");
+    ) -> Result<Option<GuestSession<Self::Id>>, SessionRepositoryError> {
+        let sql = format!(
+            "SELECT id, user_id, created_at, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1"
+        );
         let query = sqlx::query_as(&sql).bind(token);
 
         let result: Result<Option<SessionDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
 
         match result {
-            Ok(Some(dto)) => Ok(Some(Session::<Self::Id> {
+            Ok(Some(dto)) => Ok(Some(GuestSession::<Self::Id> {
                 id: dto.id.into(),
                 user_id: dto.user_id.into(),
+                created_at: dto.created_at,
                 token: dto.token,
             })),
 
@@ -59,14 +62,17 @@ where
         }
     }
 
-    async fn save(&self, session: &Session<Self::Id>) -> Result<(), SessionRepositoryError> {
+    async fn save(&self, session: &GuestSession<Self::Id>) -> Result<(), SessionRepositoryError> {
         let session_id: Uuid = session.id.into();
         let user_id: Uuid = session.user_id.into();
 
-        let sql = format!("INSERT INTO {TABLE_NAME} (id, user_id, token) VALUES ($1, $2, $3)");
+        let sql = format!(
+            "INSERT INTO {TABLE_NAME} (id, user_id, created_at, token) VALUES ($1, $2, $3, $4)"
+        );
         let query = sqlx::query(&sql)
             .bind(session_id)
             .bind(user_id)
+            .bind(session.created_at)
             .bind(session.token.clone());
 
         let result = self.adapter.exec(query).await;

@@ -15,11 +15,13 @@ use crate::dto::schema::RegistrationWithPasswordResult as RegistrationWithPasswo
 use crate::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
 use crate::dto::operation_response_enum::AnonymousRequestsRestoreTokenOperationResponseEnum;
 use crate::dto::operation_response_enum::AnonymousWithTokenChangesPasswordOperationResponseEnum;
+use crate::dto::operation_response_enum::MemberVerifiesEmailOperationResponseEnum;
 use crate::dto::operation_response_enum::UserLoginsWithPasswordOperationResponseEnum;
 use crate::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
 use crate::dto::request::AnonymousRegistersRequest;
 use crate::dto::request::AnonymousRequestsRestoreTokenRequest;
 use crate::dto::request::AnonymousWithTokenChangesPasswordRequest;
+use crate::dto::request::MemberVerifiesEmailRequest;
 use crate::dto::request::UserLoginsWithPasswordRequest;
 use crate::dto::request::UserRegistersWithPasswordRequest;
 use reqwest::StatusCode;
@@ -244,6 +246,61 @@ impl Client {
                             Status401Response::new_application_problem_json(data),
                         ),
                     ),
+                    Err(e) => Err(e.to_string()),
+                },
+
+                _ => Err("Wrong status code".to_string()),
+            },
+            Err(e) => Err(e.to_string()),
+        }
+    }
+
+    pub async fn member_verifies_email(
+        &self,
+        req: MemberVerifiesEmailRequest,
+    ) -> Result<MemberVerifiesEmailOperationResponseEnum, String> {
+        //TODO: use better type instead of Err(String)
+
+        let url_tpl = "/user/email-verification".to_string();
+
+        let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
+
+        let body = serde_json::to_vec_pretty(&req.body)
+            .map_err(|e| format!("Can't parse request body. Error: {e}"))?;
+        //TODO: params: header, query
+
+        let client = reqwest::Client::new();
+        //TODO: transform MemberVerifiesEmailRequest into reqwest object
+        let res = client
+            .post(url)
+            .header("Accept", "application/json")
+            //TODO: add support of another authorization schemas
+            .header(
+                "authorization",
+                format!("Bearer {}", req.params.headers.authorization),
+            )
+            .body(body)
+            .send()
+            .await;
+
+        match res {
+            Ok(response) => match response.status() {
+                StatusCode::OK => match response.json::<EmptyResponseSchema>().await {
+                    Ok(data) => Ok(MemberVerifiesEmailOperationResponseEnum::Status200(
+                        EmptyOkResponse::new_application_json(data),
+                    )),
+                    Err(e) => Err(e.to_string()),
+                },
+                StatusCode::BAD_REQUEST => match response.json::<ProblemDetailSchema>().await {
+                    Ok(data) => Ok(MemberVerifiesEmailOperationResponseEnum::Status400(
+                        Status400Response::new_application_problem_json(data),
+                    )),
+                    Err(e) => Err(e.to_string()),
+                },
+                StatusCode::UNAUTHORIZED => match response.json::<ProblemDetailSchema>().await {
+                    Ok(data) => Ok(MemberVerifiesEmailOperationResponseEnum::Status401(
+                        Status401Response::new_application_problem_json(data),
+                    )),
                     Err(e) => Err(e.to_string()),
                 },
 

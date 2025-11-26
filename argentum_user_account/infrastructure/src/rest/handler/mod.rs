@@ -9,3 +9,6 @@ pub use anonymous_requests_restore_token::AnonymousRequestsRestoreTokenHandler;
 pub use anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordHandler;
 pub use user_logins_with_password::UserLoginsWithPasswordHandler;
 pub use user_registers_with_password::UserRegistersWithPasswordHandler;
+
+mod member_verifies_email;
+pub use member_verifies_email::MemberVerifiesEmailHandler;

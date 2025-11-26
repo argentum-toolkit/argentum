@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::entity::session::Session;
+use crate::entity::session::GuestSession;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use argentum_standard_business::data_type::id::UIntId;
 use argentum_standard_business::error::PoisonedLockError;
@@ -10,7 +10,7 @@ use std::sync::RwLock;
 use async_trait::async_trait;
 
 pub struct SessionRepositoryMockWithBrokenSave {
-    sessions: RwLock<HashMap<UIntId, Session<UIntId>>>,
+    sessions: RwLock<HashMap<UIntId, GuestSession<UIntId>>>,
 }
 
 impl SessionRepositoryMockWithBrokenSave {
@@ -34,7 +34,7 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
     async fn find_by_token(
         &self,
         token: &str,
-    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError> {
+    ) -> Result<Option<GuestSession<Self::Id>>, SessionRepositoryError> {
         let guard = self
             .sessions
             .read()
@@ -42,14 +42,16 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
 
         for (_, s) in guard.iter() {
             if s.token == token {
-                return Ok(Some(Session::<Self::Id>::new(s.id, s.user_id, &s.token)));
+                return Ok(Some(GuestSession::<Self::Id>::new(
+                    s.id, s.user_id, &s.token,
+                )));
             }
         }
 
         Ok(None)
     }
 
-    async fn save(&self, _session: &Session<Self::Id>) -> Result<(), SessionRepositoryError> {
+    async fn save(&self, _session: &GuestSession<Self::Id>) -> Result<(), SessionRepositoryError> {
         Err(SessionRepositoryError::Save(None))
     }
 

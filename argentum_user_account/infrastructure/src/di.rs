@@ -1,9 +1,8 @@
-use crate::db::repository::PasswordCredentialRepository;
 use crate::db::repository::RestorePasswordTokenRepository;
 use crate::rest::handler::{
     AnonymousRegistersHandler, AnonymousRequestsRestoreTokenHandler,
-    AnonymousWithTokenChangesPasswordHandler, UserLoginsWithPasswordHandler,
-    UserRegistersWithPasswordHandler,
+    AnonymousWithTokenChangesPasswordHandler, MemberVerifiesEmailHandler,
+    UserLoginsWithPasswordHandler, UserRegistersWithPasswordHandler,
 };
 use crate::rest::transformer::{
     DtoToAnonymousRequestsRestoreTokenParams, DtoToAnonymousWithTokenChangesPasswordParams,
@@ -17,9 +16,10 @@ use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::di::UserAccountBusinessDiCBuilder;
+use argentum_user_account_business::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
 use argentum_user_account_rest::server::handler::{
-    AnonymousRegistersTrait, AnonymousWithTokenChangesPasswordTrait, UserLoginsWithPasswordTrait,
-    UserRegistersWithPasswordTrait,
+    AnonymousRegistersTrait, AnonymousWithTokenChangesPasswordTrait, MemberVerifiesEmailTrait,
+    UserLoginsWithPasswordTrait, UserRegistersWithPasswordTrait,
 };
 use argentum_user_infrastructure::di::UserInfrastructureDiC;
 
@@ -39,6 +39,7 @@ where
         Arc<dyn AnonymousWithTokenChangesPasswordTrait<Id = I>>,
     pub user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait<Id = I>>,
     pub user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait<Id = I>>,
+    pub member_verifies_email_handler: Arc<dyn MemberVerifiesEmailTrait<Id = I>>,
 }
 
 pub struct UserAccountInfrastructureDiCBuilder<L>
@@ -98,6 +99,7 @@ where
         &mut self,
         connection_url: &str,
         max_db_connections: u32,
+        password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = UniqueId>>,
         logger: Arc<L>,
     ) -> Result<&mut Self, String> {
         let pool = PgPoolOptions::new()
@@ -108,9 +110,6 @@ where
             .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?;
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
-
-        let password_credential_repository =
-            Arc::new(PasswordCredentialRepository::new(pg_adapter.clone()));
 
         let restore_password_token_repository =
             Arc::new(RestorePasswordTokenRepository::new(pg_adapter));
@@ -127,16 +126,18 @@ where
             password_credential_repository,
             restore_password_token_repository,
             token_generator,
+            u_bdi.token_router.clone(),
+            u_bdi.member_authenticator.clone(),
         );
 
         Ok(self)
     }
 
-    pub fn mock(&mut self) -> &mut Self {
-        self.business_builder.mock();
+    // pub fn mock(&mut self) -> &mut Self {
+    //     self.business_builder.mock();
 
-        self
-    }
+    //     self
+    // }
 
     pub fn build(&self) -> Result<UserAccountInfrastructureDiC<UniqueId, L>, String> {
         let bdi = self.business_builder.build()?;
@@ -178,12 +179,15 @@ where
             dto_to_anonymous_requests_restore_token_params,
         ));
 
+        let member_verifies_email_handler = Arc::new(MemberVerifiesEmailHandler::new());
+
         Ok(UserAccountInfrastructureDiC {
             anonymous_registers_handler,
             user_registers_with_password_handler,
             user_logins_with_password_handler,
             anonymous_with_token_changes_password_handler: anonymous_with_token_changes_password,
             anonymous_requests_restore_token_handler: anonymous_requests_restore_token,
+            member_verifies_email_handler,
         })
     }
 }

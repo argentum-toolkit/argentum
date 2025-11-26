@@ -1,3 +1,4 @@
+use crate::data_type::Name;
 use crate::entity::user::{AuthenticatedUser, UserTrait};
 use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::EmailAddress;
@@ -64,7 +65,11 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrok
         Ok(None)
     }
 
-    async fn save(&self, _user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
+    async fn create(
+        &self,
+        _name: &Name,
+        _email: &EmailAddress,
+    ) -> Result<AuthenticatedUser<Self::Id>, ExternalUserError> {
         Err(ExternalUserError::Authenticated(None))
     }
 }

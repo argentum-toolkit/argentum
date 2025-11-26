@@ -1,6 +1,6 @@
 [package]
 name = "argentum_user_account_infrastructure"
-description = "Business layer of user account component"
+description = "Infrastructure layer of user account component"
 version = "0.4.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
@@ -46,4 +46,9 @@ sqlx = { version = "0.8.*", features = [
     "chrono",
 ] }
 tokio = { version = "1.*", features = ["full"], optional = true }
+# openidconnect = { version = "4.*", features = ["reqwest"] }
+reqwest = { version = "0.12.*", features = ["json"] }
+base64 = "0.22.*"
+jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
+
 uuid = { version = "1.*", features = ["serde", "v4"] }

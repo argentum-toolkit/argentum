@@ -21,6 +21,7 @@ where
     regex_user_account_password_login: Regex,
     regex_user_account_register: Regex,
     regex_user_account_restore_password_token_request: Regex,
+    regex_user_email_verification: Regex,
     regex_user_restore_password_change_password: Regex,
 }
 
@@ -38,6 +39,7 @@ where
         let regex_user_account_register = regex!(r"\/user-account\/register$");
         let regex_user_account_restore_password_token_request =
             regex!(r"\/user-account\/restore-password\/token-request$");
+        let regex_user_email_verification = regex!(r"\/user\/email-verification$");
         let regex_user_restore_password_change_password =
             regex!(r"\/user\/restore-password\/change-password$");
 
@@ -49,6 +51,7 @@ where
             regex_user_account_password_login,
             regex_user_account_register,
             regex_user_account_restore_password_token_request,
+            regex_user_email_verification,
             regex_user_restore_password_change_password,
         }
     }
@@ -100,6 +103,13 @@ where
             .captures(path)
             .is_some()
         {
+            return match *method {
+                Method::POST => true,
+                _ => false,
+            };
+        }
+
+        if self.regex_user_email_verification.captures(path).is_some() {
             return match *method {
                 Method::POST => true,
                 _ => false,
@@ -185,6 +195,19 @@ where
                 Method::POST => {
                     self.pre_handler
                         .anonymous_requests_restore_token(req, raw_path_params)
+                        .await
+                }
+                _ => self.error_pre_handler.method_not_allowed(req).await,
+            };
+        }
+
+        if self.regex_user_email_verification.captures(path).is_some() {
+            let raw_path_params = HashMap::new();
+
+            return match *req.method() {
+                Method::POST => {
+                    self.pre_handler
+                        .member_verifies_email(req, raw_path_params)
                         .await
                 }
                 _ => self.error_pre_handler.method_not_allowed(req).await,

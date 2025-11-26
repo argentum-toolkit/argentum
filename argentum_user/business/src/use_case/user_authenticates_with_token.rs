@@ -3,18 +3,18 @@ use argentum_standard_business::data_type::id::Id;
 use crate::entity::user::User;
 use crate::entity::user::User::{Anonymous, Authenticated};
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
-use crate::repository::user_repository::{
-    AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait, ExternalUserError,
-};
+use crate::repository::user_repository::{AnonymousUserRepositoryTrait, ExternalUserError};
+use crate::service::{MemberAuthenticatorError, MemberAuthenticatorTrait, TokenRouterTrait};
 use std::sync::Arc;
 
 pub struct UserAuthenticatesWithTokenUc<I>
 where
     I: Id,
 {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
     anon_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
+    member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
+    token_router: Arc<dyn TokenRouterTrait>,
 }
 
 impl<I> UserAuthenticatesWithTokenUc<I>
@@ -22,29 +22,35 @@ where
     I: Id,
 {
     pub fn new(
-        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
         anon_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
+        token_router: Arc<dyn TokenRouterTrait>,
     ) -> Self {
         Self {
-            user_repository,
             anon_repository,
             session_repository,
+            member_authenticator,
+            token_router,
         }
     }
 
     pub async fn execute(&self, token: &str) -> Result<User<I>, AuthenticationError> {
-        let session = match self.session_repository.find_by_token(token).await? {
-            Some(s) => s,
-            None => return Err(AuthenticationError::WrongToken),
-        };
+        if self.token_router.is_guest(token) {
+            let session = match self.session_repository.find_by_token(token).await? {
+                Some(s) => s,
+                None => return Err(AuthenticationError::WrongToken),
+            };
 
-        match self.user_repository.find(session.user_id).await? {
-            Some(u) => Ok(Authenticated(u)),
-            None => match self.anon_repository.find(session.user_id).await? {
+            match self.anon_repository.find(session.user_id).await? {
                 Some(a) => Ok(Anonymous(a)),
                 None => Err(AuthenticationError::UserNotFound),
-            },
+            }
+        } else {
+            match self.member_authenticator.authenticate(token).await? {
+                Some(user) => Ok(Authenticated(user)),
+                None => Err(AuthenticationError::WrongToken),
+            }
         }
     }
 }
@@ -64,6 +70,13 @@ pub enum AuthenticationError {
         ExternalUserError,
     ),
 
+    #[error("Member authenticator error")]
+    MemberAuthenticator(
+        #[source]
+        #[from]
+        MemberAuthenticatorError,
+    ),
+
     #[error("Session repository error")]
     SessionRepositoryError(
         #[source]
@@ -78,12 +91,13 @@ mod tests {
     use argentum_standard_business::data_type::id::IdFactory;
 
     use crate::data_type::builder::NameBuilder;
-    use crate::entity::session::Session;
+    use crate::entity::session::GuestSession;
     use crate::entity::user::AuthenticatedUser;
     use crate::entity::user::User::{Anonymous, Authenticated};
     use crate::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
     use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::mock::repository::session_repository_mock::SessionRepositoryMock;
+    use crate::mock::service::{MemberAuthenticatorMock, TokenRouterMock};
     use crate::repository::session_repository::SessionRepositoryTrait;
     use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use crate::use_case::user_authenticates_with_token::AuthenticationError;
@@ -92,9 +106,8 @@ mod tests {
     use std::sync::Arc;
 
     #[tokio::test]
-    async fn test_authenticates_with_token() -> Result<(), &'static str> {
+    async fn test_authenticates_with_token() -> Result<(), String> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
-        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
         let id_factory = IdFactoryMock::new();
 
@@ -110,23 +123,26 @@ mod tests {
                 .expect("Name should be valid"),
             EmailAddress::try_new("aa@a.com").expect("Email should be valid"),
         );
-        let session = Session::new(session_id, user_id, token);
 
-        //Prefilling
-        authenticated_user_repository
-            .save(&authenticated_user)
-            .await
-            .expect("Can't save a user");
+        let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
+        let _ = member_authenticator.add(token, &authenticated_user);
+
+        let session = GuestSession::new(session_id, user_id, token);
+
         session_repository
             .save(&session)
             .await
             .expect("Can't save a session");
 
+        let token_router = Arc::new(TokenRouterMock::new());
+
         //Test
         let uc = UserAuthenticatesWithTokenUc::new(
-            authenticated_user_repository,
+            member_authenticator,
+            // authenticated_user_repository,
             anonymous_user_repository,
             session_repository,
+            token_router,
         );
 
         let result = uc.execute(token).await;
@@ -139,11 +155,11 @@ mod tests {
                     return Ok(());
                 }
                 Anonymous(_) => {
-                    return Err("Return's anonymous user, not authenticated");
+                    return Err("Return's anonymous user, not authenticated".into());
                 }
             },
-            Err(_) => {
-                return Err("User is not authenticated");
+            Err(e) => {
+                return Err(format!("User is not authenticated: Error: {}", e));
             }
         }
     }
@@ -151,10 +167,13 @@ mod tests {
     #[tokio::test]
     async fn test_authenticates_with_token_should_returns_error_if_token_invalid()
     -> Result<(), &'static str> {
+        let id_factory = Arc::new(IdFactoryMock::new());
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
-        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let authenticated_user_repository =
+            Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
         let session_repository = Arc::new(SessionRepositoryMock::new());
-        let id_factory = IdFactoryMock::new();
+
+        let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
 
         //Data
         let user_id = id_factory.create();
@@ -168,11 +187,11 @@ mod tests {
                 .expect("Name should be valid"),
             EmailAddress::try_new("aa@a.com").expect("Email should be valid"),
         );
-        let session = Session::new(session_id, user_id, token);
+        let session = GuestSession::new(session_id, user_id, token);
 
         //Prefilling
         authenticated_user_repository
-            .save(&authenticated_user)
+            .create(&authenticated_user.name, &authenticated_user.email)
             .await
             .expect("Can't save a user");
         session_repository
@@ -181,10 +200,15 @@ mod tests {
             .expect("Can't save a session");
 
         //Test
+        let token_router = Arc::new(TokenRouterMock::new());
+
+        //Test
         let uc = UserAuthenticatesWithTokenUc::new(
-            authenticated_user_repository,
+            member_authenticator,
+            // authenticated_user_repository,
             anonymous_user_repository,
             session_repository,
+            token_router,
         );
 
         let result = uc.execute("wrong-test-token").await;
@@ -204,17 +228,19 @@ mod tests {
 
     #[tokio::test]
     async fn test_authenticates_with_token_should_returns_error_if_user_doesnt_exist()
-    -> Result<(), &'static str> {
+    -> Result<(), String> {
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
-        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
         let id_factory = IdFactoryMock::new();
+
+        let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
 
         //Data
         let user_id = id_factory.create();
         let session_id = id_factory.create();
-        let token = "test-token";
-        let session = Session::new(session_id, user_id, token);
+        let token = "guest";
+        let session = GuestSession::new(session_id, user_id, token);
+        let token_router = Arc::new(TokenRouterMock::new());
 
         //Prefilling
         session_repository
@@ -224,21 +250,23 @@ mod tests {
 
         //Test
         let uc = UserAuthenticatesWithTokenUc::new(
-            authenticated_user_repository,
+            member_authenticator,
+            // authenticated_user_repository,
             anonymous_user_repository,
             session_repository,
+            token_router,
         );
 
         let result = uc.execute(token).await;
 
         match result {
             Ok(_) => {
-                return Err("Shpould return error, not an user");
+                return Err("Should return error, not an user".into());
             }
             Err(e) => match e {
                 AuthenticationError::UserNotFound => return Ok(()),
                 _ => {
-                    return Err("Invalid response status");
+                    return Err(format!("Invalid response status. Error: {}", e));
                 }
             },
         }

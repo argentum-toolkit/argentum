@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use sqlx::FromRow;
 use uuid::Uuid;
 
@@ -5,5 +6,6 @@ use uuid::Uuid;
 pub(crate) struct SessionDto {
     pub id: Uuid,
     pub user_id: Uuid,
+    pub created_at: DateTime<Utc>,
     pub token: String,
 }

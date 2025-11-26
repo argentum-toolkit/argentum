@@ -24,6 +24,7 @@ use argentum_user_business::repository::session_repository::SessionRepositoryTra
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
+use argentum_user_business::service::{MemberAuthenticatorTrait, TokenRouterTrait};
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
@@ -59,6 +60,8 @@ where
     password_credential_repository: Option<Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>>,
     restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
     token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
+    token_router: Option<Arc<dyn TokenRouterTrait>>,
+    member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
 
     restore_password_token_ttl: u32,
     product_name: String,
@@ -91,6 +94,8 @@ where
             password_credential_repository: None,
             restore_password_token_repository: None,
             token_generator: None,
+            token_router: None,
+            member_authenticator: None,
             restore_password_token_ttl: 1,
             product_name: "".into(),
             restore_password_front_url: "".into(),
@@ -100,7 +105,9 @@ where
     pub fn mock(&mut self) -> &mut Self {
         self.anonymous_binding_repository = Some(Arc::new(AnonymousBindingRepositoryMock::new()));
         self.anonymous_user_repository = Some(Arc::new(AnonymousUserRepositoryMock::new()));
-        self.authenticated_user_repository = Some(Arc::new(AuthenticatedUserRepositoryMock::new()));
+        self.authenticated_user_repository = Some(Arc::new(AuthenticatedUserRepositoryMock::new(
+            self.id_factory.clone(),
+        )));
         self.session_repository = Some(Arc::new(SessionRepositoryMock::new()));
 
         self.password_credential_repository =
@@ -129,6 +136,15 @@ where
         self
     }
 
+    pub fn with_authenticated_user_repository(
+        &mut self,
+        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    ) -> &mut Self {
+        self.authenticated_user_repository = Some(authenticated_user_repository);
+
+        self
+    }
+
     pub fn services(
         &mut self,
         anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
@@ -138,6 +154,8 @@ where
         password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        token_router: Arc<dyn TokenRouterTrait>,
+        member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
     ) -> &mut Self {
         self.anonymous_binding_repository = Some(anonymous_binding_repository);
         self.anonymous_user_repository = Some(anonymous_user_repository);
@@ -146,6 +164,8 @@ where
         self.password_credential_repository = Some(password_credential_repository);
         self.restore_password_token_repository = Some(restore_password_token_repository);
         self.token_generator = Some(token_generator);
+        self.token_router = Some(token_router);
+        self.member_authenticator = Some(member_authenticator);
 
         self
     }
@@ -186,6 +206,16 @@ where
             .clone()
             .ok_or("restore_password_token_repository is not initialized")?;
 
+        let token_router = self
+            .token_router
+            .clone()
+            .ok_or("token_router not initialized")?;
+
+        let member_authenticator = self
+            .member_authenticator
+            .clone()
+            .ok_or("member_authenticator not initialized")?;
+
         let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
             self.id_factory.clone(),
             anonymous_user_repository.clone(),
@@ -219,9 +249,10 @@ where
         ));
 
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
-            authenticated_user_repository.clone(),
+            member_authenticator,
             anonymous_user_repository,
             session_repository,
+            token_router,
         ));
 
         let anonymous_with_token_changes_password_uc =

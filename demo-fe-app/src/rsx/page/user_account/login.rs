@@ -52,6 +52,31 @@ pub fn Login() -> Element {
 
     let processor = UserLoginsWithPasswordFormProcessor::new(callbacks);
 
+    let keycloak_url = "http://localhost:8099";
+    let realm = "argentum-realm-dev";
+    let client_id = "argentum-fe-client-dev";
+    let redirect_uri = "http://localhost:8080/oidc/auth/callback";
+
+    let github_login_url = move || {
+        format!(
+            "{}/realms/{}/protocol/openid-connect/auth?client_id={}&redirect_uri={}&response_type=code&scope=openid profile email&kc_idp_hint=github",
+            keycloak_url,
+            realm,
+            client_id,
+            urlencoding::encode(redirect_uri)
+        )
+    };
+
+    use dioxus::prelude::*;
+    use web_sys::window;
+
+    let on_github_click = move |_| {
+        if let Some(win) = window() {
+            let location = win.location();
+            let _ = location.set_href(&github_login_url());
+        }
+    };
+
     rsx! {
         section {
             div { class: "container",
@@ -69,6 +94,15 @@ pub fn Login() -> Element {
                     div { class: "text-center text-sm mt-2",
                         "Don't you have an account?"
                         Link { class: "text-primary hover:underline pl-2", to: Route::Registration {}, "Sign Up" }
+                    }
+
+                    div {
+                        div { "Or login with GitHub" }
+                        button {
+                        onclick: on_github_click,
+                        class: "btn btn-github btn-primary",
+                        "Login with GitHub"
+                    }
                     }
                 }
             }

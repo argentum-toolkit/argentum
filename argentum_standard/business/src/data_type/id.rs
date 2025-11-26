@@ -2,7 +2,7 @@ use std::{fmt::Display, hash::Hash};
 
 pub trait Id: Eq + PartialEq + Clone + Copy + Display + Hash + Send + Sync {}
 
-impl<T> Id for T where T: Eq + PartialEq + Clone + Copy + Display + Hash + Send + Sync {}
+// impl<T> Id for T where T: Eq + PartialEq + Clone + Copy + Display + Hash + Send + Sync {}
 
 pub trait IdFactory: Send + Sync {
     type Id: Id;
@@ -11,3 +11,5 @@ pub trait IdFactory: Send + Sync {
 }
 
 pub type UIntId = u64;
+
+impl Id for UIntId {}

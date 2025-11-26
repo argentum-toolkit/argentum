@@ -4,7 +4,7 @@ info:
   title: User Account component's request bodies
   version: 0.4.0-dev
 
-paths: { }
+paths: {}
 
 components:
   requestBodies:
@@ -39,4 +39,3 @@ components:
         "application/json":
           schema:
             $ref: "type.oas.yaml#/components/schemas/ChangePasswordSchema"
-

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_business::data_type::id::{Id, IdFactory};
 use uuid::Uuid;
 
 /// UniqueId is Uuid binding for Id trait
@@ -12,9 +12,16 @@ impl UniqueId {
     pub fn new() -> Self {
         UniqueId(Uuid::new_v4())
     }
+
+    pub fn as_id<I>(self) -> I
+    where
+        I: From<UniqueId>,
+    {
+        I::from(self)
+    }
 }
 
-// impl Id for UniqueId { }
+impl Id for UniqueId {}
 
 impl Display for UniqueId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

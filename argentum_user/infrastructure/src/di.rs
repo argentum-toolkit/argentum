@@ -1,6 +1,5 @@
 use crate::db::repository::AnonymousBindingRepository;
 use crate::db::repository::AnonymousUserRepository;
-use crate::db::repository::AuthenticatedUserRepository;
 use crate::db::repository::SessionRepository;
 use crate::rest::handler::GetUserHandler;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
@@ -9,6 +8,9 @@ use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::di::{UserBusinessDiC, UserBusinessDiCBuilder};
+use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+use argentum_user_business::service::MemberAuthenticatorTrait;
+use argentum_user_business::service::TokenRouterTrait;
 use argentum_user_rest::server::handler::GetUserTrait;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
@@ -39,6 +41,10 @@ impl UserInfrastructureDiCBuilder {
         connection_url: &str,
         max_db_connections: u32,
         logger: Arc<L>,
+        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
+        // client: Arc<reqwest::Client>,
+        member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = UniqueId>>,
+        token_router: Arc<dyn TokenRouterTrait>,
     ) -> Result<&mut Self, String>
     where
         L: LoggerTrait + 'static,
@@ -55,20 +61,12 @@ impl UserInfrastructureDiCBuilder {
         self.business_builder
             .anonymous_binding_repository(Arc::new(AnonymousBindingRepository::new(
                 pg_adapter.clone(),
-                // self.id_factory.clone(),
             )))
-            .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(
-                pg_adapter.clone(),
-                // self.id_factory.clone(),
-            )))
-            .authenticated_user_repository(Arc::new(AuthenticatedUserRepository::new(
-                pg_adapter.clone(),
-                // self.id_factory.clone(),
-            )))
-            .session_repository(Arc::new(SessionRepository::new(
-                pg_adapter,
-                // self.id_factory.clone(),
-            )));
+            .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(pg_adapter.clone())))
+            .authenticated_user_repository(authenticated_user_repository)
+            .session_repository(Arc::new(SessionRepository::new(pg_adapter)))
+            .token_router(token_router)
+            .member_authenticator(member_authenticator);
 
         Ok(self)
     }

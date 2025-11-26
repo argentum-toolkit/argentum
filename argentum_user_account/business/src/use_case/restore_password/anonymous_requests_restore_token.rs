@@ -151,7 +151,7 @@ mod tests {
     async fn anonymous_requests_restore_token() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
-        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
         let token_generator = Arc::new(TokenGeneratorMock::new());
 
         let notificator = Arc::new(StdoutNotificator::new());
@@ -169,7 +169,6 @@ mod tests {
             logger.clone(),
         );
 
-        let user_id = id_factory.create();
         let user_name = NameBuilder::new("Dionne".into())
             .last(Some("Morrison".into()))
             .try_build()
@@ -177,9 +176,10 @@ mod tests {
 
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
+        // let user = AuthenticatedUser::new(user_id, user_name, email.clone());
 
-        user_repository.save(&user).await?;
+        let user = user_repository.create(&user_name, &email).await?;
+        let user_id = user.id;
 
         let result = uc.execute(email).await;
 
@@ -207,7 +207,7 @@ mod tests {
     {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
-        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
         let token_generator = Arc::new(TokenGeneratorMock::new());
 
         let notificator = Arc::new(StdoutNotificator::new());

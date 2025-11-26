@@ -142,9 +142,63 @@ As soon as Argentum ToolKit uses Dioxus, we need to have some dependencies such 
 cargo install dioxus-cli
 ....
 
+
+== Keycloak
+
+Client ID: fe-dev
+Realm: argentum-realm
+
+??? Issuer URL: http://localhost:8099/realms/argentum-realm
+
+Valid redirect URIs: http://localhost:8099/*
+Web origins: http://localhost:8099
+
+Client Secret: nZBH71yyNSiy32vsNJcydkHZruFzH83J
+
+
+http://localhost:8099/realms/argentum-realm/protocol/openid-connect/auth
+ ?client_id=argentum-fe-dev
+  &response_type=code
+  &redirect_uri=http://localhost:8080/callback
+  &scope=openid email profile
+  &code_challenge=OWY4NmQwODE4ODRjN2Q2NTlhMmZlYWEwYzU1YWQwMTVhM2JmNGYxYjJiMGI4MjJjZDE1ZDZjMTViMGYwMGEwOA==
+  &code_challenge_method=S256
+
+http://localhost:8099/realms/argentum-realm/protocol/openid-connect/auth?client_id=dev-fe&response_type=code&redirect_uri=http://localhost:8080/callback&scope=openid email profile&code_challenge=OWY4NmQwODE4ODRjN2Q2NTlhMmZlYWEwYzU1YWQwMTVhM2JmNGYxYjJiMGI4MjJjZDE1ZDZjMTViMGYwMGEwOA&code_challenge_method=S256
+
+
+http://localhost:8099/realms/argentum-realm/.well-known/openid-configuration
+
+
+
+code_verifier: test
+sha: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+base64: OWY4NmQwODE4ODRjN2Q2NTlhMmZlYWEwYzU1YWQwMTVhM2JmNGYxYjJiMGI4MjJjZDE1ZDZjMTViMGYwMGEwOA
+[source]
+----
+&code_challenge=<base64url(SHA256(code_verifier))>
+&code_challenge_method=S256
+----
+
+
+=== BE
+Client ID: argentum-be-dev
+Realm: argentum-realm 
+fd441e66-4b95-4316-baeb-fbad956ca320
+
+
+
 == TODO
 
 === V0.4
+
+* Keycloak
+** ??? automatically confirm emails for social login ????
+** deny login for users with not confirmed email
+** store tokens in secure http only cookies
+** add support of refresh token
+** logout
+** customizable UI component for social login
 
 * Component generator
 ** add examples into readme.adoc

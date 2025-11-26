@@ -1,3 +1,4 @@
+use crate::data_type::Name;
 use crate::entity::user::{AnonymousUser, AuthenticatedUser};
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
@@ -15,11 +16,18 @@ pub trait AuthenticatedUserRepositoryTrait: Send + Sync {
         &self,
         id: Self::Id,
     ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError>;
+
     async fn find_by_email(
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError>;
-    async fn save(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError>;
+
+    // async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError>;
+    async fn create(
+        &self,
+        name: &Name,
+        email: &EmailAddress,
+    ) -> Result<AuthenticatedUser<Self::Id>, ExternalUserError>;
 }
 
 #[async_trait]
