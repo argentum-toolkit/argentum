@@ -1,3 +1,5 @@
+use secrecy::{ExposeSecret, SecretString};
+
 use crate::password::{EncryptionError, Encryptor, Validator};
 
 //TODO: implement better SALT
@@ -19,11 +21,14 @@ impl Default for EncryptorMock {
 }
 
 impl Encryptor for EncryptorMock {
-    fn encrypt(&self, password: &str) -> Result<(String, String), EncryptionError> {
+    fn encrypt(
+        &self,
+        password: &SecretString,
+    ) -> Result<(SecretString, SecretString), EncryptionError> {
         let salt = SALT.to_string();
-        let hash = [SALT, password].join("");
+        let hash = [SALT, password.expose_secret()].join("");
 
-        Ok((hash, salt))
+        Ok((hash.into(), salt.into()))
     }
 }
 
@@ -42,12 +47,12 @@ impl Default for ValidatorMock {
 impl Validator for ValidatorMock {
     fn validate(
         &self,
-        password: &str,
-        salt: &str,
-        encoded_password: &str,
+        password: &SecretString,
+        salt: &SecretString,
+        encoded_password: &SecretString,
     ) -> Result<bool, EncryptionError> {
-        let hash = [salt, password].join("");
+        let hash = [salt.expose_secret(), password.expose_secret()].join("");
 
-        Ok(encoded_password == hash)
+        Ok(encoded_password.expose_secret() == hash)
     }
 }

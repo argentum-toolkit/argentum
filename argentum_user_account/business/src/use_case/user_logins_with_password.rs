@@ -1,20 +1,14 @@
-use crate::repository::password_credential_checker::{
-    PasswordCredentialChecker, PasswordCredentialCheckerError,
-};
-use crate::token::GeneratorTrait;
+use crate::service::{PasswordToTokenExchangerError, PasswordToTokenExchangerTrait};
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::EmailAddress;
-use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
-use argentum_user_business::entity::session::GuestSession;
+use argentum_user_business::entity::session::Session;
 use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
-use argentum_user_business::repository::session_repository::{
-    SessionRepositoryError, SessionRepositoryTrait,
-};
-use argentum_user_business::repository::user_repository::{
-    AuthenticatedUserRepositoryTrait, ExternalUserError,
-};
+use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
+use secrecy::SecretString;
+use std::error::Error;
 use std::sync::Arc;
 
 pub struct UserLoginsWithPasswordUc<I, L>
@@ -22,12 +16,9 @@ where
     I: Id,
     L: LoggerTrait,
 {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
     anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-    credential_checker: Arc<PasswordCredentialChecker<I>>,
-    id_factory: Arc<dyn IdFactory<Id = I>>,
-    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
     logger: Arc<L>,
 }
 
@@ -37,21 +28,15 @@ where
     L: LoggerTrait,
 {
     pub fn new(
-        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
         anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-        credential_checker: Arc<PasswordCredentialChecker<I>>,
-        id_factory: Arc<dyn IdFactory<Id = I>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
         logger: Arc<L>,
     ) -> Self {
         Self {
-            user_repository,
+            password_to_token_exchanger,
             anonymous_binding_repository,
             session_repository,
-            credential_checker,
-            id_factory,
-            token_generator,
             logger,
         }
     }
@@ -60,27 +45,26 @@ where
         &self,
         anonymous: Option<AnonymousUser<I>>,
         email: EmailAddress,
-        password: &str,
-    ) -> Result<GuestSession<I>, LoginError> {
-        let result = self.user_repository.find_by_email(&email).await?;
+        password: SecretString,
+    ) -> Result<Session<I>, LoginError> {
+        let result = self
+            .password_to_token_exchanger
+            .exchange_password(&email, &password)
+            .await;
 
-        let user = match result {
-            Some(u) => u,
-            None => return Err(LoginError::WrongEmailOrPassword),
+        let session = match result {
+            Ok(s) => s,
+            Err(e) => match e {
+                PasswordToTokenExchangerError::WrongEmailOrPassword => {
+                    return Err(LoginError::WrongEmailOrPassword);
+                }
+                _ => {
+                    return Err(LoginError::Infrastructure(Some(Arc::new(e))));
+                }
+            },
         };
 
-        if !self.credential_checker.check(user.id(), password).await? {
-            return Err(LoginError::WrongEmailOrPassword);
-        }
-
-        let session = GuestSession::new(
-            self.id_factory.create(),
-            user.id(),
-            &self.token_generator.generate(user.id),
-        );
-
-        self.session_repository.save(&session).await?;
-
+        // Bind guest to member
         if let Some(anonymous) = anonymous {
             match self
                 .session_repository
@@ -91,7 +75,7 @@ where
                 Err(_) => self.logger.warning("Anonymous session is not deleted"),
             };
 
-            let binding = AnonymousBinding::new(user.id(), anonymous.id());
+            let binding = AnonymousBinding::new(session.user_id, anonymous.id);
             match self.anonymous_binding_repository.save(&binding).await {
                 Ok(_) => self.logger.info("Anonymous binding saved"),
                 Err(_) => self.logger.warning("Anonymous binding is not saved"),
@@ -104,25 +88,11 @@ where
 
 #[derive(thiserror::Error, Debug)]
 pub enum LoginError {
-    #[error("Can't save session")]
-    SaveSession(
+    #[error("Infrastructure error")]
+    Infrastructure(
         #[source]
         #[from]
-        SessionRepositoryError,
-    ),
-
-    #[error("Can't get an user. DB error")]
-    GetUserError(
-        #[source]
-        #[from]
-        ExternalUserError,
-    ),
-
-    #[error("Can't get an user. DB error")]
-    PasswordCredentialCheckerError(
-        #[source]
-        #[from]
-        PasswordCredentialCheckerError,
+        Option<Arc<dyn Error + Send + Sync>>,
     ),
 
     #[error("Wrong email or password")]
@@ -131,27 +101,17 @@ pub enum LoginError {
 
 #[cfg(test)]
 mod test {
-    use crate::entity::credential::PasswordCredential;
-    use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
-    use crate::mock::token::TokenGeneratorMock;
-    use crate::repository::password_credential_checker::PasswordCredentialChecker;
-    use crate::repository::password_credential_writer::PasswordCredentialWriter;
-    use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
+    use crate::mock::service::PasswordToTokenExchangerMock;
     use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
-    use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
-    use argentum_encryption_business::password::Encryptor;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
-    use argentum_standard_business::mock::data_type::id_factory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
-    use argentum_user_business::data_type::builder::NameBuilder;
-    use argentum_user_business::entity::user::{AnonymousUser, AuthenticatedUser};
+    use argentum_user_business::entity::session::Session;
+    use argentum_user_business::entity::user::AnonymousUser;
     use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
-    use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
     use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
-    use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 
     use std::error::Error;
     use std::sync::Arc;
@@ -160,57 +120,36 @@ mod test {
     async fn test_user_logins_with_password() -> Result<(), Box<dyn Error>> {
         let id_factory = Arc::new(IdFactoryMock::new());
 
-        let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
         let anonymous_binding_repository = Arc::new(AnonymousBindingRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
-        let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
-        let validator = Arc::new(ValidatorMock::new());
-        let credential_checker = Arc::new(PasswordCredentialChecker::new(
-            credential_repository.clone(),
-            validator.clone(),
-        ));
-
-        let token_generator = Arc::new(TokenGeneratorMock::new());
-        let credential_writer = PasswordCredentialWriter::new(credential_repository.clone());
 
         let log_writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer.clone()));
 
+        let exchanger = Arc::new(PasswordToTokenExchangerMock::new());
+
         let uc = UserLoginsWithPasswordUc::new(
-            user_repository.clone(),
+            exchanger.clone(),
             anonymous_binding_repository.clone(),
             session_repository.clone(),
-            credential_checker.clone(),
-            id_factory.clone(),
-            token_generator.clone(),
             logger.clone(),
         );
 
-        // let user_id = id_factory.create();
-        let name = NameBuilder::new("Dionne")
-            .last(Some("Morrison"))
-            .try_build()
-            .expect("Name should be valid");
+        let user_id = id_factory.create();
         let email = EmailAddress::try_new("test@test-mail.com").expect("Email should be valid");
 
-        let user = user_repository
-            .create(&name, &email)
-            .await
-            .expect("Can't save a user");
-        let user_id = user.id;
-
         let password = "12345";
-        // let user: AuthenticatedUser<u64> = AuthenticatedUser::new(user_id, name, email.clone());
-        let encryptor = EncryptorMock::new();
-        let (hashed_password, salt) = encryptor.encrypt(password)?;
-        let cred = PasswordCredential::new(user_id, &hashed_password, &salt);
 
-        credential_writer.write(&cred).await?;
+        exchanger.seed(
+            email.clone(),
+            password.into(),
+            Ok(Session::new(1, user_id, "test_token")),
+        )?;
 
         let anonymous_id = id_factory.create();
         let anonymous = AnonymousUser::new(anonymous_id);
 
-        let result = uc.execute(Some(anonymous), email, &password).await;
+        let result = uc.execute(Some(anonymous), email, password.into()).await;
 
         match result {
             Ok(s) => {

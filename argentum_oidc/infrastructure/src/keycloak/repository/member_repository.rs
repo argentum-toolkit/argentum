@@ -8,7 +8,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::{
-    data_type::{Name, builder::NameBuilder},
+    data_type::builder::NameBuilder,
     entity::user::AuthenticatedUser,
     repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError},
 };
@@ -40,12 +40,20 @@ impl Display for KeycloakUserError {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct NewUser {
+    id: String,
     email: String,
+    username: String,
     first_name: String,
     last_name: Option<String>,
     enabled: bool,
 }
 
+#[derive(Serialize, Debug)]
+struct PartialImportRepresentation {
+    users: Vec<NewUser>,
+    #[serde(rename = "ifResourceExists")]
+    if_resource_exists: String, // "FAIL", "SKIP", "OVERWRITE"
+}
 pub struct MemberRepository<L>
 where
     L: LoggerTrait,
@@ -129,69 +137,48 @@ where
         }
     }
 
-    async fn create(
-        &self,
-        name: &Name,
-        email: &EmailAddress,
-    ) -> Result<AuthenticatedUser<Self::Id>, ExternalUserError> {
-        let last = name.last.clone().map(|l| l.to_string());
+    async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
+        let last = user.name.last.clone().map(|l| l.to_string());
         let new_user = NewUser {
-            // id: user.id.into(),
-            first_name: name.first.to_string(),
+            id: user.id.to_string(),
+            first_name: user.name.first.to_string(),
             last_name: last,
-            email: email.as_string(),
+            email: user.email.as_string(),
+            username: user.email.as_string(),
             enabled: true,
+        };
+
+        let partial_import = PartialImportRepresentation {
+            users: vec![new_user],
+            if_resource_exists: "FAIL".to_string(),
         };
 
         let resp = self
             .admin_api
-            .post("/users", Some(&new_user))
+            .post("/partialImport", Some(&partial_import))
             .await
             .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
 
         if resp.status().is_success() || resp.status() == reqwest::StatusCode::CREATED {
-            if let Some(location) = resp.headers().get("location") {
-                let location = location
-                    .to_str()
-                    .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+            let actions = ["VERIFY_EMAIL"];
+            let path = format!("/users/{}/execute-actions-email", user.id);
 
-                let user_id = location
-                    .rsplit('/')
-                    .next()
-                    .ok_or_else(|| {
-                        ExternalUserError::Authenticated(Some(Arc::new(KeycloakUserError(
-                            "User id not found in response headline".into(),
-                        ))))
-                    })?
-                    .to_string();
+            let resp = self
+                .admin_api
+                .put(&path, Some(&actions))
+                .await
+                .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
 
-                let actions = ["VERIFY_EMAIL"];
-                let path = format!("/users/{}/execute-actions-email", user_id);
-
-                let resp = self
-                    .admin_api
-                    .put(&path, Some(&actions))
-                    .await
-                    .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
-
-                if !resp.status().is_success() {
-                    self.logger.error(format!(
-                        "Cant send email verification: {}",
-                        resp.text()
-                            .await
-                            .unwrap_or("Also can't get response text.".into())
-                    ));
-                }
-
-                let user_id = Uuid::try_from(user_id)
-                    .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?
-                    .into();
-                Ok(AuthenticatedUser::new(user_id, name.clone(), email.clone()))
-            } else {
-                Err(ExternalUserError::Authenticated(Some(Arc::new(
-                    KeycloakUserError("Cant get header location from response".into()),
-                ))))
+            if !resp.status().is_success() {
+                self.logger.error(format!(
+                    "Cant send email verification: {}",
+                    resp.text()
+                        .await
+                        .unwrap_or("Also can't get response text.".into())
+                ));
             }
+
+            Ok(())
         } else {
             self.logger.error(format!(
                 "Failed to create user: {}",

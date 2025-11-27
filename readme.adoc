@@ -195,7 +195,7 @@ fd441e66-4b95-4316-baeb-fbad956ca320
 * Keycloak
 ** ??? automatically confirm emails for social login ????
 ** deny login for users with not confirmed email
-** store tokens in secure http only cookies
+** store auth tokens in secure http only cookies
 ** add support of refresh token
 ** logout
 ** customizable UI component for social login

@@ -1,4 +1,4 @@
-use crate::entity::session::GuestSession;
+use crate::entity::session::Session;
 
 use async_trait::async_trait;
 
@@ -12,12 +12,12 @@ pub trait SessionRepositoryTrait: Send + Sync {
     async fn find_by_token(
         &self,
         token: &str,
-    ) -> Result<Option<GuestSession<Self::Id>>, SessionRepositoryError>;
-    async fn save(&self, session: &GuestSession<Self::Id>) -> Result<(), SessionRepositoryError>;
+    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError>;
+    async fn save(&self, session: &Session<Self::Id>) -> Result<(), SessionRepositoryError>;
     async fn delete_users_sessions(&self, user_id: Self::Id) -> Result<(), SessionRepositoryError>;
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Clone)]
 pub enum SessionRepositoryError {
     #[error("Can't save session")]
     Save(#[source] Option<Arc<dyn Error + Send + Sync>>),

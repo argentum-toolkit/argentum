@@ -1,9 +1,8 @@
-use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
-use argentum_oidc_infrastructure::di::KeycloakInfrastructureDiCBuilder;
-use argentum_oidc_rest::ApiDiC as KeycloakApiDiC;
+// use argentum_oidc_infrastructure::di::KeycloakInfrastructureDiCBuilder;
+// use argentum_oidc_rest::ApiDiC as KeycloakApiDiC;
 use argentum_rest_infrastructure::service::{BearerAuthenticator, RouterCombinator, Server};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use std::env;
@@ -49,70 +48,10 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
 
     let rest_di = RestDiC::new(logger.clone());
 
-    let client = reqwest::Client::builder()
-        .pool_max_idle_per_host(20)
-        .build()
-        .map_err(|e| format!("Cant create reqwest client. Error: {e}"))?;
-    let r_client = Arc::new(client);
-
-    const ENV_KEYCLOAK_BASE_URL: &str = "KEYCLOAK_BASE_URL";
-    let keycloak_base_url = env::var(ENV_KEYCLOAK_BASE_URL)
-        .map_err(|e| format!("Cant get ENV {ENV_KEYCLOAK_BASE_URL}. Error: {e}"))?;
-
-    const ENV_KEYCLOAK_REALM: &str = "KEYCLOAK_REALM";
-    let keycloak_realm = env::var(ENV_KEYCLOAK_REALM)
-        .map_err(|e| format!("Cant get ENV {ENV_KEYCLOAK_REALM}. Error: {e}"))?;
-
-    const ENV_KEYCLOAK_FE_CLIENT_ID: &str = "KEYCLOAK_FE_CLIENT_ID";
-    let keycloak_fe_client_id = env::var(ENV_KEYCLOAK_FE_CLIENT_ID)
-        .map_err(|e| format!("Cant get ENV {ENV_KEYCLOAK_FE_CLIENT_ID}. Error: {e}"))?;
-
-    const ENV_KEYCLOAK_FE_CLIENT_SECRET: &str = "KEYCLOAK_FE_CLIENT_SECRET";
-    let keycloak_fe_client_secret = env::var(ENV_KEYCLOAK_FE_CLIENT_SECRET)
-        .map_err(|e| format!("Cant get ENV {ENV_KEYCLOAK_FE_CLIENT_SECRET}. Error: {e}"))?;
-
-    const ENV_OIDC_REDIRECT_URI: &str = "OIDC_REDIRECT_URI";
-    let oidc_redirect_uri = env::var(ENV_OIDC_REDIRECT_URI)
-        .map_err(|e| format!("Cant get ENV {ENV_OIDC_REDIRECT_URI}. Error: {e}"))?;
-
-    const ENV_KEYCLOAK_BE_CLIENT_ID: &str = "KEYCLOAK_BE_CLIENT_ID";
-    let keycloak_be_client_id = env::var(ENV_KEYCLOAK_BE_CLIENT_ID)
-        .map_err(|e| format!("Cant get ENV {ENV_KEYCLOAK_BE_CLIENT_ID}. Error: {e}"))?;
-
-    const ENV_KEYCLOAK_BE_CLIENT_SECRET: &str = "KEYCLOAK_BE_CLIENT_SECRET";
-    let keycloak_be_client_secret = env::var(ENV_KEYCLOAK_BE_CLIENT_SECRET)
-        .map_err(|e| format!("Cant get ENV {ENV_KEYCLOAK_BE_CLIENT_SECRET}. Error: {e}"))?;
-
-    let k_di = KeycloakInfrastructureDiCBuilder::new(
-        &keycloak_base_url,
-        &keycloak_realm,
-        &keycloak_fe_client_id,
-        &keycloak_fe_client_secret,
-        &oidc_redirect_uri,
-        &keycloak_be_client_id,
-        &keycloak_be_client_secret,
-        logger.clone(),
-        r_client.clone(),
-    )
-    .build()?;
-    let k_api_di = KeycloakApiDiC::new(
-        "/api/v1".to_string(),
-        rest_di.request_transformer.clone(),
-        k_di.exchange_code_handler.clone(),
-        rest_di.error_pre_handler.clone(),
-    );
-
     let u_di = Arc::new(
         UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
             //todo: use params
-            .default_services(
-                &u_database_url,
-                10,
-                logger.clone(),
-                k_di.member_repository.clone(),
-                k_di.member_authenticator.clone(),
-                k_di.token_router.clone(),
-            )
+            .default_services(&u_database_url, 10, logger.clone(), None, None)
             .await?
             .build()?,
     );
@@ -129,7 +68,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         rest_di.error_pre_handler.clone(),
     );
 
-    let pbkdf2_password_encryptor = Arc::new(Pbkdf2::new());
+    // let pbkdf2_password_encryptor = Arc::new(Pbkdf2::new());
 
     let notificator = Arc::new(StdoutNotificator::new());
 
@@ -141,17 +80,10 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let ua_di = UserAccountInfrastructureDiCBuilder::new(
         u_di.clone(),
         unique_id_factory.clone(),
-        pbkdf2_password_encryptor.clone(),
-        pbkdf2_password_encryptor,
         logger.clone(),
         notificator,
     )
-    .services(
-        &database_url,
-        10,
-        k_di.password_credential_repository,
-        logger.clone(),
-    )
+    .services(&database_url, 10, None, None, None, logger.clone())
     .await?
     .config(
         "Argentum ToolKit demo web application".to_string(),
@@ -181,7 +113,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
 
     let router = Arc::new(RouterCombinator::new(
-        vec![u_api_di.router, ua_api_di.router, k_api_di.router],
+        vec![u_api_di.router, ua_api_di.router],
         rest_di.error_pre_handler,
     ));
 

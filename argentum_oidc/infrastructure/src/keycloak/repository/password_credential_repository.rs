@@ -4,11 +4,14 @@ use std::sync::Arc;
 
 use argentum_log_business::LoggerTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_account_business::entity::credential::PasswordCredential;
+use argentum_user_account_business::entity::credential::{
+    EncodedPasswordCredential, PasswordCredential,
+};
 use argentum_user_account_business::repository::password_credential_repository::{
     PasswordCredentialRepositoryError, PasswordCredentialRepositoryTrait,
 };
 use async_trait::async_trait;
+use secrecy::ExposeSecret;
 use serde_json::json;
 
 use crate::keycloak::service::AdminApi;
@@ -55,7 +58,7 @@ where
 
         let password_body = json!({
             "type": "password",
-            "value": cred.password,
+            "value": cred.password.expose_secret(),
             "temporary": false
         });
 
@@ -85,15 +88,16 @@ where
 
     async fn find_by_user_id(
         &self,
-        user_id: Self::Id,
-    ) -> Result<Option<PasswordCredential<Self::Id>>, PasswordCredentialRepositoryError> {
+        _user_id: Self::Id,
+    ) -> Result<Option<EncodedPasswordCredential<Self::Id>>, PasswordCredentialRepositoryError>
+    {
         //TODO: implement or refactor
         todo!()
     }
 
     async fn delete(
         &self,
-        cred: &PasswordCredential<Self::Id>,
+        _cred: EncodedPasswordCredential<Self::Id>,
     ) -> Result<(), PasswordCredentialRepositoryError> {
         //TODO: implement or refactor
         todo!()

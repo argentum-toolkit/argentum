@@ -45,6 +45,7 @@ mod tests {
     use argentum_standard_business::data_type::id::IdFactory;
 
     use crate::data_type::builder::NameBuilder;
+    use crate::entity::user::AuthenticatedUser;
     use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
     use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
     use crate::use_case::GetUserUc;
@@ -55,24 +56,24 @@ mod tests {
     #[tokio::test]
     async fn test_get_user() -> Result<(), String> {
         let id_factory = Arc::new(IdFactoryMock::new());
-        let authenticated_user_repository =
-            Arc::new(AuthenticatedUserRepositoryMock::new(id_factory));
+        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
 
         //Data
+        let user_id = id_factory.create();
         let name = NameBuilder::new("Dionne")
             .last(Some("Morrison"))
             .try_build()
             .expect("Name should be valid");
 
         let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
+        let user = AuthenticatedUser::new(user_id, name, email);
 
         //Prefilling
-        let authenticated_user = authenticated_user_repository
-            .create(&name, &email)
+        authenticated_user_repository
+            .create(&user)
             .await
             .expect("Can't save a user");
 
-        let user_id = authenticated_user.id;
         //Test
         let uc = GetUserUc::new(authenticated_user_repository);
 
@@ -93,20 +94,21 @@ mod tests {
     #[tokio::test]
     async fn test_get_not_registered_user() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
-        let authenticated_user_repository =
-            Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
+        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
 
         //Data
+        let user_id = id_factory.create();
         let name = NameBuilder::new("Dionne")
             .last(Some("Morrison"))
             .try_build()
             .expect("Name should be valid");
 
         let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
+        let user = AuthenticatedUser::new(user_id, name, email);
 
         //Prefilling
         authenticated_user_repository
-            .create(&name, &email)
+            .create(&user)
             .await
             .expect("Can't save a user");
 

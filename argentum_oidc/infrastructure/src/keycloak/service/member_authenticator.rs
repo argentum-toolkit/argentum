@@ -30,12 +30,28 @@ struct MemberDto {
 }
 
 pub struct KeycloakMemberAuthenticator {
+    base_url: String,
+    realm: String,
+    client_id: String,
+    client_secret: String,
     client: Arc<reqwest::Client>,
 }
 
 impl KeycloakMemberAuthenticator {
-    pub(crate) fn new(client: Arc<reqwest::Client>) -> Self {
-        Self { client }
+    pub(crate) fn new(
+        base_url: &str,
+        realm: &str,
+        client_id: &str,
+        client_secret: &str,
+        client: Arc<reqwest::Client>,
+    ) -> Self {
+        Self {
+            base_url: base_url.into(),
+            realm: realm.into(),
+            client_id: client_id.into(),
+            client_secret: client_secret.into(),
+            client,
+        }
     }
 }
 
@@ -47,15 +63,20 @@ impl MemberAuthenticatorTrait for KeycloakMemberAuthenticator {
         &self,
         token: &str,
     ) -> Result<Option<AuthenticatedUser<Self::Id>>, MemberAuthenticatorError> {
+        let url = format!(
+            "{}/realms/{}/protocol/openid-connect/token/introspect",
+            self.base_url, self.realm
+        );
+
         //TODO: move string data into config
-        let res = self.client
-            .post("http://service.keycloak:8080/realms/argentum-realm-dev/protocol/openid-connect/token/introspect")
-            .basic_auth("argentum-be-client-dev", Some("dj9cobGEQptoEk5gMvqadYHd6emeUQ2Y"))
+        let res = self
+            .client
+            .post(url)
+            .basic_auth(&self.client_id, Some(&self.client_secret))
             .form(&[("token", token)])
             .send()
             .await
-            .unwrap()
-        ;
+            .unwrap();
 
         let json: Value = res.json().await.unwrap();
 

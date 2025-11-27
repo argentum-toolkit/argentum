@@ -1,7 +1,7 @@
 use argentum_standard_business::data_type::id::Id;
 use chrono::{DateTime, Utc};
 
-pub struct GuestSession<I>
+pub struct Session<I>
 where
     I: Id,
 {
@@ -12,12 +12,12 @@ where
     //device_information???
 }
 
-impl<I> GuestSession<I>
+impl<I> Session<I>
 where
     I: Id,
 {
     pub fn new(id: I, user_id: I, token: &str) -> Self {
-        GuestSession {
+        Session {
             id,
             user_id,
             created_at: Utc::now(),

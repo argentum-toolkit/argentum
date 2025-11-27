@@ -1,8 +1,7 @@
-use crate::data_type::Name;
 use crate::entity::user::{AuthenticatedUser, UserTrait};
 use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
 use argentum_standard_business::data_type::EmailAddress;
-use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::error::PoisonedLockError;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -10,22 +9,21 @@ use std::sync::RwLock;
 
 use async_trait::async_trait;
 
+#[derive(Default)]
 pub struct AuthenticatedUserRepositoryMock<I>
 where
     I: Id,
 {
     users: RwLock<HashMap<I, AuthenticatedUser<I>>>,
-    id_factory: Arc<dyn IdFactory<Id = I>>,
 }
 
 impl<I> AuthenticatedUserRepositoryMock<I>
 where
     I: Id,
 {
-    pub fn new(id_factory: Arc<dyn IdFactory<Id = I>>) -> Self {
+    pub fn new() -> Self {
         Self {
             users: RwLock::new(HashMap::new()),
-            id_factory,
         }
     }
 }
@@ -71,28 +69,20 @@ where
         Ok(None)
     }
 
-    async fn create(
-        &self,
-        name: &Name,
-        email: &EmailAddress,
-    ) -> Result<AuthenticatedUser<Self::Id>, ExternalUserError> {
+    async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
         // TODO: check if key exists. Eg:
         // if self.users. contains_key(user.get_id().clone()) {
         //     return Err("Already exists");
         // }
 
-        let id = self.id_factory.create();
-
-        let u = AuthenticatedUser::new(id, name.clone(), email.clone());
-
         match self
             .users
             .write()
             .map_err(|_| ExternalUserError::Authenticated(Some(Arc::new(PoisonedLockError))))?
-            .insert(id, u.clone())
+            .insert(user.id, user.clone())
             .is_none()
         {
-            true => Ok(u),
+            true => Ok(()),
             false => Err(ExternalUserError::Authenticated(None)),
         }
     }

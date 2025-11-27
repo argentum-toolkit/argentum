@@ -148,7 +148,7 @@ fi
 
 
 
-# ADD ROLE  view-users
+# ADD ROLES
 
 CLIENT_UUID=$(curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8099/admin/realms/$REALM/clients?clientId=$CLIENT" \
@@ -160,9 +160,13 @@ SERVICE_USER_ID=$(curl -s -H "Authorization: Bearer $TOKEN" \
   | jq -r '.id')
 
 
+
 REALM_MGMT_CLIENT_ID=$(curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8099/admin/realms/$REALM/clients?clientId=realm-management" \
   | jq -r '.[0].id')
+
+
+
 
 ROLE_PAYLOAD=$(curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8099/admin/realms/$REALM/clients/$REALM_MGMT_CLIENT_ID/roles/view-users")
@@ -179,12 +183,32 @@ curl -s -X POST \
 
 
 
+
+
 ROLE_PAYLOAD=$(curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8099/admin/realms/$REALM/clients/$REALM_MGMT_CLIENT_ID/roles/manage-users")
 ROLE_ID=$(echo "$ROLE_PAYLOAD" | jq -r '.id')
 
 
 ASSIGN_ROLE_PAYLOAD="[{\"id\": \"$ROLE_ID\", \"name\": \"manage-users\"}]"
+
+curl -s -X POST \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$ASSIGN_ROLE_PAYLOAD" \
+    "http://localhost:8099/admin/realms/$REALM/users/$SERVICE_USER_ID/role-mappings/clients/$REALM_MGMT_CLIENT_ID"
+
+
+
+
+
+# We use `manage-realm` role to create users with custom ID
+ROLE_PAYLOAD=$(curl -s -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8099/admin/realms/$REALM/clients/$REALM_MGMT_CLIENT_ID/roles/manage-realm")
+ROLE_ID=$(echo "$ROLE_PAYLOAD" | jq -r '.id')
+
+
+ASSIGN_ROLE_PAYLOAD="[{\"id\": \"$ROLE_ID\", \"name\": \"manage-realm\"}]"
 
 curl -s -X POST \
     -H "Authorization: Bearer $TOKEN" \

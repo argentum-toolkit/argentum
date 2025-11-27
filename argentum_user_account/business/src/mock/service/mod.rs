@@ -1,0 +1,2 @@
+mod password_to_token_exchanger_mock;
+pub use password_to_token_exchanger_mock::PasswordToTokenExchangerMock;

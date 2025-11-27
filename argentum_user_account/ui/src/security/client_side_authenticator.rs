@@ -25,7 +25,7 @@ impl ClientSideAuthenticator {
         if self.security_repository.read().is_none() {
             let res = self.fetch_new_anonymous_token().await;
 
-            match res.clone() {
+            match res {
                 Ok(token) => {
                     self.security_repository.save(Security::Anonymous(token));
                 }

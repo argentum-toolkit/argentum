@@ -1,5 +1,6 @@
 use argentum_user_business::service::TokenRouterTrait;
 
+#[derive(Default)]
 pub struct TokenRouter {}
 
 impl TokenRouter {

@@ -39,7 +39,7 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
         req: UserRegistersWithPasswordRequest,
         _user: User<Self::Id>,
     ) -> Result<UserRegistersWithPasswordOperationResponseEnum, HttpError> {
-        // let user_id = UniqueId::new();
+        let user_id = UniqueId::new();
 
         let (name, email, password, terms_accepted) = self
             .dto_to_user_registers_with_password_params
@@ -47,7 +47,7 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
 
         let result = self
             .uc
-            .execute(name, email, &password, terms_accepted)
+            .execute(user_id, name, email, password.into(), terms_accepted)
             .await;
 
         match result {

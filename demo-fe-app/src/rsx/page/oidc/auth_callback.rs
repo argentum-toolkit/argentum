@@ -45,8 +45,6 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        let auth_token = "some_token"; //TODO: don't use a token
-
         let mut result = use_resource(move || {
             let code = code.clone();
             let state = state.clone();

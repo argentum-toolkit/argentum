@@ -1,4 +1,3 @@
-use crate::data_type::Name;
 use crate::entity::user::{AnonymousUser, AuthenticatedUser};
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
@@ -22,12 +21,7 @@ pub trait AuthenticatedUserRepositoryTrait: Send + Sync {
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError>;
 
-    // async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError>;
-    async fn create(
-        &self,
-        name: &Name,
-        email: &EmailAddress,
-    ) -> Result<AuthenticatedUser<Self::Id>, ExternalUserError>;
+    async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError>;
 }
 
 #[async_trait]
@@ -43,7 +37,7 @@ pub trait AnonymousUserRepositoryTrait: Send + Sync {
 
 // Not business errors.
 // This enum covers cases when errors where triggered via 3rd party libraries or via wrong configuration
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Clone)]
 pub enum ExternalUserError {
     #[error("Can't save an user")]
     Authenticated(#[source] Option<Arc<dyn Error + Send + Sync>>),

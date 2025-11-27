@@ -1,5 +1,5 @@
 use argentum_standard_business::data_type::id::{Id, IdFactory};
-use argentum_user_business::entity::session::GuestSession;
+use argentum_user_business::entity::session::Session;
 use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
 use argentum_user_business::repository::session_repository::{
     SessionRepositoryError, SessionRepositoryTrait,
@@ -42,7 +42,7 @@ where
     pub async fn execute(
         &self,
         id: I,
-    ) -> Result<(AnonymousUser<I>, GuestSession<I>), AnonymousRegistrationError> {
+    ) -> Result<(AnonymousUser<I>, Session<I>), AnonymousRegistrationError> {
         let user = {
             let user = AnonymousUser::new(id);
 
@@ -51,7 +51,7 @@ where
             user
         };
 
-        let session = GuestSession::new(
+        let session = Session::new(
             self.id_factory.create(),
             user.id(),
             &self.token_generator.generate(id),

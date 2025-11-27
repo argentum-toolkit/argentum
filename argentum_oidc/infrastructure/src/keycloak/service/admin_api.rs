@@ -155,6 +155,7 @@ where
         let token = self.get_cached_admin_token().await?;
 
         let url = format!("{}/admin/realms/{}{}", self.base_url, self.realm, path,);
+
         let mut builder = self.client.post(url).bearer_auth(token);
 
         if let Some(j) = json {

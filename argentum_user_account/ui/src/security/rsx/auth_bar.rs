@@ -1,7 +1,6 @@
 use std::rc::Rc;
 
 use argentum_user_rest::dto::response::Status404Response;
-use dioxus::html::tr;
 use dioxus::prelude::*;
 
 use crate::security::rsx::AuthMenu;
@@ -36,7 +35,6 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
     let logout_redirect = props.logout_redirect.clone();
     let logout_redirect_spawn = props.logout_redirect.clone();
 
-    let mut user_loaded = false;
     let mut user_loaded: Signal<bool> = use_signal(|| false);
     spawn(async move {
         if user_loaded() {

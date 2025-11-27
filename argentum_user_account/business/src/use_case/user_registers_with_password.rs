@@ -1,13 +1,14 @@
 use crate::entity::credential::PasswordCredential;
 use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
 
-use argentum_encryption_business::password::{EncryptionError, Encryptor};
+use argentum_encryption_business::password::EncryptionError;
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_user_business::data_type::Name;
 use argentum_user_business::entity::user::AuthenticatedUser;
 use argentum_user_business::repository::user_repository::{
     AuthenticatedUserRepositoryTrait, ExternalUserError,
 };
+use secrecy::SecretString;
 
 use crate::repository::credential_writer::CredentialWriterError;
 use argentum_standard_business::data_type::id::Id;
@@ -19,7 +20,6 @@ where
 {
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
-    encryptor: Arc<dyn Encryptor>,
 }
 
 impl<I> UserRegistersWithPasswordUc<I>
@@ -29,20 +29,19 @@ where
     pub fn new(
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
-        encryptor: Arc<dyn Encryptor>,
     ) -> Self {
         Self {
             user_repository,
             credential_writer,
-            encryptor,
         }
     }
 
     pub async fn execute(
         &self,
+        id: I,
         name: Name,
         email: EmailAddress,
-        password: &str,
+        password: SecretString,
         terms_accepted: bool,
     ) -> Result<AuthenticatedUser<I>, RegistrationError> {
         if !terms_accepted {
@@ -58,8 +57,10 @@ where
         //save user
         let user = {
             //it is `temporary mutability` pattern
-            // let user = AuthenticatedUser::new(id, name, email);
-            self.user_repository.create(&name, &email).await?
+            let user = AuthenticatedUser::new(id, name, email);
+            self.user_repository.create(&user).await?;
+
+            user
         };
 
         //save credentials
@@ -67,7 +68,7 @@ where
 
         // let cred = PasswordCredential::new(user.id, &hashed_password, &salt);
 
-        let cred = PasswordCredential::new(user.id, password, "empty");
+        let cred = PasswordCredential::new(user.id, password);
         self.credential_writer.write(&cred).await?;
 
         Ok(user)
@@ -84,6 +85,7 @@ pub enum RegistrationError {
     #[error("User with such email already exists")]
     EmailAlreadyExists,
 
+    //TODO: there is no such error. map it
     #[error("Can't encrypt password")]
     EncryptionError(
         #[source]
@@ -125,18 +127,16 @@ mod test {
     #[tokio::test]
     async fn test_user_registers_with_password() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
-        let credential_repository = PasswordCredentialRepositoryMock::new();
+        let credential_repository =
+            PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
-        let encryptor = EncryptorMock::new();
-        let authenticated_user_repository =
-            AuthenticatedUserRepositoryMock::new(id_factory.clone());
+        let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
         let uc = UserRegistersWithPasswordUc::new(
             Arc::new(authenticated_user_repository),
             Arc::new(credential_writer),
-            Arc::new(encryptor),
         );
 
-        // let id = id_factory.create();
+        let id = id_factory.create();
         let name = NameBuilder::new("John")
             .last(Some("Cooper"))
             .try_build()
@@ -144,11 +144,11 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com").expect("Email should be valid");
         let password = "123";
         let terms = true;
-        let result = uc.execute(name, email, password, terms).await;
+        let result = uc.execute(id, name, email, password.into(), terms).await;
 
         match result {
             Ok(u) => {
-                // assert_eq!(u.id, id);
+                assert_eq!(u.id, id);
 
                 return Ok(());
             }
@@ -161,30 +161,28 @@ mod test {
     #[tokio::test]
     async fn test_user_registers_without_accepting_of_terms() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
-        let credential_repository = PasswordCredentialRepositoryMock::new();
+        let credential_repository =
+            PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
-        let encryptor = EncryptorMock::new();
-        let authenticated_user_repository =
-            AuthenticatedUserRepositoryMock::new(id_factory.clone());
+        let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
         let uc = UserRegistersWithPasswordUc::new(
             Arc::new(authenticated_user_repository),
             Arc::new(credential_writer),
-            Arc::new(encryptor),
         );
 
-        // let id = id_factory.create();
+        let id = id_factory.create();
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
             .expect("Name should be valid");
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
-        let password = "123".into();
+        let password = "123";
         let terms = false;
-        let result = uc.execute(name, email, password, terms).await;
+        let result = uc.execute(id, name, email, password.into(), terms).await;
 
         match result {
             Ok(u) => {
-                // assert_eq!(u.id.to_string(), id.clone().to_string());
+                assert_eq!(u.id.to_string(), id.clone().to_string());
 
                 Err("Should return an error")
             }
@@ -198,31 +196,30 @@ mod test {
     #[tokio::test]
     async fn test_user_registers_with_password_with_broken_user_repository()
     -> Result<(), &'static str> {
-        let credential_repository = PasswordCredentialRepositoryMock::new();
+        let credential_repository =
+            PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
-        let encryptor = EncryptorMock::new();
         let authenticated_user_repository = AuthenticatedUserRepositoryMockWihBrokenSave::new();
         let uc = UserRegistersWithPasswordUc::new(
             Arc::new(authenticated_user_repository),
             Arc::new(credential_writer),
-            Arc::new(encryptor),
         );
 
-        // let id_factory = IdFactoryMock::new();
+        let id_factory = IdFactoryMock::new();
 
-        // let id = id_factory.create();
+        let id = id_factory.create();
         let name = NameBuilder::new("John".into())
             .last(Some("Cooper".into()))
             .try_build()
             .expect("Name should be valid");
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
-        let password = "123".into();
+        let password = "123";
         let terms = true;
-        let result = uc.execute(name, email, password, terms).await;
+        let result = uc.execute(id, name, email, password.into(), terms).await;
 
         match result {
             Ok(u) => {
-                // assert_eq!(u.id.to_string(), id.clone().to_string());
+                assert_eq!(u.id.to_string(), id.clone().to_string());
 
                 Err("Should return an error")
             }

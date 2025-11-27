@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::entity::session::GuestSession;
+use crate::entity::session::Session;
 use crate::repository::session_repository::{SessionRepositoryError, SessionRepositoryTrait};
 use std::sync::Arc;
 use std::sync::RwLock;
@@ -14,7 +14,7 @@ pub struct SessionRepositoryMock<I>
 where
     I: Id,
 {
-    sessions: RwLock<HashMap<I, GuestSession<I>>>,
+    sessions: RwLock<HashMap<I, Session<I>>>,
 }
 
 impl<I> SessionRepositoryMock<I>
@@ -38,7 +38,7 @@ where
     async fn find_by_token(
         &self,
         token: &str,
-    ) -> Result<Option<GuestSession<Self::Id>>, SessionRepositoryError> {
+    ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError> {
         let guard = self
             .sessions
             .read()
@@ -46,16 +46,16 @@ where
 
         for (_, s) in guard.iter() {
             if s.token == token {
-                return Ok(Some(GuestSession::new(s.id, s.user_id, &s.token)));
+                return Ok(Some(Session::new(s.id, s.user_id, &s.token)));
             }
         }
 
         Ok(None)
     }
 
-    async fn save(&self, session: &GuestSession<Self::Id>) -> Result<(), SessionRepositoryError> {
+    async fn save(&self, session: &Session<Self::Id>) -> Result<(), SessionRepositoryError> {
         // TODO: check if key exists
-        let s = GuestSession::<Self::Id>::new(session.id, session.user_id, &session.token);
+        let s = Session::<Self::Id>::new(session.id, session.user_id, &session.token);
 
         match self
             .sessions

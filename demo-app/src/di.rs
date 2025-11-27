@@ -1,4 +1,3 @@
-use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
@@ -52,23 +51,18 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
-    let pbkdf2_password_encryptor = Arc::new(Pbkdf2::new());
+    // let pbkdf2_password_encryptor = Arc::new(Pbkdf2::new());
     let notificator = Arc::new(StdoutNotificator::new());
 
-    let ua_di = UserAccountBusinessDiCBuilder::new(
-        unique_id_factory.clone(),
-        pbkdf2_password_encryptor.clone(),
-        pbkdf2_password_encryptor,
-        logger.clone(),
-        notificator,
-    )
-    .mock()
-    .config(
-        "Argentum ToolKit demo web application",
-        3600, // TTL 1h
-        "http://localhost:8082/change-password/",
-    )
-    .build()?;
+    let ua_di =
+        UserAccountBusinessDiCBuilder::new(unique_id_factory.clone(), logger.clone(), notificator)
+            .mock()
+            .config(
+                "Argentum ToolKit demo web application",
+                3600, // TTL 1h
+                "http://localhost:8082/change-password/",
+            )
+            .build()?;
 
     Ok(DiC::new(
         unique_id_factory,

@@ -18,7 +18,6 @@ pub struct KeycloakFrontendClient {
     base_url: String,
     realm: String,
     client_id: String,
-    client_secret: String,
     redirect_uri: String,
 
     client: Arc<reqwest::Client>,
@@ -29,7 +28,6 @@ impl KeycloakFrontendClient {
         base_url: &str,
         realm: &str,
         client_id: &str,
-        client_secret: &str,
         redirect_uri: &str, // Frontend callback
         client: Arc<reqwest::Client>,
     ) -> Self {
@@ -37,12 +35,13 @@ impl KeycloakFrontendClient {
             base_url: base_url.into(),
             realm: realm.into(),
             client_id: client_id.into(),
-            client_secret: client_secret.into(),
             redirect_uri: redirect_uri.into(),
             client,
         }
     }
 }
+
+//TODO:  log errors
 
 #[async_trait]
 impl AuthCodeExchangerTrait for KeycloakFrontendClient {
@@ -60,7 +59,6 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
         let params = [
             ("grant_type", "authorization_code"),
             ("client_id", &self.client_id),
-            ("client_secret", &self.client_secret),
             ("redirect_uri", &self.redirect_uri), // Frontend callback
             ("code", code),
         ];
@@ -100,7 +98,8 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
 
                         let user_id = UniqueId::from(user_uuid);
 
-                        let email = match token_data.claims.email {
+                        //be sure that email is valid
+                        let _email = match token_data.claims.email {
                             Some(raw_email) => match EmailAddress::try_new(&raw_email) {
                                 Ok(email) => email,
                                 Err(e) => {
@@ -117,7 +116,7 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
                             }
                         };
 
-                        Ok(ExchangedTokenData::new(&access_token, user_id, email))
+                        Ok(ExchangedTokenData::new(&access_token, user_id))
                     }
 
                     Err(_) => Err(AuthCodeExchangerError::Network),

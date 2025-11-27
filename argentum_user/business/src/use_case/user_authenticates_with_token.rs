@@ -91,7 +91,7 @@ mod tests {
     use argentum_standard_business::data_type::id::IdFactory;
 
     use crate::data_type::builder::NameBuilder;
-    use crate::entity::session::GuestSession;
+    use crate::entity::session::Session;
     use crate::entity::user::AuthenticatedUser;
     use crate::entity::user::User::{Anonymous, Authenticated};
     use crate::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
@@ -127,7 +127,7 @@ mod tests {
         let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
         let _ = member_authenticator.add(token, &authenticated_user);
 
-        let session = GuestSession::new(session_id, user_id, token);
+        let session = Session::new(session_id, user_id, token);
 
         session_repository
             .save(&session)
@@ -169,8 +169,7 @@ mod tests {
     -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
         let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::new());
-        let authenticated_user_repository =
-            Arc::new(AuthenticatedUserRepositoryMock::new(id_factory.clone()));
+        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
 
         let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
@@ -187,11 +186,11 @@ mod tests {
                 .expect("Name should be valid"),
             EmailAddress::try_new("aa@a.com").expect("Email should be valid"),
         );
-        let session = GuestSession::new(session_id, user_id, token);
+        let session = Session::new(session_id, user_id, token);
 
         //Prefilling
         authenticated_user_repository
-            .create(&authenticated_user.name, &authenticated_user.email)
+            .create(&authenticated_user)
             .await
             .expect("Can't save a user");
         session_repository
@@ -239,7 +238,7 @@ mod tests {
         let user_id = id_factory.create();
         let session_id = id_factory.create();
         let token = "guest";
-        let session = GuestSession::new(session_id, user_id, token);
+        let session = Session::new(session_id, user_id, token);
         let token_router = Arc::new(TokenRouterMock::new());
 
         //Prefilling
