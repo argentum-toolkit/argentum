@@ -8,7 +8,7 @@ use crate::rest::transformer::{
     DtoToAnonymousRequestsRestoreTokenParams, DtoToAnonymousWithTokenChangesPasswordParams,
     DtoToUserLoginsWithPasswordParams, DtoToUserRegistersWithPasswordParams,
 };
-use crate::token::StringTokenGenerator;
+use crate::token::{JwtTokenGenerator, StringTokenGenerator};
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotificatorTrait;
@@ -105,6 +105,8 @@ where
         &mut self,
         connection_url: &str,
         max_db_connections: u32,
+        member_jwt_token_secret: &str,
+        member_jwt_token_ttl: i64,
         password_credential_repository: Option<
             Arc<dyn PasswordCredentialRepositoryTrait<Id = UniqueId>>,
         >,
@@ -125,7 +127,11 @@ where
         let restore_password_token_repository =
             Arc::new(RestorePasswordTokenRepository::new(pg_adapter.clone()));
 
-        let token_generator = Arc::new(StringTokenGenerator::new());
+        let member_token_generator = Arc::new(JwtTokenGenerator::new(
+            member_jwt_token_secret,
+            member_jwt_token_ttl,
+        ));
+        let guest_token_generator = Arc::new(StringTokenGenerator::new());
 
         let u_bdi = &self.user_infrastructure_di.business_dic;
 
@@ -150,7 +156,7 @@ where
                 u_bdi.session_repository.clone(),
                 password_credential_checker,
                 self.id_factory.clone(),
-                token_generator.clone(),
+                member_token_generator.clone(),
             )),
         };
 
@@ -170,7 +176,7 @@ where
             password_credential_repository,
             password_to_token_exchanger,
             restore_password_token_repository,
-            token_generator,
+            guest_token_generator,
             u_bdi.token_router.clone(),
             u_bdi.member_authenticator.clone(),
             member_confirms_email_uc.clone(),

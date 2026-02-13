@@ -131,6 +131,11 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
         .map_err(|e| format!("Cant get ENV {UA_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
+    const UA_MEMBER_JWT_SECRET: &str = "AG_USER_ACCOUNT_MEMBER_JWT_SECRET";
+
+    let ua_member_token_secret = env::var(UA_MEMBER_JWT_SECRET)
+        .map_err(|e| format!("Cant get ENV {UA_MEMBER_JWT_SECRET}. Error: {e}"))?;
+
     let ua_di = UserAccountInfrastructureDiCBuilder::new(
         u_di.clone(),
         unique_id_factory.clone(),
@@ -140,6 +145,8 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     .services(
         &database_url,
         10,
+        &ua_member_token_secret,
+        10 * 3600,
         Some(k_di.password_credential_repository),
         Some(k_di.password_to_token_exchanger),
         Some(k_di.member_confirms_email_uc),

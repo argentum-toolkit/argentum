@@ -29,6 +29,7 @@ where
         _user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
         _logger: Arc<L>,
     ) -> Self {
+        //TODO: implement
         Self {
             _user_repository,
             _logger,

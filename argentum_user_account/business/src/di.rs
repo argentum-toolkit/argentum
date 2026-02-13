@@ -61,7 +61,7 @@ where
     password_credential_repository: Option<Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>>,
     password_to_token_exchanger: Option<Arc<dyn PasswordToTokenExchangerTrait<Id = I>>>,
     restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
-    token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
+    guest_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
     token_router: Option<Arc<dyn TokenRouterTrait>>,
     member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
 
@@ -95,7 +95,7 @@ where
             password_credential_repository: None,
             password_to_token_exchanger: None,
             restore_password_token_repository: None,
-            token_generator: None,
+            guest_token_generator: None,
             token_router: None,
             member_authenticator: None,
             member_confirms_email_uc: None,
@@ -117,7 +117,7 @@ where
         self.restore_password_token_repository =
             Some(Arc::new(RestorePasswordTokenRepositoryMock::new()));
 
-        self.token_generator = Some(Arc::new(TokenGeneratorMock::new()));
+        self.guest_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
 
         self
     }
@@ -156,7 +156,7 @@ where
         password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
         password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        guest_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
         token_router: Arc<dyn TokenRouterTrait>,
         member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
         member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
@@ -168,7 +168,7 @@ where
         self.password_credential_repository = Some(password_credential_repository);
         self.password_to_token_exchanger = Some(password_to_token_exchanger);
         self.restore_password_token_repository = Some(restore_password_token_repository);
-        self.token_generator = Some(token_generator);
+        self.guest_token_generator = Some(guest_token_generator);
         self.token_router = Some(token_router);
         self.member_authenticator = Some(member_authenticator);
         self.member_confirms_email_uc = Some(member_confirms_email_uc);
@@ -187,10 +187,10 @@ where
             .clone()
             .ok_or("session_repository is not initialized")?;
 
-        let token_generator = self
-            .token_generator
+        let guest_token_generator = self
+            .guest_token_generator
             .clone()
-            .ok_or("token_generator is not initialized")?;
+            .ok_or("guest_token_generator is not initialized")?;
 
         let password_credential_repository = self
             .password_credential_repository
@@ -236,7 +236,7 @@ where
             self.id_factory.clone(),
             anonymous_user_repository.clone(),
             session_repository.clone(),
-            token_generator.clone(),
+            guest_token_generator.clone(),
         ));
 
         let password_credential_writer = Arc::new(PasswordCredentialWriter::new(
@@ -290,7 +290,7 @@ where
             self.id_factory.clone(),
             authenticated_user_repository,
             restore_password_token_repository,
-            token_generator,
+            guest_token_generator,
             self.notificator.clone(),
             self.logger.clone(),
         ));
