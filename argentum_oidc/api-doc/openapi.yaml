@@ -1,0 +1,59 @@
+openapi: 3.1.0
+
+info:
+  title: Argentum OIDC. Keycloak customization API
+  version: 0.4.0-dev
+  description: API that helps to customize Keycloak
+  license:
+    name: LGPL-3.0
+    identifier: LGPL-3.0
+
+  contact:
+    url: https://gitlab.com/argentum-toolkit/argentum
+
+servers:
+  - url: http://localhost:{port}/{basePath}
+    description: Dev API Server with CORS
+    variables:
+      port:
+        enum:
+          - "8082"
+        default: "8082"
+      basePath:
+        default: api/v1
+  - url: http://localhost:{port}/{basePath}
+    description: The production API server
+    variables:
+      port:
+        enum:
+          - "80"
+          - "8080"
+        default: "8080"
+      basePath:
+        default: api/v1
+
+externalDocs:
+  description: Find more info here
+  url: https://gitlab.com/argentum-toolkit/argentum
+
+paths:
+  /exchange-code:
+    post:
+      summary: Exchange OAuth authorization code for access token
+      description: Exchanges the authorization code received from Keycloak (after social login) for an access token and user info. Requires JSON body with code and optional state for CSRF protection.
+      tags:
+        - oidc
+      operationId: exchangeCode
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/ExchangeCodeRequestBody"
+      responses:
+        "201":
+          $ref: "./response.oas.yaml#/components/responses/CodeExchangedSuccessfully"
+        "400":
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
+
+components: {}
+
+tags:
+  - name: oidc
+    description: Open ID Connect

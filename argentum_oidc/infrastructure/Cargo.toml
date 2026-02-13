@@ -1,0 +1,43 @@
+[package]
+name = "argentum_oidc_infrastructure"
+description = "Infrastructure layer of OIDC component. Keycloak customization."
+version = "0.4.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "LGPL-3.0"
+edition = "2024"
+homepage = "https://gitlab.com/argentum-toolkit/argentum"
+repository = "https://gitlab.com/argentum-toolkit/argentum"
+documentation = "https://gitlab.com/argentum-toolkit/argentum"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+server = ["dep:tokio"]
+
+[dependencies]
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_user_business = { path = "../../argentum_user/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_user_account_business = { path = "../../argentum_user_account/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_oidc_business = { path = "../../argentum_oidc/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_oidc_rest = { path = "../rest", version = ">=0.4.0-dev,<0.5.0", features = [
+    "server",
+] }
+argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+
+async-trait = "0.1.*"
+futures = "0.3.*"
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
+
+secrecy = "0.10.*"
+
+tokio = { version = "1.*", features = ["full"], optional = true }
+reqwest = { version = "0.12.*", features = ["json"] }
+jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
+
+thiserror = "2.*"
+uuid = { version = "1.*", features = ["serde", "v4"] }

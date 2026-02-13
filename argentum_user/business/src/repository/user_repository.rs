@@ -15,11 +15,13 @@ pub trait AuthenticatedUserRepositoryTrait: Send + Sync {
         &self,
         id: Self::Id,
     ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError>;
+
     async fn find_by_email(
         &self,
         email: &EmailAddress,
     ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError>;
-    async fn save(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError>;
+
+    async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError>;
 }
 
 #[async_trait]
@@ -35,7 +37,7 @@ pub trait AnonymousUserRepositoryTrait: Send + Sync {
 
 // Not business errors.
 // This enum covers cases when errors where triggered via 3rd party libraries or via wrong configuration
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Clone)]
 pub enum ExternalUserError {
     #[error("Can't save an user")]
     Authenticated(#[source] Option<Arc<dyn Error + Send + Sync>>),

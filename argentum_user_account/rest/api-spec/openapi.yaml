@@ -104,6 +104,24 @@ paths:
           $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
+  /user/email-verification:
+    post:
+      description: User sends email verification key
+      operationId: MemberVerifiesEmail
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/EmailVerificationRequestBody'
+      summary: New user verifies email address
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
   /user/restore-password/change-password:
     post:
       description: Final step of restoring password process
@@ -130,6 +148,13 @@ components:
           schema:
             $ref: '#/components/schemas/ChangePasswordSchema'
       description: Required data to change password with token
+      required: true
+    EmailVerificationRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmailVerificationSchema'
+      description: Required data for email verification
       required: true
     LoginWithPasswordRequestBody:
       content:
@@ -178,6 +203,14 @@ components:
           example: secure-password
           type: string
           format: password
+      type: object
+    EmailVerificationSchema:
+      required:
+      - key
+      properties:
+        key:
+          example: abc123efg567
+          type: string
       type: object
     EmptyResponse:
       title: Empty response

@@ -21,6 +21,8 @@ pub(crate) fn App() -> Element {
     //TODO: use ENV
     argentum_user_ui::di::di_init("http://localhost:8082");
 
+    argentum_keycloak_ui::di::di_init("http://localhost:8082");
+
     use_dark_mode();
 
     rsx! {

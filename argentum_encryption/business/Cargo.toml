@@ -11,4 +11,5 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [dependencies]
+secrecy = "0.10.*"
 thiserror = "2.*"

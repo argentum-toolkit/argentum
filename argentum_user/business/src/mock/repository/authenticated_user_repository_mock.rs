@@ -69,24 +69,17 @@ where
         Ok(None)
     }
 
-    async fn save(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
+    async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
         // TODO: check if key exists. Eg:
         // if self.users. contains_key(user.get_id().clone()) {
         //     return Err("Already exists");
         // }
 
-        let u = AuthenticatedUser::<Self::Id> {
-            id: user.id(),
-            created_at: user.created_at,
-            name: user.name.clone(),
-            email: user.email.clone(),
-        };
-
         match self
             .users
             .write()
             .map_err(|_| ExternalUserError::Authenticated(Some(Arc::new(PoisonedLockError))))?
-            .insert(user.id(), u)
+            .insert(user.id, user.clone())
             .is_none()
         {
             true => Ok(()),

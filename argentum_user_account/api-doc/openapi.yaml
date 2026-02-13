@@ -17,8 +17,8 @@ servers:
     variables:
       port:
         enum:
-          - '8082'
-        default: '8082'
+          - "8082"
+        default: "8082"
       basePath:
         default: api/v1
   - url: http://localhost:{port}/{basePath}
@@ -26,9 +26,9 @@ servers:
     variables:
       port:
         enum:
-          - '80'
-          - '8080'
-        default: '8080'
+          - "80"
+          - "8080"
+        default: "8080"
       basePath:
         default: api/v1
 
@@ -45,7 +45,7 @@ paths:
         - anonymous
       operationId: AnonymousRegisters
       responses:
-        '201':
+        "201":
           $ref: "./response.oas.yaml#/components/responses/AnonymousRegisteredSuccessfully"
 
   /user-account/register:
@@ -56,15 +56,15 @@ paths:
         - user-account
       operationId: UserRegistersWithPassword
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/RegistrationWithPasswordRequestBody"
       responses:
-        '201':
+        "201":
           $ref: "./response.oas.yaml#/components/responses/UserRegisteredSuccessfully"
-        '400':
+        "400":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '409':
+        "409":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/409"
       x-ag-form:
         submit-label: "Sign Up"
@@ -77,16 +77,16 @@ paths:
         - user-account
       operationId: UserLoginsWithPassword
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/LoginWithPasswordRequestBody"
 
       responses:
-        '200':
+        "200":
           $ref: "./response.oas.yaml#/components/responses/UserLoggedInSuccessfully"
-        '400':
+        "400":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '401':
+        "401":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
       x-ag-form:
         submit-label: "Sign In"
@@ -99,16 +99,16 @@ paths:
         - user-account
       operationId: AnonymousRequestsRestoreToken
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/RequestRestoreTokenRequestBody"
 
       responses:
-        '200':
+        "200":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/EmptyOk"
-        '400':
+        "400":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '401':
+        "401":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
 
   /user/restore-password/change-password:
@@ -119,16 +119,16 @@ paths:
         - user-account
       operationId: AnonymousWithTokenChangesPassword
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/ChangePasswordRequestBody"
 
       responses:
-        '200':
+        "200":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/EmptyOk"
-        '400':
+        "400":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
-        '401':
+        "401":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
 
 components:
@@ -144,6 +144,5 @@ tags:
 
   - name: user-account
     description: Managing of the user account
-
 #security:
 #  - bearerAuth: []

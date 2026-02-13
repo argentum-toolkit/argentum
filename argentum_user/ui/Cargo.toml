@@ -12,6 +12,5 @@ argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.4.0-dev
     "client",
 ] }
 
-dioxus = { version = "0.7.0-rc", features = ["fullstack"] }
-dioxus-logger = "0.7.0-rc"
-serde = { version = "1.*", features = ["derive"] }
+dioxus = { version = "0.7.*", features = ["fullstack"] }
+dioxus-logger = "0.7.*"

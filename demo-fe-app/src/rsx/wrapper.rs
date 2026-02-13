@@ -16,10 +16,10 @@ pub(crate) fn Wrapper() -> Element {
 
     rsx! {
         div {
-            class: "flex flex-col min-h-screen bg-base-200 justify-between items-center bg-base-200 dark:bg-base-900 shadow",
+            class: "flex flex-col min-h-screen justify-between items-center bg-base-100 dark:bg-base-900 shadow",
             "data-theme": theme_class(),
             header {
-                class: "navbar bg-base-100 shadow-md",
+                class: "navbar bg-base-200 shadow-md",
                 NavBar { theme_config: theme_config() }
             }
             main {

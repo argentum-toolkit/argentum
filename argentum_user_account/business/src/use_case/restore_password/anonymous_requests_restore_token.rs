@@ -169,7 +169,6 @@ mod tests {
             logger.clone(),
         );
 
-        let user_id = id_factory.create();
         let user_name = NameBuilder::new("Dionne".into())
             .last(Some("Morrison".into()))
             .try_build()
@@ -177,9 +176,10 @@ mod tests {
 
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
+        let user_id = id_factory.create();
         let user = AuthenticatedUser::new(user_id, user_name, email.clone());
 
-        user_repository.save(&user).await?;
+        user_repository.create(&user).await?;
 
         let result = uc.execute(email).await;
 

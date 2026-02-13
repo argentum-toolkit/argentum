@@ -3,10 +3,10 @@ use crate::repository::password_credential_writer::PasswordCredentialWriterTrait
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
 use crate::use_case::restore_password::error::RestorePasswordError;
 
-use argentum_encryption_business::password::Encryptor;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+use secrecy::SecretString;
 use std::sync::Arc;
 
 pub struct AnonymousWithTokenChangesPasswordUc<I, L>
@@ -17,7 +17,7 @@ where
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
-    encryptor: Arc<dyn Encryptor>,
+
     token_ttl: u32, //configurable ttl in seconds
     logger: Arc<L>,
 }
@@ -30,7 +30,6 @@ where
     pub fn new(
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
-        encryptor: Arc<dyn Encryptor>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
         token_ttl: u32,
         logger: Arc<L>,
@@ -39,7 +38,6 @@ where
             user_repository,
             restore_password_token_repository,
             credential_writer,
-            encryptor,
             token_ttl,
             logger,
         }
@@ -78,10 +76,8 @@ where
 
         self.credential_writer.delete_for_user(user.id).await?;
 
-        //save credentials
-        let (hashed_password, salt) = self.encryptor.encrypt(password)?;
-
-        let cred = PasswordCredential::new(user.id, &hashed_password, &salt);
+        let pw = SecretString::new(password.into());
+        let cred = PasswordCredential::new(user.id, pw);
         self.credential_writer.write(&cred).await?;
 
         if let Err(e) = self
@@ -131,17 +127,18 @@ mod tests {
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
             Arc::new(TokenGeneratorMock::new());
-        let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
+        let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
+            EncryptorMock::new(),
+        )));
         let credential_writer =
             Arc::new(PasswordCredentialWriter::new(credential_repository.clone()));
-        let encryptor = Arc::new(EncryptorMock::new());
+        Arc::new(EncryptorMock::new());
 
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
         let uc = AnonymousWithTokenChangesPasswordUc::new(
             user_repository.clone(),
             token_repository.clone(),
-            encryptor.clone(),
             credential_writer,
             100.clone(),
             logger.clone(),
@@ -154,9 +151,9 @@ mod tests {
             .expect("Name should be valid");
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
+        let user = AuthenticatedUser::new(user_id, user_name, email);
 
-        user_repository.save(&user).await?;
+        user_repository.create(&user).await?;
 
         let token = token_generator.generate(user.id);
         let token_id = id_factory.create();
@@ -171,7 +168,7 @@ mod tests {
             return Err("Password is not changed".into());
         }
 
-        if let Ok(None) = credential_repository.find_by_user_id(user_id).await {
+        if let Ok(None) = credential_repository.find_by_user_id(user.id).await {
             return Err("Can't find new password".into());
         }
 
@@ -185,10 +182,11 @@ mod tests {
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
             Arc::new(TokenGeneratorMock::new());
-        let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new());
+        let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
+            EncryptorMock::new(),
+        )));
         let credential_writer =
             Arc::new(PasswordCredentialWriter::new(credential_repository.clone()));
-        let encryptor = Arc::new(EncryptorMock::new());
 
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
@@ -196,7 +194,6 @@ mod tests {
         let uc = AnonymousWithTokenChangesPasswordUc::new(
             user_repository.clone(),
             token_repository.clone(),
-            encryptor.clone(),
             credential_writer.clone(),
             1,
             logger.clone(),
@@ -210,9 +207,9 @@ mod tests {
 
         let email = EmailAddress::try_new("test@mail.com").expect("Email should be valid");
 
-        let user = AuthenticatedUser::new(user_id, user_name, email.clone());
+        let user = AuthenticatedUser::new(user_id, user_name.clone(), email.clone());
 
-        user_repository.save(&user).await?;
+        user_repository.create(&user).await?;
 
         let token = token_generator.generate(user.id);
         let token_id = id_factory.create();

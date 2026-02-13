@@ -64,7 +64,7 @@ impl AuthenticatedUserRepositoryTrait for AuthenticatedUserRepositoryMockWihBrok
         Ok(None)
     }
 
-    async fn save(&self, _user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
+    async fn create(&self, _user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
         Err(ExternalUserError::Authenticated(None))
     }
 }

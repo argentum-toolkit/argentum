@@ -6,7 +6,8 @@ const ERR_EMAIL_EMPTY: &str = "Email should not be empty";
 const ERR_WRONG_EMAIL: &str = "Wrong email address";
 
 pub static EMAIL_REGEX: LazyLock<regex::Regex> =
-    LazyLock::new(|| regex!(r"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$"));
+    LazyLock::new(|| regex!(r"^([\w\.\-\+]+)@([\w\-]+)((\.(\w){2,10})+)$"));
+// LazyLock::new(|| regex!(r"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,10})+)$"));
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct EmailAddress(String);

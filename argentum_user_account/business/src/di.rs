@@ -1,17 +1,18 @@
 use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
 use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
 use crate::mock::token::TokenGeneratorMock;
-use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
 use crate::repository::password_credential_writer::PasswordCredentialWriter;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
+use crate::service::PasswordToTokenExchangerTrait;
 use crate::token::GeneratorTrait;
 use crate::use_case::anonymous_registers::AnonymousRegistersUc;
+use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
 use crate::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
 use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
 use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
 use crate::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
-use argentum_encryption_business::password::{Encryptor, Validator};
+use argentum_encryption_business::mock::password::EncryptorMock;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotificatorTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
@@ -24,6 +25,7 @@ use argentum_user_business::repository::session_repository::SessionRepositoryTra
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
+use argentum_user_business::service::{MemberAuthenticatorTrait, TokenRouterTrait};
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
@@ -39,6 +41,7 @@ where
     pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc<I>>,
     pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<I, L>>,
     pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<I, L>>,
+    pub member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
 }
 
 pub struct UserAccountBusinessDiCBuilder<I, L>
@@ -47,8 +50,7 @@ where
     L: LoggerTrait,
 {
     id_factory: Arc<dyn IdFactory<Id = I>>,
-    encryptor: Arc<dyn Encryptor>,
-    validator: Arc<dyn Validator>,
+    // validator: Arc<dyn Validator>,
     logger: Arc<L>,
     notificator: Arc<dyn NotificatorTrait<Id = I>>,
 
@@ -57,9 +59,13 @@ where
     authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>>,
     session_repository: Option<Arc<dyn SessionRepositoryTrait<Id = I>>>,
     password_credential_repository: Option<Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>>,
+    password_to_token_exchanger: Option<Arc<dyn PasswordToTokenExchangerTrait<Id = I>>>,
     restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
-    token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
+    guest_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
+    token_router: Option<Arc<dyn TokenRouterTrait>>,
+    member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
 
+    member_confirms_email_uc: Option<Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>>,
     restore_password_token_ttl: u32,
     product_name: String,
     restore_password_front_url: String,
@@ -73,15 +79,13 @@ where
 {
     pub fn new(
         id_factory: Arc<dyn IdFactory<Id = I>>,
-        encryptor: Arc<dyn Encryptor>,
-        validator: Arc<dyn Validator>,
+        // validator: Arc<dyn Validator>,
         logger: Arc<L>,
         notificator: Arc<dyn NotificatorTrait<Id = I>>,
     ) -> Self {
         Self {
             id_factory,
-            encryptor,
-            validator,
+            // validator,
             logger,
             notificator,
             anonymous_binding_repository: None,
@@ -89,8 +93,12 @@ where
             authenticated_user_repository: None,
             session_repository: None,
             password_credential_repository: None,
+            password_to_token_exchanger: None,
             restore_password_token_repository: None,
-            token_generator: None,
+            guest_token_generator: None,
+            token_router: None,
+            member_authenticator: None,
+            member_confirms_email_uc: None,
             restore_password_token_ttl: 1,
             product_name: "".into(),
             restore_password_front_url: "".into(),
@@ -103,12 +111,13 @@ where
         self.authenticated_user_repository = Some(Arc::new(AuthenticatedUserRepositoryMock::new()));
         self.session_repository = Some(Arc::new(SessionRepositoryMock::new()));
 
-        self.password_credential_repository =
-            Some(Arc::new(PasswordCredentialRepositoryMock::new()));
+        self.password_credential_repository = Some(Arc::new(
+            PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new())),
+        ));
         self.restore_password_token_repository =
             Some(Arc::new(RestorePasswordTokenRepositoryMock::new()));
 
-        self.token_generator = Some(Arc::new(TokenGeneratorMock::new()));
+        self.guest_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
 
         self
     }
@@ -129,6 +138,15 @@ where
         self
     }
 
+    pub fn with_authenticated_user_repository(
+        &mut self,
+        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    ) -> &mut Self {
+        self.authenticated_user_repository = Some(authenticated_user_repository);
+
+        self
+    }
+
     pub fn services(
         &mut self,
         anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
@@ -136,16 +154,24 @@ where
         authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
         password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
+        password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        guest_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        token_router: Arc<dyn TokenRouterTrait>,
+        member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
+        member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
     ) -> &mut Self {
         self.anonymous_binding_repository = Some(anonymous_binding_repository);
         self.anonymous_user_repository = Some(anonymous_user_repository);
         self.authenticated_user_repository = Some(authenticated_user_repository);
         self.session_repository = Some(session_repository);
         self.password_credential_repository = Some(password_credential_repository);
+        self.password_to_token_exchanger = Some(password_to_token_exchanger);
         self.restore_password_token_repository = Some(restore_password_token_repository);
-        self.token_generator = Some(token_generator);
+        self.guest_token_generator = Some(guest_token_generator);
+        self.token_router = Some(token_router);
+        self.member_authenticator = Some(member_authenticator);
+        self.member_confirms_email_uc = Some(member_confirms_email_uc);
 
         self
     }
@@ -161,15 +187,20 @@ where
             .clone()
             .ok_or("session_repository is not initialized")?;
 
-        let token_generator = self
-            .token_generator
+        let guest_token_generator = self
+            .guest_token_generator
             .clone()
-            .ok_or("token_generator is not initialized")?;
+            .ok_or("guest_token_generator is not initialized")?;
 
         let password_credential_repository = self
             .password_credential_repository
             .clone()
             .ok_or("password_credential_repository is not initialized")?;
+
+        let password_to_token_exchanger = self
+            .password_to_token_exchanger
+            .clone()
+            .ok_or("password_to_token_exchanger is not initialized")?;
 
         let authenticated_user_repository = self
             .authenticated_user_repository
@@ -186,11 +217,26 @@ where
             .clone()
             .ok_or("restore_password_token_repository is not initialized")?;
 
+        let token_router = self
+            .token_router
+            .clone()
+            .ok_or("token_router not initialized")?;
+
+        let member_authenticator = self
+            .member_authenticator
+            .clone()
+            .ok_or("member_authenticator not initialized")?;
+
+        let member_confirms_email_uc = self
+            .member_confirms_email_uc
+            .clone()
+            .ok_or("member_confirms_email_uc not initialized")?;
+
         let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
             self.id_factory.clone(),
             anonymous_user_repository.clone(),
             session_repository.clone(),
-            token_generator.clone(),
+            guest_token_generator.clone(),
         ));
 
         let password_credential_writer = Arc::new(PasswordCredentialWriter::new(
@@ -200,35 +246,39 @@ where
         let user_registers_with_password_uc = Arc::new(UserRegistersWithPasswordUc::new(
             authenticated_user_repository.clone(),
             password_credential_writer.clone(),
-            self.encryptor.clone(),
         ));
 
-        let password_credential_checker = Arc::new(PasswordCredentialChecker::new(
-            password_credential_repository,
-            self.validator.clone(),
-        ));
+        // let password_credential_checker = Arc::new(PasswordCredentialChecker::new(
+        //     password_credential_repository,
+        //     self.validator.clone(),
+        // ));
+
+        // let password_to_token_exchanger = Arc::new(DefaultPasswordToTokenExchanger::new(
+        //     authenticated_user_repository.clone(),
+        //     session_repository.clone(),
+        //     password_credential_checker,
+        //     self.id_factory.clone(),
+        //     token_generator.clone(),
+        // ));
 
         let user_logins_with_password_uc = Arc::new(UserLoginsWithPasswordUc::new(
-            authenticated_user_repository.clone(),
+            password_to_token_exchanger,
             anonymous_binding_repository,
             session_repository.clone(),
-            password_credential_checker,
-            self.id_factory.clone(),
-            token_generator.clone(),
             self.logger.clone(),
         ));
 
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
-            authenticated_user_repository.clone(),
+            member_authenticator,
             anonymous_user_repository,
             session_repository,
+            token_router,
         ));
 
         let anonymous_with_token_changes_password_uc =
             Arc::new(AnonymousWithTokenChangesPasswordUc::new(
                 authenticated_user_repository.clone(),
                 restore_password_token_repository.clone(),
-                self.encryptor.clone(),
                 password_credential_writer,
                 self.restore_password_token_ttl,
                 self.logger.clone(),
@@ -240,7 +290,7 @@ where
             self.id_factory.clone(),
             authenticated_user_repository,
             restore_password_token_repository,
-            token_generator,
+            guest_token_generator,
             self.notificator.clone(),
             self.logger.clone(),
         ));
@@ -250,6 +300,7 @@ where
             user_registers_with_password_uc,
             user_logins_with_password_uc,
             user_authenticates_with_token_uc,
+            member_confirms_email_uc,
             anonymous_with_token_changes_password_uc,
             anonymous_requests_restore_token_uc,
         })

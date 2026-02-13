@@ -55,7 +55,7 @@ where
             User::Anonymous(a) => a,
             User::Authenticated(_) => {
                 return Err(HttpError::Unauthorized(Unauthorized::new(
-                    "Endpoint is available only for anonymous users",
+                    "Endpoint is available only for guests",
                 )));
             }
         };
@@ -64,7 +64,10 @@ where
             .dto_to_user_logins_with_password_params
             .transform(req)?;
 
-        let result = self.uc.execute(Some(anonymous), email, &password).await;
+        let result = self
+            .uc
+            .execute(Some(anonymous), email, password.into())
+            .await;
 
         match result {
             Ok(session) => {

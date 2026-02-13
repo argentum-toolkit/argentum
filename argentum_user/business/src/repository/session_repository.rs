@@ -17,7 +17,7 @@ pub trait SessionRepositoryTrait: Send + Sync {
     async fn delete_users_sessions(&self, user_id: Self::Id) -> Result<(), SessionRepositoryError>;
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Clone)]
 pub enum SessionRepositoryError {
     #[error("Can't save session")]
     Save(#[source] Option<Arc<dyn Error + Send + Sync>>),

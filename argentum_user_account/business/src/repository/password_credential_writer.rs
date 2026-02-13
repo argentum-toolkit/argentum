@@ -73,12 +73,12 @@ where
         user_id: <Self as PasswordCredentialWriterTrait>::Id,
     ) -> Result<(), PasswordCredentialWriterError> {
         if let Some(cred) = self.repository.find_by_user_id(user_id).await? {
-            self.repository.delete(&cred).await?;
+            self.repository.delete(cred).await?;
         }
 
         match self.repository.find_by_user_id(user_id).await? {
             Some(cred) => {
-                self.repository.delete(&cred).await?;
+                self.repository.delete(cred).await?;
                 Ok(())
             }
             None => Ok(()),

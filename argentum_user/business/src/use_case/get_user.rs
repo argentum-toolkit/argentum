@@ -54,24 +54,23 @@ mod tests {
     use std::sync::Arc;
 
     #[tokio::test]
-    async fn test_get_user() -> Result<(), &'static str> {
+    async fn test_get_user() -> Result<(), String> {
+        let id_factory = Arc::new(IdFactoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
-        let id_factory = IdFactoryMock::new();
 
         //Data
         let user_id = id_factory.create();
-        let authenticated_user = AuthenticatedUser::new(
-            user_id,
-            NameBuilder::new("Dionne")
-                .last(Some("Morrison"))
-                .try_build()
-                .expect("Name should be valid"),
-            EmailAddress::try_new("dionne@examples.com").expect("Email should be valid"),
-        );
+        let name = NameBuilder::new("Dionne")
+            .last(Some("Morrison"))
+            .try_build()
+            .expect("Name should be valid");
+
+        let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
+        let user = AuthenticatedUser::new(user_id, name, email);
 
         //Prefilling
         authenticated_user_repository
-            .save(&authenticated_user)
+            .create(&user)
             .await
             .expect("Can't save a user");
 
@@ -79,7 +78,6 @@ mod tests {
         let uc = GetUserUc::new(authenticated_user_repository);
 
         let result = uc.execute(user_id).await;
-
         match result {
             Ok(u) => {
                 assert_eq!(u.id.to_string(), user_id.to_string());
@@ -87,31 +85,30 @@ mod tests {
 
                 return Ok(());
             }
-            Err(_) => {
-                return Err("Can't get user");
+            Err(e) => {
+                return Err(format!("Can't get user. Error: {}", e));
             }
         }
     }
 
     #[tokio::test]
     async fn test_get_not_registered_user() -> Result<(), &'static str> {
+        let id_factory = Arc::new(IdFactoryMock::new());
         let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
-        let id_factory = IdFactoryMock::new();
 
         //Data
         let user_id = id_factory.create();
-        let authenticated_user = AuthenticatedUser::new(
-            user_id,
-            NameBuilder::new("Dionne")
-                .last(Some("Morrison"))
-                .try_build()
-                .expect("Name should be valid"),
-            EmailAddress::try_new("dionne@examples.com").expect("Email should be valid"),
-        );
+        let name = NameBuilder::new("Dionne")
+            .last(Some("Morrison"))
+            .try_build()
+            .expect("Name should be valid");
+
+        let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
+        let user = AuthenticatedUser::new(user_id, name, email);
 
         //Prefilling
         authenticated_user_repository
-            .save(&authenticated_user)
+            .create(&user)
             .await
             .expect("Can't save a user");
 

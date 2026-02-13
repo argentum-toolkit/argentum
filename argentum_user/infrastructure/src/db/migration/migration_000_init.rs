@@ -58,6 +58,7 @@ pub fn up(table_name_prefix: &str) -> Vec<String> {
             (
                 id      uuid PRIMARY KEY,
                 user_id uuid NOT NULL,
+                created_at   timestamptz NOT NULL,
                 token   TEXT NOT NULL
             );
         "#,

@@ -7,3 +7,5 @@ pub mod mock;
 pub mod repository;
 #[cfg(feature = "server")]
 pub mod use_case;
+
+pub mod service;

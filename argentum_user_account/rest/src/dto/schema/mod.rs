@@ -1,5 +1,6 @@
 mod anonymous_registration_result;
 mod change_password_schema;
+mod email_verification_schema;
 mod empty_response;
 mod login_result;
 mod login_with_password_schema;
@@ -16,6 +17,8 @@ pub use anonymous_registration_result::AnonymousRegistrationResult;
 pub use anonymous_registration_result::AnonymousRegistrationResultRaw;
 pub use change_password_schema::ChangePasswordSchema;
 pub use change_password_schema::ChangePasswordSchemaRaw;
+pub use email_verification_schema::EmailVerificationSchema;
+pub use email_verification_schema::EmailVerificationSchemaRaw;
 pub use empty_response::EmptyResponse;
 pub use empty_response::EmptyResponseRaw;
 pub use login_result::LoginResult;

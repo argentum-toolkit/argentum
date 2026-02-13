@@ -47,7 +47,7 @@ impl UserRegistersWithPasswordTrait for UserRegistersWithPasswordHandler {
 
         let result = self
             .uc
-            .execute(user_id, name, email, &password, terms_accepted)
+            .execute(user_id, name, email, password.into(), terms_accepted)
             .await;
 
         match result {

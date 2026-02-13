@@ -1,0 +1,17 @@
+openapi: 3.1.0
+
+info:
+  title: Argentum OIDC. Keycloak customization API
+  version: 0.4.0-dev
+
+paths: {}
+
+components:
+  requestBodies:
+    ExchangeCodeRequestBody:
+      description: "Data required to exchange code"
+      required: true
+      content:
+        "application/json":
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/ExchangeCodeSchema"

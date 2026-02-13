@@ -34,3 +34,7 @@ argentum_standard_business = { path = "../../argentum_standard/business", versio
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_user_account_business = { path = "../../argentum_user_account/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.4.0-dev,<0.5.0" }
+
+# openidconnect = { version = "4.*", features = ["reqwest"] }
+# reqwest = { version = "0.12.*", features = ["json"] }
+# uuid = { version = "1.*", features = ["serde", "v4", "js"] }

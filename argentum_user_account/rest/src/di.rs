@@ -1,6 +1,7 @@
 use crate::server::handler::AnonymousRegistersTrait;
 use crate::server::handler::AnonymousRequestsRestoreTokenTrait;
 use crate::server::handler::AnonymousWithTokenChangesPasswordTrait;
+use crate::server::handler::MemberVerifiesEmailTrait;
 use crate::server::handler::UserLoginsWithPasswordTrait;
 use crate::server::handler::UserRegistersWithPasswordTrait;
 use crate::server::{PreHandler, Router};
@@ -34,6 +35,7 @@ where
         anonymous_with_token_changes_password_handler: Arc<
             dyn AnonymousWithTokenChangesPasswordTrait<Id = I>,
         >,
+        member_verifies_email_handler: Arc<dyn MemberVerifiesEmailTrait<Id = I>>,
         user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait<Id = I>>,
         user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait<Id = I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
@@ -44,6 +46,7 @@ where
             anonymous_registers_handler,
             anonymous_requests_restore_token_handler,
             anonymous_with_token_changes_password_handler,
+            member_verifies_email_handler,
             user_logins_with_password_handler,
             user_registers_with_password_handler,
         ));

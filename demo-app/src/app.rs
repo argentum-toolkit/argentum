@@ -91,7 +91,6 @@ where
         };
 
         let user_id = self.id_factory.create();
-
         let name = NameBuilder::new("Sarah")
             .last(Some("Connor"))
             .try_build()
@@ -102,7 +101,7 @@ where
 
         let res = self
             .user_registers_with_pw
-            .execute(user_id, name, email, password, true)
+            .execute(user_id, name, email, password.into(), true)
             .await;
         match res {
             Ok(_) => {
@@ -121,7 +120,7 @@ where
 
         let login_result = self
             .user_logins_with_pw
-            .execute(Some(anon2), email2, password2)
+            .execute(Some(anon2), email2, password2.into())
             .await;
 
         let login = match login_result {

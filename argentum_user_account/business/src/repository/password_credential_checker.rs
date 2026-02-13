@@ -3,6 +3,7 @@ use crate::repository::password_credential_repository::{
 };
 use argentum_encryption_business::password::{EncryptionError, Validator};
 use argentum_standard_business::data_type::id::Id;
+use secrecy::SecretString;
 use std::sync::Arc;
 
 pub struct PasswordCredentialChecker<I>
@@ -30,7 +31,7 @@ where
     pub async fn check(
         &self,
         user_id: I,
-        password: &str,
+        password: &SecretString,
     ) -> Result<bool, PasswordCredentialCheckerError> {
         match self.repository.find_by_user_id(user_id).await {
             Ok(None) => Ok(false),
@@ -49,7 +50,7 @@ where
     }
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Clone)]
 pub enum PasswordCredentialCheckerError {
     #[error("Can't check credentials")]
     Repository(#[source] PasswordCredentialRepositoryError),

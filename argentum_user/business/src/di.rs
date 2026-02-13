@@ -1,13 +1,11 @@
 use argentum_standard_business::data_type::id::Id;
 
-use crate::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
-use crate::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
-use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
 use crate::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use crate::repository::session_repository::SessionRepositoryTrait;
 use crate::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
+use crate::service::{MemberAuthenticatorTrait, TokenRouterTrait};
 use crate::use_case::GetUserUc;
 use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
@@ -22,6 +20,8 @@ where
     pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc<I>>,
     pub get_user_uc: Arc<GetUserUc<I>>,
     pub session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
+    pub token_router: Arc<dyn TokenRouterTrait>,
+    pub member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
 }
 
 #[derive(Default)]
@@ -33,6 +33,8 @@ where
     anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait<Id = I>>>,
     authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>>,
     session_repository: Option<Arc<dyn SessionRepositoryTrait<Id = I>>>,
+    token_router: Option<Arc<dyn TokenRouterTrait>>,
+    member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
 }
 
 impl<I> UserBusinessDiCBuilder<I>
@@ -45,19 +47,9 @@ where
             anonymous_user_repository: None,
             authenticated_user_repository: None,
             session_repository: None,
+            token_router: None,
+            member_authenticator: None,
         }
-    }
-
-    pub fn mock(&mut self) -> &mut Self {
-        self.anonymous_user_repository = Some(Arc::new(AnonymousUserRepositoryMock::<I>::new()));
-
-        self.authenticated_user_repository =
-            Some(Arc::new(AuthenticatedUserRepositoryMock::<I>::new()));
-
-        self.anonymous_binding_repository =
-            Some(Arc::new(AnonymousBindingRepositoryMock::<I>::new()));
-
-        self
     }
 
     pub fn anonymous_binding_repository(
@@ -96,6 +88,21 @@ where
         self
     }
 
+    pub fn token_router(&mut self, router: Arc<dyn TokenRouterTrait>) -> &mut Self {
+        self.token_router = Some(router);
+
+        self
+    }
+
+    pub fn member_authenticator(
+        &mut self,
+        authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
+    ) -> &mut Self {
+        self.member_authenticator = Some(authenticator);
+
+        self
+    }
+
     pub fn build(&self) -> Result<UserBusinessDiC<I>, String> {
         let authenticated_user_repository = self
             .authenticated_user_repository
@@ -117,10 +124,21 @@ where
             .clone()
             .ok_or("session_repository not initialized")?;
 
+        let token_router = self
+            .token_router
+            .clone()
+            .ok_or("token_router not initialized")?;
+
+        let member_authenticator = self
+            .member_authenticator
+            .clone()
+            .ok_or("member_authenticator not initialized")?;
+
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
-            authenticated_user_repository.clone(),
+            member_authenticator.clone(),
             anonymous_user_repository.clone(),
             session_repository.clone(),
+            token_router.clone(),
         ));
 
         let get_user_uc = Arc::new(GetUserUc::new(authenticated_user_repository.clone()));
@@ -132,6 +150,8 @@ where
             user_authenticates_with_token_uc,
             get_user_uc,
             session_repository,
+            token_router,
+            member_authenticator,
         })
     }
 }

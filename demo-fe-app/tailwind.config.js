@@ -20,8 +20,8 @@ module.exports = {
         "w-52",
         "bg-base-100",
         "rounded-box",
-        "z-1", 
-        "p-2", 
+        "z-1",
+        "p-2",
         "shadow-sm",
 
         //theme toggle
@@ -35,12 +35,12 @@ module.exports = {
         "w-10",
         "h-7",
         "w-7",
-        "md:h-14", 
+        "md:h-14",
         "md:w-14",
 
         //forms
         "btn",
-        "btn-active", 
+        "btn-active",
         "btn-primary",
         "mt-5",
         "text-error",

@@ -7,22 +7,30 @@ services:
 
     # user: "${HOST_UID}:${HOST_GID}"
     privileged: true
-    tty: true 
+    tty: true
     stdin_open: true
+    command: ["tail", "-f", "/dev/null"]
     # command: perf record -g --call-graph dwarf cargo run --bin api --release
-    command: cargo run --bin api --release
+    # command: cargo run --bin api #--release
+    # command: cargo run --bin api-keycloak
     environment:
       - CARGO_PROFILE_RELEASE_DEBUG=2
+      - AG_USER_ACCOUNT_MEMBER_JWT_SECRET
+      # - KEYCLOAK_BASE_URL=${KEYCLOAK_BASE_URL}
+      # - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      # - KEYCLOAK_FE_CLIENT_ID=${KEYCLOAK_FE_CLIENT_ID}
+      # - KEYCLOAK_BE_CLIENT_ID=${KEYCLOAK_BE_CLIENT_ID}
+      # - KEYCLOAK_BE_CLIENT_SECRET=${KEYCLOAK_BE_CLIENT_SECRET}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI}
     depends_on:
       - service.user.db
       - service.user_account.db
-    working_dir: /code/demo-api-app
+    working_dir: /code/examples/demo-api-app
     ports:
-     - "8088:8088"
+      - "8088:8088"
     volumes:
       - ../../..:/code
       # - ../../../var/cargo/common:/usr/local/cargo/registry
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
 # HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose up

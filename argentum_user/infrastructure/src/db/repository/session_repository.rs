@@ -41,7 +41,9 @@ where
         &self,
         token: &str,
     ) -> Result<Option<Session<Self::Id>>, SessionRepositoryError> {
-        let sql = format!("SELECT id, user_id, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1");
+        let sql = format!(
+            "SELECT id, user_id, created_at, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1"
+        );
         let query = sqlx::query_as(&sql).bind(token);
 
         let result: Result<Option<SessionDto>, DbAdapterError> =
@@ -51,6 +53,7 @@ where
             Ok(Some(dto)) => Ok(Some(Session::<Self::Id> {
                 id: dto.id.into(),
                 user_id: dto.user_id.into(),
+                created_at: dto.created_at,
                 token: dto.token,
             })),
 
@@ -63,10 +66,13 @@ where
         let session_id: Uuid = session.id.into();
         let user_id: Uuid = session.user_id.into();
 
-        let sql = format!("INSERT INTO {TABLE_NAME} (id, user_id, token) VALUES ($1, $2, $3)");
+        let sql = format!(
+            "INSERT INTO {TABLE_NAME} (id, user_id, created_at, token) VALUES ($1, $2, $3, $4)"
+        );
         let query = sqlx::query(&sql)
             .bind(session_id)
             .bind(user_id)
+            .bind(session.created_at)
             .bind(session.token.clone());
 
         let result = self.adapter.exec(query).await;

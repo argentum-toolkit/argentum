@@ -55,7 +55,6 @@ where
 
     async fn save(&self, session: &Session<Self::Id>) -> Result<(), SessionRepositoryError> {
         // TODO: check if key exists
-
         let s = Session::<Self::Id>::new(session.id, session.user_id, &session.token);
 
         match self

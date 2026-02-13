@@ -3,12 +3,16 @@ use crate::db::repository::AnonymousUserRepository;
 use crate::db::repository::AuthenticatedUserRepository;
 use crate::db::repository::SessionRepository;
 use crate::rest::handler::GetUserHandler;
+use crate::service::MemberAuthenticator;
+use crate::service::TokenRouter;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::di::{UserBusinessDiC, UserBusinessDiCBuilder};
+use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+use argentum_user_business::service::MemberAuthenticatorTrait;
 use argentum_user_rest::server::handler::GetUserTrait;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
@@ -39,6 +43,11 @@ impl UserInfrastructureDiCBuilder {
         connection_url: &str,
         max_db_connections: u32,
         logger: Arc<L>,
+        authenticated_user_repository: Option<
+            Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
+        >,
+        // client: Arc<reqwest::Client>,
+        member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = UniqueId>>>,
     ) -> Result<&mut Self, String>
     where
         L: LoggerTrait + 'static,
@@ -52,23 +61,37 @@ impl UserInfrastructureDiCBuilder {
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
 
+        let session_repository = Arc::new(SessionRepository::new(pg_adapter.clone()));
         self.business_builder
             .anonymous_binding_repository(Arc::new(AnonymousBindingRepository::new(
                 pg_adapter.clone(),
-                // self.id_factory.clone(),
             )))
-            .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(
+            .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(pg_adapter.clone())))
+            // .authenticated_user_repository(authenticated_user_repository)
+            .session_repository(session_repository.clone())
+            .token_router(Arc::new(TokenRouter::new()));
+
+        let member_repo = match authenticated_user_repository {
+            Some(r) => r,
+            None => Arc::new(AuthenticatedUserRepository::new(
                 pg_adapter.clone(),
                 // self.id_factory.clone(),
-            )))
-            .authenticated_user_repository(Arc::new(AuthenticatedUserRepository::new(
-                pg_adapter.clone(),
-                // self.id_factory.clone(),
-            )))
-            .session_repository(Arc::new(SessionRepository::new(
-                pg_adapter,
-                // self.id_factory.clone(),
-            )));
+            )),
+        };
+
+        self.business_builder
+            .authenticated_user_repository(member_repo.clone());
+
+        match member_authenticator {
+            Some(m) => self.business_builder.member_authenticator(m),
+            None => self
+                .business_builder
+                .member_authenticator(Arc::new(MemberAuthenticator::new(
+                    member_repo.clone(),
+                    session_repository,
+                    // self.id_factory.clone(),
+                ))),
+        };
 
         Ok(self)
     }

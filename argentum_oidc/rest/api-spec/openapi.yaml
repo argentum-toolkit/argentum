@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  contact:
+    url: https://gitlab.com/argentum-toolkit/argentum
+  description: API that helps to customize Keycloak
+  license:
+    name: LGPL-3.0
+  title: Argentum OIDC. Keycloak customization API
+  version: 0.4.0-dev
+externalDocs:
+  description: Find more info here
+  url: https://gitlab.com/argentum-toolkit/argentum
+servers:
+- description: Dev API Server with CORS
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8082'
+      enum:
+      - '8082'
+- description: The production API server
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8080'
+      enum:
+      - '80'
+      - '8080'
+tags:
+- description: Open ID Connect
+  name: oidc
+paths:
+  /exchange-code:
+    post:
+      description: Exchanges the authorization code received from Keycloak (after social login) for an access token and user info. Requires JSON body with code and optional state for CSRF protection.
+      operationId: exchangeCode
+      tags:
+      - oidc
+      requestBody:
+        $ref: '#/components/requestBodies/ExchangeCodeRequestBody'
+      summary: Exchange OAuth authorization code for access token
+      responses:
+        '201':
+          $ref: '#/components/responses/CodeExchangedSuccessfully'
+        '400':
+          $ref: '#/components/responses/400'
+components:
+  requestBodies:
+    ExchangeCodeRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExchangeCodeSchema'
+      description: Data required to exchange code
+      required: true
+  schemas:
+    ExchangeCodeResult:
+      required:
+      - accessToken
+      - userId
+      properties:
+        accessToken:
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+          description: JWT access token for API calls
+          type: string
+        userId:
+          example: 12345678-1234-1234-1234-123456789abc
+          description: User ID (sub claim from JWT)
+          type: string
+          format: uuid
+      type: object
+    ExchangeCodeSchema:
+      required:
+      - code
+      properties:
+        code:
+          example: abc123def456
+          description: Authorization code from Keycloak redirect
+          type: string
+        state:
+          example: uuid-1234-5678
+          description: CSRF state nonce (optional, for security)
+          type: string
+      type: object
+    ProblemDetail:
+      title: Schema for error response
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+      - status
+      - title
+      properties:
+        status:
+          example: '401'
+          maximum: 599.0
+          minimum: 400.0
+          type: integer
+          format: int32
+        title:
+          example: Bad Request
+          type: string
+        type:
+          example: about:blank
+          type: string
+        detail:
+          type: string
+        body:
+          $ref: '#/components/schemas/Violation'
+      type: object
+    Violation:
+      properties:
+        errors:
+          $ref: '#/components/schemas/ViolationErrors'
+        items:
+          $ref: '#/components/schemas/ViolationItems'
+      type: object
+    ViolationErrors:
+      items:
+        type: string
+      type: array
+    ViolationItems:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Violation'
+  responses:
+    '400':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Bad request
+    CodeExchangedSuccessfully:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExchangeCodeResult'
+      description: Created
+  securitySchemes: {}

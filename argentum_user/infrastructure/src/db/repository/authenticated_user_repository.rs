@@ -114,7 +114,7 @@ where
         self.find_one(query).await
     }
 
-    async fn save(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
+    async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
         let last = user.name.last.as_ref().map(|l| l.to_string());
         let user_id: Uuid = user.id.into();
 

@@ -1,0 +1,22 @@
+{
+    "name": "argentum-keycloak-tailwind",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build:css": "npx @tailwindcss/cli -i src/input.css -o ./assets/login/resources/css/main.css --verbose",
+        "build:css:min": "npx @tailwindcss/cli -i src/input.css -o ./assets/login/resources/css/main.css --minify",
+        "watch:css": "npx @tailwindcss/cli -i src/input.css -o ./assets/login/resources/css/main.css --watch"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "autoprefixer": "^10.*",
+        "daisyui": "^5.*",
+        "tailwindcss": "^4.*"
+    },
+    "dependencies": {
+        "@tailwindcss/cli": "^4.*"
+    }
+}
