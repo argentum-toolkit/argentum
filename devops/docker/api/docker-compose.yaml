@@ -10,7 +10,8 @@ services:
     tty: true
     stdin_open: true
     # command: perf record -g --call-graph dwarf cargo run --bin api --release
-    command: cargo run --bin api --release
+    # command: cargo run --bin api --release
+    command: cargo run --bin api-keycloak
     environment:
       - CARGO_PROFILE_RELEASE_DEBUG=2
       - KEYCLOAK_BASE_URL=${KEYCLOAK_BASE_URL}
@@ -22,7 +23,7 @@ services:
     depends_on:
       - service.user.db
       - service.user_account.db
-    working_dir: /code/demo-api-app
+    working_dir: /code/examples/demo-api-keycloak-app
     ports:
       - "8088:8088"
     volumes:

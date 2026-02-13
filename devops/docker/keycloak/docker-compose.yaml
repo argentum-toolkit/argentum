@@ -18,7 +18,7 @@ services:
     #   - keycloak_demo
 
   service.keycloak:
-    image: quay.io/keycloak/keycloak
+    image: quay.io/keycloak/keycloak:26.5
     # command: start-dev
     environment:
       KC_DB: postgres
@@ -29,6 +29,8 @@ services:
       KC_DB_SCHEMA: public
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
       KC_EMAIL_HOST: mailhog
       KC_EMAIL_PORT: 1025
       KC_EMAIL_FROM: "no-reply@example.com"
