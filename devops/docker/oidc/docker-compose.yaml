@@ -1,0 +1,16 @@
+services:
+  service.oidc.db:
+    image: "postgres:18.0-alpine"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_FOR_ARGENTUM_OIDC}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_LOGGING=verbose
+    #    user: $HOST_UID:$HOST_GID
+    volumes:
+      - ../../../var/db/oidc:/var/lib/postgresql
+    tmpfs:
+      - /tmp:exec,size=8G
+    ports:
+      - "54323:5432"
+    #TODO: close ports for production mode

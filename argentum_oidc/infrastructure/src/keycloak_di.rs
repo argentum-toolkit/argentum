@@ -28,7 +28,7 @@ where
     I: Id,
     L: LoggerTrait + 'static,
 {
-    pub business_dic: OidcBusinessDiC<I>,
+    pub business_dic: OidcBusinessDiC<I, L>,
 
     // Public services
     pub exchange_code_handler: Arc<dyn ExchangeCodeTrait<Id = I>>,
@@ -51,7 +51,7 @@ where
     keycloak_be_client_secret: String,
     keycloak_fe_client_id: String,
 
-    business_builder: OidcBusinessDiCBuilder<UniqueId>,
+    business_builder: OidcBusinessDiCBuilder<UniqueId, L>,
 
     logger: Arc<L>,
     client: Arc<reqwest::Client>,

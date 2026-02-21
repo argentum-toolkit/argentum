@@ -4,6 +4,7 @@ use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_db_infrastructure::slqx_postgres::migration::{MigrationCollection, Migrator};
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
+use argentum_oidc_infrastructure::db::migration as oidc_migration;
 use argentum_user_account_infrastructure::db::migration as user_account_migration;
 use argentum_user_infrastructure::db::migration as user_migration;
 use dotenvy::dotenv;
@@ -14,6 +15,7 @@ pub struct DiC<'a, L>
 where
     L: LoggerTrait,
 {
+    pub oidc_migrator: Arc<Migrator<'a, L>>,
     pub user_migrator: Arc<Migrator<'a, L>>,
     pub user_application_migrator: Arc<Migrator<'a, L>>,
 }
@@ -23,10 +25,12 @@ where
     L: LoggerTrait,
 {
     pub fn new(
+        oidc_migrator: Arc<Migrator<'a, L>>,
         user_migrator: Arc<Migrator<'a, L>>,
         user_application_migrator: Arc<Migrator<'a, L>>,
     ) -> Self {
         Self {
+            oidc_migrator,
             user_migrator,
             user_application_migrator,
         }
@@ -60,6 +64,12 @@ pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, St
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
     let max_db_connections = 5;
+
+    const OIDC_CONNECTION_URL_ENV_NAME: &str = "AG_OIDC_DATABASE_URL";
+
+    let oidc_database_url = env::var(OIDC_CONNECTION_URL_ENV_NAME)
+        .map_err(|e| format!("Cant get ENV {OIDC_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
+
     const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
 
     let u_database_url = env::var(U_CONNECTION_URL_ENV_NAME)
@@ -68,6 +78,17 @@ pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, St
     const UA_CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
     let ua_database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
         .map_err(|e| format!("Cant get ENV {UA_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
+
+    let oidc_migrations = oidc_migration::up("ag_oidc_");
+    let oidc_migrator = Arc::new(
+        create_migrator(
+            &oidc_database_url,
+            max_db_connections,
+            oidc_migrations,
+            logger.clone(),
+        )
+        .await?,
+    );
 
     let u_migrations = user_migration::up("ag_user_");
     let u_migrator = Arc::new(
@@ -85,5 +106,5 @@ pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, St
         create_migrator(&ua_database_url, max_db_connections, ua_migrations, logger).await?,
     );
 
-    Ok(DiC::new(u_migrator, ua_migrator))
+    Ok(DiC::new(oidc_migrator, u_migrator, ua_migrator))
 }

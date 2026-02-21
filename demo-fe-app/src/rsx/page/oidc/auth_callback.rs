@@ -20,6 +20,16 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
 
     #[cfg(feature = "web")]
     {
+        let auth_token = {
+            use argentum_user_account_ui::security::ClientSideAuthenticator;
+            let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
+
+            authenticator
+                .read()
+                .get_token()
+                .expect("Can't get authentication token")
+        };
+
         use crate::route::Route;
 
         use argentum_oidc_rest::{
@@ -45,18 +55,18 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        let mut result = use_resource(move || {
+        use_resource(move || {
             let code = code.clone();
             let state = state.clone();
-            async move {
-                use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
+            let auth_token = auth_token.clone();
 
+            async move {
                 let req = ExchangeCodeRequest::new(
                     ExchangeCodeSchema::new(code.clone(), state.clone()),
                     ExchangeCodeParams::new(
                         ExchangeCodePathParams::new(),
                         EmptyQueryParams {},
-                        EmptyHeaderParams {},
+                        AuthHeaderParams::new(auth_token),
                     ),
                 );
 

@@ -16,16 +16,14 @@ use argentum_encryption_business::mock::password::EncryptorMock;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotificatorTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
-use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
 use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
 use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
 use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
-use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
 use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
 use argentum_user_business::repository::user_repository::{
     AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
 };
-use argentum_user_business::service::{MemberAuthenticatorTrait, TokenRouterTrait};
+use argentum_user_business::service::{GuestBinder, MemberAuthenticatorTrait, TokenRouterTrait};
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
@@ -42,6 +40,7 @@ where
     pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<I, L>>,
     pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<I, L>>,
     pub member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
+    pub member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
 }
 
 pub struct UserAccountBusinessDiCBuilder<I, L>
@@ -54,7 +53,7 @@ where
     logger: Arc<L>,
     notificator: Arc<dyn NotificatorTrait<Id = I>>,
 
-    anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>>,
+    guest_binder: Option<Arc<GuestBinder<I, L>>>,
     anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait<Id = I>>>,
     authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>>,
     session_repository: Option<Arc<dyn SessionRepositoryTrait<Id = I>>>,
@@ -62,6 +61,7 @@ where
     password_to_token_exchanger: Option<Arc<dyn PasswordToTokenExchangerTrait<Id = I>>>,
     restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
     guest_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
+    member_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
     token_router: Option<Arc<dyn TokenRouterTrait>>,
     member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
 
@@ -88,7 +88,7 @@ where
             // validator,
             logger,
             notificator,
-            anonymous_binding_repository: None,
+            guest_binder: None,
             anonymous_user_repository: None,
             authenticated_user_repository: None,
             session_repository: None,
@@ -96,6 +96,7 @@ where
             password_to_token_exchanger: None,
             restore_password_token_repository: None,
             guest_token_generator: None,
+            member_token_generator: None,
             token_router: None,
             member_authenticator: None,
             member_confirms_email_uc: None,
@@ -106,7 +107,7 @@ where
     }
 
     pub fn mock(&mut self) -> &mut Self {
-        self.anonymous_binding_repository = Some(Arc::new(AnonymousBindingRepositoryMock::new()));
+        // self.guest_binder = Some(Arc::new(AnonymousBindingRepositoryMock::new()));
         self.anonymous_user_repository = Some(Arc::new(AnonymousUserRepositoryMock::new()));
         self.authenticated_user_repository = Some(Arc::new(AuthenticatedUserRepositoryMock::new()));
         self.session_repository = Some(Arc::new(SessionRepositoryMock::new()));
@@ -118,6 +119,7 @@ where
             Some(Arc::new(RestorePasswordTokenRepositoryMock::new()));
 
         self.guest_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
+        self.member_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
 
         self
     }
@@ -149,7 +151,7 @@ where
 
     pub fn services(
         &mut self,
-        anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
+        guest_binder: Arc<GuestBinder<I, L>>,
         anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
         authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
@@ -157,11 +159,12 @@ where
         password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         guest_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
         token_router: Arc<dyn TokenRouterTrait>,
         member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
         member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
     ) -> &mut Self {
-        self.anonymous_binding_repository = Some(anonymous_binding_repository);
+        self.guest_binder = Some(guest_binder);
         self.anonymous_user_repository = Some(anonymous_user_repository);
         self.authenticated_user_repository = Some(authenticated_user_repository);
         self.session_repository = Some(session_repository);
@@ -169,6 +172,7 @@ where
         self.password_to_token_exchanger = Some(password_to_token_exchanger);
         self.restore_password_token_repository = Some(restore_password_token_repository);
         self.guest_token_generator = Some(guest_token_generator);
+        self.member_token_generator = Some(member_token_generator);
         self.token_router = Some(token_router);
         self.member_authenticator = Some(member_authenticator);
         self.member_confirms_email_uc = Some(member_confirms_email_uc);
@@ -192,6 +196,11 @@ where
             .clone()
             .ok_or("guest_token_generator is not initialized")?;
 
+        let member_token_generator = self
+            .member_token_generator
+            .clone()
+            .ok_or("member_token_generator is not initialized")?;
+
         let password_credential_repository = self
             .password_credential_repository
             .clone()
@@ -207,10 +216,10 @@ where
             .clone()
             .ok_or("authenticated_user_repository is not initialized")?;
 
-        let anonymous_binding_repository = self
-            .anonymous_binding_repository
+        let guest_binder = self
+            .guest_binder
             .clone()
-            .ok_or("anonymous_binding_repository is not initialized")?;
+            .ok_or("guest_binder is not initialized")?;
 
         let restore_password_token_repository = self
             .restore_password_token_repository
@@ -263,9 +272,7 @@ where
 
         let user_logins_with_password_uc = Arc::new(UserLoginsWithPasswordUc::new(
             password_to_token_exchanger,
-            anonymous_binding_repository,
-            session_repository.clone(),
-            self.logger.clone(),
+            guest_binder,
         ));
 
         let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
@@ -303,6 +310,7 @@ where
             member_confirms_email_uc,
             anonymous_with_token_changes_password_uc,
             anonymous_requests_restore_token_uc,
+            member_token_generator,
         })
     }
 }

@@ -18,6 +18,7 @@ use argentum_user_business::mock::repository::anonymous_user_repository_mock::An
 use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
 use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
 use argentum_user_business::mock::service::{MemberAuthenticatorMock, TokenRouterMock};
+use argentum_user_business::service::GuestBinder;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
@@ -74,10 +75,17 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let password_to_token_exchanger = Arc::new(PasswordToTokenExchangerMock::new());
     let restore_password_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
     let guest_token_generator = Arc::new(TokenGeneratorMock::new());
+    let member_token_generator = Arc::new(TokenGeneratorMock::new());
     let token_router = Arc::new(TokenRouterMock::new());
     let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
     let member_confirms_email_uc = Arc::new(DefaultMemberConfirmsEmailUc::new(
         authenticated_user_repository.clone(),
+        logger.clone(),
+    ));
+
+    let gust_binder = Arc::new(GuestBinder::new(
+        anonymous_binding_repository,
+        session_repository.clone(),
         logger.clone(),
     ));
 
@@ -89,7 +97,7 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
             "http://localhost:8082/change-password/",
         )
         .services(
-            anonymous_binding_repository,
+            gust_binder,
             anonymous_user_repository,
             authenticated_user_repository,
             session_repository,
@@ -97,6 +105,7 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
             password_to_token_exchanger,
             restore_password_token_repository,
             guest_token_generator,
+            member_token_generator,
             token_router,
             member_authenticator,
             member_confirms_email_uc,

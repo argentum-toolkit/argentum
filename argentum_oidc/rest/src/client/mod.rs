@@ -40,6 +40,11 @@ impl Client {
         let res = client
             .post(url)
             .header("Accept", "application/json")
+            //TODO: add support of another authorization schemas
+            .header(
+                "authorization",
+                format!("Bearer {}", req.params.headers.authorization),
+            )
             .body(body)
             .send()
             .await;

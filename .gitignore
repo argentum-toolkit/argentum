@@ -1,4 +1,5 @@
 /.asciidoctor
+/.env.local
 /.idea
 /.vscode
 .asciidoctor

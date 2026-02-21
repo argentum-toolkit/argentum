@@ -2,11 +2,9 @@ use crate::service::{PasswordToTokenExchangerError, PasswordToTokenExchangerTrai
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
-use argentum_user_business::entity::anonymous_binding::AnonymousBinding;
 use argentum_user_business::entity::session::Session;
-use argentum_user_business::entity::user::{AnonymousUser, UserTrait};
-use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
-use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
+use argentum_user_business::entity::user::AnonymousUser;
+use argentum_user_business::service::GuestBinder;
 use secrecy::SecretString;
 use std::error::Error;
 use std::sync::Arc;
@@ -17,9 +15,7 @@ where
     L: LoggerTrait,
 {
     password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
-    anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
-    session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-    logger: Arc<L>,
+    guest_binder: Arc<GuestBinder<I, L>>,
 }
 
 impl<I, L> UserLoginsWithPasswordUc<I, L>
@@ -29,21 +25,17 @@ where
 {
     pub fn new(
         password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
-        anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
-        session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-        logger: Arc<L>,
+        guest_binder: Arc<GuestBinder<I, L>>,
     ) -> Self {
         Self {
             password_to_token_exchanger,
-            anonymous_binding_repository,
-            session_repository,
-            logger,
+            guest_binder,
         }
     }
 
     pub async fn execute(
         &self,
-        anonymous: Option<AnonymousUser<I>>,
+        guest: Option<AnonymousUser<I>>,
         email: EmailAddress,
         password: SecretString,
     ) -> Result<Session<I>, LoginError> {
@@ -64,23 +56,9 @@ where
             },
         };
 
-        // Bind guest to member
-        if let Some(anonymous) = anonymous {
-            match self
-                .session_repository
-                .delete_users_sessions(anonymous.id())
-                .await
-            {
-                Ok(_) => self.logger.info("Anonymous session deleted"),
-                Err(_) => self.logger.warning("Anonymous session is not deleted"),
-            };
-
-            let binding = AnonymousBinding::new(session.user_id, anonymous.id);
-            match self.anonymous_binding_repository.save(&binding).await {
-                Ok(_) => self.logger.info("Anonymous binding saved"),
-                Err(_) => self.logger.warning("Anonymous binding is not saved"),
-            }
-        }
+        self.guest_binder
+            .bind_and_logout_guest(guest, session.user_id)
+            .await;
 
         Result::Ok(session)
     }
@@ -112,6 +90,7 @@ mod test {
     use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
     use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
     use argentum_user_business::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+    use argentum_user_business::service::GuestBinder;
 
     use std::error::Error;
     use std::sync::Arc;
@@ -128,12 +107,13 @@ mod test {
 
         let exchanger = Arc::new(PasswordToTokenExchangerMock::new());
 
-        let uc = UserLoginsWithPasswordUc::new(
-            exchanger.clone(),
+        let guest_binder = Arc::new(GuestBinder::new(
             anonymous_binding_repository.clone(),
             session_repository.clone(),
             logger.clone(),
-        );
+        ));
+
+        let uc = UserLoginsWithPasswordUc::new(exchanger.clone(), guest_binder);
 
         let user_id = id_factory.create();
         let email = EmailAddress::try_new("test@test-mail.com").expect("Email should be valid");

@@ -1,6 +1,6 @@
 [package]
-name = "argentum_keycloak_ui"
-description = "Argentum Keycloak extension. UI"
+name = "argentum_oidc_ui"
+description = "Argentum OIDC extension. UI"
 version = "0.4.0-dev"
 license = "LGPL-3.0"
 edition = "2024"

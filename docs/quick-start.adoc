@@ -4,7 +4,7 @@
 
 * Docker
 * Docker Compose
-* Rust 1.81+
+* Rust 1.89+
 * Cargo
 
 === Optional for contributors
@@ -26,18 +26,21 @@ rustup update stable
 * clone repository
 * `devops/scripts/setup.sh`
 
-== Start Databases
+== Start it on Docker
 
 [bash]
 ----
 docker compose up
+
+# if you want to use local .env file
+# docker compose --env-file .env --env-file .env.local up
 ----
 
-== Run demo web application:
+== Also you can run the example of web application locally
 
 [bash]
 ----
-cd demo-webapp
+cd examples/demo-api-app
 cargo run --bin app
 ----
 

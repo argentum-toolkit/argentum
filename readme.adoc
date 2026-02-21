@@ -147,18 +147,24 @@ cargo install dioxus-cli
 
 === V0.4
 
-* Keycloak
+* OIDC
+** bind guests
+** login with google or linkedin
+** Email verification
 ** ??? automatically confirm emails for social login ????
 ** deny login for users with not confirmed email
+** Correct error responses instead of 500
+
+** implement code_verifier/challenge
 ** store auth tokens in secure http only cookies
 ** add support of refresh token
-** logout
 ** customizable UI component for social login
 
 * Component generator
 ** add examples into readme.adoc
 
 * DI builders: make it similar
+
 * behavior tests
 
 * rest-generator
@@ -192,7 +198,7 @@ cargo install dioxus-cli
 
 See link:LICENSE[LICENSE] for full details.
 
-© 2020–2025 Vital Leshchyk <vitalleshchyk@gmail.com>
+© 2020-2026 Vital Leshchyk <vitalleshchyk@gmail.com>
 
 
 == Contributing

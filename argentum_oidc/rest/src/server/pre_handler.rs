@@ -3,7 +3,7 @@ use crate::dto::request::ExchangeCodeRequest;
 use crate::server::handler::ExchangeCodeTrait;
 use argentum_rest_infrastructure::data_type::error::HttpError;
 use argentum_rest_infrastructure::data_type::{HttpResponse, RequestTrait};
-use argentum_rest_infrastructure::service::RequestTransformer;
+use argentum_rest_infrastructure::service::{BearerAuthenticator, RequestTransformer};
 use argentum_standard_business::data_type::id::Id;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -13,6 +13,7 @@ where
     I: Id,
 {
     request_transformer: Arc<RequestTransformer>,
+    bearer_auth: Arc<BearerAuthenticator<I>>,
     exchange_code: Arc<dyn ExchangeCodeTrait<Id = I>>,
 }
 
@@ -22,10 +23,12 @@ where
 {
     pub fn new(
         request_transformer: Arc<RequestTransformer>,
+        bearer_auth: Arc<BearerAuthenticator<I>>,
         exchange_code: Arc<dyn ExchangeCodeTrait<Id = I>>,
     ) -> Self {
         Self {
             request_transformer,
+            bearer_auth,
             exchange_code,
         }
     }
@@ -40,7 +43,8 @@ where
             .request_transformer
             .transform(request, raw_path_params, raw_query_params)
             .await?;
-        let r = self.exchange_code.handle(req).await?;
+        let user = self.bearer_auth.auth(&req.params.headers).await?;
+        let r = self.exchange_code.handle(req, user).await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),
