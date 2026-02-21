@@ -8,4 +8,5 @@ pub mod repository;
 #[cfg(feature = "server")]
 pub mod use_case;
 
+#[cfg(feature = "server")]
 pub mod service;

@@ -21,7 +21,8 @@ services:
       # - KEYCLOAK_FE_CLIENT_ID=${KEYCLOAK_FE_CLIENT_ID}
       # - KEYCLOAK_BE_CLIENT_ID=${KEYCLOAK_BE_CLIENT_ID}
       # - KEYCLOAK_BE_CLIENT_SECRET=${KEYCLOAK_BE_CLIENT_SECRET}
-      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
     depends_on:
       - service.user.db
       - service.user_account.db

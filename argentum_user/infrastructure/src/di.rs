@@ -17,41 +17,46 @@ use argentum_user_rest::server::handler::GetUserTrait;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
-pub struct UserInfrastructureDiC<I>
+pub struct UserInfrastructureDiC<I, L>
 where
     I: Id + 'static, //todo: not static
+    L: LoggerTrait + 'static,
 {
-    pub business_dic: UserBusinessDiC<I>,
+    pub business_dic: UserBusinessDiC<I, L>,
     pub get_user_handler: Arc<dyn GetUserTrait<Id = I>>,
 }
 
-pub struct UserInfrastructureDiCBuilder {
-    pub business_builder: UserBusinessDiCBuilder<UniqueId>,
+pub struct UserInfrastructureDiCBuilder<L>
+where
+    L: LoggerTrait + 'static,
+{
+    pub business_builder: UserBusinessDiCBuilder<UniqueId, L>,
     pub id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
+    logger: Arc<L>,
 }
 
-impl UserInfrastructureDiCBuilder {
-    pub fn new(id_factory: Arc<dyn IdFactory<Id = UniqueId>>) -> Self {
+impl<L> UserInfrastructureDiCBuilder<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(id_factory: Arc<dyn IdFactory<Id = UniqueId>>, logger: Arc<L>) -> Self {
         Self {
-            business_builder: UserBusinessDiCBuilder::new(),
+            business_builder: UserBusinessDiCBuilder::new(logger.clone()),
             id_factory,
+            logger,
         }
     }
 
-    pub async fn default_services<L>(
+    pub async fn default_services(
         &mut self,
         connection_url: &str,
         max_db_connections: u32,
-        logger: Arc<L>,
         authenticated_user_repository: Option<
             Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
         >,
         // client: Arc<reqwest::Client>,
         member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = UniqueId>>>,
-    ) -> Result<&mut Self, String>
-    where
-        L: LoggerTrait + 'static,
-    {
+    ) -> Result<&mut Self, String> {
         let pool = PgPoolOptions::new()
             .max_connections(max_db_connections)
             .min_connections(2)
@@ -59,7 +64,7 @@ impl UserInfrastructureDiCBuilder {
             .await
             .map_err(|e| format!("Can't create PG connection pool. Err: {e}"))?;
 
-        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
+        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
 
         let session_repository = Arc::new(SessionRepository::new(pg_adapter.clone()));
         self.business_builder
@@ -96,7 +101,7 @@ impl UserInfrastructureDiCBuilder {
         Ok(self)
     }
 
-    pub fn build(&self) -> Result<UserInfrastructureDiC<UniqueId>, String> {
+    pub fn build(&self) -> Result<UserInfrastructureDiC<UniqueId, L>, String> {
         let business_dic = self.business_builder.build()?;
 
         let get_user_handler = Arc::new(GetUserHandler::new(business_dic.get_user_uc.clone()));

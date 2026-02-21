@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use argentum_oidc_business::{
     data_type::ExchangedTokenData,
-    service::{AuthCodeExchangerError, AuthCodeExchangerTrait},
+    service::code_exchanger::{CodeExchangerError, CodeExchangerTrait},
 };
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
@@ -44,13 +44,13 @@ impl KeycloakFrontendClient {
 //TODO:  log errors
 
 #[async_trait]
-impl AuthCodeExchangerTrait for KeycloakFrontendClient {
+impl CodeExchangerTrait for KeycloakFrontendClient {
     type UserId = UniqueId;
 
     async fn exchange_code(
         &self,
         code: &str,
-    ) -> Result<ExchangedTokenData<Self::UserId>, AuthCodeExchangerError> {
+    ) -> Result<ExchangedTokenData<Self::UserId>, CodeExchangerError> {
         let url = format!(
             "{}/realms/{}/protocol/openid-connect/token",
             self.base_url, self.realm
@@ -70,7 +70,7 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
                         let access_token = match token_info.access_token {
                             Some(token) => token,
                             None => {
-                                return Err(AuthCodeExchangerError::TokenData(
+                                return Err(CodeExchangerError::TokenData(
                                     "Can't create an access token".into(),
                                 ));
                             }
@@ -79,7 +79,7 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
                         let token_data: TokenData<Claims> = match insecure_decode(&access_token) {
                             Ok(data) => data,
                             Err(e) => {
-                                return Err(AuthCodeExchangerError::TokenData(format!(
+                                return Err(CodeExchangerError::TokenData(format!(
                                     "Can't parse access token. Error: `{0}`",
                                     e
                                 )));
@@ -89,7 +89,7 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
                         let user_uuid = match Uuid::from_str(&token_data.claims.sub) {
                             Ok(id) => id,
                             Err(e) => {
-                                return Err(AuthCodeExchangerError::TokenData(format!(
+                                return Err(CodeExchangerError::TokenData(format!(
                                     "Can't parse UUID. Error: `{0}`",
                                     e
                                 )));
@@ -103,14 +103,14 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
                             Some(raw_email) => match EmailAddress::try_new(&raw_email) {
                                 Ok(email) => email,
                                 Err(e) => {
-                                    return Err(AuthCodeExchangerError::TokenData(format!(
+                                    return Err(CodeExchangerError::TokenData(format!(
                                         "Can't parse email address. Error: `{0}`",
                                         e
                                     )));
                                 }
                             },
                             None => {
-                                return Err(AuthCodeExchangerError::TokenData(
+                                return Err(CodeExchangerError::TokenData(
                                     "Email address is empty".into(),
                                 ));
                             }
@@ -119,13 +119,13 @@ impl AuthCodeExchangerTrait for KeycloakFrontendClient {
                         Ok(ExchangedTokenData::new(&access_token, user_id))
                     }
 
-                    Err(_) => Err(AuthCodeExchangerError::Network),
+                    Err(e) => Err(CodeExchangerError::Network(e.to_string())),
                 }
             }
-            Ok(response) => Err(AuthCodeExchangerError::OidcBadStatus(
+            Ok(response) => Err(CodeExchangerError::OidcBadStatus(
                 response.status().as_u16(),
             )),
-            Err(_) => Err(AuthCodeExchangerError::Network),
+            Err(e) => Err(CodeExchangerError::Network(e.to_string())),
         }
     }
 }

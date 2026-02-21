@@ -44,6 +44,8 @@ paths:
       tags:
         - oidc
       operationId: exchangeCode
+      security:
+        - bearerAuth: []
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/ExchangeCodeRequestBody"
       responses:
@@ -52,7 +54,13 @@ paths:
         "400":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
 
-components: {}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      in: header
+
 
 tags:
   - name: oidc

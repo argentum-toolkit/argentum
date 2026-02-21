@@ -28,8 +28,8 @@ argentum_notification_infrastructure = { path = "../../argentum_notification/inf
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0", features = [
     "server",
 ] }
-# argentum_oidc_infrastructure = { path = "../../argentum_oidc/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
-# argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev,<0.5.0" }
+argentum_oidc_infrastructure = { path = "../../argentum_oidc/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.4.0-dev,<0.5.0" }

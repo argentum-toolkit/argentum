@@ -7,9 +7,9 @@ use crate::security::SecurityRepository;
 
 use dioxus::prelude::*;
 
-pub fn di_init(user_accoutn_server_url: &str) -> Result<(), String> {
+pub fn di_init(user_account_server_url: &str) -> Result<(), String> {
     {
-        let client = Client::new(user_accoutn_server_url, "/api/v1");
+        let client = Client::new(user_account_server_url, "/api/v1");
         use_context_provider(|| Signal::new(client));
     }
 
@@ -28,7 +28,7 @@ pub fn di_init(user_accoutn_server_url: &str) -> Result<(), String> {
         let security_repository = Rc::new(SecurityRepository::new(local_storage));
 
         //TODO: don't initialize client twice
-        let client = Rc::new(Client::new(user_accoutn_server_url, "/api/v1"));
+        let client = Rc::new(Client::new(user_account_server_url, "/api/v1"));
         let auth = ClientSideAuthenticator::new(client, security_repository);
 
         use_context_provider(|| Signal::new(auth));

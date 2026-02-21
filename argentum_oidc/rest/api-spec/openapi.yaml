@@ -40,6 +40,8 @@ paths:
       operationId: exchangeCode
       tags:
       - oidc
+      security:
+      - bearerAuth: []
       requestBody:
         $ref: '#/components/requestBodies/ExchangeCodeRequestBody'
       summary: Exchange OAuth authorization code for access token
@@ -138,4 +140,10 @@ components:
           schema:
             $ref: '#/components/schemas/ExchangeCodeResult'
       description: Created
-  securitySchemes: {}
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+      name: ''
+      in: header
+      open_id_connect_url: ''

@@ -15,7 +15,7 @@ use argentum_notification_business::NotificatorTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_account_business::di::UserAccountBusinessDiCBuilder;
+use argentum_user_account_business::di::{BusinessDiC, UserAccountBusinessDiCBuilder};
 use argentum_user_account_business::repository::password_credential_checker::PasswordCredentialChecker;
 use argentum_user_account_business::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
 use argentum_user_account_business::service::{
@@ -36,7 +36,7 @@ use std::sync::Arc;
 
 pub struct UserAccountInfrastructureDiC<I, L>
 where
-    I: Id,
+    I: Id + 'static,
     L: LoggerTrait,
 {
     // Public services
@@ -47,13 +47,14 @@ where
     pub user_registers_with_password_handler: Arc<dyn UserRegistersWithPasswordTrait<Id = I>>,
     pub user_logins_with_password_handler: Arc<dyn UserLoginsWithPasswordTrait<Id = I>>,
     pub member_verifies_email_handler: Arc<dyn MemberVerifiesEmailTrait<Id = I>>,
+    pub business_dic: BusinessDiC<I, L>,
 }
 
 pub struct UserAccountInfrastructureDiCBuilder<L>
 where
-    L: LoggerTrait,
+    L: LoggerTrait + 'static,
 {
-    user_infrastructure_di: Arc<UserInfrastructureDiC<UniqueId>>,
+    user_infrastructure_di: Arc<UserInfrastructureDiC<UniqueId, L>>,
     business_builder: UserAccountBusinessDiCBuilder<UniqueId, L>,
     id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
     logger: Arc<L>,
@@ -64,7 +65,7 @@ where
     L: LoggerTrait + 'static,
 {
     pub fn new(
-        user_infrastructure_di: Arc<UserInfrastructureDiC<UniqueId>>,
+        user_infrastructure_di: Arc<UserInfrastructureDiC<UniqueId, L>>,
         id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
 
         // validator: Arc<dyn Validator>,
@@ -169,7 +170,7 @@ where
         };
 
         self.business_builder.services(
-            u_bdi.anonymous_binding_repository.clone(),
+            u_bdi.guest_binder.clone(),
             u_bdi.anonymous_user_repository.clone(),
             u_bdi.authenticated_user_repository.clone(),
             u_bdi.session_repository.clone(),
@@ -177,6 +178,7 @@ where
             password_to_token_exchanger,
             restore_password_token_repository,
             guest_token_generator,
+            member_token_generator,
             u_bdi.token_router.clone(),
             u_bdi.member_authenticator.clone(),
             member_confirms_email_uc.clone(),
@@ -192,16 +194,17 @@ where
     // }
 
     pub fn build(&self) -> Result<UserAccountInfrastructureDiC<UniqueId, L>, String> {
-        let bdi = self.business_builder.build()?;
+        let business_dic = self.business_builder.build()?;
 
-        let anonymous_registers_handler =
-            Arc::new(AnonymousRegistersHandler::new(bdi.anonymous_registers_uc));
+        let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(
+            business_dic.anonymous_registers_uc.clone(),
+        ));
 
         let dto_to_user_registers_with_password_params =
             Arc::new(DtoToUserRegistersWithPasswordParams::new());
 
         let user_registers_with_password_handler = Arc::new(UserRegistersWithPasswordHandler::new(
-            bdi.user_registers_with_password_uc,
+            business_dic.user_registers_with_password_uc.clone(),
             dto_to_user_registers_with_password_params,
         ));
 
@@ -209,7 +212,7 @@ where
             Arc::new(DtoToUserLoginsWithPasswordParams::new());
 
         let user_logins_with_password_handler = Arc::new(UserLoginsWithPasswordHandler::new(
-            bdi.user_logins_with_password_uc,
+            business_dic.user_logins_with_password_uc.clone(),
             dto_to_user_logins_with_password_params,
         ));
 
@@ -218,7 +221,9 @@ where
 
         let anonymous_with_token_changes_password =
             Arc::new(AnonymousWithTokenChangesPasswordHandler::new(
-                bdi.anonymous_with_token_changes_password_uc,
+                business_dic
+                    .anonymous_with_token_changes_password_uc
+                    .clone(),
                 dto_to_anonymous_with_token_changes_password_params,
             ));
 
@@ -226,13 +231,13 @@ where
             Arc::new(DtoToAnonymousRequestsRestoreTokenParams::new());
 
         let anonymous_requests_restore_token = Arc::new(AnonymousRequestsRestoreTokenHandler::new(
-            bdi.anonymous_requests_restore_token_uc,
+            business_dic.anonymous_requests_restore_token_uc.clone(),
             self.logger.clone(),
             dto_to_anonymous_requests_restore_token_params,
         ));
 
         let member_verifies_email_handler = Arc::new(MemberVerifiesEmailHandler::new(
-            bdi.member_confirms_email_uc.clone(),
+            business_dic.member_confirms_email_uc.clone(),
             self.logger.clone(),
         ));
 
@@ -243,6 +248,7 @@ where
             anonymous_with_token_changes_password_handler: anonymous_with_token_changes_password,
             anonymous_requests_restore_token_handler: anonymous_requests_restore_token,
             member_verifies_email_handler,
+            business_dic,
         })
     }
 }

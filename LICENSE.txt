@@ -1,5 +1,5 @@
 Argentum ToolKit
-Copyright (c) 2020–2025 Vital Leshchyk <vitalleshchyk@gmail.com>
+Copyright (c) 2020-2026 Vital Leshchyk <vitalleshchyk@gmail.com>
 
 Versions prior to 0.3 of Argentum ToolKit were licensed under the BSD 3-Clause License.
 Starting from version 0.3, Argentum ToolKit is licensed under the GNU Lesser General Public License v3.0.

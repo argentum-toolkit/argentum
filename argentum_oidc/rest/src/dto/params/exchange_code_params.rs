@@ -1,16 +1,16 @@
 use crate::dto::path_params::ExchangeCodePathParams;
-use argentum_rest_infrastructure::data_type::EmptyHeaderParams;
+use argentum_rest_infrastructure::data_type::AuthHeaderParams;
 use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams};
 
 //TODO: query params generator
 pub struct ExchangeCodeParams {
-    pub headers: EmptyHeaderParams,
+    pub headers: AuthHeaderParams,
     pub path: ExchangeCodePathParams,
     pub query: EmptyQueryParams,
 }
 
 impl HttpParams for ExchangeCodeParams {
-    type Headers = EmptyHeaderParams;
+    type Headers = AuthHeaderParams;
     type Path = ExchangeCodePathParams;
     type Query = EmptyQueryParams;
 

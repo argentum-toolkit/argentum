@@ -1,33 +1,49 @@
 use std::sync::Arc;
 
+use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
+use argentum_user_business::{entity::user::AnonymousUser, service::GuestBinder};
 
 use crate::{
-    data_type::ExchangedTokenData, service::AuthCodeExchangerTrait,
-    use_case::error::ExchangesCodeToTokenError,
+    data_type::ExchangedTokenData,
+    service::code_exchanger::{CodeExchangerError, CodeExchangerTrait},
 };
 
-pub struct UserExchangesCodeToTokenUc<I>
+pub struct UserExchangesCodeToTokenUc<I, L>
 where
     I: Id,
+    L: LoggerTrait,
 {
-    auth_code_exchanger: Arc<dyn AuthCodeExchangerTrait<UserId = I>>,
+    auth_code_exchanger: Arc<dyn CodeExchangerTrait<UserId = I>>,
+    guest_binder: Arc<GuestBinder<I, L>>,
 }
 
-impl<I> UserExchangesCodeToTokenUc<I>
+impl<I, L> UserExchangesCodeToTokenUc<I, L>
 where
     I: Id,
+    L: LoggerTrait,
 {
-    pub fn new(auth_code_exchanger: Arc<dyn AuthCodeExchangerTrait<UserId = I>>) -> Self {
+    pub fn new(
+        auth_code_exchanger: Arc<dyn CodeExchangerTrait<UserId = I>>,
+        guest_binder: Arc<GuestBinder<I, L>>,
+    ) -> Self {
         Self {
             auth_code_exchanger,
+            guest_binder,
         }
     }
 
     pub async fn execute(
         &self,
+        guest: AnonymousUser<I>,
         code: &str,
-    ) -> Result<ExchangedTokenData<I>, ExchangesCodeToTokenError> {
-        Ok(self.auth_code_exchanger.exchange_code(code).await?)
+    ) -> Result<ExchangedTokenData<I>, CodeExchangerError> {
+        let data = self.auth_code_exchanger.exchange_code(code).await?;
+
+        self.guest_binder
+            .bind_and_logout_guest(Some(guest), data.user_id)
+            .await;
+
+        Ok(data)
     }
 }

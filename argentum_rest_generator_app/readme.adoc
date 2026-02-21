@@ -61,7 +61,7 @@ Or you can generate via `cargo run` (sources should be cloned)
 ----
 cd argentum/argentum_rest_generator_app
 
-cargo run --   --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest
+cargo run -- --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest
 ----
 
 == Restrictions

@@ -22,6 +22,7 @@ impl MemberAuthenticatorMock {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn add(
         &self,
         token: &str,

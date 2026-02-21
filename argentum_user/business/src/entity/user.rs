@@ -19,6 +19,7 @@ where
     pub created_at: DateTime<Utc>,
     pub name: Name,
     pub email: EmailAddress,
+    //TODO: pub verified: bool,
 }
 
 impl<I> AuthenticatedUser<I>

@@ -1,8 +1,8 @@
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotificator;
-use argentum_oidc_infrastructure::di::KeycloakInfrastructureDiCBuilder;
-use argentum_oidc_rest::ApiDiC as KeycloakApiDiC;
+use argentum_oidc_infrastructure::keycloak_di::KeycloakInfrastructureDiCBuilder;
+use argentum_oidc_rest::ApiDiC as OidcApiDiC;
 use argentum_rest_infrastructure::service::{BearerAuthenticator, RouterCombinator, Server};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use std::env;
@@ -89,20 +89,13 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         r_client.clone(),
     )
     .build()?;
-    let k_api_di = KeycloakApiDiC::new(
-        "/api/v1".to_string(),
-        rest_di.request_transformer.clone(),
-        k_di.exchange_code_handler.clone(),
-        rest_di.error_pre_handler.clone(),
-    );
 
     let u_di = Arc::new(
-        UserInfrastructureDiCBuilder::new(unique_id_factory.clone())
+        UserInfrastructureDiCBuilder::new(unique_id_factory.clone(), logger.clone())
             //todo: use params
             .default_services(
                 &u_database_url,
                 10,
-                logger.clone(),
                 Some(k_di.member_repository.clone()),
                 Some(k_di.member_authenticator.clone()),
             )
@@ -113,6 +106,14 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let bearer_authenticator = Arc::new(BearerAuthenticator::new(
         u_di.business_dic.user_authenticates_with_token_uc.clone(),
     ));
+
+    let o_api_di = OidcApiDiC::new(
+        "/api/v1".to_string(),
+        rest_di.request_transformer.clone(),
+        bearer_authenticator.clone(),
+        k_di.exchange_code_handler.clone(),
+        rest_di.error_pre_handler.clone(),
+    );
 
     let u_api_di = UserApiDiC::new(
         "/api/v1".to_string(),
@@ -181,7 +182,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
 
     let router = Arc::new(RouterCombinator::new(
-        vec![u_api_di.router, ua_api_di.router, k_api_di.router],
+        vec![u_api_di.router, ua_api_di.router, o_api_di.router],
         rest_di.error_pre_handler,
     ));
 
