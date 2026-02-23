@@ -11,24 +11,22 @@ use crate::use_case::GetUserUc;
 use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
-pub struct UserBusinessDiC<I, L>
+pub struct UserBusinessDi<I, L>
 where
     I: Id,
     L: LoggerTrait,
 {
-    pub anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
     pub anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
     pub authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
     pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc<I>>,
     pub get_user_uc: Arc<GetUserUc<I>>,
     pub session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
     pub token_router: Arc<dyn TokenRouterTrait>,
-    pub member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
     pub guest_binder: Arc<GuestBinder<I, L>>,
 }
 
 #[derive(Default)]
-pub struct UserBusinessDiCBuilder<I, L>
+pub struct UserBusinessDiBuilder<I, L>
 where
     I: Id,
     L: LoggerTrait,
@@ -42,7 +40,7 @@ where
     logger: Arc<L>,
 }
 
-impl<I, L> UserBusinessDiCBuilder<I, L>
+impl<I, L> UserBusinessDiBuilder<I, L>
 where
     I: Id + 'static,
     L: LoggerTrait + 'static,
@@ -110,7 +108,7 @@ where
         self
     }
 
-    pub fn build(&self) -> Result<UserBusinessDiC<I, L>, String> {
+    pub fn build(&self) -> Result<UserBusinessDi<I, L>, String> {
         let authenticated_user_repository = self
             .authenticated_user_repository
             .clone()
@@ -156,15 +154,13 @@ where
 
         let get_user_uc = Arc::new(GetUserUc::new(authenticated_user_repository.clone()));
 
-        Ok(UserBusinessDiC {
-            anonymous_binding_repository,
+        Ok(UserBusinessDi {
             anonymous_user_repository,
             authenticated_user_repository,
             user_authenticates_with_token_uc,
             get_user_uc,
             session_repository,
             token_router,
-            member_authenticator,
             guest_binder,
         })
     }

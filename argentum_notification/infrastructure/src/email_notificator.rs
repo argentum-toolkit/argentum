@@ -1,4 +1,4 @@
-use argentum_notification_business::{Notification, NotificationError, NotificatorTrait};
+use argentum_notification_business::{Notification, NotificationError, NotifierTrait};
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
 
 use lettre::{Message, SmtpTransport, Transport, address::AddressError};
@@ -61,7 +61,7 @@ where
 }
 
 #[async_trait]
-impl<I> NotificatorTrait for EmailNotificator<I>
+impl<I> NotifierTrait for EmailNotificator<I>
 where
     I: Id,
 {

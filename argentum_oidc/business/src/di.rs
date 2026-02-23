@@ -1,52 +1,71 @@
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::id::Id;
-use argentum_user_business::service::GuestBinder;
+use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
+use argentum_user_business::di::UserBusinessDiBuilder;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use crate::{
-    repository::CredentialRepositoryTrait, service::code_exchanger::CodeExchangerTrait,
+    repository::CredentialRepositoryTrait,
+    service::{
+        code_exchanger::{CodeExchangerTrait, DefaultCodeExchanger},
+        provider::ProviderTrait,
+    },
     use_case::UserExchangesCodeToTokenUc,
 };
 
-pub struct OidcBusinessDiC<I, L>
+pub struct OidcBusinessDi<I, L>
 where
     I: Id,
     L: LoggerTrait,
 {
     // Public services
     pub user_exchanges_code_to_token_uc: Arc<UserExchangesCodeToTokenUc<I, L>>,
-    pub credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
 }
 
-pub struct OidcBusinessDiCBuilder<I, L>
+pub struct OidcBusinessDiBuilder<I, L>
 where
     I: Id,
     L: LoggerTrait,
 {
-    auth_code_exchanger: Option<Arc<dyn CodeExchangerTrait<UserId = I>>>,
+    user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
+    user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
+
+    provider: Option<Arc<dyn ProviderTrait>>,
+    code_exchanger: Option<Arc<dyn CodeExchangerTrait<UserId = I>>>,
     credential_repository: Option<Arc<dyn CredentialRepositoryTrait<UserId = I>>>,
-    guest_binder: Option<Arc<GuestBinder<I, L>>>,
+    id_factory: Arc<dyn IdFactory<Id = I>>,
+    logger: Arc<L>,
 }
 
-impl<I, L> OidcBusinessDiCBuilder<I, L>
+impl<I, L> OidcBusinessDiBuilder<I, L>
 where
-    I: Id,
-    L: LoggerTrait,
+    I: Id + 'static,
+    L: LoggerTrait + 'static,
 {
-    pub fn new() -> Self {
+    pub fn new(
+        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
+        user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
+
+        id_factory: Arc<dyn IdFactory<Id = I>>,
+        logger: Arc<L>,
+    ) -> Self {
         Self {
-            auth_code_exchanger: None,
+            user_business_builder,
+            user_account_business_builder,
+            id_factory,
+            logger,
+            provider: None,
+            code_exchanger: None,
             credential_repository: None,
-            guest_binder: None,
         }
     }
 
-    pub fn with_auth_code_exchanger(
+    pub fn with_code_exchanger(
         &mut self,
-        auth_code_exchanger: Arc<dyn CodeExchangerTrait<UserId = I>>,
+        code_exchanger: Arc<dyn CodeExchangerTrait<UserId = I>>,
     ) -> &mut Self {
-        self.auth_code_exchanger = Some(auth_code_exchanger);
+        self.code_exchanger = Some(code_exchanger);
 
         self
     }
@@ -60,46 +79,46 @@ where
         self
     }
 
-    pub fn with_guest_binder(&mut self, guest_binder: Arc<GuestBinder<I, L>>) -> &mut Self {
-        self.guest_binder = Some(guest_binder);
+    pub fn with_provider(&mut self, provider: Arc<dyn ProviderTrait>) -> &mut Self {
+        self.provider = Some(provider);
 
         self
     }
 
-    pub fn build(&self) -> Result<OidcBusinessDiC<I, L>, String> {
-        let auth_code_exchanger = self
-            .auth_code_exchanger
-            .clone()
-            .ok_or("auth_code_exchanger is not initialized")?;
+    pub fn build(&self) -> Result<OidcBusinessDi<I, L>, String> {
+        let user_business_di = self.user_business_builder.lock().unwrap().build()?;
+        let user_account_business_di =
+            self.user_account_business_builder.lock().unwrap().build()?;
 
-        let guest_binder = self
-            .guest_binder
-            .clone()
-            .ok_or("guest_binder is not initialized")?;
+        let code_exchanger = match self.code_exchanger.clone() {
+            Some(c) => c,
+            None => {
+                let credential_repository = self
+                    .credential_repository
+                    .clone()
+                    .ok_or("credential_repository is not initialized!")?;
+
+                let provider = self.provider.clone().ok_or("provider is not initialized")?;
+
+                Arc::new(DefaultCodeExchanger::new(
+                    provider,
+                    user_business_di.authenticated_user_repository.clone(),
+                    credential_repository.clone(),
+                    user_business_di.session_repository.clone(),
+                    user_account_business_di.member_token_generator.clone(),
+                    self.id_factory.clone(),
+                    self.logger.clone(),
+                ))
+            }
+        };
 
         let user_exchanges_code_to_token_uc = Arc::new(UserExchangesCodeToTokenUc::new(
-            auth_code_exchanger,
-            guest_binder,
+            code_exchanger,
+            user_business_di.guest_binder.clone(),
         ));
 
-        let credential_repository = self
-            .credential_repository
-            .clone()
-            .ok_or("credential_repository is not initialized")?;
-
-        Ok(OidcBusinessDiC {
+        Ok(OidcBusinessDi {
             user_exchanges_code_to_token_uc,
-            credential_repository,
         })
-    }
-}
-
-impl<I, L> Default for OidcBusinessDiCBuilder<I, L>
-where
-    I: Id,
-    L: LoggerTrait,
-{
-    fn default() -> Self {
-        Self::new()
     }
 }

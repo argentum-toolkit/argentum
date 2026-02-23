@@ -1,131 +1,130 @@
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_oidc_business::{
-    di::{OidcBusinessDiC, OidcBusinessDiCBuilder},
-    repository::CredentialRepositoryTrait,
-    service::code_exchanger::DefaultCodeExchanger,
-};
-use argentum_oidc_rest::server::handler::ExchangeCodeTrait;
+use argentum_oidc_business::di::{OidcBusinessDi, OidcBusinessDiBuilder};
+use argentum_oidc_rest::ApiDiC;
+use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_account_business::token::GeneratorTrait;
-use argentum_user_business::{
-    repository::{
-        session_repository::SessionRepositoryTrait,
-        user_repository::AuthenticatedUserRepositoryTrait,
-    },
-    service::GuestBinder,
-};
+use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
+
+use argentum_user_business::di::UserBusinessDiBuilder;
 use sqlx::postgres::PgPoolOptions;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use crate::{
     db::repository::CredentialRepository, github::GitHubProvider,
     rest::handler::ExchangeCodeHandler,
 };
 
-pub struct OidcInfrastructureDiC<L>
+pub struct OidcInfrastructureDi<L>
 where
     L: LoggerTrait,
 {
-    pub business_dic: OidcBusinessDiC<UniqueId, L>,
-
     // Public services
-    pub exchange_code_handler: Arc<dyn ExchangeCodeTrait<Id = UniqueId>>,
+    pub business_di: OidcBusinessDi<UniqueId, L>,
+    pub api_di: ApiDiC<UniqueId>,
 }
 
-pub struct OidcInfrastructureDiCBuilder<L>
+pub struct OidcInfrastructureDiBuilder<L>
 where
     L: LoggerTrait + 'static,
 {
-    business_builder: OidcBusinessDiCBuilder<UniqueId, L>,
-    session_repository: Arc<dyn SessionRepositoryTrait<Id = UniqueId>>,
-    token_generator: Arc<dyn GeneratorTrait<Id = UniqueId>>,
-    authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
-    guest_binder: Arc<GuestBinder<UniqueId, L>>,
-    id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
+    connection_url: String,
+    max_db_connections: u32,
+    github_client_id: String,
+    github_client_secret: String,
+
+    business_builder: Arc<Mutex<OidcBusinessDiBuilder<UniqueId, L>>>,
+    rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
 
     logger: Arc<L>,
     client: Arc<reqwest::Client>,
 }
 
-impl<L> OidcInfrastructureDiCBuilder<L>
+impl<L> OidcInfrastructureDiBuilder<L>
 where
     L: LoggerTrait + 'static,
 {
     pub fn new(
-        session_repository: Arc<dyn SessionRepositoryTrait<Id = UniqueId>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = UniqueId>>,
-        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
-        guest_binder: Arc<GuestBinder<UniqueId, L>>,
+        connection_url: &str,
+        max_db_connections: u32,
+        github_client_id: &str,
+        github_client_secret: &str,
+
+        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
+        user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
+        rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
+
         id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
         logger: Arc<L>,
         client: Arc<reqwest::Client>,
     ) -> Self {
         Self {
-            business_builder: OidcBusinessDiCBuilder::new(),
-            session_repository,
-            token_generator,
-            authenticated_user_repository,
-            guest_binder,
-            id_factory,
+            connection_url: connection_url.to_string(),
+            max_db_connections,
+            github_client_id: github_client_id.to_string(),
+            github_client_secret: github_client_secret.to_string(),
+
+            business_builder: Arc::new(Mutex::new(OidcBusinessDiBuilder::new(
+                user_business_builder.clone(),
+                user_account_business_builder.clone(),
+                id_factory.clone(),
+                logger.clone(),
+            ))),
+
+            rest_builder,
             logger,
             client,
         }
     }
 
-    pub async fn build(
-        &mut self,
-        connection_url: &str,
-        max_db_connections: u32,
-        github_client_id: &str,
-        github_client_secret: &str,
-        logger: Arc<L>,
-    ) -> Result<OidcInfrastructureDiC<L>, String> {
+    pub async fn with_default_services(&mut self) -> Result<&mut Self, String> {
         let pool = PgPoolOptions::new()
-            .max_connections(max_db_connections)
+            .max_connections(self.max_db_connections)
             .min_connections(2)
-            .connect(connection_url)
+            .connect(&self.connection_url)
             .await
             .map_err(|e| format!("Can't create PG connection pool. Err: {e}"))?;
 
-        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger));
-
-        let credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = UniqueId>> =
-            Arc::new(CredentialRepository::new(pg_adapter));
+        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
 
         let provider = Arc::new(GitHubProvider::new(
-            github_client_id,
-            github_client_secret,
+            &self.github_client_id,
+            &self.github_client_secret,
             self.client.clone(),
             self.logger.clone(),
         ));
 
-        let gh_code_exchanger = Arc::new(DefaultCodeExchanger::new(
-            provider,
-            self.authenticated_user_repository.clone(),
-            credential_repository.clone(),
-            self.session_repository.clone(),
-            self.token_generator.clone(),
-            self.id_factory.clone(),
-            self.logger.clone(),
-        ));
+        self.business_builder
+            .lock()
+            .unwrap()
+            .with_credential_repository(Arc::new(CredentialRepository::new(pg_adapter)))
+            .with_provider(provider);
 
-        let business_dic = self
-            .business_builder
-            .with_auth_code_exchanger(gh_code_exchanger.clone())
-            .with_credential_repository(credential_repository)
-            .with_guest_binder(self.guest_binder.clone())
-            .build()?;
+        Ok(self)
+    }
+
+    pub async fn build(&mut self) -> Result<OidcInfrastructureDi<L>, String> {
+        let business_di = self.business_builder.lock().unwrap().build()?;
 
         let exchange_code_handler = Arc::new(ExchangeCodeHandler::new(
-            business_dic.user_exchanges_code_to_token_uc.clone(),
+            business_di.user_exchanges_code_to_token_uc.clone(),
         ));
 
-        Ok(OidcInfrastructureDiC {
-            business_dic,
+        let rest_di = self.rest_builder.build();
+
+        let api_di = ApiDiC::new(
+            "/api/v1".to_string(),
+            rest_di.request_transformer.clone(),
+            rest_di.bearer_authenticator,
             exchange_code_handler,
+            rest_di.error_pre_handler.clone(),
+        );
+
+        Ok(OidcInfrastructureDi {
+            business_di,
+            api_di,
         })
     }
 }

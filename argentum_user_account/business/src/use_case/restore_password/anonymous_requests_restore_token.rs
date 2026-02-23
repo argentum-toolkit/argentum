@@ -4,7 +4,7 @@ use crate::use_case::restore_password::error::RestorePasswordError;
 
 use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
-use argentum_notification_business::{Notification, NotificatorTrait};
+use argentum_notification_business::{Notification, NotifierTrait};
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
@@ -23,7 +23,7 @@ where
     user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
     token_generator: Arc<dyn GeneratorTrait<Id = I>>,
-    notificator: Arc<dyn NotificatorTrait<Id = I>>,
+    notificator: Arc<dyn NotifierTrait<Id = I>>,
     logger: Arc<L>,
 }
 
@@ -39,7 +39,7 @@ where
         user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         token_generator: Arc<dyn GeneratorTrait<Id = I>>,
-        notificator: Arc<dyn NotificatorTrait<Id = I>>,
+        notificator: Arc<dyn NotifierTrait<Id = I>>,
         logger: Arc<L>,
     ) -> Self {
         Self {
@@ -136,7 +136,7 @@ mod tests {
     };
 
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
-    use argentum_notification_business::mock::StdoutNotificator;
+    use argentum_notification_business::mock::StdoutNotifier;
     use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
@@ -154,7 +154,7 @@ mod tests {
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let token_generator = Arc::new(TokenGeneratorMock::new());
 
-        let notificator = Arc::new(StdoutNotificator::new());
+        let notificator = Arc::new(StdoutNotifier::new());
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
@@ -210,7 +210,7 @@ mod tests {
         let user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
         let token_generator = Arc::new(TokenGeneratorMock::new());
 
-        let notificator = Arc::new(StdoutNotificator::new());
+        let notificator = Arc::new(StdoutNotifier::new());
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 

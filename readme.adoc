@@ -148,7 +148,6 @@ cargo install dioxus-cli
 === V0.4
 
 * OIDC
-** bind guests
 ** login with google or linkedin
 ** Email verification
 ** ??? automatically confirm emails for social login ????
