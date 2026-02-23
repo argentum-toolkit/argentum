@@ -16,7 +16,7 @@ Your learning process will be iterative and easier than without Argentum ToolKit
 .Steps to be ready to create effective applications with Argentum ToolKit
 [plantuml,format="svg"]
 ----
-:Run Argentum Demo Application;
+:Run Argentum example application;
 :Read Basic Rust Documentation;
 :Create Your new Argentum component or application;
 :Read more Rust Documentation;

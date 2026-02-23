@@ -26,10 +26,10 @@ members = [
     "argentum_user_account/business",
     "argentum_user_account/infrastructure",
     "argentum_user_account/ui",
-    "examples/demo-api-app",
-    "examples/demo-api-keycloak-app",
-    "demo-app",
-    "demo-fe-app",
+    "examples/api-app",
+    "examples/api-keycloak-app",
+    "examples/cli-app",
+    "examples/fe-app",
 ]
 resolver = "2"
 

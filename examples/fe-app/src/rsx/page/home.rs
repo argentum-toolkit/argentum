@@ -5,7 +5,7 @@ pub fn Home() -> Element {
     rsx! {
         section {
             h1 {
-                "Argentum ToolKit demo fullstack application" }
+                "Argentum ToolKit. Example of fullstack application" }
             p {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et elit at arcu euismod pellentesque eget sed urna. Duis malesuada id tortor quis interdum. In enim sapien, blandit in efficitur ut, rutrum vel arcu. Suspendisse id molestie mauris, sit amet mollis est. Aenean fringilla eros eget commodo pharetra. Nam pretium neque metus, ut rutrum nisi accumsan vitae. Maecenas vulputate arcu justo, in bibendum elit aliquam sed. Sed ante magna, vulputate auctor augue at, luctus malesuada ante. Duis congue elit et ultricies consectetur. Integer vel dui erat. Praesent nec urna lorem. Pellentesque ac ex libero. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos."
             }
