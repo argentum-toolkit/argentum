@@ -92,7 +92,7 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let ua_di = UserAccountBusinessDiCBuilder::new(id_factory.clone(), logger.clone(), notificator)
         .mock()
         .config(
-            "Argentum ToolKit demo web application",
+            "Argentum ToolKit. Example of CLI application",
             3600, // TTL 1h
             "http://localhost:8082/change-password/",
         )

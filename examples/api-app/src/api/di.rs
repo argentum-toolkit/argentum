@@ -112,7 +112,7 @@ pub async fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     )
     .await?
     .config(
-        "Argentum ToolKit demo web application".to_string(),
+        "Argentum ToolKit. Example of API application".to_string(),
         3600, // TTL 1h
         "http://localhost:8082/change-password/".to_string(),
     )

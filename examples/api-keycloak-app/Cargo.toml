@@ -1,6 +1,6 @@
 [package]
-name = "argentum_demo_api_keycloak_app"
-description = "Demo API app of argentum toolkit  with Keycloak "
+name = "argentum_example_api_keycloak_app"
+description = "Example of API app built on argentum toolkit  with Keycloak "
 version = "0.4.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0"
