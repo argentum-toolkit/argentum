@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
-use argentum_user_business::{entity::user::AnonymousUser, service::GuestBinder};
+use argentum_user_business::{entity::user::Guest, service::GuestBinder};
 
 use crate::{
     data_type::ExchangedTokenData,
@@ -35,7 +35,7 @@ where
 
     pub async fn execute(
         &self,
-        guest: AnonymousUser<I>,
+        guest: Guest<I>,
         code: &str,
     ) -> Result<ExchangedTokenData<I>, CodeExchangerError> {
         let data = self.auth_code_exchanger.exchange_code(code).await?;

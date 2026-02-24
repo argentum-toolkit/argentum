@@ -54,7 +54,7 @@ autonumber 1.1
 actor User as u
 
 participant system as s
-participant Notificator as n
+participant Notifier as n
 
 group Request Reset Token
     u -> s: Request reset\n**password token**

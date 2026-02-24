@@ -1,14 +1,12 @@
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 
-use crate::repository::anonymous_binding_repository::AnonymousBindingRepositoryTrait;
+use crate::repository::guest_binding_repository::GuestBindingRepositoryTrait;
 use crate::repository::session_repository::SessionRepositoryTrait;
-use crate::repository::user_repository::{
-    AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
-};
+use crate::repository::user_repository::{GuestUserRepositoryTrait, MemberRepositoryTrait};
 use crate::service::{GuestBinder, MemberAuthenticatorTrait, TokenRouterTrait};
 use crate::use_case::GetUserUc;
-use crate::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use crate::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct UserBusinessDi<I, L>
@@ -16,12 +14,11 @@ where
     I: Id,
     L: LoggerTrait,
 {
-    pub anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
-    pub authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
-    pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc<I>>,
+    pub guest_repository: Arc<dyn GuestUserRepositoryTrait<Id = I>>,
+    pub member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
+    pub user_authenticates_with_token_uc: Arc<MemberAuthenticatesWithTokenUc<I>>,
     pub get_user_uc: Arc<GetUserUc<I>>,
     pub session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-    pub token_router: Arc<dyn TokenRouterTrait>,
     pub guest_binder: Arc<GuestBinder<I, L>>,
 }
 
@@ -31,9 +28,9 @@ where
     I: Id,
     L: LoggerTrait,
 {
-    anonymous_binding_repository: Option<Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>>,
-    anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait<Id = I>>>,
-    authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>>,
+    guest_binding_repository: Option<Arc<dyn GuestBindingRepositoryTrait<Id = I>>>,
+    guest_repository: Option<Arc<dyn GuestUserRepositoryTrait<Id = I>>>,
+    member_repository: Option<Arc<dyn MemberRepositoryTrait<Id = I>>>,
     session_repository: Option<Arc<dyn SessionRepositoryTrait<Id = I>>>,
     token_router: Option<Arc<dyn TokenRouterTrait>>,
     member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
@@ -47,9 +44,9 @@ where
 {
     pub fn new(logger: Arc<L>) -> Self {
         Self {
-            anonymous_binding_repository: None,
-            anonymous_user_repository: None,
-            authenticated_user_repository: None,
+            guest_binding_repository: None,
+            guest_repository: None,
+            member_repository: None,
             session_repository: None,
             token_router: None,
             member_authenticator: None,
@@ -57,34 +54,34 @@ where
         }
     }
 
-    pub fn anonymous_binding_repository(
+    pub fn with_guest_binding_repository(
         &mut self,
-        repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
+        repository: Arc<dyn GuestBindingRepositoryTrait<Id = I>>,
     ) -> &mut Self {
-        self.anonymous_binding_repository = Some(repository);
+        self.guest_binding_repository = Some(repository);
 
         self
     }
 
-    pub fn anonymous_user_repository(
+    pub fn with_guest_repository(
         &mut self,
-        repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
+        repository: Arc<dyn GuestUserRepositoryTrait<Id = I>>,
     ) -> &mut Self {
-        self.anonymous_user_repository = Some(repository);
+        self.guest_repository = Some(repository);
 
         self
     }
 
-    pub fn authenticated_user_repository(
+    pub fn with_member_repository(
         &mut self,
-        repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     ) -> &mut Self {
-        self.authenticated_user_repository = Some(repository);
+        self.member_repository = Some(repository);
 
         self
     }
 
-    pub fn session_repository(
+    pub fn with_session_repository(
         &mut self,
         repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
     ) -> &mut Self {
@@ -93,13 +90,13 @@ where
         self
     }
 
-    pub fn token_router(&mut self, router: Arc<dyn TokenRouterTrait>) -> &mut Self {
+    pub fn with_token_router(&mut self, router: Arc<dyn TokenRouterTrait>) -> &mut Self {
         self.token_router = Some(router);
 
         self
     }
 
-    pub fn member_authenticator(
+    pub fn with_member_authenticator(
         &mut self,
         authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
     ) -> &mut Self {
@@ -109,20 +106,20 @@ where
     }
 
     pub fn build(&self) -> Result<UserBusinessDi<I, L>, String> {
-        let authenticated_user_repository = self
-            .authenticated_user_repository
+        let member_repository = self
+            .member_repository
             .clone()
-            .ok_or("authenticated_user_repository not initialized")?;
+            .ok_or("member_repository not initialized")?;
 
-        let anonymous_user_repository = self
-            .anonymous_user_repository
+        let guest_repository = self
+            .guest_repository
             .clone()
-            .ok_or("anonymous_user_repository not initialized")?;
+            .ok_or("guest_repository not initialized")?;
 
-        let anonymous_binding_repository = self
-            .anonymous_binding_repository
+        let guest_binding_repository = self
+            .guest_binding_repository
             .clone()
-            .ok_or("anonymous_binding_repository not initialized")?;
+            .ok_or("guest_binding_repository not initialized")?;
 
         let session_repository = self
             .session_repository
@@ -140,27 +137,26 @@ where
             .ok_or("member_authenticator not initialized")?;
 
         let guest_binder = Arc::new(GuestBinder::new(
-            anonymous_binding_repository.clone(),
+            guest_binding_repository.clone(),
             session_repository.clone(),
             self.logger.clone(),
         ));
 
-        let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
+        let user_authenticates_with_token_uc = Arc::new(MemberAuthenticatesWithTokenUc::new(
             member_authenticator.clone(),
-            anonymous_user_repository.clone(),
+            guest_repository.clone(),
             session_repository.clone(),
             token_router.clone(),
         ));
 
-        let get_user_uc = Arc::new(GetUserUc::new(authenticated_user_repository.clone()));
+        let get_user_uc = Arc::new(GetUserUc::new(member_repository.clone()));
 
         Ok(UserBusinessDi {
-            anonymous_user_repository,
-            authenticated_user_repository,
+            guest_repository,
+            member_repository,
             user_authenticates_with_token_uc,
             get_user_uc,
             session_repository,
-            token_router,
             guest_binder,
         })
     }

@@ -9,9 +9,9 @@ pub trait UserTrait {
     fn id(&self) -> Self::Id;
 }
 
-//============== AUTHENTICATED USER
+//============== MEMBER USER
 #[derive(Clone)]
-pub struct AuthenticatedUser<I>
+pub struct Member<I>
 where
     I: Id,
 {
@@ -22,12 +22,12 @@ where
     //TODO: pub verified: bool,
 }
 
-impl<I> AuthenticatedUser<I>
+impl<I> Member<I>
 where
     I: Id,
 {
     pub fn new(id: I, name: Name, email: EmailAddress) -> Self {
-        AuthenticatedUser {
+        Member {
             id,
             created_at: Utc::now(),
             name,
@@ -36,7 +36,7 @@ where
     }
 }
 
-impl<I> UserTrait for AuthenticatedUser<I>
+impl<I> UserTrait for Member<I>
 where
     I: Id,
 {
@@ -46,10 +46,10 @@ where
     }
 }
 
-//============== ANONYMOUS USER
+//============== GUEST USER
 
 #[derive(Clone)]
-pub struct AnonymousUser<I>
+pub struct Guest<I>
 where
     I: Id,
 {
@@ -57,19 +57,19 @@ where
     pub created_at: DateTime<Utc>,
 }
 
-impl<I> AnonymousUser<I>
+impl<I> Guest<I>
 where
     I: Id,
 {
     pub fn new(id: I) -> Self {
-        AnonymousUser {
+        Guest {
             id,
             created_at: Utc::now(),
         }
     }
 }
 
-impl<I> UserTrait for AnonymousUser<I>
+impl<I> UserTrait for Guest<I>
 where
     I: Id,
 {
@@ -79,12 +79,12 @@ where
     }
 }
 
-//============== ENUM USER allows operating with anonymous as with authenticated users
+//============== ENUM USER allows operating with guest as with mem
 #[derive(Clone)]
 pub enum User<I>
 where
     I: Id,
 {
-    Anonymous(AnonymousUser<I>),         //Guest
-    Authenticated(AuthenticatedUser<I>), //Member
+    Guest(Guest<I>),
+    Member(Member<I>),
 }

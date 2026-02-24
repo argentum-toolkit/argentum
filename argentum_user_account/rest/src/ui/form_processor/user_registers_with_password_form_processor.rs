@@ -3,9 +3,10 @@ use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 #[cfg(feature = "web")]
 use crate::dto::schema::ProblemDetail;
 
-use crate::dto::schema::RegistrationWithPasswordSchema;
 use crate::ui::callbacks::UserRegistersWithPasswordCallbacks;
 use dioxus::prelude::*;
+use crate::dto::schema::RegistrationWithPasswordSchema;
+
 
 #[derive(Clone, PartialEq)]
 pub struct UserRegistersWithPasswordFormProcessor {
@@ -13,7 +14,7 @@ pub struct UserRegistersWithPasswordFormProcessor {
 }
 
 impl UserRegistersWithPasswordFormProcessor {
-    pub fn new(callbacks: UserRegistersWithPasswordCallbacks) -> Self {
+    pub fn new(callbacks:UserRegistersWithPasswordCallbacks) -> Self {
         Self { callbacks }
     }
 
@@ -65,6 +66,7 @@ impl UserRegistersWithPasswordFormProcessor {
         mut _errors: Signal<Vec<String>>,
         mut _disabled: Signal<bool>,
     ) {
+
     }
 
     #[cfg(feature = "web")]
@@ -76,18 +78,19 @@ impl UserRegistersWithPasswordFormProcessor {
         mut errors: Signal<Vec<String>>,
         mut disabled: Signal<bool>,
     ) {
+        use argentum_rest_infrastructure::data_type::{
+            EmptyQueryParams, HttpParams, HttpRequest,
+        };use argentum_rest_infrastructure::data_type::AuthHeaderParams;
         use crate::client::Client;
-        use argentum_rest_infrastructure::data_type::AuthHeaderParams;
-        use argentum_rest_infrastructure::data_type::{EmptyQueryParams, HttpParams, HttpRequest};
 
         use crate::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
         use crate::dto::params::UserRegistersWithPasswordParams;
         use crate::dto::path_params::UserRegistersWithPasswordPathParams;
         use crate::dto::request::UserRegistersWithPasswordRequest;
-
+        
         use crate::dto::response::Status400Response;
         use crate::dto::response::Status409Response;
-
+        
         disabled.set(true);
         errors.set(vec![]);
         violations.set(Default::default());
@@ -108,7 +111,7 @@ impl UserRegistersWithPasswordFormProcessor {
         match res {
             Ok(data) => match data {
                 UserRegistersWithPasswordOperationResponseEnum::Status201(r) => {
-                    (self.callbacks.on_user_registered_successfully)(r);
+                    (self.callbacks.on_member_registered_successfully)(r);
                 }
                 UserRegistersWithPasswordOperationResponseEnum::Status400(r) => match r {
                     Status400Response::ApplicationProblemJson(j) => {
@@ -133,9 +136,7 @@ impl UserRegistersWithPasswordFormProcessor {
             },
             Err(e) => {
                 disabled.set(false);
-                errors.set(vec![
-                    "Unexpected error. Please try again latter".to_string(),
-                ]);
+                errors.set(vec!["Unexpected error. Please try again latter".to_string()]);
 
                 self.callbacks.on_error.call(e);
             }

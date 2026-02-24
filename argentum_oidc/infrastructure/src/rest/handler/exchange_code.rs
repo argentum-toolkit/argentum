@@ -46,8 +46,8 @@ where
         user: User<Self::Id>,
     ) -> Result<ExchangeCodeOperationResponseEnum, HttpError> {
         let guest = match user {
-            User::Anonymous(a) => a,
-            User::Authenticated(_) => {
+            User::Guest(a) => a,
+            User::Member(_) => {
                 return Err(HttpError::Unauthorized(Unauthorized::new(
                     "Endpoint is available only for guests",
                 )));

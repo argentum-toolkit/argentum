@@ -14,15 +14,15 @@ impl SecurityRepository {
 
     pub fn clear(&self) {
         //TODO: use consts for keys
-        let _ = self.local_storage.delete("x_auth_token"); //anonymous
+        let _ = self.local_storage.delete("x_auth_token"); //guest
         let _ = self.local_storage.delete("x_auth_user_token");
         let _ = self.local_storage.delete("x_auth_user_id");
     }
 
     pub fn read(&self) -> Option<Security> {
-        let anonymous_token = self.local_storage.get_item("x_auth_token").unwrap_or(None);
+        let guest_token = self.local_storage.get_item("x_auth_token").unwrap_or(None);
 
-        let user_token = self
+        let member_token = self
             .local_storage
             .get_item("x_auth_user_token")
             .unwrap_or(None);
@@ -32,15 +32,15 @@ impl SecurityRepository {
             .unwrap_or(None)
             .and_then(|id| uuid::Uuid::from_str(id.as_str()).ok());
 
-        let authenticated = match (user_token.clone(), user_id) {
-            (Some(token), Some(id)) => Some(Security::Authenticated(token, id)),
+        let member = match (member_token.clone(), user_id) {
+            (Some(token), Some(id)) => Some(Security::Member(token, id)),
             _ => None,
         };
 
-        if let Some(a) = authenticated {
+        if let Some(a) = member {
             Some(a)
-        } else if let Some(token) = anonymous_token {
-            Some(Security::Anonymous(token))
+        } else if let Some(token) = guest_token {
+            Some(Security::Guest(token))
         } else {
             self.clear();
 
@@ -50,19 +50,19 @@ impl SecurityRepository {
 
     pub fn save(&self, security: Security) {
         match security {
-            Security::Anonymous(hash) => {
+            Security::Guest(hash) => {
                 let _ = self.local_storage.delete("x_auth_user_token");
                 let _ = self.local_storage.delete("x_auth_user_id");
 
                 let _ = self.local_storage.set("x_auth_token", &hash);
             }
-            Security::Authenticated(hash, user_id) => {
-                let _ = self.local_storage.delete("x_auth_token"); //anonymous
+            Security::Member(hash, member_id) => {
+                let _ = self.local_storage.delete("x_auth_token"); //guest
 
                 let _ = self.local_storage.set("x_auth_user_token", &hash);
                 let _ = self
                     .local_storage
-                    .set("x_auth_user_id", &user_id.to_string());
+                    .set("x_auth_user_id", &member_id.to_string());
             }
         };
     }

@@ -151,8 +151,8 @@ where
         self.user_business_builder
             .lock()
             .unwrap()
-            .member_authenticator(member_authenticator)
-            .authenticated_user_repository(member_repository);
+            .with_member_authenticator(member_authenticator)
+            .with_member_repository(member_repository);
 
         self.user_account_business_builder
             .lock()

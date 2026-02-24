@@ -1,5 +1,5 @@
-use crate::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
 use crate::dto::request::UserRegistersWithPasswordRequest;
+use crate::dto::operation_response_enum::UserRegistersWithPasswordOperationResponseEnum;
 use argentum_rest_infrastructure::data_type::error::{HttpError, NotImplementedError};
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::entity::user::User;

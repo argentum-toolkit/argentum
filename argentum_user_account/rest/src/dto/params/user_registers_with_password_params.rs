@@ -15,11 +15,7 @@ impl HttpParams for UserRegistersWithPasswordParams {
     type Query = EmptyQueryParams;
 
     fn new(path: Self::Path, query: Self::Query, headers: Self::Headers) -> Self {
-        Self {
-            path,
-            query,
-            headers,
-        }
+        Self { path, query, headers }
     }
 
     fn path(&self) -> &Self::Path {

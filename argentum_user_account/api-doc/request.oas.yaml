@@ -39,3 +39,11 @@ components:
         "application/json":
           schema:
             $ref: "type.oas.yaml#/components/schemas/ChangePasswordSchema"
+
+    EmailVerificationRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/EmailVerificationSchema"
+      description: Required data for email verification
+      required: true

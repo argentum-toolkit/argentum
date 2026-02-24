@@ -1,20 +1,20 @@
 use crate::dto::schema::RegistrationWithPasswordSchema;
-use crate::ui::form_processor::UserRegistersWithPasswordFormProcessor;
 use crate::ui::input::RegistrationWithPasswordSchemaInput;
+use crate::ui::form_processor::UserRegistersWithPasswordFormProcessor;
 
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
-use argentum_standard_ui::rsx::component::ErrorBlock;
 use argentum_standard_ui::rsx::form::Submit;
+use argentum_standard_ui::rsx::component::ErrorBlock;
 
 use dioxus::prelude::*;
 
 #[component]
 pub fn UserRegistersWithPasswordForm(
-    processor: UserRegistersWithPasswordFormProcessor,
-    auth_token: String,
-) -> Element {
+        processor: UserRegistersWithPasswordFormProcessor, 
+        auth_token: String,
+    ) -> Element {
     let mut values: Signal<RegistrationWithPasswordSchema> = use_signal(Default::default);
-    let violations: Signal<ViolationsDto> = use_signal(Default::default);
+    let violations: Signal<ViolationsDto>= use_signal(Default::default);
     let errors = use_signal(Vec::new);
     let disabled = use_signal(|| false);
 
@@ -33,9 +33,9 @@ pub fn UserRegistersWithPasswordForm(
                     processor.submit(
                         auth_token,
                         values,
-
-                        violations,
-                        errors,
+                        
+                        violations, 
+                        errors, 
                         disabled
                     ).await;
                 });

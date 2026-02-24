@@ -4,7 +4,7 @@ use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::{
     data_type::builder::NameBuilder,
-    entity::user::AuthenticatedUser,
+    entity::user::Member,
     service::{MemberAuthenticatorError, MemberAuthenticatorTrait},
 };
 use serde::Deserialize;
@@ -62,7 +62,7 @@ impl MemberAuthenticatorTrait for KeycloakMemberAuthenticator {
     async fn authenticate(
         &self,
         token: &str,
-    ) -> Result<Option<AuthenticatedUser<Self::Id>>, MemberAuthenticatorError> {
+    ) -> Result<Option<Member<Self::Id>>, MemberAuthenticatorError> {
         let url = format!(
             "{}/realms/{}/protocol/openid-connect/token/introspect",
             self.base_url, self.realm
@@ -88,7 +88,7 @@ impl MemberAuthenticatorTrait for KeycloakMemberAuthenticator {
                     .try_build()
                     .unwrap();
 
-                Ok(Some(AuthenticatedUser::new(m.id.into(), name, email)))
+                Ok(Some(Member::new(m.id.into(), name, email)))
             }
             Err(_) => Ok(None),
         }

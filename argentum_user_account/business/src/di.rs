@@ -6,12 +6,12 @@ use crate::repository::password_credential_writer::PasswordCredentialWriter;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
 use crate::service::{DefaultPasswordToTokenExchanger, PasswordToTokenExchangerTrait};
 use crate::token::GeneratorTrait;
-use crate::use_case::anonymous_registers::AnonymousRegistersUc;
+use crate::use_case::guest_registers::GuestRegistersUc;
 use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
-use crate::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
-use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
-use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
-use crate::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
+use crate::use_case::member_logins_with_password::MemberLoginsWithPasswordUc;
+use crate::use_case::member_registers_with_password::MemberRegistersWithPasswordUc;
+use crate::use_case::restore_password::guest_requests_restore_token::GuestRequestsRestoreTokenUc;
+use crate::use_case::restore_password::guest_with_token_changes_password::GuestWithTokenChangesPasswordUc;
 use crate::{
     mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock,
     use_case::member_confirms_email::DefaultMemberConfirmsEmailUc,
@@ -30,11 +30,11 @@ where
     L: LoggerTrait,
 {
     // Public services
-    pub anonymous_registers_uc: Arc<AnonymousRegistersUc<I>>,
-    pub user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc<I>>,
-    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc<I, L>>,
-    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<I, L>>,
-    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<I, L>>,
+    pub guest_registers_uc: Arc<GuestRegistersUc<I>>,
+    pub member_registers_with_password_uc: Arc<MemberRegistersWithPasswordUc<I>>,
+    pub member_logins_with_password_uc: Arc<MemberLoginsWithPasswordUc<I, L>>,
+    pub guest_with_token_changes_password_uc: Arc<GuestWithTokenChangesPasswordUc<I, L>>,
+    pub guest_requests_restore_token_uc: Arc<GuestRequestsRestoreTokenUc<I, L>>,
     pub member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
     pub member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
 }
@@ -178,7 +178,7 @@ where
                 ));
 
                 Arc::new(DefaultPasswordToTokenExchanger::new(
-                    user_business_di.authenticated_user_repository.clone(),
+                    user_business_di.member_repository.clone(),
                     user_business_di.session_repository.clone(),
                     password_credential_checker,
                     self.id_factory.clone(),
@@ -195,14 +195,14 @@ where
         let member_confirms_email_uc = match self.member_confirms_email_uc.clone() {
             Some(uc) => uc,
             None => Arc::new(DefaultMemberConfirmsEmailUc::new(
-                user_business_di.authenticated_user_repository.clone(),
+                user_business_di.member_repository.clone(),
                 self.logger.clone(),
             )),
         };
 
-        let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
+        let guest_registers_uc = Arc::new(GuestRegistersUc::new(
             self.id_factory.clone(),
-            user_business_di.anonymous_user_repository.clone(),
+            user_business_di.guest_repository.clone(),
             user_business_di.session_repository.clone(),
             guest_token_generator.clone(),
         ));
@@ -211,30 +211,29 @@ where
             password_credential_repository.clone(),
         ));
 
-        let user_registers_with_password_uc = Arc::new(UserRegistersWithPasswordUc::new(
-            user_business_di.authenticated_user_repository.clone(),
+        let user_registers_with_password_uc = Arc::new(MemberRegistersWithPasswordUc::new(
+            user_business_di.member_repository.clone(),
             password_credential_writer.clone(),
         ));
 
-        let user_logins_with_password_uc = Arc::new(UserLoginsWithPasswordUc::new(
+        let user_logins_with_password_uc = Arc::new(MemberLoginsWithPasswordUc::new(
             password_to_token_exchanger,
             user_business_di.guest_binder.clone(),
         ));
 
-        let anonymous_with_token_changes_password_uc =
-            Arc::new(AnonymousWithTokenChangesPasswordUc::new(
-                user_business_di.authenticated_user_repository.clone(),
-                restore_password_token_repository.clone(),
-                password_credential_writer,
-                self.restore_password_token_ttl,
-                self.logger.clone(),
-            ));
+        let guest_with_token_changes_password_uc = Arc::new(GuestWithTokenChangesPasswordUc::new(
+            user_business_di.member_repository.clone(),
+            restore_password_token_repository.clone(),
+            password_credential_writer,
+            self.restore_password_token_ttl,
+            self.logger.clone(),
+        ));
 
-        let anonymous_requests_restore_token_uc = Arc::new(AnonymousRequestsRestoreTokenUc::new(
+        let guest_requests_restore_token_uc = Arc::new(GuestRequestsRestoreTokenUc::new(
             &self.product_name,
             &self.restore_password_front_url.clone(),
             self.id_factory.clone(),
-            user_business_di.authenticated_user_repository.clone(),
+            user_business_di.member_repository.clone(),
             restore_password_token_repository,
             guest_token_generator,
             self.notifier.clone(),
@@ -242,12 +241,12 @@ where
         ));
 
         Ok(BusinessDi {
-            anonymous_registers_uc,
-            user_registers_with_password_uc,
-            user_logins_with_password_uc,
+            guest_registers_uc,
+            member_registers_with_password_uc: user_registers_with_password_uc,
+            member_logins_with_password_uc: user_logins_with_password_uc,
             member_confirms_email_uc,
-            anonymous_with_token_changes_password_uc,
-            anonymous_requests_restore_token_uc,
+            guest_with_token_changes_password_uc,
+            guest_requests_restore_token_uc,
             member_token_generator,
         })
     }

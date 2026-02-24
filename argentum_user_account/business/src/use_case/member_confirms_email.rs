@@ -1,6 +1,6 @@
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
-use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
 use async_trait::async_trait;
 use std::{error::Error, sync::Arc};
 
@@ -16,7 +16,7 @@ where
     I: Id,
     L: LoggerTrait,
 {
-    _user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    _user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     _logger: Arc<L>,
 }
 
@@ -25,10 +25,7 @@ where
     I: Id,
     L: LoggerTrait,
 {
-    pub fn new(
-        _user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
-        _logger: Arc<L>,
-    ) -> Self {
+    pub fn new(_user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>, _logger: Arc<L>) -> Self {
         //TODO: implement
         Self {
             _user_repository,

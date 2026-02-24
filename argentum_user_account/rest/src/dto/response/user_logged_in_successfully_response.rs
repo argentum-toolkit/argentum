@@ -1,5 +1,5 @@
-use argentum_rest_infrastructure::data_type::SerializableBody;
 use argentum_rest_infrastructure::data_type::http_response::ContentTypeResponseTrait;
+use argentum_rest_infrastructure::data_type::SerializableBody;
 
 use crate::dto::schema::LoginResult;
 
@@ -18,11 +18,11 @@ impl ContentTypeResponseTrait for ApplicationJson {
 
 #[derive(Clone)]
 pub enum UserLoggedInSuccessfullyResponse {
-    ApplicationJson(ApplicationJson),
+    ApplicationJson(ApplicationJson)
 }
 
 impl UserLoggedInSuccessfullyResponse {
-    pub fn new_application_json(r: LoginResult) -> Self {
+    pub fn new_application_json(r: LoginResult) -> Self{
         Self::ApplicationJson(ApplicationJson(r))
     }
 

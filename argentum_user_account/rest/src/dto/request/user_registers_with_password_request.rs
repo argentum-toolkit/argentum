@@ -1,6 +1,6 @@
+use argentum_rest_infrastructure::data_type::HttpRequest;
 use crate::dto::params::UserRegistersWithPasswordParams;
 use crate::dto::schema::RegistrationWithPasswordSchema;
-use argentum_rest_infrastructure::data_type::HttpRequest;
 
 pub struct UserRegistersWithPasswordRequest {
     pub body: RegistrationWithPasswordSchema,

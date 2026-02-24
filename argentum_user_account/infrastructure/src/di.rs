@@ -1,12 +1,12 @@
 use crate::db::repository::{PasswordCredentialRepository, RestorePasswordTokenRepository};
 use crate::rest::handler::{
-    AnonymousRegistersHandler, AnonymousRequestsRestoreTokenHandler,
-    AnonymousWithTokenChangesPasswordHandler, MemberVerifiesEmailHandler,
-    UserLoginsWithPasswordHandler, UserRegistersWithPasswordHandler,
+    GuestRegistersHandler, GuestRequestsRestoreTokenHandler, GuestWithTokenChangesPasswordHandler,
+    MemberLoginsWithPasswordHandler, MemberRegistersWithPasswordHandler,
+    MemberVerifiesEmailHandler,
 };
 use crate::rest::transformer::{
-    DtoToAnonymousRequestsRestoreTokenParams, DtoToAnonymousWithTokenChangesPasswordParams,
-    DtoToUserLoginsWithPasswordParams, DtoToUserRegistersWithPasswordParams,
+    DtoToGuestRequestsRestoreTokenParams, DtoToGuestWithTokenChangesPasswordParams,
+    DtoToMemberLoginsWithPasswordParams, DtoToMemberRegistersWithPasswordParams,
 };
 use crate::token::{JwtTokenGenerator, StringTokenGenerator};
 use argentum_encryption_business::password::{Encryptor, Validator};
@@ -171,44 +171,44 @@ where
     pub fn build(&self) -> Result<UserAccountInfrastructureDi<UniqueId, L>, String> {
         let business_di = self.business_builder.lock().unwrap().build()?;
 
-        let anonymous_registers_handler = Arc::new(AnonymousRegistersHandler::new(
-            business_di.anonymous_registers_uc.clone(),
+        let guest_registers_handler = Arc::new(GuestRegistersHandler::new(
+            business_di.guest_registers_uc.clone(),
         ));
 
-        let dto_to_user_registers_with_password_params =
-            Arc::new(DtoToUserRegistersWithPasswordParams::new());
+        let dto_to_member_registers_with_password_params =
+            Arc::new(DtoToMemberRegistersWithPasswordParams::new());
 
-        let user_registers_with_password_handler = Arc::new(UserRegistersWithPasswordHandler::new(
-            business_di.user_registers_with_password_uc.clone(),
-            dto_to_user_registers_with_password_params,
-        ));
-
-        let dto_to_user_logins_with_password_params =
-            Arc::new(DtoToUserLoginsWithPasswordParams::new());
-
-        let user_logins_with_password_handler = Arc::new(UserLoginsWithPasswordHandler::new(
-            business_di.user_logins_with_password_uc.clone(),
-            dto_to_user_logins_with_password_params,
-        ));
-
-        let dto_to_anonymous_with_token_changes_password_params =
-            Arc::new(DtoToAnonymousWithTokenChangesPasswordParams::new());
-
-        let anonymous_with_token_changes_password_handler =
-            Arc::new(AnonymousWithTokenChangesPasswordHandler::new(
-                business_di.anonymous_with_token_changes_password_uc.clone(),
-                dto_to_anonymous_with_token_changes_password_params,
+        let member_registers_with_password_handler =
+            Arc::new(MemberRegistersWithPasswordHandler::new(
+                business_di.member_registers_with_password_uc.clone(),
+                dto_to_member_registers_with_password_params,
             ));
 
-        let dto_to_anonymous_requests_restore_token_params =
-            Arc::new(DtoToAnonymousRequestsRestoreTokenParams::new());
+        let dto_to_member_logins_with_password_params =
+            Arc::new(DtoToMemberLoginsWithPasswordParams::new());
 
-        let anonymous_requests_restore_token_handler =
-            Arc::new(AnonymousRequestsRestoreTokenHandler::new(
-                business_di.anonymous_requests_restore_token_uc.clone(),
-                self.logger.clone(),
-                dto_to_anonymous_requests_restore_token_params,
+        let member_logins_with_password_handler = Arc::new(MemberLoginsWithPasswordHandler::new(
+            business_di.member_logins_with_password_uc.clone(),
+            dto_to_member_logins_with_password_params,
+        ));
+
+        let dto_to_guest_with_token_changes_password_params =
+            Arc::new(DtoToGuestWithTokenChangesPasswordParams::new());
+
+        let guest_with_token_changes_password_handler =
+            Arc::new(GuestWithTokenChangesPasswordHandler::new(
+                business_di.guest_with_token_changes_password_uc.clone(),
+                dto_to_guest_with_token_changes_password_params,
             ));
+
+        let dto_to_guest_requests_restore_token_params =
+            Arc::new(DtoToGuestRequestsRestoreTokenParams::new());
+
+        let guest_requests_restore_token_handler = Arc::new(GuestRequestsRestoreTokenHandler::new(
+            business_di.guest_requests_restore_token_uc.clone(),
+            self.logger.clone(),
+            dto_to_guest_requests_restore_token_params,
+        ));
 
         let member_verifies_email_handler = Arc::new(MemberVerifiesEmailHandler::new(
             business_di.member_confirms_email_uc.clone(),
@@ -221,12 +221,12 @@ where
             "/api/v1".to_string(),
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator.clone(),
-            anonymous_registers_handler,
-            anonymous_requests_restore_token_handler,
-            anonymous_with_token_changes_password_handler,
+            guest_registers_handler,
+            guest_requests_restore_token_handler,
+            guest_with_token_changes_password_handler,
+            member_logins_with_password_handler,
+            member_registers_with_password_handler,
             member_verifies_email_handler,
-            user_logins_with_password_handler,
-            user_registers_with_password_handler,
             rest_di.error_pre_handler.clone(),
         );
 

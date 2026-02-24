@@ -1,13 +1,13 @@
-mod anonymous_registers_handler;
-mod anonymous_requests_restore_token_handler;
-mod anonymous_with_token_changes_password_handler;
+mod guest_registers_handler;
+mod guest_requests_restore_token_handler;
+mod guest_with_token_changes_password_handler;
+mod member_logins_with_password_handler;
+mod member_registers_with_password_handler;
 mod member_verifies_email_handler;
-mod user_logins_with_password_handler;
-mod user_registers_with_password_handler;
 
-pub use anonymous_registers_handler::AnonymousRegistersTrait;
-pub use anonymous_requests_restore_token_handler::AnonymousRequestsRestoreTokenTrait;
-pub use anonymous_with_token_changes_password_handler::AnonymousWithTokenChangesPasswordTrait;
+pub use guest_registers_handler::GuestRegistersTrait;
+pub use guest_requests_restore_token_handler::GuestRequestsRestoreTokenTrait;
+pub use guest_with_token_changes_password_handler::GuestWithTokenChangesPasswordTrait;
+pub use member_logins_with_password_handler::MemberLoginsWithPasswordTrait;
+pub use member_registers_with_password_handler::MemberRegistersWithPasswordTrait;
 pub use member_verifies_email_handler::MemberVerifiesEmailTrait;
-pub use user_logins_with_password_handler::UserLoginsWithPasswordTrait;
-pub use user_registers_with_password_handler::UserRegistersWithPasswordTrait;

@@ -2,22 +2,22 @@ use crate::data_type::AuthHeaderParams;
 use crate::data_type::error::{HttpError, InternalServerError, Unauthorized};
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::entity::user::User;
-use argentum_user_business::use_case::user_authenticates_with_token::AuthenticationError;
-use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use argentum_user_business::use_case::member_authenticates_with_token::AuthenticationError;
+use argentum_user_business::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
 use std::sync::Arc;
 
 pub struct BearerAuthenticator<I>
 where
     I: Id,
 {
-    uc: Arc<UserAuthenticatesWithTokenUc<I>>,
+    uc: Arc<MemberAuthenticatesWithTokenUc<I>>,
 }
 
 impl<I> BearerAuthenticator<I>
 where
     I: Id,
 {
-    pub fn new(uc: Arc<UserAuthenticatesWithTokenUc<I>>) -> Self {
+    pub fn new(uc: Arc<MemberAuthenticatesWithTokenUc<I>>) -> Self {
         Self { uc }
     }
 

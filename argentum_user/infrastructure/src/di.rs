@@ -1,6 +1,6 @@
-use crate::db::repository::AnonymousBindingRepository;
-use crate::db::repository::AnonymousUserRepository;
-use crate::db::repository::AuthenticatedUserRepository;
+use crate::db::repository::GuestBindingRepository;
+use crate::db::repository::GuestRepository;
+use crate::db::repository::MemberRepository;
 use crate::db::repository::SessionRepository;
 use crate::rest::handler::GetUserHandler;
 use crate::service::MemberAuthenticator;
@@ -11,7 +11,7 @@ use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::di::{UserBusinessDi, UserBusinessDiBuilder};
-use argentum_user_business::repository::user_repository::AuthenticatedUserRepositoryTrait;
+use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
 use argentum_user_business::service::MemberAuthenticatorTrait;
 use argentum_user_rest::ApiDiC;
 use sqlx::postgres::PgPoolOptions;
@@ -73,24 +73,24 @@ where
         self.business_builder
             .lock()
             .unwrap()
-            .anonymous_binding_repository(Arc::new(AnonymousBindingRepository::new(
+            .with_guest_binding_repository(Arc::new(GuestBindingRepository::new(
                 pg_adapter.clone(),
             )))
-            .anonymous_user_repository(Arc::new(AnonymousUserRepository::new(pg_adapter.clone())))
-            .session_repository(session_repository.clone())
-            .token_router(Arc::new(TokenRouter::new()));
+            .with_guest_repository(Arc::new(GuestRepository::new(pg_adapter.clone())))
+            .with_session_repository(session_repository.clone())
+            .with_token_router(Arc::new(TokenRouter::new()));
 
-        let member_repo = Arc::new(AuthenticatedUserRepository::new(pg_adapter.clone()));
-
-        self.business_builder
-            .lock()
-            .unwrap()
-            .authenticated_user_repository(member_repo.clone());
+        let member_repo = Arc::new(MemberRepository::new(pg_adapter.clone()));
 
         self.business_builder
             .lock()
             .unwrap()
-            .member_authenticator(Arc::new(MemberAuthenticator::new(
+            .with_member_repository(member_repo.clone());
+
+        self.business_builder
+            .lock()
+            .unwrap()
+            .with_member_authenticator(Arc::new(MemberAuthenticator::new(
                 member_repo.clone(),
                 session_repository,
             )));
@@ -100,12 +100,12 @@ where
 
     pub async fn with_member_repository(
         &mut self,
-        member_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
+        member_repository: Arc<dyn MemberRepositoryTrait<Id = UniqueId>>,
     ) -> Result<&mut Self, String> {
         self.business_builder
             .lock()
             .unwrap()
-            .authenticated_user_repository(member_repository.clone());
+            .with_member_repository(member_repository.clone());
 
         Ok(self)
     }
@@ -117,7 +117,7 @@ where
         self.business_builder
             .lock()
             .unwrap()
-            .member_authenticator(member_authenticator);
+            .with_member_authenticator(member_authenticator);
 
         Ok(self)
     }

@@ -1,2 +1,2 @@
 #[cfg(feature = "server")]
-pub mod email_notificator;
+pub mod email_notifier;

@@ -102,7 +102,7 @@ where
 
                 Arc::new(DefaultCodeExchanger::new(
                     provider,
-                    user_business_di.authenticated_user_repository.clone(),
+                    user_business_di.member_repository.clone(),
                     credential_repository.clone(),
                     user_business_di.session_repository.clone(),
                     user_account_business_di.member_token_generator.clone(),

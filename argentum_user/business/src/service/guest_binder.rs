@@ -4,9 +4,9 @@ use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 
 use crate::{
-    entity::{anonymous_binding::AnonymousBinding, user::AnonymousUser},
+    entity::{guest_binding::GuestBinding, user::Guest},
     repository::{
-        anonymous_binding_repository::AnonymousBindingRepositoryTrait,
+        guest_binding_repository::GuestBindingRepositoryTrait,
         session_repository::SessionRepositoryTrait,
     },
 };
@@ -16,7 +16,7 @@ where
     I: Id,
     L: LoggerTrait,
 {
-    guest_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
+    guest_binding_repository: Arc<dyn GuestBindingRepositoryTrait<Id = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
     logger: Arc<L>,
 }
@@ -27,18 +27,18 @@ where
     L: LoggerTrait,
 {
     pub fn new(
-        anonymous_binding_repository: Arc<dyn AnonymousBindingRepositoryTrait<Id = I>>,
+        guest_binding_repository: Arc<dyn GuestBindingRepositoryTrait<Id = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
         logger: Arc<L>,
     ) -> Self {
         Self {
-            guest_binding_repository: anonymous_binding_repository,
+            guest_binding_repository,
             session_repository,
             logger,
         }
     }
 
-    pub async fn bind_and_logout_guest(&self, guest: Option<AnonymousUser<I>>, member_id: I) {
+    pub async fn bind_and_logout_guest(&self, guest: Option<Guest<I>>, member_id: I) {
         if let Some(guest) = guest {
             match self
                 .session_repository
@@ -49,7 +49,7 @@ where
                 Err(_) => self.logger.warning("Guest session is not deleted"),
             };
 
-            let binding = AnonymousBinding::new(member_id, guest.id);
+            let binding = GuestBinding::new(member_id, guest.id);
 
             match self.guest_binding_repository.save(&binding).await {
                 Ok(_) => self.logger.info("Guest binding saved"),

@@ -3,9 +3,9 @@ use crate::{
     rsx::app::{GithubClientId, OidcRedirectUrl},
 };
 
-use argentum_user_account_rest::ui::callbacks::UserLoginsWithPasswordCallbacks;
-use argentum_user_account_rest::ui::form::UserLoginsWithPasswordForm;
-use argentum_user_account_rest::ui::form_processor::UserLoginsWithPasswordFormProcessor;
+use argentum_user_account_rest::ui::callbacks::MemberLoginsWithPasswordCallbacks;
+use argentum_user_account_rest::ui::form::MemberLoginsWithPasswordForm;
+use argentum_user_account_rest::ui::form_processor::MemberLoginsWithPasswordFormProcessor;
 use dioxus::prelude::*;
 use rand::{RngExt, distr::Alphanumeric};
 use web_sys::{Location, window};
@@ -33,14 +33,14 @@ pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let callbacks = {
         use argentum_standard_ui::service::redirect;
-        use argentum_user_account_rest::dto::response::UserLoggedInSuccessfullyResponse;
+        use argentum_user_account_rest::dto::response::MemberLoggedInSuccessfullyResponse;
         use argentum_user_account_ui::security::ClientSideAuthenticator;
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        let on_user_logged_in_successfully = EventHandler::new(
-            move |response: UserLoggedInSuccessfullyResponse| match response {
-                UserLoggedInSuccessfullyResponse::ApplicationJson(j) => {
+        let on_member_logged_in_successfully = EventHandler::new(
+            move |response: MemberLoggedInSuccessfullyResponse| match response {
+                MemberLoggedInSuccessfullyResponse::ApplicationJson(j) => {
                     authenticator.write().auth_user(j.0.token, j.0.user_id);
 
                     let _ = redirect(Route::Home {});
@@ -48,18 +48,18 @@ pub fn Login() -> Element {
             },
         );
 
-        UserLoginsWithPasswordCallbacks {
-            on_user_logged_in_successfully,
+        MemberLoginsWithPasswordCallbacks {
+            on_member_logged_in_successfully,
             ..Default::default()
         }
     };
 
     #[cfg(not(feature = "web"))]
-    let callbacks = UserLoginsWithPasswordCallbacks {
+    let callbacks = MemberLoginsWithPasswordCallbacks {
         ..Default::default()
     };
 
-    let processor = UserLoginsWithPasswordFormProcessor::new(callbacks);
+    let processor = MemberLoginsWithPasswordFormProcessor::new(callbacks);
 
     // let keycloak_url = "http://localhost:8099";
     // let realm = "argentum-realm-dev";
@@ -94,7 +94,7 @@ pub fn Login() -> Element {
                 div { class:"pb-40",
                     h2 { "Sign in to your account" }
 
-                    UserLoginsWithPasswordForm {
+                    MemberLoginsWithPasswordForm {
                         processor,
                         auth_token,
                     }

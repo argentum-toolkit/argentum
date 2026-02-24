@@ -9,16 +9,16 @@ use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
 use argentum_user_account_business::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
 use argentum_user_account_business::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
 use argentum_user_account_business::mock::token::TokenGeneratorMock;
-use argentum_user_account_business::use_case::anonymous_registers::AnonymousRegistersUc;
-use argentum_user_account_business::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
-use argentum_user_account_business::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
+use argentum_user_account_business::use_case::guest_registers::GuestRegistersUc;
+use argentum_user_account_business::use_case::member_logins_with_password::MemberLoginsWithPasswordUc;
+use argentum_user_account_business::use_case::member_registers_with_password::MemberRegistersWithPasswordUc;
 use argentum_user_business::di::UserBusinessDiBuilder;
-use argentum_user_business::mock::repository::anonymous_binding_repository_mock::AnonymousBindingRepositoryMock;
-use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
-use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+use argentum_user_business::mock::repository::guest_binding_repository_mock::GuestBindingRepositoryMock;
+use argentum_user_business::mock::repository::guest_repository_mock::GuestRepositoryMock;
+use argentum_user_business::mock::repository::member_repository_mock::MemberRepositoryMock;
 use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
 use argentum_user_business::mock::service::{MemberAuthenticatorMock, TokenRouterMock};
-use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
+use argentum_user_business::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
 use std::sync::{Arc, Mutex};
 
 pub struct DiC<L>
@@ -27,10 +27,10 @@ where
 {
     // Public services
     pub id_factory: Arc<dyn IdFactory<Id = UIntId>>,
-    pub anonymous_registers_uc: Arc<AnonymousRegistersUc<UIntId>>,
-    pub user_logins_with_pw: Arc<UserLoginsWithPasswordUc<UIntId, L>>,
-    pub user_registers_with_pw: Arc<UserRegistersWithPasswordUc<UIntId>>,
-    pub user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc<UIntId>>,
+    pub guest_registers_uc: Arc<GuestRegistersUc<UIntId>>,
+    pub member_logins_with_pw: Arc<MemberLoginsWithPasswordUc<UIntId, L>>,
+    pub member_registers_with_pw: Arc<MemberRegistersWithPasswordUc<UIntId>>,
+    pub user_authenticates_with_token: Arc<MemberAuthenticatesWithTokenUc<UIntId>>,
     pub logger: Arc<L>,
 }
 
@@ -40,17 +40,17 @@ where
 {
     pub fn new(
         id_factory: Arc<dyn IdFactory<Id = UIntId>>,
-        anonymous_registers_uc: Arc<AnonymousRegistersUc<UIntId>>,
-        user_logins_with_pw: Arc<UserLoginsWithPasswordUc<UIntId, L>>,
-        user_registers_with_pw: Arc<UserRegistersWithPasswordUc<UIntId>>,
-        user_authenticates_with_token: Arc<UserAuthenticatesWithTokenUc<UIntId>>,
+        guest_registers_uc: Arc<GuestRegistersUc<UIntId>>,
+        member_logins_with_pw: Arc<MemberLoginsWithPasswordUc<UIntId, L>>,
+        member_registers_with_pw: Arc<MemberRegistersWithPasswordUc<UIntId>>,
+        user_authenticates_with_token: Arc<MemberAuthenticatesWithTokenUc<UIntId>>,
         logger: Arc<L>,
     ) -> Self {
         Self {
             id_factory,
-            anonymous_registers_uc,
-            user_logins_with_pw,
-            user_registers_with_pw,
+            guest_registers_uc,
+            member_logins_with_pw,
+            member_registers_with_pw,
             user_authenticates_with_token,
             logger,
         }
@@ -62,11 +62,11 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
-    let notificator = Arc::new(StdoutNotifier::new());
+    let notifier = Arc::new(StdoutNotifier::new());
 
-    let anonymous_binding_repository = Arc::new(AnonymousBindingRepositoryMock::<UIntId>::new());
-    let anonymous_user_repository = Arc::new(AnonymousUserRepositoryMock::<UIntId>::new());
-    let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::<UIntId>::new());
+    let guest_binding_repository = Arc::new(GuestBindingRepositoryMock::<UIntId>::new());
+    let guest_repository = Arc::new(GuestRepositoryMock::<UIntId>::new());
+    let member_repository = Arc::new(MemberRepositoryMock::<UIntId>::new());
     let session_repository = Arc::new(SessionRepositoryMock::<UIntId>::new());
 
     let encryptor = Arc::new(EncryptorMock::new());
@@ -84,12 +84,12 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
     user_business_builder
         .lock()
         .unwrap()
-        .authenticated_user_repository(authenticated_user_repository)
-        .anonymous_user_repository(anonymous_user_repository)
-        .anonymous_binding_repository(anonymous_binding_repository)
-        .session_repository(session_repository)
-        .token_router(token_router)
-        .member_authenticator(member_authenticator);
+        .with_member_repository(member_repository)
+        .with_guest_repository(guest_repository)
+        .with_guest_binding_repository(guest_binding_repository)
+        .with_session_repository(session_repository)
+        .with_token_router(token_router)
+        .with_member_authenticator(member_authenticator);
 
     let pbkdf2 = Arc::new(Pbkdf2::new());
 
@@ -100,7 +100,7 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
         "http://localhost:8082/change-password/",
         id_factory.clone(),
         logger.clone(),
-        notificator,
+        notifier,
         pbkdf2,
     )
     .mock()
@@ -116,9 +116,9 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
 
     Ok(DiC::new(
         id_factory,
-        ua_di.anonymous_registers_uc,
-        ua_di.user_logins_with_password_uc,
-        ua_di.user_registers_with_password_uc,
+        ua_di.guest_registers_uc,
+        ua_di.member_logins_with_password_uc,
+        ua_di.member_registers_with_password_uc,
         u_di.user_authenticates_with_token_uc,
         logger,
     ))
