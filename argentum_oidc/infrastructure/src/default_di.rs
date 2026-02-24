@@ -1,7 +1,7 @@
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::di::{OidcBusinessDi, OidcBusinessDiBuilder};
-use argentum_oidc_rest::ApiDiC;
+use argentum_oidc_rest::ApiDi;
 use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
@@ -21,9 +21,8 @@ pub struct OidcInfrastructureDi<L>
 where
     L: LoggerTrait,
 {
-    // Public services
-    pub business_di: OidcBusinessDi<UniqueId, L>,
-    pub api_di: ApiDiC<UniqueId>,
+    pub business_di: Arc<OidcBusinessDi<UniqueId, L>>,
+    pub api_di: ApiDi<UniqueId>,
 }
 
 pub struct OidcInfrastructureDiBuilder<L>
@@ -40,6 +39,8 @@ where
 
     logger: Arc<L>,
     client: Arc<reqwest::Client>,
+
+    built_di: Mutex<Option<Arc<OidcInfrastructureDi<L>>>>,
 }
 
 impl<L> OidcInfrastructureDiBuilder<L>
@@ -76,6 +77,8 @@ where
             rest_builder,
             logger,
             client,
+
+            built_di: Mutex::new(None),
         }
     }
 
@@ -105,7 +108,11 @@ where
         Ok(self)
     }
 
-    pub async fn build(&mut self) -> Result<OidcInfrastructureDi<L>, String> {
+    pub async fn build(&mut self) -> Result<Arc<OidcInfrastructureDi<L>>, String> {
+        if let Some(di) = self.built_di.lock().unwrap().clone() {
+            return Ok(di);
+        }
+
         let business_di = self.business_builder.lock().unwrap().build()?;
 
         let exchange_code_handler = Arc::new(ExchangeCodeHandler::new(
@@ -114,7 +121,7 @@ where
 
         let rest_di = self.rest_builder.build();
 
-        let api_di = ApiDiC::new(
+        let api_di = ApiDi::new(
             "/api/v1".to_string(),
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator,
@@ -122,9 +129,13 @@ where
             rest_di.error_pre_handler.clone(),
         );
 
-        Ok(OidcInfrastructureDi {
+        let di = Arc::new(OidcInfrastructureDi {
             business_di,
             api_di,
-        })
+        });
+
+        *self.built_di.lock().unwrap() = Some(di.clone());
+
+        Ok(di)
     }
 }

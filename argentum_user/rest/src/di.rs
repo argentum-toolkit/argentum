@@ -6,14 +6,14 @@ use argentum_rest_infrastructure::service::{
 use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
-pub struct ApiDiC<I>
+pub struct ApiDi<I>
 where
     I: Id,
 {
     pub router: Arc<Router<I>>,
 }
 
-impl<I> ApiDiC<I>
+impl<I> ApiDi<I>
 where
     I: Id,
 {
@@ -34,6 +34,6 @@ where
 
         let router = Arc::new(Router::new(pre_handler, error_pre_handler, url_prefix));
 
-        ApiDiC { router }
+        ApiDi { router }
     }
 }

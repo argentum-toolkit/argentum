@@ -21,7 +21,7 @@ use argentum_user_business::mock::service::{MemberAuthenticatorMock, TokenRouter
 use argentum_user_business::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
 use std::sync::{Arc, Mutex};
 
-pub struct DiC<L>
+pub struct Di<L>
 where
     L: LoggerTrait,
 {
@@ -34,7 +34,7 @@ where
     pub logger: Arc<L>,
 }
 
-impl<L> DiC<L>
+impl<L> Di<L>
 where
     L: LoggerTrait,
 {
@@ -57,7 +57,7 @@ where
     }
 }
 
-pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
+pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, String> {
     let id_factory = Arc::new(IdFactoryMock::new());
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
@@ -114,12 +114,12 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, String> {
 
     let u_di = user_business_builder.lock().unwrap().build()?;
 
-    Ok(DiC::new(
+    Ok(Di::new(
         id_factory,
-        ua_di.guest_registers_uc,
-        ua_di.member_logins_with_password_uc,
-        ua_di.member_registers_with_password_uc,
-        u_di.user_authenticates_with_token_uc,
+        ua_di.guest_registers_uc.clone(),
+        ua_di.member_logins_with_password_uc.clone(),
+        ua_di.member_registers_with_password_uc.clone(),
+        u_di.user_authenticates_with_token_uc.clone(),
         logger,
     ))
 }

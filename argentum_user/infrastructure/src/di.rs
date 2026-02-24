@@ -13,7 +13,7 @@ use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::di::{UserBusinessDi, UserBusinessDiBuilder};
 use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
 use argentum_user_business::service::MemberAuthenticatorTrait;
-use argentum_user_rest::ApiDiC;
+use argentum_user_rest::ApiDi;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -23,8 +23,8 @@ where
     I: Id + 'static,
     L: LoggerTrait + 'static,
 {
-    pub business_di: UserBusinessDi<I, L>,
-    pub api_di: ApiDiC<I>,
+    pub business_di: Arc<UserBusinessDi<I, L>>,
+    pub api_di: ApiDi<I>,
 }
 
 pub struct UserInfrastructureDiBuilder<L>
@@ -36,6 +36,8 @@ where
     business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
     rest_di: Arc<RestDiBuilder<UniqueId, L>>,
     logger: Arc<L>,
+
+    built_di: Option<Arc<UserInfrastructureDi<UniqueId, L>>>,
 }
 
 impl<L> UserInfrastructureDiBuilder<L>
@@ -56,6 +58,7 @@ where
             business_builder,
             rest_di: rest_builder,
             logger,
+            built_di: None,
         }
     }
 
@@ -122,13 +125,17 @@ where
         Ok(self)
     }
 
-    pub fn build(&self) -> Result<UserInfrastructureDi<UniqueId, L>, String> {
+    pub fn build(&mut self) -> Result<Arc<UserInfrastructureDi<UniqueId, L>>, String> {
+        if let Some(di) = &self.built_di {
+            return Ok(di.clone());
+        }
+
         let business_di = self.business_builder.lock().unwrap().build()?;
 
         let get_user_handler = Arc::new(GetUserHandler::new(business_di.get_user_uc.clone()));
 
         let rest_di = self.rest_di.build();
-        let api_di = ApiDiC::new(
+        let api_di = ApiDi::new(
             "/api/v1".to_string(),
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator.clone(),
@@ -136,9 +143,13 @@ where
             rest_di.error_pre_handler.clone(),
         );
 
-        Ok(UserInfrastructureDi {
+        let di = Arc::new(UserInfrastructureDi {
             business_di,
             api_di,
-        })
+        });
+
+        self.built_di = Some(di.clone());
+
+        Ok(di)
     }
 }

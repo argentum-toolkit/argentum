@@ -1,6 +1,6 @@
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::di::{OidcBusinessDi, OidcBusinessDiBuilder};
-use argentum_oidc_rest::ApiDiC;
+use argentum_oidc_rest::ApiDi;
 use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
@@ -25,8 +25,8 @@ where
     I: Id,
     L: LoggerTrait + 'static,
 {
-    pub business_di: OidcBusinessDi<I, L>,
-    pub api_di: ApiDiC<I>,
+    pub business_di: Arc<OidcBusinessDi<I, L>>,
+    pub api_di: ApiDi<I>,
 }
 
 pub struct KeycloakInfrastructureDiBuilder<L>
@@ -173,7 +173,7 @@ where
 
         let rest_di = self.rest_builder.build();
 
-        let api_di = ApiDiC::new(
+        let api_di = ApiDi::new(
             "/api/v1".to_string(),
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator,

@@ -144,7 +144,7 @@ paths:
         $ref: "./request.oas.yaml#/components/requestBodies/EmailVerificationRequestBody"
       responses:
         "200":
-          $ref: "#/components/responses/EmptyOk"
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/EmptyOk"
         "400":
           $ref: "#/components/responses/400"
         "401":

@@ -25,7 +25,7 @@ where
 
 pub struct OidcBusinessDiBuilder<I, L>
 where
-    I: Id,
+    I: Id + 'static,
     L: LoggerTrait,
 {
     user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
@@ -36,6 +36,8 @@ where
     credential_repository: Option<Arc<dyn CredentialRepositoryTrait<UserId = I>>>,
     id_factory: Arc<dyn IdFactory<Id = I>>,
     logger: Arc<L>,
+
+    built_di: Mutex<Option<Arc<OidcBusinessDi<I, L>>>>,
 }
 
 impl<I, L> OidcBusinessDiBuilder<I, L>
@@ -58,6 +60,7 @@ where
             provider: None,
             code_exchanger: None,
             credential_repository: None,
+            built_di: Mutex::new(None),
         }
     }
 
@@ -85,7 +88,11 @@ where
         self
     }
 
-    pub fn build(&self) -> Result<OidcBusinessDi<I, L>, String> {
+    pub fn build(&self) -> Result<Arc<OidcBusinessDi<I, L>>, String> {
+        if let Some(di) = self.built_di.lock().unwrap().clone() {
+            return Ok(di);
+        }
+
         let user_business_di = self.user_business_builder.lock().unwrap().build()?;
         let user_account_business_di =
             self.user_account_business_builder.lock().unwrap().build()?;
@@ -117,8 +124,12 @@ where
             user_business_di.guest_binder.clone(),
         ));
 
-        Ok(OidcBusinessDi {
+        let di = Arc::new(OidcBusinessDi {
             user_exchanges_code_to_token_uc,
-        })
+        });
+
+        *self.built_di.lock().unwrap() = Some(di.clone());
+
+        Ok(di)
     }
 }

@@ -24,7 +24,7 @@ use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_business::di::UserBusinessDiBuilder;
 use std::sync::{Arc, Mutex};
 
-pub struct BusinessDi<I, L>
+pub struct UserAccountBusinessDi<I, L>
 where
     I: Id + 'static,
     L: LoggerTrait,
@@ -41,7 +41,7 @@ where
 
 pub struct UserAccountBusinessDiBuilder<I, L>
 where
-    I: Id,
+    I: Id + 'static,
     L: LoggerTrait,
 {
     user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
@@ -61,6 +61,8 @@ where
     product_name: String,
     restore_password_front_url: String,
     validator: Arc<dyn Validator>,
+
+    built_di: Option<Arc<UserAccountBusinessDi<I, L>>>,
 }
 
 impl<I, L> UserAccountBusinessDiBuilder<I, L>
@@ -94,6 +96,7 @@ where
             product_name: product_name.into(),
             restore_password_front_url: restore_password_front_url.into(),
             validator,
+            built_di: None,
         }
     }
 
@@ -152,7 +155,11 @@ where
         self
     }
 
-    pub fn build(&self) -> Result<BusinessDi<I, L>, String> {
+    pub fn build(&mut self) -> Result<Arc<UserAccountBusinessDi<I, L>>, String> {
+        if let Some(di) = &self.built_di {
+            return Ok(di.clone());
+        }
+
         let guest_token_generator = self
             .guest_token_generator
             .clone()
@@ -240,7 +247,7 @@ where
             self.logger.clone(),
         ));
 
-        Ok(BusinessDi {
+        let di = Arc::new(UserAccountBusinessDi {
             guest_registers_uc,
             member_registers_with_password_uc: user_registers_with_password_uc,
             member_logins_with_password_uc: user_logins_with_password_uc,
@@ -248,6 +255,10 @@ where
             guest_with_token_changes_password_uc,
             guest_requests_restore_token_uc,
             member_token_generator,
-        })
+        });
+
+        self.built_di = Some(di.clone());
+
+        Ok(di)
     }
 }

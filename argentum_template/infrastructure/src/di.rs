@@ -7,12 +7,12 @@ use handlebars::Handlebars;
 use std::error::Error;
 use std::sync::Arc;
 
-pub struct TemplateInfrastructureDiC {
+pub struct TemplateInfrastructureDi {
     // Public services
     pub renderer: Arc<Renderer>,
 }
 
-impl TemplateInfrastructureDiC {
+impl TemplateInfrastructureDi {
     pub fn new(renderer: Arc<Renderer>) -> Self {
         Self { renderer }
     }
@@ -20,7 +20,7 @@ impl TemplateInfrastructureDiC {
 
 pub fn template_infrastructure_di_factory(
     templates: Vec<(&str, &str)>,
-) -> Result<TemplateInfrastructureDiC, Box<dyn Error>> {
+) -> Result<TemplateInfrastructureDi, Box<dyn Error>> {
     let mut reg = Handlebars::new();
 
     for (name, template) in templates.iter() {
@@ -43,5 +43,5 @@ pub fn template_infrastructure_di_factory(
 
     let renderer = Arc::new(Renderer::new(Arc::new(reg)));
 
-    Ok(TemplateInfrastructureDiC::new(renderer))
+    Ok(TemplateInfrastructureDi::new(renderer))
 }

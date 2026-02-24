@@ -26,7 +26,7 @@ use handlebars::Handlebars;
 use std::error::Error;
 use std::sync::Arc;
 
-pub struct DiC<L>
+pub struct Di<L>
 where
     L: LoggerTrait,
 {
@@ -34,7 +34,7 @@ where
     pub openapi_generator: Arc<OpenApiGenerator<L>>,
 }
 
-impl<L> DiC<L>
+impl<L> Di<L>
 where
     L: LoggerTrait,
 {
@@ -43,7 +43,7 @@ where
     }
 }
 
-pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
+pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     let mut reg = Handlebars::new();
     reg.register_template_string(
         "dto/operation_response_enum.item",
@@ -103,6 +103,11 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> 
     reg.register_template_string(
         "dto/schema_array.item",
         include_str!("../template/dto/schema_array.item.hbs"),
+    )?;
+
+    reg.register_template_string(
+        "dto/schema_empty.item",
+        include_str!("../template/dto/schema_empty.item.hbs"),
     )?;
 
     reg.register_template_string(
@@ -294,5 +299,5 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> 
         ui_generator,
     ));
 
-    Ok(DiC::<DefaultLogger<PrettyWriter>>::new(openapi_generator))
+    Ok(Di::<DefaultLogger<PrettyWriter>>::new(openapi_generator))
 }

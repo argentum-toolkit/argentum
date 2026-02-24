@@ -16,11 +16,11 @@ use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::data_type::id::IdFactory;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_account_business::di::{BusinessDi, UserAccountBusinessDiBuilder};
+use argentum_user_account_business::di::{UserAccountBusinessDi, UserAccountBusinessDiBuilder};
 use argentum_user_account_business::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
 use argentum_user_account_business::service::PasswordToTokenExchangerTrait;
 use argentum_user_account_business::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
-use argentum_user_account_rest::ApiDiC;
+use argentum_user_account_rest::ApiDi;
 use argentum_user_business::di::UserBusinessDiBuilder;
 
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
@@ -33,8 +33,8 @@ where
     L: LoggerTrait,
 {
     // Public services
-    pub business_di: BusinessDi<I, L>,
-    pub api_di: ApiDiC<I>,
+    pub business_di: Arc<UserAccountBusinessDi<I, L>>,
+    pub api_di: ApiDi<I>,
 }
 
 pub struct UserAccountInfrastructureDiBuilder<L>
@@ -51,6 +51,8 @@ where
 
     logger: Arc<L>,
     encryptor: Arc<dyn Encryptor>,
+
+    built_di: Mutex<Option<Arc<UserAccountInfrastructureDi<UniqueId, L>>>>,
 }
 
 impl<L> UserAccountInfrastructureDiBuilder<L>
@@ -95,6 +97,8 @@ where
             ))),
             logger,
             encryptor,
+
+            built_di: Mutex::new(None),
         }
     }
 
@@ -168,7 +172,11 @@ where
         Ok(self)
     }
 
-    pub fn build(&self) -> Result<UserAccountInfrastructureDi<UniqueId, L>, String> {
+    pub fn build(&self) -> Result<Arc<UserAccountInfrastructureDi<UniqueId, L>>, String> {
+        if let Some(di) = self.built_di.lock().unwrap().clone() {
+            return Ok(di.clone());
+        }
+
         let business_di = self.business_builder.lock().unwrap().build()?;
 
         let guest_registers_handler = Arc::new(GuestRegistersHandler::new(
@@ -217,7 +225,7 @@ where
 
         let rest_di = self.rest_builder.build();
 
-        let api_di = ApiDiC::new(
+        let api_di = ApiDi::new(
             "/api/v1".to_string(),
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator.clone(),
@@ -230,9 +238,13 @@ where
             rest_di.error_pre_handler.clone(),
         );
 
-        Ok(UserAccountInfrastructureDi {
+        let di = Arc::new(UserAccountInfrastructureDi {
             business_di,
             api_di,
-        })
+        });
+
+        *self.built_di.lock().unwrap() = Some(di.clone());
+
+        Ok(di)
     }
 }

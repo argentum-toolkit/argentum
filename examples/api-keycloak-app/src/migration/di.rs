@@ -15,7 +15,7 @@ struct Env {
     pub ag_user_account_database_url: String,
 }
 
-pub struct DiC<'a, L>
+pub struct Di<'a, L>
 where
     L: LoggerTrait,
 {
@@ -23,7 +23,7 @@ where
     pub user_application_migrator: Arc<Migrator<'a, L>>,
 }
 
-impl<'a, L> DiC<'a, L>
+impl<'a, L> Di<'a, L>
 where
     L: LoggerTrait,
 {
@@ -58,7 +58,7 @@ where
     Ok(Migrator::new(adapter, migrations, "ag__migrations", logger))
 }
 
-pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, String> {
+pub async fn di_factory<'a>() -> Result<Di<'a, DefaultLogger<PrettyWriter>>, String> {
     let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
 
     let log_writer = Arc::new(PrettyWriter::new());
@@ -88,5 +88,5 @@ pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, St
         .await?,
     );
 
-    Ok(DiC::new(u_migrator, ua_migrator))
+    Ok(Di::new(u_migrator, ua_migrator))
 }

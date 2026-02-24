@@ -35,6 +35,8 @@ where
     token_router: Option<Arc<dyn TokenRouterTrait>>,
     member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
     logger: Arc<L>,
+
+    built_di: Option<Arc<UserBusinessDi<I, L>>>,
 }
 
 impl<I, L> UserBusinessDiBuilder<I, L>
@@ -51,6 +53,8 @@ where
             token_router: None,
             member_authenticator: None,
             logger,
+
+            built_di: None,
         }
     }
 
@@ -105,7 +109,11 @@ where
         self
     }
 
-    pub fn build(&self) -> Result<UserBusinessDi<I, L>, String> {
+    pub fn build(&mut self) -> Result<Arc<UserBusinessDi<I, L>>, String> {
+        if let Some(di) = &self.built_di {
+            return Ok(di.clone());
+        }
+
         let member_repository = self
             .member_repository
             .clone()
@@ -151,13 +159,17 @@ where
 
         let get_user_uc = Arc::new(GetUserUc::new(member_repository.clone()));
 
-        Ok(UserBusinessDi {
+        let di = Arc::new(UserBusinessDi {
             guest_repository,
             member_repository,
             user_authenticates_with_token_uc,
             get_user_uc,
             session_repository,
             guest_binder,
-        })
+        });
+
+        self.built_di = Some(di.clone());
+
+        Ok(di)
     }
 }

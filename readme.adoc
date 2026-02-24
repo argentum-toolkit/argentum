@@ -162,8 +162,6 @@ cargo install dioxus-cli
 * Component generator
 ** add examples into readme.adoc
 
-* DI builders: make it similar
-
 * behavior tests
 
 * rest-generator

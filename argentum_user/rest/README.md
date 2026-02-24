@@ -64,23 +64,23 @@ use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_rest_infrastructure::service::{RouterCombinator, Server};
 use std::net::SocketAddr;
 
-use argentum_rest_infrastructure::RestDiC;
+use argentum_rest_infrastructure::RestDi;
 use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
-use argentum_user_rest::ApiDiC;
+use argentum_user_rest::ApiDi;
 use std::sync::Arc;
 
-pub struct DiC {
+pub struct Di {
     // Public services
     pub server: Arc<Server>,
 }
 
-impl DiC {
-    pub fn new(server: Arc<Server>) -> DiC {
-        DiC { server }
+impl Di {
+    pub fn new(server: Arc<Server>) -> Di {
+        Di { server }
     }
 }
 
-pub async fn di_factory() -> DiC {
+pub async fn di_factory() -> Di {
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
@@ -88,9 +88,9 @@ pub async fn di_factory() -> DiC {
     let user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc>;
     // ...
 
-    let rest_di = RestDiC::new(logger.clone(), user_authenticates_with_token_uc);
+    let rest_di = RestDi::new(logger.clone(), user_authenticates_with_token_uc);
 
-    let u_api_di = ApiDiC::new(
+    let u_api_di = ApiDi::new(
         "/api/v1".to_string(),
         rest_di.request_transformer.clone(),
         rest_di.bearer_authenticator.clone(),
@@ -121,7 +121,7 @@ pub async fn di_factory() -> DiC {
         logger,
     ));
 
-    DiC::new(server)
+    Di::new(server)
 }
 
 ```
