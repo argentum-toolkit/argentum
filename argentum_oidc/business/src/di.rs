@@ -1,5 +1,8 @@
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_standard_business::{
+    data_type::id::{Id, IdFactory},
+    error::DiError,
+};
 use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
 use argentum_user_business::di::UserBusinessDiBuilder;
 
@@ -88,14 +91,13 @@ where
         self
     }
 
-    pub fn build(&self) -> Result<Arc<OidcBusinessDi<I, L>>, String> {
-        if let Some(di) = self.built_di.lock().unwrap().clone() {
+    pub fn build(&self) -> Result<Arc<OidcBusinessDi<I, L>>, DiError> {
+        if let Some(di) = self.built_di.lock()?.clone() {
             return Ok(di);
         }
 
-        let user_business_di = self.user_business_builder.lock().unwrap().build()?;
-        let user_account_business_di =
-            self.user_account_business_builder.lock().unwrap().build()?;
+        let user_business_di = self.user_business_builder.lock()?.build()?;
+        let user_account_business_di = self.user_account_business_builder.lock()?.build()?;
 
         let code_exchanger = match self.code_exchanger.clone() {
             Some(c) => c,
@@ -128,7 +130,7 @@ where
             user_exchanges_code_to_token_uc,
         });
 
-        *self.built_di.lock().unwrap() = Some(di.clone());
+        *self.built_di.lock()? = Some(di.clone());
 
         Ok(di)
     }

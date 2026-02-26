@@ -21,6 +21,7 @@ use argentum_encryption_business::password::Validator;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotifierTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_standard_business::error::DiError;
 use argentum_user_business::di::UserBusinessDiBuilder;
 use std::sync::{Arc, Mutex};
 
@@ -155,7 +156,7 @@ where
         self
     }
 
-    pub fn build(&mut self) -> Result<Arc<UserAccountBusinessDi<I, L>>, String> {
+    pub fn build(&mut self) -> Result<Arc<UserAccountBusinessDi<I, L>>, DiError> {
         if let Some(di) = &self.built_di {
             return Ok(di.clone());
         }
@@ -175,7 +176,7 @@ where
             .clone()
             .ok_or("password_credential_repository is not initialized")?;
 
-        let user_business_di = self.user_business_builder.lock().unwrap().build()?;
+        let user_business_di = self.user_business_builder.lock()?.build()?;
         let password_to_token_exchanger = match self.password_to_token_exchanger.clone() {
             Some(p) => p,
             None => {

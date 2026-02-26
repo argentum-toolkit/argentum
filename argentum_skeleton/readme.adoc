@@ -1,0 +1,7 @@
+= Argentum ToolKit. Skeleton
+
+Helps to create new application.
+
+== Packages documentation
+
+* link:infrastructure/readme.adoc[Package with infrastructure layer]

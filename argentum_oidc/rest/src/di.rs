@@ -19,7 +19,7 @@ where
 {
     pub fn new(
         //config
-        url_prefix: String,
+        url_prefix: &str,
         //services
         request_transformer: Arc<RequestTransformer>,
         bearer_auth: Arc<BearerAuthenticator<I>>,

@@ -3,7 +3,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::di::{OidcBusinessDi, OidcBusinessDiBuilder};
 use argentum_oidc_rest::ApiDi;
 use argentum_rest_infrastructure::di::RestDiBuilder;
-use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_business::{data_type::id::IdFactory, error::DiError};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
 
@@ -82,7 +82,7 @@ where
         }
     }
 
-    pub async fn with_default_services(&mut self) -> Result<&mut Self, String> {
+    pub async fn with_default_services(self) -> Result<Self, DiError> {
         let pool = PgPoolOptions::new()
             .max_connections(self.max_db_connections)
             .min_connections(2)
@@ -100,31 +100,30 @@ where
         ));
 
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_credential_repository(Arc::new(CredentialRepository::new(pg_adapter)))
             .with_provider(provider);
 
         Ok(self)
     }
 
-    pub async fn build(&mut self) -> Result<Arc<OidcInfrastructureDi<L>>, String> {
-        if let Some(di) = self.built_di.lock().unwrap().clone() {
+    pub async fn build(&self) -> Result<Arc<OidcInfrastructureDi<L>>, DiError> {
+        if let Some(di) = self.built_di.lock()?.clone() {
             return Ok(di);
         }
 
-        let business_di = self.business_builder.lock().unwrap().build()?;
+        let business_di = self.business_builder.lock()?.build()?;
 
         let exchange_code_handler = Arc::new(ExchangeCodeHandler::new(
             business_di.user_exchanges_code_to_token_uc.clone(),
         ));
 
-        let rest_di = self.rest_builder.build();
+        let rest_di = self.rest_builder.build()?;
 
         let api_di = ApiDi::new(
-            "/api/v1".to_string(),
+            "/api/v1",
             rest_di.request_transformer.clone(),
-            rest_di.bearer_authenticator,
+            rest_di.bearer_authenticator.clone(),
             exchange_code_handler,
             rest_di.error_pre_handler.clone(),
         );
@@ -134,7 +133,7 @@ where
             api_di,
         });
 
-        *self.built_di.lock().unwrap() = Some(di.clone());
+        *self.built_di.lock()? = Some(di.clone());
 
         Ok(di)
     }

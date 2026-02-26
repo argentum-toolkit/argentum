@@ -9,6 +9,7 @@ use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::error::DiError;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::di::{UserBusinessDi, UserBusinessDiBuilder};
 use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
@@ -62,7 +63,7 @@ where
         }
     }
 
-    pub async fn with_default_services(&mut self) -> Result<&mut Self, String> {
+    pub async fn with_default_services(self) -> Result<Self, DiError> {
         let pool = PgPoolOptions::new()
             .max_connections(self.max_db_connections)
             .min_connections(2)
@@ -74,8 +75,7 @@ where
 
         let session_repository = Arc::new(SessionRepository::new(pg_adapter.clone()));
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_guest_binding_repository(Arc::new(GuestBindingRepository::new(
                 pg_adapter.clone(),
             )))
@@ -86,13 +86,11 @@ where
         let member_repo = Arc::new(MemberRepository::new(pg_adapter.clone()));
 
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_member_repository(member_repo.clone());
 
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_member_authenticator(Arc::new(MemberAuthenticator::new(
                 member_repo.clone(),
                 session_repository,
@@ -104,10 +102,9 @@ where
     pub async fn with_member_repository(
         &mut self,
         member_repository: Arc<dyn MemberRepositoryTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, String> {
+    ) -> Result<&mut Self, DiError> {
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_member_repository(member_repository.clone());
 
         Ok(self)
@@ -116,27 +113,26 @@ where
     pub async fn with_member_authenticator(
         &mut self,
         member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, String> {
+    ) -> Result<&mut Self, DiError> {
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_member_authenticator(member_authenticator);
 
         Ok(self)
     }
 
-    pub fn build(&mut self) -> Result<Arc<UserInfrastructureDi<UniqueId, L>>, String> {
+    pub fn build(&mut self) -> Result<Arc<UserInfrastructureDi<UniqueId, L>>, DiError> {
         if let Some(di) = &self.built_di {
             return Ok(di.clone());
         }
 
-        let business_di = self.business_builder.lock().unwrap().build()?;
+        let business_di = self.business_builder.lock()?.build()?;
 
         let get_user_handler = Arc::new(GetUserHandler::new(business_di.get_user_uc.clone()));
 
-        let rest_di = self.rest_di.build();
+        let rest_di = self.rest_di.build()?;
         let api_di = ApiDi::new(
-            "/api/v1".to_string(),
+            "/api/v1",
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator.clone(),
             get_user_handler.clone(),

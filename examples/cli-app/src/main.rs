@@ -5,7 +5,7 @@ pub mod app;
 mod di;
 
 #[tokio::main]
-async fn main() -> Result<(), String> {
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let di = di_factory()?;
 
     let app = App::new(
@@ -17,5 +17,5 @@ async fn main() -> Result<(), String> {
         di.logger.clone(),
     );
 
-    app.run().await
+    Ok(app.run().await?)
 }

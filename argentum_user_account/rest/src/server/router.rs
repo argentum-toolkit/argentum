@@ -32,7 +32,7 @@ where
     pub fn new(
         pre_handler: Arc<PreHandler<I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
-        url_prefix: String,
+        url_prefix: &str,
     ) -> Self {
         let regex_user_account_email_verification = regex!(r"\/user-account\/email-verification$");
         let regex_user_account_guest_registration = regex!(r"\/user-account\/guest-registration$");
@@ -46,7 +46,7 @@ where
         Self {
             pre_handler,
             error_pre_handler,
-            url_prefix,
+            url_prefix: url_prefix.into(),
             regex_user_account_email_verification,
             regex_user_account_guest_registration,
             regex_user_account_password_login,

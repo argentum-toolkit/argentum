@@ -147,6 +147,9 @@ cargo install dioxus-cli
 
 === V0.4
 
+* DI
+** remove mut and mutex from DI
+
 * OIDC
 ** login with google or linkedin
 ** Email verification

@@ -4,7 +4,7 @@ use crate::service::{
     ValidationErrorTransformer,
 };
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::{data_type::id::Id, error::DiError};
 use argentum_user_business::di::UserBusinessDiBuilder;
 use std::sync::{Arc, Mutex};
 
@@ -27,6 +27,8 @@ where
 {
     user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
     logger: Arc<L>,
+
+    built_di: Mutex<Option<Arc<RestDi<I, L>>>>,
 }
 
 impl<I, L> RestDiBuilder<I, L>
@@ -41,10 +43,16 @@ where
         Self {
             user_business_builder,
             logger,
+
+            built_di: Mutex::new(None),
         }
     }
 
-    pub fn build(&self) -> RestDi<I, L> {
+    pub fn build(&self) -> Result<Arc<RestDi<I, L>>, DiError> {
+        if let Some(di) = self.built_di.lock()?.clone() {
+            return Ok(di.clone());
+        }
+
         let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
         let schema_extractor = Arc::new(SchemaExtractor::new());
         let header_params_extractor = Arc::new(HeaderParamsExtractor::new(
@@ -66,18 +74,22 @@ where
         let error_pre_handler = Arc::new(ErrorPreHandler::new());
         let error_handler = Arc::new(ErrorHandler::new(self.logger.clone()));
 
-        let user_di = self.user_business_builder.lock().unwrap().build().unwrap();
+        let user_di = self.user_business_builder.lock()?.build()?;
 
         let bearer_authenticator = Arc::new(BearerAuthenticator::new(
             user_di.user_authenticates_with_token_uc.clone(),
         ));
 
-        RestDi {
+        let di = Arc::new(RestDi {
             bearer_authenticator,
             request_transformer,
             response_transformer,
             error_pre_handler,
             error_handler,
-        }
+        });
+
+        *self.built_di.lock()? = Some(di.clone());
+
+        Ok(di)
     }
 }

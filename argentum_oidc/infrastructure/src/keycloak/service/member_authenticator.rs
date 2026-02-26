@@ -68,7 +68,7 @@ impl MemberAuthenticatorTrait for KeycloakMemberAuthenticator {
             self.base_url, self.realm
         );
 
-        //TODO: move string data into config
+        //TODO: unwrap
         let res = self
             .client
             .post(url)

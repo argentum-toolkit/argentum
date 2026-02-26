@@ -15,6 +15,7 @@ use argentum_notification_business::NotifierTrait;
 use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::data_type::id::IdFactory;
+use argentum_standard_business::error::DiError;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::di::{UserAccountBusinessDi, UserAccountBusinessDiBuilder};
 use argentum_user_account_business::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
@@ -102,7 +103,7 @@ where
         }
     }
 
-    pub async fn wit_default_services(&mut self) -> Result<&mut Self, String> {
+    pub async fn with_default_services(self) -> Result<Self, DiError> {
         let pool = PgPoolOptions::new()
             .max_connections(self.max_db_connections)
             .min_connections(2)
@@ -126,7 +127,7 @@ where
             self.encryptor.clone(),
         ));
 
-        self.business_builder.lock().unwrap().with_default_services(
+        self.business_builder.lock()?.with_default_services(
             password_credential_repository,
             restore_password_token_repository,
             guest_token_generator,
@@ -139,10 +140,9 @@ where
     pub fn with_password_credential_repository(
         &mut self,
         password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, String> {
+    ) -> Result<&mut Self, DiError> {
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_password_credential_repository(password_credential_repository);
 
         Ok(self)
@@ -151,10 +151,9 @@ where
     pub fn with_password_to_token_exchanger(
         &mut self,
         password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, String> {
+    ) -> Result<&mut Self, DiError> {
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_password_to_token_exchanger(password_to_token_exchanger);
 
         Ok(self)
@@ -163,21 +162,20 @@ where
     pub fn with_member_confirms_email_uc(
         &mut self,
         member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, String> {
+    ) -> Result<&mut Self, DiError> {
         self.business_builder
-            .lock()
-            .unwrap()
+            .lock()?
             .with_member_confirms_email_uc(member_confirms_email_uc);
 
         Ok(self)
     }
 
-    pub fn build(&self) -> Result<Arc<UserAccountInfrastructureDi<UniqueId, L>>, String> {
-        if let Some(di) = self.built_di.lock().unwrap().clone() {
+    pub fn build(&self) -> Result<Arc<UserAccountInfrastructureDi<UniqueId, L>>, DiError> {
+        if let Some(di) = self.built_di.lock()?.clone() {
             return Ok(di.clone());
         }
 
-        let business_di = self.business_builder.lock().unwrap().build()?;
+        let business_di = self.business_builder.lock()?.build()?;
 
         let guest_registers_handler = Arc::new(GuestRegistersHandler::new(
             business_di.guest_registers_uc.clone(),
@@ -223,10 +221,10 @@ where
             self.logger.clone(),
         ));
 
-        let rest_di = self.rest_builder.build();
+        let rest_di = self.rest_builder.build()?;
 
         let api_di = ApiDi::new(
-            "/api/v1".to_string(),
+            "/api/v1",
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator.clone(),
             guest_registers_handler,
@@ -243,7 +241,7 @@ where
             api_di,
         });
 
-        *self.built_di.lock().unwrap() = Some(di.clone());
+        *self.built_di.lock()? = Some(di.clone());
 
         Ok(di)
     }

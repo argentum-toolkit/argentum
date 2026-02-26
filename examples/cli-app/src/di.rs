@@ -4,6 +4,7 @@ use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotifier;
 use argentum_standard_business::data_type::id::{IdFactory, UIntId};
+use argentum_standard_business::error::DiError;
 use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
 use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
 use argentum_user_account_business::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
@@ -57,7 +58,7 @@ where
     }
 }
 
-pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, String> {
+pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
     let id_factory = Arc::new(IdFactoryMock::new());
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
@@ -82,8 +83,7 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, String> {
     let user_business_builder = Arc::new(Mutex::new(UserBusinessDiBuilder::new(logger.clone())));
 
     user_business_builder
-        .lock()
-        .unwrap()
+        .lock()?
         .with_member_repository(member_repository)
         .with_guest_repository(guest_repository)
         .with_guest_binding_repository(guest_binding_repository)
@@ -112,7 +112,7 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, String> {
     )
     .build()?;
 
-    let u_di = user_business_builder.lock().unwrap().build()?;
+    let u_di = user_business_builder.lock()?.build()?;
 
     Ok(Di::new(
         id_factory,

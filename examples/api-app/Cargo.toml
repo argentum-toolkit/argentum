@@ -25,13 +25,14 @@ argentum_encryption_infrastructure = { path = "../../argentum_encryption/infrast
 argentum_event_business = { path = "../../argentum_event/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_notification_infrastructure = { path = "../../argentum_notification/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_oidc_infrastructure = { path = "../../argentum_oidc/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev,<0.5.0" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0", features = [
     "server",
 ] }
-argentum_oidc_infrastructure = { path = "../../argentum_oidc/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
-argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_skeleton_infrastructure = { path = "../../argentum_skeleton/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.4.0-dev,<0.5.0" }
