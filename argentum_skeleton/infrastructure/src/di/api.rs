@@ -9,7 +9,7 @@ use argentum_notification_business::mock::StdoutNotifier;
 use argentum_oidc_infrastructure::default_di::OidcInfrastructureDiBuilder;
 use argentum_rest_infrastructure::{
     di::RestDiBuilder,
-    service::{RouterCombinator, Server},
+    service::{RouterCombinator, RouterTrait, Server},
 };
 
 use argentum_standard_business::error::DiError;
@@ -27,9 +27,12 @@ struct Env {
     pub ag_user_database_url: String,
     pub ag_user_account_database_url: String,
     pub ag_user_account_member_jwt_secret: String,
+    pub ag_user_agent: String,
+    pub ag_product_name: String,
+    pub ag_restore_password_front_url: String,
 }
 
-pub struct SkeletonDi<L>
+pub struct SkeletonApiDi<L>
 where
     L: LoggerTrait,
 {
@@ -37,10 +40,11 @@ where
     pub server: Arc<Server<L>>,
 }
 
-pub struct SkeletonDiBuilder<L>
+pub struct SkeletonApiDiBuilder<L>
 where
     L: LoggerTrait + 'static,
 {
+    listen: String,
     pub logger: Arc<L>,
     pub rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
     pub user_infrastructure_builder: Arc<Mutex<UserInfrastructureDiBuilder<L>>>,
@@ -48,17 +52,17 @@ where
     pub oidc_infrastructure_builder: Arc<OidcInfrastructureDiBuilder<L>>,
 }
 
-impl<L> SkeletonDiBuilder<L>
+impl<L> SkeletonApiDiBuilder<L>
 where
     L: LoggerTrait + 'static,
 {
-    pub async fn try_new(logger: Arc<L>) -> Result<Self, DiError> {
+    pub async fn try_new(listen: &str, logger: Arc<L>) -> Result<Self, DiError> {
         let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
 
         let unique_id_factory = Arc::new(UniqueIdFactory::new());
 
         let client = reqwest::Client::builder()
-            .user_agent("ArgentumToolKit/0.4")
+            .user_agent(&env.ag_user_agent)
             .pool_max_idle_per_host(20)
             .build()
             .map_err(|e| format!("Cant create reqwest client. Error: {e}"))?;
@@ -86,9 +90,9 @@ where
         let pbkdf2 = Arc::new(Pbkdf2::new());
 
         let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
-            "Argentum ToolKit. Example of API application",
+            &env.ag_product_name,
             3600, // TTL 1h
-            "http://localhost:8082/change-password/",
+            &env.ag_restore_password_front_url,
             &env.ag_user_account_database_url,
             10,
             &env.ag_user_account_member_jwt_secret,
@@ -124,6 +128,7 @@ where
         );
 
         Ok(Self {
+            listen: listen.into(),
             logger,
             rest_builder,
             user_infrastructure_builder,
@@ -132,25 +137,26 @@ where
         })
     }
 
-    pub async fn build(&self) -> Result<SkeletonDi<L>, DiError> {
+    pub async fn build(
+        &self,
+        routers: Vec<Arc<dyn RouterTrait>>,
+    ) -> Result<SkeletonApiDi<L>, DiError> {
         let rest_di = self.rest_builder.build()?;
         let user_infrastructure_di = self.user_infrastructure_builder.lock()?.build()?;
         let user_account_infrastructure_di = self.user_account_infrastructure_builder.build()?;
         let oidc_infrastructure_di = self.oidc_infrastructure_builder.build().await?;
 
-        let router = Arc::new(RouterCombinator::new(
-            vec![
-                user_infrastructure_di.api_di.router.clone(),
-                user_account_infrastructure_di.api_di.router.clone(),
-                oidc_infrastructure_di.api_di.router.clone(),
-            ],
-            rest_di.error_pre_handler.clone(),
-        ));
+        let mut r: Vec<Arc<dyn RouterTrait>> = vec![
+            user_infrastructure_di.api_di.router.clone(),
+            user_account_infrastructure_di.api_di.router.clone(),
+            oidc_infrastructure_di.api_di.router.clone(),
+        ];
+        r.extend(routers);
 
-        // let listen = "172.18.0.1:8088";
-        // let listen = "127.0.0.1:8088";
-        let listen = "0.0.0.0:8088";
-        let addr: SocketAddr = listen
+        let router = Arc::new(RouterCombinator::new(r, rest_di.error_pre_handler.clone()));
+
+        let addr: SocketAddr = self
+            .listen
             .parse()
             .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
 
@@ -162,6 +168,6 @@ where
             self.logger.clone(),
         ));
 
-        Ok(SkeletonDi { server })
+        Ok(SkeletonApiDi { server })
     }
 }

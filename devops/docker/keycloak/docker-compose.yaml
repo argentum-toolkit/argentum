@@ -35,7 +35,7 @@ services:
       KC_EMAIL_PORT: 1025
       KC_EMAIL_FROM: "no-reply@example.com"
       KC_HOSTNAME_STRICT_BACKCHANNEL: true
-      LOGIN_URL: ${LOGIN_URL}
+      KEYCLOAK_LOGIN_URL: ${KEYCLOAK_LOGIN_URL}
 
     command: ["start-dev", "--spi-email-template-provider=freemarker"]
     volumes:

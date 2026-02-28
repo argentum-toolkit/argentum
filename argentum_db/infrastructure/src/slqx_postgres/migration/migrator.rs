@@ -8,30 +8,30 @@ use sqlx::types::chrono::Utc;
 use sqlx_postgres::Postgres;
 use std::sync::Arc;
 
-pub struct Migrator<'a, L>
+pub struct Migrator<L>
 where
     L: LoggerTrait,
 {
     adapter: Arc<SqlxPostgresAdapter<L>>,
-    migrations: MigrationCollection<'a>,
-    migration_table_name: &'a str,
+    migrations: MigrationCollection,
+    migration_table_name: String,
     logger: Arc<L>,
 }
 
-impl<'a, L> Migrator<'a, L>
+impl<L> Migrator<L>
 where
     L: LoggerTrait,
 {
     pub fn new(
         adapter: Arc<SqlxPostgresAdapter<L>>,
-        migrations: MigrationCollection<'a>,
-        migration_table_name: &'a str,
+        migrations: MigrationCollection,
+        migration_table_name: &str,
         logger: Arc<L>,
     ) -> Self {
         Self {
             adapter,
             migrations,
-            migration_table_name,
+            migration_table_name: migration_table_name.into(),
             logger,
         }
     }
@@ -62,7 +62,7 @@ where
         }
     }
 
-    async fn rollback(&self, tx: Transaction<'a, Postgres>) -> Result<(), String> {
+    async fn rollback(&self, tx: Transaction<'static, Postgres>) -> Result<(), String> {
         if let Err(rollback_error) = self.adapter.rollback(tx).await {
             self.logger
                 .critical(format!("Can't rollback transaction: {rollback_error}"));
@@ -75,7 +75,7 @@ where
 
     async fn rollback_with_error(
         &self,
-        tx: Transaction<'a, Postgres>,
+        tx: Transaction<'static, Postgres>,
         e: DbAdapterError,
     ) -> Result<(), String> {
         self.logger.critical(e.to_string());
