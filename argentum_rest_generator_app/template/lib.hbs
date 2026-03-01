@@ -10,7 +10,7 @@ pub mod dto;
 pub mod server;
 
 #[cfg(feature = "server")]
-pub use di::ApiDiC;
+pub use di::ApiDi;
 
 #[cfg(feature = "ui")]
 pub mod ui;

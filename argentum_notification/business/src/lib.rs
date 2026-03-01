@@ -42,7 +42,7 @@ where
 
 #[cfg(feature = "server")]
 #[async_trait]
-pub trait NotificatorTrait: Sync + Send {
+pub trait NotifierTrait: Sync + Send {
     type Id: Id;
 
     async fn send(&self, notification: Notification<Self::Id>) -> Result<(), NotificationError>;

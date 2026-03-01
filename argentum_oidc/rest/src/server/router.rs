@@ -27,14 +27,14 @@ where
     pub fn new(
         pre_handler: Arc<PreHandler<I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
-        url_prefix: String,
+        url_prefix: &str,
     ) -> Self {
         let regex_exchange_code = regex!(r"\/exchange-code$");
 
         Self {
             pre_handler,
             error_pre_handler,
-            url_prefix,
+            url_prefix: url_prefix.into(),
             regex_exchange_code,
         }
     }

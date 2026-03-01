@@ -1,7 +1,7 @@
-mod anonymous_registration_result;
 mod change_password_schema;
 mod email_verification_schema;
 mod empty_response;
+mod guest_registration_result;
 mod login_result;
 mod login_with_password_schema;
 mod problem_detail;
@@ -13,14 +13,14 @@ mod violation;
 mod violation_errors;
 mod violation_items;
 
-pub use anonymous_registration_result::AnonymousRegistrationResult;
-pub use anonymous_registration_result::AnonymousRegistrationResultRaw;
 pub use change_password_schema::ChangePasswordSchema;
 pub use change_password_schema::ChangePasswordSchemaRaw;
 pub use email_verification_schema::EmailVerificationSchema;
 pub use email_verification_schema::EmailVerificationSchemaRaw;
 pub use empty_response::EmptyResponse;
 pub use empty_response::EmptyResponseRaw;
+pub use guest_registration_result::GuestRegistrationResult;
+pub use guest_registration_result::GuestRegistrationResultRaw;
 pub use login_result::LoginResult;
 pub use login_result::LoginResultRaw;
 pub use login_with_password_schema::LoginWithPasswordSchema;

@@ -8,7 +8,7 @@ use argentum_user_business::{
     entity::session::Session,
     repository::{
         session_repository::{SessionRepositoryError, SessionRepositoryTrait},
-        user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError},
+        user_repository::{ExternalUserError, MemberRepositoryTrait},
     },
 };
 
@@ -77,7 +77,7 @@ pub struct DefaultPasswordToTokenExchanger<I>
 where
     I: Id,
 {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
     credential_checker: Arc<PasswordCredentialChecker<I>>,
     id_factory: Arc<dyn IdFactory<Id = I>>,
@@ -89,7 +89,7 @@ where
     I: Id,
 {
     pub fn new(
-        user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
         credential_checker: Arc<PasswordCredentialChecker<I>>,
         id_factory: Arc<dyn IdFactory<Id = I>>,

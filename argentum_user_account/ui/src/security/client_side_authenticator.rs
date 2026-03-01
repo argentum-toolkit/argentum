@@ -23,47 +23,45 @@ impl ClientSideAuthenticator {
 
     pub async fn init(&self) {
         if self.security_repository.read().is_none() {
-            let res = self.fetch_new_anonymous_token().await;
+            let res = self.fetch_new_guest_token().await;
 
             match res {
                 Ok(token) => {
-                    self.security_repository.save(Security::Anonymous(token));
+                    self.security_repository.save(Security::Guest(token));
                 }
                 _ => todo!(),
             };
         }
     }
 
-    pub async fn fetch_new_anonymous_token(
-        &self,
-    ) -> Result<std::string::String, std::string::String> {
+    pub async fn fetch_new_guest_token(&self) -> Result<std::string::String, std::string::String> {
         use argentum_rest_infrastructure::data_type::HttpParams;
         use argentum_rest_infrastructure::data_type::HttpRequest;
         use argentum_rest_infrastructure::data_type::{
             EmptyHeaderParams, EmptyQueryParams, EmptyRequestBody,
         };
 
-        use argentum_user_account_rest::dto::operation_response_enum::AnonymousRegistersOperationResponseEnum;
-        use argentum_user_account_rest::dto::params::AnonymousRegistersParams;
-        use argentum_user_account_rest::dto::path_params::AnonymousRegistersPathParams;
-        use argentum_user_account_rest::dto::request::AnonymousRegistersRequest;
-        use argentum_user_account_rest::dto::response::AnonymousRegisteredSuccessfullyResponse::ApplicationJson;
+        use argentum_user_account_rest::dto::operation_response_enum::GuestRegistersOperationResponseEnum;
+        use argentum_user_account_rest::dto::params::GuestRegistersParams;
+        use argentum_user_account_rest::dto::path_params::GuestRegistersPathParams;
+        use argentum_user_account_rest::dto::request::GuestRegistersRequest;
+        use argentum_user_account_rest::dto::response::GuestRegisteredSuccessfullyResponse::ApplicationJson;
 
-        let req = AnonymousRegistersRequest::new(
+        let req = GuestRegistersRequest::new(
             EmptyRequestBody {},
-            AnonymousRegistersParams::new(
-                AnonymousRegistersPathParams::new(),
+            GuestRegistersParams::new(
+                GuestRegistersPathParams::new(),
                 EmptyQueryParams {},
                 EmptyHeaderParams {},
             ),
         );
 
-        let res: Result<AnonymousRegistersOperationResponseEnum, String> =
-            self.client.anonymous_registers(req).await;
+        let res: Result<GuestRegistersOperationResponseEnum, String> =
+            self.client.guest_registers(req).await;
 
         match res {
             Ok(data) => match data {
-                AnonymousRegistersOperationResponseEnum::Status201(r) => match r {
+                GuestRegistersOperationResponseEnum::Status201(r) => match r {
                     ApplicationJson(j) => Ok(j.0.token.clone()),
                 },
             },
@@ -73,7 +71,7 @@ impl ClientSideAuthenticator {
 
     pub fn auth_user(&mut self, token: AuthHash, user_id: UserId) {
         self.security_repository
-            .save(Security::Authenticated(token, user_id));
+            .save(Security::Member(token, user_id));
     }
 
     pub fn logout(&mut self) {
@@ -82,15 +80,15 @@ impl ClientSideAuthenticator {
 
     pub fn get_token(&self) -> Option<AuthHash> {
         match self.security_repository.read() {
-            Some(Security::Authenticated(token, _)) => Some(token),
-            Some(Security::Anonymous(token)) => Some(token),
+            Some(Security::Member(token, _)) => Some(token),
+            Some(Security::Guest(token)) => Some(token),
             _ => None,
         }
     }
 
     pub fn get_user(&self) -> Option<(AuthHash, UserId)> {
         match self.security_repository.read() {
-            Some(Security::Authenticated(token, id)) => Some((token, id)),
+            Some(Security::Member(token, id)) => Some((token, id)),
             _ => None,
         }
     }

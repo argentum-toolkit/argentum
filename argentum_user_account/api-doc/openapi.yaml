@@ -37,31 +37,31 @@ externalDocs:
   url: https://gitlab.com/argentum-toolkit/argentum
 
 paths:
-  /user-account/anonymous-register:
+  /user-account/guest-registration:
     post:
-      summary: Anonymous registers
-      description: Anonymous registers without any data
+      summary: Guest registers
+      description: Guest registers without any data
       tags:
-        - anonymous
-      operationId: AnonymousRegisters
+        - guest
+      operationId: GuestRegisters
       responses:
         "201":
-          $ref: "./response.oas.yaml#/components/responses/AnonymousRegisteredSuccessfully"
+          $ref: "./response.oas.yaml#/components/responses/GuestRegisteredSuccessfully"
 
   /user-account/register:
     post:
-      summary: User registers with password
-      description: User registers with email and password
+      summary: Member registers with password
+      description: Member registers with email and password
       tags:
         - user-account
-      operationId: UserRegistersWithPassword
+      operationId: MemberRegistersWithPassword
       security:
         - bearerAuth: []
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/RegistrationWithPasswordRequestBody"
       responses:
         "201":
-          $ref: "./response.oas.yaml#/components/responses/UserRegisteredSuccessfully"
+          $ref: "./response.oas.yaml#/components/responses/MemberRegisteredSuccessfully"
         "400":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
         "409":
@@ -71,11 +71,11 @@ paths:
 
   /user-account/password-login:
     post:
-      summary: Login as an user
-      description: Login as an user
+      summary: Login as an member
+      description: Login as an member
       tags:
         - user-account
-      operationId: UserLoginsWithPassword
+      operationId: MemberLoginsWithPassword
       security:
         - bearerAuth: []
       requestBody:
@@ -83,7 +83,7 @@ paths:
 
       responses:
         "200":
-          $ref: "./response.oas.yaml#/components/responses/UserLoggedInSuccessfully"
+          $ref: "./response.oas.yaml#/components/responses/MemberLoggedInSuccessfully"
         "400":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/400"
         "401":
@@ -93,11 +93,11 @@ paths:
 
   /user-account/restore-password/token-request:
     post:
-      summary: Anonymous requests restore password token
+      summary: Guest requests restore password token
       description: Requested token and link will be sent to email
       tags:
         - user-account
-      operationId: AnonymousRequestsRestoreToken
+      operationId: GuestRequestsRestoreToken
       security:
         - bearerAuth: []
       requestBody:
@@ -111,13 +111,13 @@ paths:
         "401":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
 
-  /user/restore-password/change-password:
+  /user-account/restore-password/change-password:
     post:
-      summary: User with token changes his password
+      summary: Member with token changes his password
       description: Final step of restoring password process
       tags:
         - user-account
-      operationId: AnonymousWithTokenChangesPassword
+      operationId: GuestWithTokenChangesPassword
       security:
         - bearerAuth: []
       requestBody:
@@ -131,6 +131,25 @@ paths:
         "401":
           $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
 
+  /user-account/email-verification:
+    post:
+      description: Member sends email verification key
+      operationId: MemberVerifiesEmail
+      summary: New member verifies email address
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/EmailVerificationRequestBody"
+      responses:
+        "200":
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/EmptyOk"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -139,8 +158,8 @@ components:
       in: header
 
 tags:
-  - name: anonymous
-    description: Managing of the anonymous
+  - name: guest
+    description: Managing of the guests
 
   - name: user-account
     description: Managing of the user account

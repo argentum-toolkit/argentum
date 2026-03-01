@@ -1,0 +1,111 @@
+use argentum_notification_business::{Notification, NotificationError, NotifierTrait};
+use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
+
+use lettre::{Message, SmtpTransport, Transport, address::AddressError};
+
+use argentum_standard_business::data_type::id::Id;
+use async_trait::async_trait;
+use std::sync::Arc;
+
+///
+/// How to init notifier via `lettre`
+///
+///```rust
+/// use argentum_notification_infrastructure::email_notifier::EmailNotifier;
+/// use lettre::SmtpTransport;
+/// use lettre::transport::smtp::authentication::Credentials;
+/// use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
+///
+/// let smtp_creds = Credentials::new(
+///     "smtp_username".to_string(),
+///     "smtp_password".to_string()
+/// );
+///
+/// let mailer = SmtpTransport::relay("smtp.gmail.com")
+///     .unwrap()
+///     .credentials(smtp_creds)
+///     .build();
+///
+/// let authenticated_user_repository = AuthenticatedUserRepositoryMock::new();
+///
+/// let notifier = EmailNotifier::new(
+///     "Demo app <demo@examples.com>".to_string(),
+///     &authenticated_user_repository,
+///     &mailer,
+/// );
+/// ```
+pub struct EmailNotifier<I>
+where
+    I: Id,
+{
+    from: String,
+    user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
+    smtp_transport: Arc<SmtpTransport>,
+}
+
+impl<I> EmailNotifier<I>
+where
+    I: Id,
+{
+    pub fn new(
+        from: &str,
+        user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
+        smtp_transport: Arc<SmtpTransport>,
+    ) -> Self {
+        Self {
+            from: from.into(),
+            user_repository,
+            smtp_transport,
+        }
+    }
+}
+
+#[async_trait]
+impl<I> NotifierTrait for EmailNotifier<I>
+where
+    I: Id,
+{
+    type Id = I;
+
+    async fn send(&self, notification: Notification<I>) -> Result<(), NotificationError> {
+        let user = match self.user_repository.find(notification.user_id).await {
+            Ok(o) => match o {
+                Some(u) => u,
+                None => return Err(NotificationError::UserNotFoundError),
+            },
+            Err(e) => return Err(NotificationError::UserRepositoryError(e)),
+        };
+
+        let last = match user.name.last {
+            Some(l) => l.to_string(),
+            None => "".to_string(),
+        };
+
+        let to_string = format!("{} {} <{}>", user.name.first, last, user.email.as_string());
+        let to_mbox = to_string
+            .parse()
+            .map_err(|e: AddressError| NotificationError::ToError(to_string, e.to_string()))?;
+
+        let form_mbox = self.from.clone().parse().map_err(|e: AddressError| {
+            NotificationError::FromError(self.from.clone(), e.to_string())
+        })?;
+
+        let building_result = Message::builder()
+            .from(form_mbox)
+            .to(to_mbox)
+            .subject(notification.subject)
+            .body(notification.body);
+
+        let email = match building_result {
+            Ok(email) => email,
+            Err(_) => {
+                return Err(NotificationError::MessageSendingExternalError);
+            }
+        };
+
+        match self.smtp_transport.send(&email) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(NotificationError::MessageSendingExternalError),
+        }
+    }
+}

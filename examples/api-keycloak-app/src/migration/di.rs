@@ -1,30 +1,35 @@
-use std::env;
-
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_db_infrastructure::slqx_postgres::migration::{MigrationCollection, Migrator};
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_user_account_infrastructure::db::migration as user_account_migration;
 use argentum_user_infrastructure::db::migration as user_migration;
-use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
-pub struct DiC<'a, L>
+use serde::Deserialize;
+
+#[derive(Deserialize, Debug)]
+struct Env {
+    pub ag_user_database_url: String,
+    pub ag_user_account_database_url: String,
+}
+
+pub struct Di<L>
 where
     L: LoggerTrait,
 {
-    pub user_migrator: Arc<Migrator<'a, L>>,
-    pub user_application_migrator: Arc<Migrator<'a, L>>,
+    pub user_migrator: Arc<Migrator<L>>,
+    pub user_application_migrator: Arc<Migrator<L>>,
 }
 
-impl<'a, L> DiC<'a, L>
+impl<L> Di<L>
 where
     L: LoggerTrait,
 {
     pub fn new(
-        user_migrator: Arc<Migrator<'a, L>>,
-        user_application_migrator: Arc<Migrator<'a, L>>,
+        user_migrator: Arc<Migrator<L>>,
+        user_application_migrator: Arc<Migrator<L>>,
     ) -> Self {
         Self {
             user_migrator,
@@ -33,18 +38,18 @@ where
     }
 }
 
-async fn create_migrator<'a, L>(
-    u_database_url: &str,
+async fn create_migrator<L>(
+    database_url: &str,
     max_db_connections: u32,
-    migrations: MigrationCollection<'a>,
+    migrations: MigrationCollection,
     logger: Arc<L>,
-) -> Result<Migrator<'a, L>, String>
+) -> Result<Migrator<L>, String>
 where
     L: LoggerTrait,
 {
     let pool = PgPoolOptions::new()
         .max_connections(max_db_connections)
-        .connect(u_database_url)
+        .connect(database_url)
         .await
         .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?;
 
@@ -53,26 +58,18 @@ where
     Ok(Migrator::new(adapter, migrations, "ag__migrations", logger))
 }
 
-pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, String> {
-    dotenv().ok();
+pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, String> {
+    let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
 
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
     let max_db_connections = 5;
-    const U_CONNECTION_URL_ENV_NAME: &str = "AG_USER_DATABASE_URL";
-
-    let u_database_url = env::var(U_CONNECTION_URL_ENV_NAME)
-        .map_err(|e| format!("Cant get ENV {U_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
-
-    const UA_CONNECTION_URL_ENV_NAME: &str = "AG_USER_ACCOUNT_DATABASE_URL";
-    let ua_database_url = env::var(UA_CONNECTION_URL_ENV_NAME)
-        .map_err(|e| format!("Cant get ENV {UA_CONNECTION_URL_ENV_NAME}. Error: {e}"))?;
 
     let u_migrations = user_migration::up("ag_user_");
     let u_migrator = Arc::new(
         create_migrator(
-            &u_database_url,
+            &env.ag_user_database_url,
             max_db_connections,
             u_migrations,
             logger.clone(),
@@ -82,8 +79,14 @@ pub async fn di_factory<'a>() -> Result<DiC<'a, DefaultLogger<PrettyWriter>>, St
 
     let ua_migrations = user_account_migration::up("ag_user_account_");
     let ua_migrator = Arc::new(
-        create_migrator(&ua_database_url, max_db_connections, ua_migrations, logger).await?,
+        create_migrator(
+            &env.ag_user_account_database_url,
+            max_db_connections,
+            ua_migrations,
+            logger,
+        )
+        .await?,
     );
 
-    Ok(DiC::new(u_migrator, ua_migrator))
+    Ok(Di::new(u_migrator, ua_migrator))
 }

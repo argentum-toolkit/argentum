@@ -6,10 +6,10 @@ pub fn up(table_name_prefix: &str) -> Vec<String> {
     // ENABLE UUID EXTENSION
     queries.push("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";".to_string());
 
-    // AUTHENTICATED USER
+    // MEMBER USER
     queries.push(format!(
         r#"
-            CREATE TABLE {prefix}authenticated (
+            CREATE TABLE {prefix}member (
                 id uuid PRIMARY KEY,
                 created_at timestamptz NOT NULL,
                 first_name varchar NOT NULL,
@@ -22,30 +22,30 @@ pub fn up(table_name_prefix: &str) -> Vec<String> {
     ));
 
     queries.push(format!(
-        "CREATE INDEX idx_authenticated_email ON {prefix}authenticated (email);",
+        "CREATE INDEX idx_member_email ON {prefix}member (email);",
         prefix = table_name_prefix
     ));
 
-    // ANONYMOUS USER
+    // GUEST USER
     queries.push(format!(
         r#"
-            CREATE TABLE {prefix}anonymous (
-                id         uuid PRIMARY KEY,
+            CREATE TABLE {prefix}guest (
+                id uuid PRIMARY KEY,
                 created_at timestamptz NOT NULL
             );
         "#,
         prefix = table_name_prefix
     ));
 
-    // BINDING ANONYMOUS TO AUTHENTICATED USER
+    // BINDING GUESTS TO MEMBERS
     queries.push(format!(
         r#"
-            CREATE TABLE {prefix}anonymous_binding (
-                user_id      uuid        NOT NULL,
-                anonymous_id uuid PRIMARY KEY,
-                created_at   timestamptz NOT NULL,
-                CONSTRAINT fk_authenticated FOREIGN KEY (user_id) REFERENCES {prefix}authenticated (id),
-                CONSTRAINT fk_anonymous FOREIGN KEY (anonymous_id) REFERENCES {prefix}anonymous (id)
+            CREATE TABLE {prefix}guest_binding (
+                member_id uuid NOT NULL,
+                guest_id uuid PRIMARY KEY,
+                created_at timestamptz NOT NULL,
+                CONSTRAINT fk_member FOREIGN KEY (member_id) REFERENCES {prefix}member (id),
+                CONSTRAINT fk_guest FOREIGN KEY (guest_id) REFERENCES {prefix}guest (id)
             );
         "#,
         prefix = table_name_prefix
@@ -56,10 +56,10 @@ pub fn up(table_name_prefix: &str) -> Vec<String> {
         r#"
             CREATE TABLE {prefix}session
             (
-                id      uuid PRIMARY KEY,
+                id uuid PRIMARY KEY,
                 user_id uuid NOT NULL,
-                created_at   timestamptz NOT NULL,
-                token   TEXT NOT NULL
+                created_at timestamptz NOT NULL,
+                token TEXT NOT NULL
             );
         "#,
         prefix = table_name_prefix

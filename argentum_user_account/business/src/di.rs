@@ -1,117 +1,107 @@
-use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
 use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
 use crate::mock::token::TokenGeneratorMock;
+use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
 use crate::repository::password_credential_writer::PasswordCredentialWriter;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-use crate::service::PasswordToTokenExchangerTrait;
+use crate::service::{DefaultPasswordToTokenExchanger, PasswordToTokenExchangerTrait};
 use crate::token::GeneratorTrait;
-use crate::use_case::anonymous_registers::AnonymousRegistersUc;
+use crate::use_case::guest_registers::GuestRegistersUc;
 use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
-use crate::use_case::restore_password::anonymous_requests_restore_token::AnonymousRequestsRestoreTokenUc;
-use crate::use_case::restore_password::anonymous_with_token_changes_password::AnonymousWithTokenChangesPasswordUc;
-use crate::use_case::user_logins_with_password::UserLoginsWithPasswordUc;
-use crate::use_case::user_registers_with_password::UserRegistersWithPasswordUc;
-use argentum_encryption_business::mock::password::EncryptorMock;
-use argentum_log_business::LoggerTrait;
-use argentum_notification_business::NotificatorTrait;
-use argentum_standard_business::data_type::id::{Id, IdFactory};
-use argentum_user_business::mock::repository::anonymous_user_repository_mock::AnonymousUserRepositoryMock;
-use argentum_user_business::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
-use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
-use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
-use argentum_user_business::repository::user_repository::{
-    AnonymousUserRepositoryTrait, AuthenticatedUserRepositoryTrait,
+use crate::use_case::member_logins_with_password::MemberLoginsWithPasswordUc;
+use crate::use_case::member_registers_with_password::MemberRegistersWithPasswordUc;
+use crate::use_case::restore_password::guest_requests_restore_token::GuestRequestsRestoreTokenUc;
+use crate::use_case::restore_password::guest_with_token_changes_password::GuestWithTokenChangesPasswordUc;
+use crate::{
+    mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock,
+    use_case::member_confirms_email::DefaultMemberConfirmsEmailUc,
 };
-use argentum_user_business::service::{GuestBinder, MemberAuthenticatorTrait, TokenRouterTrait};
-use argentum_user_business::use_case::user_authenticates_with_token::UserAuthenticatesWithTokenUc;
-use std::sync::Arc;
+use argentum_encryption_business::mock::password::EncryptorMock;
+use argentum_encryption_business::password::Validator;
+use argentum_log_business::LoggerTrait;
+use argentum_notification_business::NotifierTrait;
+use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_standard_business::error::DiError;
+use argentum_user_business::di::UserBusinessDiBuilder;
+use std::sync::{Arc, Mutex};
 
-pub struct BusinessDiC<I, L>
+pub struct UserAccountBusinessDi<I, L>
 where
     I: Id + 'static,
     L: LoggerTrait,
 {
     // Public services
-    pub anonymous_registers_uc: Arc<AnonymousRegistersUc<I>>,
-    pub user_registers_with_password_uc: Arc<UserRegistersWithPasswordUc<I>>,
-    pub user_logins_with_password_uc: Arc<UserLoginsWithPasswordUc<I, L>>,
-    pub user_authenticates_with_token_uc: Arc<UserAuthenticatesWithTokenUc<I>>,
-    pub anonymous_with_token_changes_password_uc: Arc<AnonymousWithTokenChangesPasswordUc<I, L>>,
-    pub anonymous_requests_restore_token_uc: Arc<AnonymousRequestsRestoreTokenUc<I, L>>,
+    pub guest_registers_uc: Arc<GuestRegistersUc<I>>,
+    pub member_registers_with_password_uc: Arc<MemberRegistersWithPasswordUc<I>>,
+    pub member_logins_with_password_uc: Arc<MemberLoginsWithPasswordUc<I, L>>,
+    pub guest_with_token_changes_password_uc: Arc<GuestWithTokenChangesPasswordUc<I, L>>,
+    pub guest_requests_restore_token_uc: Arc<GuestRequestsRestoreTokenUc<I, L>>,
     pub member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
     pub member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
 }
 
-pub struct UserAccountBusinessDiCBuilder<I, L>
+pub struct UserAccountBusinessDiBuilder<I, L>
 where
-    I: Id,
+    I: Id + 'static,
     L: LoggerTrait,
 {
-    id_factory: Arc<dyn IdFactory<Id = I>>,
-    // validator: Arc<dyn Validator>,
-    logger: Arc<L>,
-    notificator: Arc<dyn NotificatorTrait<Id = I>>,
+    user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
 
-    guest_binder: Option<Arc<GuestBinder<I, L>>>,
-    anonymous_user_repository: Option<Arc<dyn AnonymousUserRepositoryTrait<Id = I>>>,
-    authenticated_user_repository: Option<Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>>,
-    session_repository: Option<Arc<dyn SessionRepositoryTrait<Id = I>>>,
+    id_factory: Arc<dyn IdFactory<Id = I>>,
+    logger: Arc<L>,
+    notifier: Arc<dyn NotifierTrait<Id = I>>,
+
     password_credential_repository: Option<Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>>,
     password_to_token_exchanger: Option<Arc<dyn PasswordToTokenExchangerTrait<Id = I>>>,
     restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
     guest_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
     member_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
-    token_router: Option<Arc<dyn TokenRouterTrait>>,
-    member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
 
     member_confirms_email_uc: Option<Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>>,
     restore_password_token_ttl: u32,
     product_name: String,
     restore_password_front_url: String,
+    validator: Arc<dyn Validator>,
+
+    built_di: Option<Arc<UserAccountBusinessDi<I, L>>>,
 }
 
-impl<I, L> UserAccountBusinessDiCBuilder<I, L>
+impl<I, L> UserAccountBusinessDiBuilder<I, L>
 where
-    //TODO: not static
     I: Id + 'static,
-    L: LoggerTrait,
+    L: LoggerTrait + 'static,
 {
     pub fn new(
+        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
+        product_name: &str,
+        restore_password_token_ttl: u32,
+        restore_password_front_url: &str,
         id_factory: Arc<dyn IdFactory<Id = I>>,
-        // validator: Arc<dyn Validator>,
         logger: Arc<L>,
-        notificator: Arc<dyn NotificatorTrait<Id = I>>,
+        notifier: Arc<dyn NotifierTrait<Id = I>>,
+        validator: Arc<dyn Validator>,
     ) -> Self {
         Self {
+            user_business_builder,
+
             id_factory,
-            // validator,
             logger,
-            notificator,
-            guest_binder: None,
-            anonymous_user_repository: None,
-            authenticated_user_repository: None,
-            session_repository: None,
+            notifier,
             password_credential_repository: None,
             password_to_token_exchanger: None,
             restore_password_token_repository: None,
             guest_token_generator: None,
             member_token_generator: None,
-            token_router: None,
-            member_authenticator: None,
             member_confirms_email_uc: None,
-            restore_password_token_ttl: 1,
-            product_name: "".into(),
-            restore_password_front_url: "".into(),
+            restore_password_token_ttl,
+            product_name: product_name.into(),
+            restore_password_front_url: restore_password_front_url.into(),
+            validator,
+            built_di: None,
         }
     }
 
     pub fn mock(&mut self) -> &mut Self {
-        // self.guest_binder = Some(Arc::new(AnonymousBindingRepositoryMock::new()));
-        self.anonymous_user_repository = Some(Arc::new(AnonymousUserRepositoryMock::new()));
-        self.authenticated_user_repository = Some(Arc::new(AuthenticatedUserRepositoryMock::new()));
-        self.session_repository = Some(Arc::new(SessionRepositoryMock::new()));
-
         self.password_credential_repository = Some(Arc::new(
             PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new())),
         ));
@@ -124,72 +114,52 @@ where
         self
     }
 
-    pub fn config<S>(
+    pub fn with_default_services(
         &mut self,
-        product_name: S,
-        restore_password_token_ttl: u32,
-        restore_password_front_url: S,
-    ) -> &mut Self
-    where
-        S: Into<String>,
-    {
-        self.product_name = product_name.into();
-        self.restore_password_token_ttl = restore_password_token_ttl;
-        self.restore_password_front_url = restore_password_front_url.into();
-
-        self
-    }
-
-    pub fn with_authenticated_user_repository(
-        &mut self,
-        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
-    ) -> &mut Self {
-        self.authenticated_user_repository = Some(authenticated_user_repository);
-
-        self
-    }
-
-    pub fn services(
-        &mut self,
-        guest_binder: Arc<GuestBinder<I, L>>,
-        anonymous_user_repository: Arc<dyn AnonymousUserRepositoryTrait<Id = I>>,
-        authenticated_user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
-        session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
         password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
-        password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         guest_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
         member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
-        token_router: Arc<dyn TokenRouterTrait>,
-        member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
-        member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
     ) -> &mut Self {
-        self.guest_binder = Some(guest_binder);
-        self.anonymous_user_repository = Some(anonymous_user_repository);
-        self.authenticated_user_repository = Some(authenticated_user_repository);
-        self.session_repository = Some(session_repository);
         self.password_credential_repository = Some(password_credential_repository);
-        self.password_to_token_exchanger = Some(password_to_token_exchanger);
         self.restore_password_token_repository = Some(restore_password_token_repository);
         self.guest_token_generator = Some(guest_token_generator);
         self.member_token_generator = Some(member_token_generator);
-        self.token_router = Some(token_router);
-        self.member_authenticator = Some(member_authenticator);
+
+        self
+    }
+
+    pub fn with_password_credential_repository(
+        &mut self,
+        password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
+    ) -> &mut Self {
+        self.password_credential_repository = Some(password_credential_repository);
+
+        self
+    }
+
+    pub fn with_password_to_token_exchanger(
+        &mut self,
+        password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
+    ) -> &mut Self {
+        self.password_to_token_exchanger = Some(password_to_token_exchanger);
+
+        self
+    }
+
+    pub fn with_member_confirms_email_uc(
+        &mut self,
+        member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
+    ) -> &mut Self {
         self.member_confirms_email_uc = Some(member_confirms_email_uc);
 
         self
     }
 
-    pub fn build(&self) -> Result<BusinessDiC<I, L>, String> {
-        let anonymous_user_repository = self
-            .anonymous_user_repository
-            .clone()
-            .ok_or("anonymous_user_repository is not initialized")?;
-
-        let session_repository = self
-            .session_repository
-            .clone()
-            .ok_or("session_repository is not initialized")?;
+    pub fn build(&mut self) -> Result<Arc<UserAccountBusinessDi<I, L>>, DiError> {
+        if let Some(di) = &self.built_di {
+            return Ok(di.clone());
+        }
 
         let guest_token_generator = self
             .guest_token_generator
@@ -206,45 +176,42 @@ where
             .clone()
             .ok_or("password_credential_repository is not initialized")?;
 
-        let password_to_token_exchanger = self
-            .password_to_token_exchanger
-            .clone()
-            .ok_or("password_to_token_exchanger is not initialized")?;
+        let user_business_di = self.user_business_builder.lock()?.build()?;
+        let password_to_token_exchanger = match self.password_to_token_exchanger.clone() {
+            Some(p) => p,
+            None => {
+                let password_credential_checker = Arc::new(PasswordCredentialChecker::new(
+                    password_credential_repository.clone(),
+                    self.validator.clone(),
+                ));
 
-        let authenticated_user_repository = self
-            .authenticated_user_repository
-            .clone()
-            .ok_or("authenticated_user_repository is not initialized")?;
-
-        let guest_binder = self
-            .guest_binder
-            .clone()
-            .ok_or("guest_binder is not initialized")?;
+                Arc::new(DefaultPasswordToTokenExchanger::new(
+                    user_business_di.member_repository.clone(),
+                    user_business_di.session_repository.clone(),
+                    password_credential_checker,
+                    self.id_factory.clone(),
+                    member_token_generator.clone(),
+                ))
+            }
+        };
 
         let restore_password_token_repository = self
             .restore_password_token_repository
             .clone()
             .ok_or("restore_password_token_repository is not initialized")?;
 
-        let token_router = self
-            .token_router
-            .clone()
-            .ok_or("token_router not initialized")?;
+        let member_confirms_email_uc = match self.member_confirms_email_uc.clone() {
+            Some(uc) => uc,
+            None => Arc::new(DefaultMemberConfirmsEmailUc::new(
+                user_business_di.member_repository.clone(),
+                self.logger.clone(),
+            )),
+        };
 
-        let member_authenticator = self
-            .member_authenticator
-            .clone()
-            .ok_or("member_authenticator not initialized")?;
-
-        let member_confirms_email_uc = self
-            .member_confirms_email_uc
-            .clone()
-            .ok_or("member_confirms_email_uc not initialized")?;
-
-        let anonymous_registers_uc = Arc::new(AnonymousRegistersUc::new(
+        let guest_registers_uc = Arc::new(GuestRegistersUc::new(
             self.id_factory.clone(),
-            anonymous_user_repository.clone(),
-            session_repository.clone(),
+            user_business_di.guest_repository.clone(),
+            user_business_di.session_repository.clone(),
             guest_token_generator.clone(),
         ));
 
@@ -252,65 +219,47 @@ where
             password_credential_repository.clone(),
         ));
 
-        let user_registers_with_password_uc = Arc::new(UserRegistersWithPasswordUc::new(
-            authenticated_user_repository.clone(),
+        let user_registers_with_password_uc = Arc::new(MemberRegistersWithPasswordUc::new(
+            user_business_di.member_repository.clone(),
             password_credential_writer.clone(),
         ));
 
-        // let password_credential_checker = Arc::new(PasswordCredentialChecker::new(
-        //     password_credential_repository,
-        //     self.validator.clone(),
-        // ));
-
-        // let password_to_token_exchanger = Arc::new(DefaultPasswordToTokenExchanger::new(
-        //     authenticated_user_repository.clone(),
-        //     session_repository.clone(),
-        //     password_credential_checker,
-        //     self.id_factory.clone(),
-        //     token_generator.clone(),
-        // ));
-
-        let user_logins_with_password_uc = Arc::new(UserLoginsWithPasswordUc::new(
+        let user_logins_with_password_uc = Arc::new(MemberLoginsWithPasswordUc::new(
             password_to_token_exchanger,
-            guest_binder,
+            user_business_di.guest_binder.clone(),
         ));
 
-        let user_authenticates_with_token_uc = Arc::new(UserAuthenticatesWithTokenUc::new(
-            member_authenticator,
-            anonymous_user_repository,
-            session_repository,
-            token_router,
-        ));
-
-        let anonymous_with_token_changes_password_uc =
-            Arc::new(AnonymousWithTokenChangesPasswordUc::new(
-                authenticated_user_repository.clone(),
-                restore_password_token_repository.clone(),
-                password_credential_writer,
-                self.restore_password_token_ttl,
-                self.logger.clone(),
-            ));
-
-        let anonymous_requests_restore_token_uc = Arc::new(AnonymousRequestsRestoreTokenUc::new(
-            &self.product_name,
-            &self.restore_password_front_url.clone(),
-            self.id_factory.clone(),
-            authenticated_user_repository,
-            restore_password_token_repository,
-            guest_token_generator,
-            self.notificator.clone(),
+        let guest_with_token_changes_password_uc = Arc::new(GuestWithTokenChangesPasswordUc::new(
+            user_business_di.member_repository.clone(),
+            restore_password_token_repository.clone(),
+            password_credential_writer,
+            self.restore_password_token_ttl,
             self.logger.clone(),
         ));
 
-        Ok(BusinessDiC {
-            anonymous_registers_uc,
-            user_registers_with_password_uc,
-            user_logins_with_password_uc,
-            user_authenticates_with_token_uc,
+        let guest_requests_restore_token_uc = Arc::new(GuestRequestsRestoreTokenUc::new(
+            &self.product_name,
+            &self.restore_password_front_url.clone(),
+            self.id_factory.clone(),
+            user_business_di.member_repository.clone(),
+            restore_password_token_repository,
+            guest_token_generator,
+            self.notifier.clone(),
+            self.logger.clone(),
+        ));
+
+        let di = Arc::new(UserAccountBusinessDi {
+            guest_registers_uc,
+            member_registers_with_password_uc: user_registers_with_password_uc,
+            member_logins_with_password_uc: user_logins_with_password_uc,
             member_confirms_email_uc,
-            anonymous_with_token_changes_password_uc,
-            anonymous_requests_restore_token_uc,
+            guest_with_token_changes_password_uc,
+            guest_requests_restore_token_uc,
             member_token_generator,
-        })
+        });
+
+        self.built_di = Some(di.clone());
+
+        Ok(di)
     }
 }

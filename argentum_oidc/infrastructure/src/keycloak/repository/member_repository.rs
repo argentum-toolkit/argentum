@@ -9,8 +9,8 @@ use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::{
     data_type::builder::NameBuilder,
-    entity::user::AuthenticatedUser,
-    repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError},
+    entity::user::Member,
+    repository::user_repository::{ExternalUserError, MemberRepositoryTrait},
 };
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -72,72 +72,69 @@ where
 }
 
 #[async_trait]
-impl<L> AuthenticatedUserRepositoryTrait for MemberRepository<L>
+impl<L> MemberRepositoryTrait for MemberRepository<L>
 where
     L: LoggerTrait,
 {
     type Id = UniqueId;
 
-    async fn find(
-        &self,
-        id: Self::Id,
-    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError> {
+    async fn find(&self, id: Self::Id) -> Result<Option<Member<Self::Id>>, ExternalUserError> {
         let path = format!("/users/{}", id);
 
         let u: KeycloakUser = self
             .admin_api
             .get(&path, None::<&()>)
             .await
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?
             .error_for_status()
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?
             .json()
             .await
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
         let email = EmailAddress::try_new(&u.email)
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
         let name = NameBuilder::new(&u.first_name)
             .last(u.last_name.as_deref())
             .try_build()
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
-        Ok(Some(AuthenticatedUser::new(u.id.into(), name, email)))
+        Ok(Some(Member::new(u.id.into(), name, email)))
     }
 
     async fn find_by_email(
         &self,
         email: &EmailAddress,
-    ) -> Result<Option<AuthenticatedUser<Self::Id>>, ExternalUserError> {
+    ) -> Result<Option<Member<Self::Id>>, ExternalUserError> {
         let resp = self
             .admin_api
             .get("/users", Some(&[("email", email.as_string())]))
             .await
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?
             .error_for_status()
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
         let users: Vec<KeycloakUser> = resp
             .json()
             .await
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
         match users.into_iter().next() {
             Some(u) => {
                 let email = EmailAddress::try_new(&u.email)
-                    .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+                    .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
                 let name = NameBuilder::new(&u.first_name)
                     .last(u.last_name.as_deref())
                     .try_build()
-                    .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+                    .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
-                Ok(Some(AuthenticatedUser::new(u.id.into(), name, email)))
+                Ok(Some(Member::new(u.id.into(), name, email)))
             }
             None => Ok(None),
         }
     }
 
-    async fn create(&self, user: &AuthenticatedUser<Self::Id>) -> Result<(), ExternalUserError> {
+    async fn create(&self, user: &Member<Self::Id>) -> Result<(), ExternalUserError> {
         let last = user.name.last.clone().map(|l| l.to_string());
         let new_user = NewUser {
             id: user.id.to_string(),
@@ -157,7 +154,7 @@ where
             .admin_api
             .post("/partialImport", Some(&partial_import))
             .await
-            .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+            .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
         if resp.status().is_success() || resp.status() == reqwest::StatusCode::CREATED {
             let actions = ["VERIFY_EMAIL"];
@@ -167,7 +164,7 @@ where
                 .admin_api
                 .put(&path, Some(&actions))
                 .await
-                .map_err(|e| ExternalUserError::Authenticated(Some(Arc::new(e))))?;
+                .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
             if !resp.status().is_success() {
                 self.logger.error(format!(
@@ -187,7 +184,7 @@ where
                     .unwrap_or("Also can't get response text.".into())
             ));
 
-            Err(ExternalUserError::Authenticated(Some(Arc::new(
+            Err(ExternalUserError::Member(Some(Arc::new(
                 KeycloakUserError(
                     "Failed to create user. Wrong keycloak response status code".into(),
                 ),

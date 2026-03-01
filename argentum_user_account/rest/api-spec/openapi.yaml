@@ -31,35 +31,53 @@ servers:
       - '80'
       - '8080'
 tags:
-- description: Managing of the anonymous
-  name: anonymous
+- description: Managing of the guests
+  name: guest
 - description: Managing of the user account
   name: user-account
 paths:
-  /user-account/anonymous-register:
+  /user-account/email-verification:
     post:
-      description: Anonymous registers without any data
-      operationId: AnonymousRegisters
+      description: Member sends email verification key
+      operationId: MemberVerifiesEmail
       tags:
-      - anonymous
-      summary: Anonymous registers
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/EmailVerificationRequestBody'
+      summary: New member verifies email address
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+  /user-account/guest-registration:
+    post:
+      description: Guest registers without any data
+      operationId: GuestRegisters
+      tags:
+      - guest
+      summary: Guest registers
       responses:
         '201':
-          $ref: '#/components/responses/AnonymousRegisteredSuccessfully'
+          $ref: '#/components/responses/GuestRegisteredSuccessfully'
   /user-account/password-login:
     post:
-      description: Login as an user
-      operationId: UserLoginsWithPassword
+      description: Login as an member
+      operationId: MemberLoginsWithPassword
       tags:
       - user-account
       security:
       - bearerAuth: []
       requestBody:
         $ref: '#/components/requestBodies/LoginWithPasswordRequestBody'
-      summary: Login as an user
+      summary: Login as an member
       responses:
         '200':
-          $ref: '#/components/responses/UserLoggedInSuccessfully'
+          $ref: '#/components/responses/MemberLoggedInSuccessfully'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -68,71 +86,53 @@ paths:
         submit-label: Sign In
   /user-account/register:
     post:
-      description: User registers with email and password
-      operationId: UserRegistersWithPassword
+      description: Member registers with email and password
+      operationId: MemberRegistersWithPassword
       tags:
       - user-account
       security:
       - bearerAuth: []
       requestBody:
         $ref: '#/components/requestBodies/RegistrationWithPasswordRequestBody'
-      summary: User registers with password
+      summary: Member registers with password
       responses:
         '201':
-          $ref: '#/components/responses/UserRegisteredSuccessfully'
+          $ref: '#/components/responses/MemberRegisteredSuccessfully'
         '400':
           $ref: '#/components/responses/400'
         '409':
           $ref: '#/components/responses/409'
       x-ag-form:
         submit-label: Sign Up
-  /user-account/restore-password/token-request:
-    post:
-      description: Requested token and link will be sent to email
-      operationId: AnonymousRequestsRestoreToken
-      tags:
-      - user-account
-      security:
-      - bearerAuth: []
-      requestBody:
-        $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
-      summary: Anonymous requests restore password token
-      responses:
-        '200':
-          $ref: '#/components/responses/EmptyOk'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-  /user/email-verification:
-    post:
-      description: User sends email verification key
-      operationId: MemberVerifiesEmail
-      tags:
-      - user-account
-      security:
-      - bearerAuth: []
-      requestBody:
-        $ref: '#/components/requestBodies/EmailVerificationRequestBody'
-      summary: New user verifies email address
-      responses:
-        '200':
-          $ref: '#/components/responses/EmptyOk'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-  /user/restore-password/change-password:
+  /user-account/restore-password/change-password:
     post:
       description: Final step of restoring password process
-      operationId: AnonymousWithTokenChangesPassword
+      operationId: GuestWithTokenChangesPassword
       tags:
       - user-account
       security:
       - bearerAuth: []
       requestBody:
         $ref: '#/components/requestBodies/ChangePasswordRequestBody'
-      summary: User with token changes his password
+      summary: Member with token changes his password
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+  /user-account/restore-password/token-request:
+    post:
+      description: Requested token and link will be sent to email
+      operationId: GuestRequestsRestoreToken
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
+      summary: Guest requests restore password token
       responses:
         '200':
           $ref: '#/components/responses/EmptyOk'
@@ -178,19 +178,6 @@ components:
       description: Required data to get restore password token
       required: true
   schemas:
-    AnonymousRegistrationResult:
-      required:
-      - anonymous_id
-      - token
-      properties:
-        anonymous_id:
-          example: c8cabaac-8359-463a-9cce-954eff31e063
-          type: string
-          format: uuid
-        token:
-          example: token-example
-          type: string
-      type: object
     ChangePasswordSchema:
       required:
       - token
@@ -215,6 +202,19 @@ components:
     EmptyResponse:
       title: Empty response
       type: null
+    GuestRegistrationResult:
+      required:
+      - guest_id
+      - token
+      properties:
+        guest_id:
+          example: c8cabaac-8359-463a-9cce-954eff31e063
+          type: string
+          format: uuid
+        token:
+          example: token-example
+          type: string
+      type: object
     LoginResult:
       required:
       - user_id
@@ -391,25 +391,25 @@ components:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
       description: Conflict
-    AnonymousRegisteredSuccessfully:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AnonymousRegistrationResult'
-      description: Created
     EmptyOk:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/EmptyResponse'
       description: OK
-    UserLoggedInSuccessfully:
+    GuestRegisteredSuccessfully:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GuestRegistrationResult'
+      description: Created
+    MemberLoggedInSuccessfully:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/LoginResult'
       description: OK
-    UserRegisteredSuccessfully:
+    MemberRegisteredSuccessfully:
       content:
         application/json:
           schema:

@@ -14,8 +14,8 @@ pub struct OidcRedirectUrl(pub String);
 
 pub(crate) fn App() -> Element {
     //TODO: add better error handling
-    let client_id = env!("GITHUB_CLIENT_ID");
-    let redirect_url = env!("OIDC_REDIRECT_URL");
+    let client_id = env!("AG_GITHUB_CLIENT_ID");
+    let redirect_url = env!("AG_OIDC_REDIRECT_URL");
 
     use_context_provider(|| GithubClientId(client_id.into()));
     use_context_provider(|| OidcRedirectUrl(redirect_url.into()));

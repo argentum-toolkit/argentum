@@ -1,16 +1,16 @@
 use argentum_log_business::LoggerTrait;
-use argentum_oidc_business::di::{OidcBusinessDiC, OidcBusinessDiCBuilder};
-use argentum_oidc_rest::server::handler::ExchangeCodeTrait;
-use argentum_standard_business::data_type::id::Id;
-use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_account_business::{
-    repository::password_credential_repository::PasswordCredentialRepositoryTrait,
-    service::PasswordToTokenExchangerTrait,
-    use_case::member_confirms_email::MemberConfirmsEmailUcTrait,
+use argentum_oidc_business::di::{OidcBusinessDi, OidcBusinessDiBuilder};
+use argentum_oidc_rest::ApiDi;
+use argentum_rest_infrastructure::di::RestDiBuilder;
+use argentum_standard_business::{
+    data_type::id::{Id, IdFactory},
+    error::DiError,
 };
-use argentum_user_business::service::MemberAuthenticatorTrait;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
+use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
+use argentum_user_business::di::UserBusinessDiBuilder;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use crate::{
     keycloak::{
@@ -23,23 +23,16 @@ use crate::{
     rest::handler::ExchangeCodeHandler,
 };
 
-pub struct OidcInfrastructureDiC<I, L>
+pub struct OidcInfrastructureDi<I, L>
 where
     I: Id,
     L: LoggerTrait + 'static,
 {
-    pub business_dic: OidcBusinessDiC<I, L>,
-
-    // Public services
-    pub exchange_code_handler: Arc<dyn ExchangeCodeTrait<Id = I>>,
-    pub member_repository: Arc<MemberRepository<L>>,
-    pub password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
-    pub password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
-    pub member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = I>>,
-    pub member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
+    pub business_di: Arc<OidcBusinessDi<I, L>>,
+    pub api_di: ApiDi<I>,
 }
 
-pub struct KeycloakInfrastructureDiCBuilder<L>
+pub struct KeycloakInfrastructureDiBuilder<L>
 where
     L: LoggerTrait + 'static,
 {
@@ -51,13 +44,16 @@ where
     keycloak_be_client_secret: String,
     keycloak_fe_client_id: String,
 
-    business_builder: OidcBusinessDiCBuilder<UniqueId, L>,
+    business_builder: Arc<Mutex<OidcBusinessDiBuilder<UniqueId, L>>>,
+    user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
+    user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
+    rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
 
     logger: Arc<L>,
     client: Arc<reqwest::Client>,
 }
 
-impl<L> KeycloakInfrastructureDiCBuilder<L>
+impl<L> KeycloakInfrastructureDiBuilder<L>
 where
     L: LoggerTrait + 'static,
 {
@@ -68,6 +64,12 @@ where
         keycloak_be_client_id: &str,
         keycloak_be_client_secret: &str,
         keycloak_fe_client_id: &str,
+
+        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
+        user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
+        rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
+
+        id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
         logger: Arc<L>,
         client: Arc<reqwest::Client>,
     ) -> Self {
@@ -79,13 +81,22 @@ where
             keycloak_be_client_secret: keycloak_be_client_secret.into(),
             keycloak_fe_client_id: keycloak_fe_client_id.into(),
 
-            business_builder: OidcBusinessDiCBuilder::new(),
+            user_business_builder: user_business_builder.clone(),
+            user_account_business_builder: user_account_business_builder.clone(),
+
+            business_builder: Arc::new(Mutex::new(OidcBusinessDiBuilder::new(
+                user_business_builder.clone(),
+                user_account_business_builder.clone(),
+                id_factory.clone(),
+                logger.clone(),
+            ))),
+            rest_builder,
             logger,
             client,
         }
     }
 
-    pub fn build(&mut self) -> Result<OidcInfrastructureDiC<UniqueId, L>, String> {
+    pub async fn with_default_services(&mut self) -> Result<&mut Self, DiError> {
         let keycloak_be_client = Arc::new(KeycloakBackendClient::new(
             &self.keycloak_base_url.clone(),
             &self.keycloak_realm.clone(),
@@ -103,14 +114,9 @@ where
             self.client.clone(),
         ));
 
-        let business_dic = self
-            .business_builder
-            .with_auth_code_exchanger(keycloak_fe_client.clone())
-            .build()?;
-
-        let exchange_code_handler = Arc::new(ExchangeCodeHandler::new(
-            business_dic.user_exchanges_code_to_token_uc.clone(),
-        ));
+        self.business_builder
+            .lock()?
+            .with_code_exchanger(keycloak_fe_client.clone());
 
         let admin_api = Arc::new(AdminApi::new(
             &self.keycloak_base_url,
@@ -144,14 +150,40 @@ where
             self.client.clone(),
         ));
 
-        Ok(OidcInfrastructureDiC {
-            business_dic,
+        self.user_business_builder
+            .lock()?
+            .with_member_authenticator(member_authenticator)
+            .with_member_repository(member_repository);
+
+        self.user_account_business_builder
+            .lock()?
+            .with_member_confirms_email_uc(member_confirms_email_uc)
+            .with_password_credential_repository(password_credential_repository)
+            .with_password_to_token_exchanger(keycloak_be_client);
+
+        Ok(self)
+    }
+
+    pub fn build(&mut self) -> Result<OidcInfrastructureDi<UniqueId, L>, DiError> {
+        let business_di = self.business_builder.lock()?.build()?;
+
+        let exchange_code_handler = Arc::new(ExchangeCodeHandler::new(
+            business_di.user_exchanges_code_to_token_uc.clone(),
+        ));
+
+        let rest_di = self.rest_builder.build()?;
+
+        let api_di = ApiDi::new(
+            "/api/v1",
+            rest_di.request_transformer.clone(),
+            rest_di.bearer_authenticator.clone(),
             exchange_code_handler,
-            member_repository,
-            password_credential_repository,
-            password_to_token_exchanger: keycloak_be_client,
-            member_authenticator,
-            member_confirms_email_uc,
+            rest_di.error_pre_handler.clone(),
+        );
+
+        Ok(OidcInfrastructureDi {
+            business_di,
+            api_di,
         })
     }
 }

@@ -1,17 +1,17 @@
-use crate::{Notification, NotificationError, NotificatorTrait};
+use crate::{Notification, NotificationError, NotifierTrait};
 
 use argentum_standard_business::data_type::id::Id;
 use async_trait::async_trait;
 
 #[derive(Default)]
-pub struct StdoutNotificator<I>
+pub struct StdoutNotifier<I>
 where
     I: Id,
 {
     _phantom: std::marker::PhantomData<I>,
 }
 
-impl<I> StdoutNotificator<I>
+impl<I> StdoutNotifier<I>
 where
     I: Id,
 {
@@ -23,7 +23,7 @@ where
 }
 
 #[async_trait]
-impl<I> NotificatorTrait for StdoutNotificator<I>
+impl<I> NotifierTrait for StdoutNotifier<I>
 where
     I: Id,
 {

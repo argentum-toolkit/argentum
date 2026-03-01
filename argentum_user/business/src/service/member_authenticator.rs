@@ -1,6 +1,6 @@
 use argentum_standard_business::data_type::id::Id;
 
-use crate::entity::user::AuthenticatedUser;
+use crate::entity::user::Member;
 use std::{error::Error, sync::Arc};
 
 use async_trait::async_trait;
@@ -12,7 +12,7 @@ pub trait MemberAuthenticatorTrait: Send + Sync {
     async fn authenticate(
         &self,
         token: &str,
-    ) -> Result<Option<AuthenticatedUser<Self::Id>>, MemberAuthenticatorError>;
+    ) -> Result<Option<Member<Self::Id>>, MemberAuthenticatorError>;
 }
 
 #[derive(thiserror::Error, Debug)]

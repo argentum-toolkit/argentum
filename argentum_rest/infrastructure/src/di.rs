@@ -1,29 +1,58 @@
 use crate::service::{
-    ErrorHandler, ErrorPreHandler, HeaderParamsExtractor, PathParamsExtractor,
+    BearerAuthenticator, ErrorHandler, ErrorPreHandler, HeaderParamsExtractor, PathParamsExtractor,
     QueryParamsExtractor, RequestTransformer, ResponseToJsonTransformer, SchemaExtractor,
     ValidationErrorTransformer,
 };
 use argentum_log_business::LoggerTrait;
-use std::sync::Arc;
+use argentum_standard_business::{data_type::id::Id, error::DiError};
+use argentum_user_business::di::UserBusinessDiBuilder;
+use std::sync::{Arc, Mutex};
 
-pub struct RestDiC<L>
+pub struct RestDi<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
+    pub bearer_authenticator: Arc<BearerAuthenticator<I>>,
     pub request_transformer: Arc<RequestTransformer>,
     pub response_transformer: Arc<ResponseToJsonTransformer>,
     pub error_pre_handler: Arc<ErrorPreHandler>,
     pub error_handler: Arc<ErrorHandler<L>>,
 }
 
-impl<L> RestDiC<L>
+pub struct RestDiBuilder<I, L>
 where
+    I: Id,
     L: LoggerTrait,
 {
-    pub fn new(logger: Arc<L>) -> Self
-    where
-        L: LoggerTrait,
-    {
+    user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
+    logger: Arc<L>,
+
+    built_di: Mutex<Option<Arc<RestDi<I, L>>>>,
+}
+
+impl<I, L> RestDiBuilder<I, L>
+where
+    I: Id + 'static,
+    L: LoggerTrait + 'static,
+{
+    pub fn new(
+        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
+        logger: Arc<L>,
+    ) -> Self {
+        Self {
+            user_business_builder,
+            logger,
+
+            built_di: Mutex::new(None),
+        }
+    }
+
+    pub fn build(&self) -> Result<Arc<RestDi<I, L>>, DiError> {
+        if let Some(di) = self.built_di.lock()?.clone() {
+            return Ok(di.clone());
+        }
+
         let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
         let schema_extractor = Arc::new(SchemaExtractor::new());
         let header_params_extractor = Arc::new(HeaderParamsExtractor::new(
@@ -43,13 +72,24 @@ where
         ));
         let response_transformer = Arc::new(ResponseToJsonTransformer::new());
         let error_pre_handler = Arc::new(ErrorPreHandler::new());
-        let error_handler = Arc::new(ErrorHandler::new(logger));
+        let error_handler = Arc::new(ErrorHandler::new(self.logger.clone()));
 
-        RestDiC {
+        let user_di = self.user_business_builder.lock()?.build()?;
+
+        let bearer_authenticator = Arc::new(BearerAuthenticator::new(
+            user_di.user_authenticates_with_token_uc.clone(),
+        ));
+
+        let di = Arc::new(RestDi {
+            bearer_authenticator,
             request_transformer,
             response_transformer,
             error_pre_handler,
             error_handler,
-        }
+        });
+
+        *self.built_di.lock()? = Some(di.clone());
+
+        Ok(di)
     }
 }

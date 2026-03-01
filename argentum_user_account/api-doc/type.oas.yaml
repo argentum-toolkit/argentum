@@ -45,10 +45,10 @@ components:
         - password
         - terms
 
-    AnonymousRegistrationResult:
+    GuestRegistrationResult:
       type: object
       properties:
-        anonymous_id:
+        guest_id:
           type: string
           format: uuid
           example: c8cabaac-8359-463a-9cce-954eff31e063
@@ -56,7 +56,7 @@ components:
           type: string
           example: token-example
       required:
-        - anonymous_id
+        - guest_id
         - token
 
     RegistrationWithPasswordResult:
@@ -126,3 +126,13 @@ components:
       required:
         - token
         - password
+
+    EmailVerificationSchema:
+      type: object
+      properties:
+        key:
+          example: abc123efg567
+          type: string
+      required:
+        - key
+

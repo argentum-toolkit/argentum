@@ -7,12 +7,12 @@ use std::{
 use argentum_standard_business::{data_type::id::UIntId, error::PoisonedLockError};
 
 use crate::{
-    entity::user::AuthenticatedUser,
+    entity::user::Member,
     service::{MemberAuthenticatorError, MemberAuthenticatorTrait},
 };
 
 pub struct MemberAuthenticatorMock {
-    users: RwLock<HashMap<String, AuthenticatedUser<UIntId>>>,
+    users: RwLock<HashMap<String, Member<UIntId>>>,
 }
 
 impl MemberAuthenticatorMock {
@@ -26,7 +26,7 @@ impl MemberAuthenticatorMock {
     pub(crate) fn add(
         &self,
         token: &str,
-        user: &AuthenticatedUser<UIntId>,
+        user: &Member<UIntId>,
     ) -> Result<(), MemberAuthenticatorError> {
         // TODO: check if key exists
 
@@ -50,7 +50,7 @@ impl MemberAuthenticatorTrait for MemberAuthenticatorMock {
     async fn authenticate(
         &self,
         token: &str,
-    ) -> Result<Option<AuthenticatedUser<Self::Id>>, MemberAuthenticatorError> {
+    ) -> Result<Option<Member<Self::Id>>, MemberAuthenticatorError> {
         let guard = self
             .users
             .read()

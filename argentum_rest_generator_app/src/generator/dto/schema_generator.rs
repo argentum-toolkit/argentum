@@ -31,6 +31,12 @@ struct Prop {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+struct EmptyData<'a> {
+    name: &'a str,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ArrayData<'a> {
     dependencies: Vec<String>,
     name: &'a str,
@@ -54,6 +60,7 @@ const MOD_PATH: &str = "/src/dto/schema/mod.rs";
 const MOD_TEMPLATE: &str = "dto/schema.mod";
 const OBJECT_ITEM_TEMPLATE: &str = "dto/schema_object.item";
 const ARRAY_ITEM_TEMPLATE: &str = "dto/schema_array.item";
+const EMPTY_ITEM_TEMPLATE: &str = "dto/schema_empty.item";
 const DICTIONARY_ITEM_TEMPLATE: &str = "dto/schema_dictionary.item";
 
 impl SchemaGenerator {
@@ -117,6 +124,7 @@ impl SchemaGenerator {
                 } else if let Some(items) = &*schema.items {
                     self.generate_array_item(base_output_path, name, items.clone(), file_path)?;
                 } else {
+                    self.generate_empty_item(base_output_path, name, file_path)?;
                     //TODO: implement for other types
                 }
             }
@@ -277,6 +285,30 @@ impl SchemaGenerator {
             base_output_path,
             OBJECT_ITEM_TEMPLATE,
             &data,
+            file_path.as_str(),
+        )?;
+
+        Ok(())
+    }
+
+    fn generate_empty_item(
+        &self,
+        base_output_path: &str,
+        name: &String,
+        file_path: String,
+    ) -> Result<(), String> {
+        // let mut dependencies: Vec<String> = vec![];
+
+        // let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies)?;
+
+        // dependencies.dedup();
+
+        let data = EmptyData { name };
+
+        self.renderer.render(
+            base_output_path,
+            EMPTY_ITEM_TEMPLATE,
+            data,
             file_path.as_str(),
         )?;
 

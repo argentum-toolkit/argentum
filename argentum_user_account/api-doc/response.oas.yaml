@@ -7,21 +7,21 @@ paths: { }
 
 components:
   responses:
-    AnonymousRegisteredSuccessfully:
+    GuestRegisteredSuccessfully:
       description: Created
       "content":
         "application/json":
           "schema":
-            "$ref": "type.oas.yaml#/components/schemas/AnonymousRegistrationResult"
+            "$ref": "type.oas.yaml#/components/schemas/GuestRegistrationResult"
 
-    UserRegisteredSuccessfully:
+    MemberRegisteredSuccessfully:
       description: Created
       "content":
         "application/json":
           "schema":
             "$ref": "type.oas.yaml#/components/schemas/RegistrationWithPasswordResult"
 
-    UserLoggedInSuccessfully:
+    MemberLoggedInSuccessfully:
       description: OK
       "content":
         "application/json":

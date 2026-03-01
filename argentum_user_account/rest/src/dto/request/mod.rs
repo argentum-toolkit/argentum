@@ -1,13 +1,13 @@
-mod anonymous_registers_request;
-mod anonymous_requests_restore_token_request;
-mod anonymous_with_token_changes_password_request;
+mod guest_registers_request;
+mod guest_requests_restore_token_request;
+mod guest_with_token_changes_password_request;
+mod member_logins_with_password_request;
+mod member_registers_with_password_request;
 mod member_verifies_email_request;
-mod user_logins_with_password_request;
-mod user_registers_with_password_request;
 
-pub use anonymous_registers_request::AnonymousRegistersRequest;
-pub use anonymous_requests_restore_token_request::AnonymousRequestsRestoreTokenRequest;
-pub use anonymous_with_token_changes_password_request::AnonymousWithTokenChangesPasswordRequest;
+pub use guest_registers_request::GuestRegistersRequest;
+pub use guest_requests_restore_token_request::GuestRequestsRestoreTokenRequest;
+pub use guest_with_token_changes_password_request::GuestWithTokenChangesPasswordRequest;
+pub use member_logins_with_password_request::MemberLoginsWithPasswordRequest;
+pub use member_registers_with_password_request::MemberRegistersWithPasswordRequest;
 pub use member_verifies_email_request::MemberVerifiesEmailRequest;
-pub use user_logins_with_password_request::UserLoginsWithPasswordRequest;
-pub use user_registers_with_password_request::UserRegistersWithPasswordRequest;

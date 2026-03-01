@@ -1,9 +1,9 @@
 use crate::route::Route;
-use argentum_user_account_rest::dto::response::UserRegisteredSuccessfullyResponse;
-use argentum_user_account_rest::ui::callbacks::UserRegistersWithPasswordCallbacks;
-use argentum_user_account_rest::ui::form::UserRegistersWithPasswordForm;
+use argentum_user_account_rest::dto::response::MemberRegisteredSuccessfullyResponse;
+use argentum_user_account_rest::ui::callbacks::MemberRegistersWithPasswordCallbacks;
+use argentum_user_account_rest::ui::form::MemberRegistersWithPasswordForm;
 
-use argentum_user_account_rest::ui::form_processor::UserRegistersWithPasswordFormProcessor;
+use argentum_user_account_rest::ui::form_processor::MemberRegistersWithPasswordFormProcessor;
 use dioxus::prelude::*;
 use std::string::ToString;
 
@@ -25,17 +25,17 @@ pub fn Registration() -> Element {
     #[cfg(not(feature = "web"))]
     let auth_token = "Server side rendering cant't work with authentication tokens".to_string();
 
-    let on_user_registered_successfully =
-        EventHandler::new(move |_response: UserRegisteredSuccessfullyResponse| {
+    let on_member_registered_successfully =
+        EventHandler::new(move |_response: MemberRegisteredSuccessfullyResponse| {
             success.set(Some("Congratulations! Your account has been created."));
         });
 
-    let callbacks = UserRegistersWithPasswordCallbacks {
-        on_user_registered_successfully,
+    let callbacks = MemberRegistersWithPasswordCallbacks {
+        on_member_registered_successfully,
         ..Default::default()
     };
 
-    let processor = UserRegistersWithPasswordFormProcessor::new(callbacks);
+    let processor = MemberRegistersWithPasswordFormProcessor::new(callbacks);
 
     rsx! {
         section {
@@ -57,7 +57,7 @@ pub fn Registration() -> Element {
                             }
                         },
                         None => rsx! {
-                            UserRegistersWithPasswordForm {
+                            MemberRegistersWithPasswordForm {
                                 processor,
                                 auth_token,
                             }

@@ -17,12 +17,12 @@ where
     pre_handler: Arc<PreHandler<I>>,
     error_pre_handler: Arc<ErrorPreHandler>,
     url_prefix: String,
-    regex_user_account_anonymous_register: Regex,
+    regex_user_account_email_verification: Regex,
+    regex_user_account_guest_registration: Regex,
     regex_user_account_password_login: Regex,
     regex_user_account_register: Regex,
+    regex_user_account_restore_password_change_password: Regex,
     regex_user_account_restore_password_token_request: Regex,
-    regex_user_email_verification: Regex,
-    regex_user_restore_password_change_password: Regex,
 }
 
 impl<I> Router<I>
@@ -32,27 +32,27 @@ where
     pub fn new(
         pre_handler: Arc<PreHandler<I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
-        url_prefix: String,
+        url_prefix: &str,
     ) -> Self {
-        let regex_user_account_anonymous_register = regex!(r"\/user-account\/anonymous-register$");
+        let regex_user_account_email_verification = regex!(r"\/user-account\/email-verification$");
+        let regex_user_account_guest_registration = regex!(r"\/user-account\/guest-registration$");
         let regex_user_account_password_login = regex!(r"\/user-account\/password-login$");
         let regex_user_account_register = regex!(r"\/user-account\/register$");
+        let regex_user_account_restore_password_change_password =
+            regex!(r"\/user-account\/restore-password\/change-password$");
         let regex_user_account_restore_password_token_request =
             regex!(r"\/user-account\/restore-password\/token-request$");
-        let regex_user_email_verification = regex!(r"\/user\/email-verification$");
-        let regex_user_restore_password_change_password =
-            regex!(r"\/user\/restore-password\/change-password$");
 
         Self {
             pre_handler,
             error_pre_handler,
-            url_prefix,
-            regex_user_account_anonymous_register,
+            url_prefix: url_prefix.into(),
+            regex_user_account_email_verification,
+            regex_user_account_guest_registration,
             regex_user_account_password_login,
             regex_user_account_register,
+            regex_user_account_restore_password_change_password,
             regex_user_account_restore_password_token_request,
-            regex_user_email_verification,
-            regex_user_restore_password_change_password,
         }
     }
 }
@@ -70,7 +70,18 @@ where
         };
 
         if self
-            .regex_user_account_anonymous_register
+            .regex_user_account_email_verification
+            .captures(path)
+            .is_some()
+        {
+            return match *method {
+                Method::POST => true,
+                _ => false,
+            };
+        }
+
+        if self
+            .regex_user_account_guest_registration
             .captures(path)
             .is_some()
         {
@@ -99,7 +110,7 @@ where
         }
 
         if self
-            .regex_user_account_restore_password_token_request
+            .regex_user_account_restore_password_change_password
             .captures(path)
             .is_some()
         {
@@ -109,15 +120,8 @@ where
             };
         }
 
-        if self.regex_user_email_verification.captures(path).is_some() {
-            return match *method {
-                Method::POST => true,
-                _ => false,
-            };
-        }
-
         if self
-            .regex_user_restore_password_change_password
+            .regex_user_account_restore_password_token_request
             .captures(path)
             .is_some()
         {
@@ -138,7 +142,7 @@ where
         };
 
         if self
-            .regex_user_account_anonymous_register
+            .regex_user_account_email_verification
             .captures(path)
             .is_some()
         {
@@ -147,9 +151,22 @@ where
             return match *req.method() {
                 Method::POST => {
                     self.pre_handler
-                        .anonymous_registers(req, raw_path_params)
+                        .member_verifies_email(req, raw_path_params)
                         .await
                 }
+                _ => self.error_pre_handler.method_not_allowed(req).await,
+            };
+        }
+
+        if self
+            .regex_user_account_guest_registration
+            .captures(path)
+            .is_some()
+        {
+            let raw_path_params = HashMap::new();
+
+            return match *req.method() {
+                Method::POST => self.pre_handler.guest_registers(req, raw_path_params).await,
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             };
         }
@@ -164,7 +181,7 @@ where
             return match *req.method() {
                 Method::POST => {
                     self.pre_handler
-                        .user_logins_with_password(req, raw_path_params)
+                        .member_logins_with_password(req, raw_path_params)
                         .await
                 }
                 _ => self.error_pre_handler.method_not_allowed(req).await,
@@ -177,7 +194,24 @@ where
             return match *req.method() {
                 Method::POST => {
                     self.pre_handler
-                        .user_registers_with_password(req, raw_path_params)
+                        .member_registers_with_password(req, raw_path_params)
+                        .await
+                }
+                _ => self.error_pre_handler.method_not_allowed(req).await,
+            };
+        }
+
+        if self
+            .regex_user_account_restore_password_change_password
+            .captures(path)
+            .is_some()
+        {
+            let raw_path_params = HashMap::new();
+
+            return match *req.method() {
+                Method::POST => {
+                    self.pre_handler
+                        .guest_with_token_changes_password(req, raw_path_params)
                         .await
                 }
                 _ => self.error_pre_handler.method_not_allowed(req).await,
@@ -194,37 +228,7 @@ where
             return match *req.method() {
                 Method::POST => {
                     self.pre_handler
-                        .anonymous_requests_restore_token(req, raw_path_params)
-                        .await
-                }
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            };
-        }
-
-        if self.regex_user_email_verification.captures(path).is_some() {
-            let raw_path_params = HashMap::new();
-
-            return match *req.method() {
-                Method::POST => {
-                    self.pre_handler
-                        .member_verifies_email(req, raw_path_params)
-                        .await
-                }
-                _ => self.error_pre_handler.method_not_allowed(req).await,
-            };
-        }
-
-        if self
-            .regex_user_restore_password_change_password
-            .captures(path)
-            .is_some()
-        {
-            let raw_path_params = HashMap::new();
-
-            return match *req.method() {
-                Method::POST => {
-                    self.pre_handler
-                        .anonymous_with_token_changes_password(req, raw_path_params)
+                        .guest_requests_restore_token(req, raw_path_params)
                         .await
                 }
                 _ => self.error_pre_handler.method_not_allowed(req).await,

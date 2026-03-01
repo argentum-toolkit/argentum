@@ -1,5 +1,5 @@
-mod user_logins_with_password_callbacks;
-mod user_registers_with_password_callbacks;
+mod member_logins_with_password_callbacks;
+mod member_registers_with_password_callbacks;
 
-pub use user_logins_with_password_callbacks::UserLoginsWithPasswordCallbacks;
-pub use user_registers_with_password_callbacks::UserRegistersWithPasswordCallbacks;
+pub use member_logins_with_password_callbacks::MemberLoginsWithPasswordCallbacks;
+pub use member_registers_with_password_callbacks::MemberRegistersWithPasswordCallbacks;

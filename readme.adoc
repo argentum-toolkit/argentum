@@ -147,8 +147,10 @@ cargo install dioxus-cli
 
 === V0.4
 
+* DI
+** remove mut and mutex from DI
+
 * OIDC
-** bind guests
 ** login with google or linkedin
 ** Email verification
 ** ??? automatically confirm emails for social login ????
@@ -162,8 +164,6 @@ cargo install dioxus-cli
 
 * Component generator
 ** add examples into readme.adoc
-
-* DI builders: make it similar
 
 * behavior tests
 

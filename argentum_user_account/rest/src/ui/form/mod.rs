@@ -1,5 +1,5 @@
-mod user_logins_with_password_form;
-mod user_registers_with_password_form;
+mod member_logins_with_password_form;
+mod member_registers_with_password_form;
 
-pub use user_logins_with_password_form::UserLoginsWithPasswordForm;
-pub use user_registers_with_password_form::UserRegistersWithPasswordForm;
+pub use member_logins_with_password_form::MemberLoginsWithPasswordForm;
+pub use member_registers_with_password_form::MemberRegistersWithPasswordForm;

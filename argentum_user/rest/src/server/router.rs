@@ -27,7 +27,7 @@ where
     pub fn new(
         pre_handler: Arc<PreHandler<I>>,
         error_pre_handler: Arc<ErrorPreHandler>,
-        url_prefix: String,
+        url_prefix: &str,
     ) -> Self {
         let regex_user_userid = regex!(
             r"\/user\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"
@@ -36,7 +36,7 @@ where
         Self {
             pre_handler,
             error_pre_handler,
-            url_prefix,
+            url_prefix: url_prefix.into(),
             regex_user_userid,
         }
     }

@@ -9,7 +9,7 @@ use argentum_template_infrastructure::di::template_infrastructure_di_factory;
 use std::error::Error;
 use std::sync::Arc;
 
-pub(crate) struct DiC<L>
+pub(crate) struct Di<L>
 where
     L: LoggerTrait,
 {
@@ -18,7 +18,7 @@ where
     pub(crate) fe_app_generator: Arc<FeAppGenerator<L>>,
 }
 
-impl<L> DiC<L>
+impl<L> Di<L>
 where
     L: LoggerTrait,
 {
@@ -33,7 +33,7 @@ where
     }
 }
 
-pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
+pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     let templates = vec![
         (
             "infrastructure/db_dto",
@@ -155,7 +155,7 @@ pub fn di_factory() -> Result<DiC<DefaultLogger<PrettyWriter>>, Box<dyn Error>> 
         route_generator,
     ));
 
-    Ok(DiC::<DefaultLogger<PrettyWriter>>::new(
+    Ok(Di::<DefaultLogger<PrettyWriter>>::new(
         db_infrastructure_generator,
         fe_app_generator,
     ))

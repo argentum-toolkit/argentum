@@ -2,23 +2,22 @@ use std::sync::Arc;
 
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::{
-    entity::user::AuthenticatedUser,
+    entity::user::Member,
     repository::{
-        session_repository::SessionRepositoryTrait,
-        user_repository::AuthenticatedUserRepositoryTrait,
+        session_repository::SessionRepositoryTrait, user_repository::MemberRepositoryTrait,
     },
     service::{MemberAuthenticatorError, MemberAuthenticatorTrait},
 };
 use async_trait::async_trait;
 
 pub struct MemberAuthenticator {
-    member_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
+    member_repository: Arc<dyn MemberRepositoryTrait<Id = UniqueId>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = UniqueId>>,
 }
 
 impl MemberAuthenticator {
     pub fn new(
-        member_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = UniqueId>>,
+        member_repository: Arc<dyn MemberRepositoryTrait<Id = UniqueId>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = UniqueId>>,
     ) -> Self {
         Self {
@@ -35,7 +34,7 @@ impl MemberAuthenticatorTrait for MemberAuthenticator {
     async fn authenticate(
         &self,
         token: &str,
-    ) -> Result<Option<AuthenticatedUser<Self::Id>>, MemberAuthenticatorError> {
+    ) -> Result<Option<Member<Self::Id>>, MemberAuthenticatorError> {
         let session = match self.session_repository.find_by_token(token).await {
             Ok(Some(s)) => s,
             Ok(None) => return Err(MemberAuthenticatorError::Authenticate(None)),

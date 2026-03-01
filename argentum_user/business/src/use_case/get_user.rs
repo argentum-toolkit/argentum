@@ -1,5 +1,5 @@
-use crate::entity::user::AuthenticatedUser;
-use crate::repository::user_repository::{AuthenticatedUserRepositoryTrait, ExternalUserError};
+use crate::entity::user::Member;
+use crate::repository::user_repository::{ExternalUserError, MemberRepositoryTrait};
 use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
@@ -7,18 +7,18 @@ pub struct GetUserUc<I>
 where
     I: Id,
 {
-    user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
 }
 
 impl<I> GetUserUc<I>
 where
     I: Id,
 {
-    pub fn new(user_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>) -> Self {
+    pub fn new(user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>) -> Self {
         Self { user_repository }
     }
 
-    pub async fn execute(&self, user_id: I) -> Result<AuthenticatedUser<I>, GetUserError> {
+    pub async fn execute(&self, user_id: I) -> Result<Member<I>, GetUserError> {
         match self.user_repository.find(user_id).await? {
             Some(u) => Ok(u),
             None => Err(GetUserError::UserNotFound),
@@ -45,9 +45,9 @@ mod tests {
     use argentum_standard_business::data_type::id::IdFactory;
 
     use crate::data_type::builder::NameBuilder;
-    use crate::entity::user::AuthenticatedUser;
-    use crate::mock::repository::authenticated_user_repository_mock::AuthenticatedUserRepositoryMock;
-    use crate::repository::user_repository::AuthenticatedUserRepositoryTrait;
+    use crate::entity::user::Member;
+    use crate::mock::repository::member_repository_mock::MemberRepositoryMock;
+    use crate::repository::user_repository::MemberRepositoryTrait;
     use crate::use_case::GetUserUc;
     use crate::use_case::get_user::GetUserError;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
@@ -56,7 +56,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_user() -> Result<(), String> {
         let id_factory = Arc::new(IdFactoryMock::new());
-        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let authenticated_user_repository = Arc::new(MemberRepositoryMock::new());
 
         //Data
         let user_id = id_factory.create();
@@ -66,7 +66,7 @@ mod tests {
             .expect("Name should be valid");
 
         let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
-        let user = AuthenticatedUser::new(user_id, name, email);
+        let user = Member::new(user_id, name, email);
 
         //Prefilling
         authenticated_user_repository
@@ -94,7 +94,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_not_registered_user() -> Result<(), &'static str> {
         let id_factory = Arc::new(IdFactoryMock::new());
-        let authenticated_user_repository = Arc::new(AuthenticatedUserRepositoryMock::new());
+        let authenticated_user_repository = Arc::new(MemberRepositoryMock::new());
 
         //Data
         let user_id = id_factory.create();
@@ -104,7 +104,7 @@ mod tests {
             .expect("Name should be valid");
 
         let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
-        let user = AuthenticatedUser::new(user_id, name, email);
+        let user = Member::new(user_id, name, email);
 
         //Prefilling
         authenticated_user_repository

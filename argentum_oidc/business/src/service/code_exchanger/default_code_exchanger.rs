@@ -14,10 +14,9 @@ use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_user_account_business::token::GeneratorTrait;
 use argentum_user_business::{
     data_type::Name,
-    entity::{session::Session, user::AuthenticatedUser},
+    entity::{session::Session, user::Member},
     repository::{
-        session_repository::SessionRepositoryTrait,
-        user_repository::AuthenticatedUserRepositoryTrait,
+        session_repository::SessionRepositoryTrait, user_repository::MemberRepositoryTrait,
     },
 };
 use async_trait::async_trait;
@@ -29,7 +28,7 @@ where
     L: LoggerTrait,
 {
     provider: Arc<dyn ProviderTrait>,
-    member_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+    member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
     token_generator: Arc<dyn GeneratorTrait<Id = I>>,
@@ -44,7 +43,7 @@ where
 {
     pub fn new(
         provider: Arc<dyn ProviderTrait>,
-        member_repository: Arc<dyn AuthenticatedUserRepositoryTrait<Id = I>>,
+        member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
         token_generator: Arc<dyn GeneratorTrait<Id = I>>,
@@ -100,14 +99,14 @@ where
             None => {
                 let email = gh_user.email;
 
-                let user: Option<AuthenticatedUser<I>> = None;
+                let user: Option<Member<I>> = None;
                 let user = match user {
                     Some(u) => u,
                     None => {
                         let user_id = self.id_factory.create();
                         let name = Name::new(gh_user.first_name, gh_user.last_name, None);
 
-                        let user = AuthenticatedUser::new(user_id, name, email);
+                        let user = Member::new(user_id, name, email);
                         if let Err(e) = self.member_repository.create(&user).await {
                             return Err(CodeExchangerError::Other(Some(Arc::new(e))));
                         }
