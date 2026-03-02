@@ -20,6 +20,9 @@ pub enum CodeExchangerError {
     #[error("Can't exchange code. Bad response status: `{0}`")]
     OidcBadStatus(u16),
 
+    #[error("OIDC provider not found. Provider name : `{0}`")]
+    OidcProviderNotFound(String),
+
     #[error("Other token exchange error")]
     Other(
         #[source]

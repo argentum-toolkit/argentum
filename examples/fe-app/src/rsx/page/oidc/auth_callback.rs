@@ -14,7 +14,7 @@ impl Status {
 }
 
 #[component]
-pub fn AuthCallback(code: String, state: Option<String>) -> Element {
+pub fn AuthCallback(provider: String, code: String, state: Option<String>) -> Element {
     #[cfg(not(feature = "web"))]
     return rsx! {};
 
@@ -57,12 +57,12 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
 
         use_resource(move || {
             let code = code.clone();
-            let state = state.clone();
+            let provider = provider.clone();
             let auth_token = auth_token.clone();
 
             async move {
                 let req = ExchangeCodeRequest::new(
-                    ExchangeCodeSchema::new(code.clone(), state.clone()),
+                    ExchangeCodeSchema::new(code.clone(), provider.clone()),
                     ExchangeCodeParams::new(
                         ExchangeCodePathParams::new(),
                         EmptyQueryParams {},

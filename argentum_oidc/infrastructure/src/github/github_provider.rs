@@ -3,7 +3,7 @@ use std::sync::Arc;
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::{
     data_type::ExternalUserInfo,
-    service::provider::{ProviderError, ProviderTrait},
+    service::provider::{ProviderError, ProviderStrategyTrait},
 };
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_user_business::data_type::NamePart;
@@ -135,7 +135,7 @@ where
 }
 
 #[async_trait]
-impl<L> ProviderTrait for GitHubProvider<L>
+impl<L> ProviderStrategyTrait for GitHubProvider<L>
 where
     L: LoggerTrait,
 {

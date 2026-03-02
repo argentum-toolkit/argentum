@@ -1,6 +1,6 @@
 use crate::{
     route::Route,
-    rsx::app::{GithubClientId, OidcRedirectUrl},
+    rsx::app::{GithubClientId, GoogleClientId, OidcRedirectUrl},
 };
 
 use argentum_user_account_rest::ui::callbacks::MemberLoginsWithPasswordCallbacks;
@@ -117,6 +117,7 @@ pub fn Login() -> Element {
                     // }
 
                     div {
+                        class: "social-login-container",
                         div { "Or login with:" }
                         button {
                             onclick: move |_| {
@@ -131,8 +132,26 @@ pub fn Login() -> Element {
                                     }
                                 });
                             },
-                            class: "btn btn-github btn-primary",
+                            class: "btn btn-primary btn-block btn-github",
+                            i { class: "fab fa-github" }
                             "GitHub"
+                        }
+                        button {
+                            onclick: move |_| {
+                                spawn(async move {
+                                    match start_google_oauth().await {
+                                        Ok(_) => {
+                                            status.set("Authorization flow started → check browser".to_string());
+                                        }
+                                        Err(e) => {
+                                            status.set(format!("Error: {}", e));
+                                        }
+                                    }
+                                });
+                            },
+                            class: "btn btn-primary btn-block btn-google",
+                            i { class: "fab fa-google" }
+                            "Google"
                         }
                     }
                 }
@@ -142,14 +161,17 @@ pub fn Login() -> Element {
 }
 
 const SCOPE: &str = "read:user user:email";
+const GOOGLE_SCOPE: &str = "openid email profile";
 
 pub async fn start_github_oauth() -> Result<(), String> {
-    // CSRF
-    let state: String = rand::rng()
-        .sample_iter(Alphanumeric)
-        .take(32)
-        .map(char::from)
-        .collect();
+    let state: String = format!(
+        "github--==--{}",
+        rand::rng()
+            .sample_iter(Alphanumeric)
+            .take(32)
+            .map(char::from)
+            .collect::<String>()
+    );
 
     // Optional: save state in localStorage or sessionStorage
     // to verify later when callback occurs (recommended)
@@ -162,7 +184,7 @@ pub async fn start_github_oauth() -> Result<(), String> {
     }
 
     let github_client_id = use_context::<GithubClientId>().0;
-    let redirect_url = use_context::<OidcRedirectUrl>().0;
+    let redirect_url = use_context::<OidcRedirectUrl>().0 + "?provider=GitHub";
 
     let params = form_urlencoded::Serializer::new(String::new())
         .append_pair("client_id", &github_client_id)
@@ -173,6 +195,52 @@ pub async fn start_github_oauth() -> Result<(), String> {
         .finish();
 
     let auth_url = format!("https://github.com/login/oauth/authorize?{}", params);
+
+    if let Some(win) = window() {
+        let location: Location = win.location();
+        if let Err(e) = location.set_href(&auth_url) {
+            return Err(format!("Failed to navigate: {:?}", e));
+        }
+    } else {
+        return Err("Cannot access window object".to_string());
+    }
+
+    Ok(())
+}
+
+pub async fn start_google_oauth() -> Result<(), String> {
+    // CSRF
+    let state: String = format!(
+        "google--==--{}",
+        rand::rng()
+            .sample_iter(Alphanumeric)
+            .take(32)
+            .map(char::from)
+            .collect::<String>()
+    );
+
+    // Optional: save state in localStorage or sessionStorage
+    // to verify later when callback occurs (recommended)
+    if let Some(window) = window()
+        && let Ok(storage) = window.session_storage()
+    {
+        let _ = storage
+            .expect("Can't create storage object")
+            .set_item("google_oauth_state", &state);
+    }
+
+    let google_client_id = use_context::<GoogleClientId>().0;
+    let redirect_url = use_context::<OidcRedirectUrl>().0 + "?provider=Google";
+
+    let params = form_urlencoded::Serializer::new(String::new())
+        .append_pair("client_id", &google_client_id)
+        .append_pair("redirect_uri", &redirect_url)
+        .append_pair("scope", GOOGLE_SCOPE)
+        .append_pair("state", &state)
+        .append_pair("response_type", "code") // Authorization Code Flow
+        .finish();
+
+    let auth_url = format!("https://accounts.google.com/o/oauth2/v2/auth?{}", params);
 
     if let Some(win) = window() {
         let location: Location = win.location();

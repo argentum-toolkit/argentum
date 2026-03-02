@@ -50,6 +50,7 @@ impl CodeExchangerTrait for KeycloakFrontendClient {
     async fn exchange_code(
         &self,
         code: &str,
+        _provider_name: &str,
     ) -> Result<ExchangedTokenData<Self::UserId>, CodeExchangerError> {
         let url = format!(
             "{}/realms/{}/protocol/openid-connect/token",

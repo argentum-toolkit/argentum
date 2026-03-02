@@ -33,9 +33,9 @@ pub trait GuestUserRepositoryTrait: Send + Sync {
 // This enum covers cases when errors where triggered via 3rd party libraries or via wrong configuration
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum ExternalUserError {
-    #[error("Can't save a member")]
+    #[error("Can't save/load a member")]
     Member(#[source] Option<Arc<dyn Error + Send + Sync>>),
 
-    #[error("Can't save a guest")]
+    #[error("Can't save/load a guest")]
     Guest(#[source] Option<Arc<dyn Error + Send + Sync>>),
 }

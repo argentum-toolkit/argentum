@@ -10,14 +10,19 @@ static CSS: Asset = asset!("/assets/main.css");
 pub struct GithubClientId(pub String);
 
 #[derive(Clone)]
+pub struct GoogleClientId(pub String);
+
+#[derive(Clone)]
 pub struct OidcRedirectUrl(pub String);
 
 pub(crate) fn App() -> Element {
     //TODO: add better error handling
-    let client_id = env!("AG_GITHUB_CLIENT_ID");
+    let github_client_id = env!("AG_GITHUB_CLIENT_ID");
+    let google_client_id = env!("AG_GOOGLE_CLIENT_ID");
     let redirect_url = env!("AG_OIDC_REDIRECT_URL");
 
-    use_context_provider(|| GithubClientId(client_id.into()));
+    use_context_provider(|| GoogleClientId(google_client_id.into()));
+    use_context_provider(|| GithubClientId(github_client_id.into()));
     use_context_provider(|| OidcRedirectUrl(redirect_url.into()));
 
     #[cfg(feature = "web")]

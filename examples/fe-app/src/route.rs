@@ -19,8 +19,8 @@ pub enum Route {
         #[end_nest]
     
         #[nest("/oidc")]
-            #[route("/auth/callback?:code&:state")]
-            AuthCallback { code: String, state: Option<String> },
+            #[route("/auth/callback?:provider&:code&:state")]
+            AuthCallback { provider: String, code: String, state: Option<String> },
         #[end_nest]
         #[route("/blog/:id")]
         Blog { id: i32 },

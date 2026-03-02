@@ -1,6 +1,9 @@
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_oidc_business::di::{OidcBusinessDi, OidcBusinessDiBuilder};
+use argentum_oidc_business::{
+    di::{OidcBusinessDi, OidcBusinessDiBuilder},
+    service::provider::ProviderStrategyTrait,
+};
 use argentum_oidc_rest::ApiDi;
 use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_standard_business::{data_type::id::IdFactory, error::DiError};
@@ -10,10 +13,13 @@ use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
 use argentum_user_business::di::UserBusinessDiBuilder;
 use sqlx::postgres::PgPoolOptions;
 
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use crate::{
-    db::repository::CredentialRepository, github::GitHubProvider,
+    db::repository::CredentialRepository, github::GitHubProvider, google::GoogleProvider,
     rest::handler::ExchangeCodeHandler,
 };
 
@@ -33,6 +39,8 @@ where
     max_db_connections: u32,
     github_client_id: String,
     github_client_secret: String,
+    google_client_id: String,
+    google_client_secret: String,
 
     business_builder: Arc<Mutex<OidcBusinessDiBuilder<UniqueId, L>>>,
     rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
@@ -52,6 +60,8 @@ where
         max_db_connections: u32,
         github_client_id: &str,
         github_client_secret: &str,
+        google_client_id: &str,
+        google_client_secret: &str,
 
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
         user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
@@ -66,6 +76,8 @@ where
             max_db_connections,
             github_client_id: github_client_id.to_string(),
             github_client_secret: github_client_secret.to_string(),
+            google_client_id: google_client_id.to_string(),
+            google_client_secret: google_client_secret.to_string(),
 
             business_builder: Arc::new(Mutex::new(OidcBusinessDiBuilder::new(
                 user_business_builder.clone(),
@@ -92,17 +104,29 @@ where
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
 
-        let provider = Arc::new(GitHubProvider::new(
+        let github_provider = Arc::new(GitHubProvider::new(
             &self.github_client_id,
             &self.github_client_secret,
             self.client.clone(),
             self.logger.clone(),
         ));
 
+        let google_provider = Arc::new(GoogleProvider::new(
+            &self.google_client_id,
+            &self.google_client_secret,
+            self.client.clone(),
+            self.logger.clone(),
+        ));
+
+        let mut providers: HashMap<String, Arc<dyn ProviderStrategyTrait>> = HashMap::new();
+
+        providers.insert("GitHub".into(), github_provider);
+        providers.insert("Google".into(), google_provider);
+
         self.business_builder
             .lock()?
             .with_credential_repository(Arc::new(CredentialRepository::new(pg_adapter)))
-            .with_provider(provider);
+            .with_provider_strategies(providers);
 
         Ok(self)
     }

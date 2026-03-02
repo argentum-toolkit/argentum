@@ -61,7 +61,6 @@ components:
       scheme: bearer
       in: header
 
-
 tags:
   - name: oidc
     description: Open ID Connect
