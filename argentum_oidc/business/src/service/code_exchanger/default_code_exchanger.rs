@@ -75,7 +75,7 @@ where
         code: &str,
         provider_name: &str,
     ) -> Result<ExchangedTokenData<Self::UserId>, CodeExchangerError> {
-        let provider = match self.provider_strategies.get(provider_name.into()) {
+        let provider = match self.provider_strategies.get(provider_name) {
             Some(p) => p.clone(),
             None => {
                 return Err(CodeExchangerError::OidcProviderNotFound(

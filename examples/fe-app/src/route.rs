@@ -1,7 +1,7 @@
-use crate::rsx::page::oidc::AuthCallback;
 use crate::rsx::page::user_account::{Login, Registration};
 use crate::rsx::page::{Blog, Home};
 use crate::rsx::wrapper::Wrapper;
+use argentum_oidc_ui::rsx::page::AuthCallback;
 use argentum_standard_ui::rsx::page::NotFound;
 use dioxus::prelude::*;
 
@@ -20,7 +20,7 @@ pub enum Route {
     
         #[nest("/oidc")]
             #[route("/auth/callback?:provider&:code&:state")]
-            AuthCallback { provider: String, code: String, state: Option<String> },
+            AuthCallback { provider: String, code: String, state: String },
         #[end_nest]
         #[route("/blog/:id")]
         Blog { id: i32 },

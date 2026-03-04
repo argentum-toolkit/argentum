@@ -51,6 +51,9 @@ module.exports = {
         "input",
         "input-neutral",
         "input-error",
+
+        "bg-black", "text-white", "border-black",
+        "bg-white", "text-black", "border-[#e5e5e5]",
     ],
     darkMode: "class",
     theme: {

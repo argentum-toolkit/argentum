@@ -1,19 +1,11 @@
 use crate::route::Route;
 
+use argentum_oidc_ui::{GithubClientId, GoogleClientId, OidcRedirectUrl};
 use argentum_standard_ui::rsx::component::dark_mode::use_dark_mode;
 use dioxus::prelude::*;
 use std::env;
 
 static CSS: Asset = asset!("/assets/main.css");
-
-#[derive(Clone)]
-pub struct GithubClientId(pub String);
-
-#[derive(Clone)]
-pub struct GoogleClientId(pub String);
-
-#[derive(Clone)]
-pub struct OidcRedirectUrl(pub String);
 
 pub(crate) fn App() -> Element {
     //TODO: add better error handling

@@ -14,7 +14,7 @@ impl Status {
 }
 
 #[component]
-pub fn AuthCallback(provider: String, code: String, state: Option<String>) -> Element {
+pub fn AuthCallback(provider: String, code: String, state: String) -> Element {
     #[cfg(not(feature = "web"))]
     return rsx! {};
 
@@ -30,7 +30,7 @@ pub fn AuthCallback(provider: String, code: String, state: Option<String>) -> El
                 .expect("Can't get authentication token")
         };
 
-        use crate::route::Route;
+        // use crate::route::Route;
 
         use argentum_oidc_rest::{
             client::Client,
@@ -77,7 +77,7 @@ pub fn AuthCallback(provider: String, code: String, state: Option<String>) -> El
                                 .write()
                                 .auth_user(j.0.access_token, j.0.user_id);
 
-                            let _ = redirect(Route::Home {});
+                            // let _ = redirect(Route::Home {});
                         }
                         Status400(ApplicationProblemJson(j)) => {
                             status.set(Status::Failed(j.0.title));
@@ -97,7 +97,7 @@ pub fn AuthCallback(provider: String, code: String, state: Option<String>) -> El
                     "Can't exchange a code for a token: {err}"
                 }
                 div { class: "pt-10 pl-3",
-                    Link { class: "text-primary hover:underline", to: Route::Home {}, "Go to main page" }
+                    // Link { class: "text-primary hover:underline", to: Route::Home {}, "Go to main page" }
                 }
             },
         }

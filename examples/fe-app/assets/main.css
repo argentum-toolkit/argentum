@@ -7,6 +7,8 @@
       "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
+    --color-gray-400: oklch(70.7% 0.022 261.325);
+    --color-gray-500: oklch(55.1% 0.027 264.364);
     --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
@@ -1386,6 +1388,55 @@
       }
     }
   }
+  .card {
+    @layer daisyui.component {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius-box);
+      outline-width: 2px;
+      transition: outline 0.2s ease-in-out;
+      outline: 0 solid #0000;
+      outline-offset: 2px;
+      &:focus {
+        --tw-outline-style: none;
+        outline-style: none;
+        @media (forced-colors: active) {
+          outline: 2px solid transparent;
+          outline-offset: 2px;
+        }
+      }
+      &:focus-visible {
+        outline-color: currentColor;
+      }
+      :where(figure:first-child) {
+        overflow: hidden;
+        border-start-start-radius: inherit;
+        border-start-end-radius: inherit;
+        border-end-start-radius: unset;
+        border-end-end-radius: unset;
+      }
+      :where(figure:last-child) {
+        overflow: hidden;
+        border-start-start-radius: unset;
+        border-start-end-radius: unset;
+        border-end-start-radius: inherit;
+        border-end-end-radius: inherit;
+      }
+      figure {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      &:has(> input:is(input[type="checkbox"], input[type="radio"])) {
+        cursor: pointer;
+        user-select: none;
+      }
+      &:has(> :checked) {
+        outline: 2px solid currentColor;
+      }
+    }
+  }
   .progress {
     @layer daisyui.component {
       position: relative;
@@ -1566,6 +1617,38 @@
       max-width: 96rem;
     }
   }
+  .divider {
+    @layer daisyui.component {
+      display: flex;
+      height: calc(0.25rem * 4);
+      flex-direction: row;
+      align-items: center;
+      align-self: stretch;
+      white-space: nowrap;
+      margin: var(--divider-m, 1rem 0);
+      --divider-color: var(--color-base-content);
+      @supports (color: color-mix(in lab, red, red)) {
+        & {
+          --divider-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+        }
+      }
+      &:before, &:after {
+        content: "";
+        height: calc(0.25rem * 0.5);
+        width: 100%;
+        flex-grow: 1;
+        background-color: var(--divider-color);
+      }
+      @media print {
+        &:before, &:after {
+          border: 0.5px solid;
+        }
+      }
+      &:not(:empty) {
+        gap: calc(0.25rem * 4);
+      }
+    }
+  }
   .m-1 {
     margin: calc(var(--spacing) * 1);
   }
@@ -1613,6 +1696,9 @@
       }
     }
   }
+  .my-2 {
+    margin-block: calc(var(--spacing) * 2);
+  }
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
   }
@@ -1621,9 +1707,6 @@
   }
   .mt-10 {
     margin-top: calc(var(--spacing) * 10);
-  }
-  .mt-20 {
-    margin-top: calc(var(--spacing) * 20);
   }
   .fieldset-legend {
     @layer daisyui.component {
@@ -1644,6 +1727,12 @@
       opacity: 60%;
       font-weight: 600;
     }
+  }
+  .mb-2 {
+    margin-bottom: calc(var(--spacing) * 2);
+  }
+  .mb-3 {
+    margin-bottom: calc(var(--spacing) * 3);
   }
   .ml-auto {
     margin-left: auto;
@@ -1723,40 +1812,6 @@
         & > * {
           place-items: center;
         }
-      }
-    }
-  }
-  .alert {
-    border-width: var(--border);
-    border-color: var(--alert-border-color, var(--color-base-200));
-    @layer daisyui.component {
-      border-style: solid;
-      --alert-border-color: var(--color-base-200);
-      display: grid;
-      align-items: center;
-      gap: calc(0.25rem * 4);
-      border-radius: var(--radius-box);
-      padding-inline: calc(0.25rem * 4);
-      padding-block: calc(0.25rem * 3);
-      color: var(--color-base-content);
-      background-color: var(--alert-color, var(--color-base-200));
-      justify-content: start;
-      justify-items: start;
-      grid-auto-flow: column;
-      grid-template-columns: auto;
-      text-align: start;
-      font-size: 0.875rem;
-      line-height: 1.25rem;
-      background-size: auto, calc(var(--noise) * 100%);
-      background-image: none, var(--fx-noise);
-      box-shadow: 0 3px 0 -2px oklch(100% 0 0 / calc(var(--depth) * 0.08)) inset, 0 1px #000, 0 4px 3px -2px oklch(0% 0 0 / calc(var(--depth) * 0.08));
-      @supports (color: color-mix(in lab, red, red)) {
-        & {
-          box-shadow: 0 3px 0 -2px oklch(100% 0 0 / calc(var(--depth) * 0.08)) inset, 0 1px color-mix( in oklab, color-mix(in oklab, #000 20%, var(--alert-color, var(--color-base-200))) calc(var(--depth) * 20%), #0000 ), 0 4px 3px -2px oklch(0% 0 0 / calc(var(--depth) * 0.08));
-        }
-      }
-      &:has(:nth-child(2)) {
-        grid-template-columns: auto minmax(auto, 1fr);
       }
     }
   }
@@ -1844,6 +1899,9 @@
   .flex {
     display: flex;
   }
+  .grid {
+    display: grid;
+  }
   .table {
     display: table;
   }
@@ -1852,6 +1910,9 @@
   }
   .h-10 {
     height: calc(var(--spacing) * 10);
+  }
+  .h-20 {
+    height: calc(var(--spacing) * 20);
   }
   .min-h-screen {
     min-height: 100vh;
@@ -1867,6 +1928,9 @@
   }
   .w-52 {
     width: calc(var(--spacing) * 52);
+  }
+  .w-full {
+    width: 100%;
   }
   .max-w-full {
     max-width: 100%;
@@ -1937,11 +2001,23 @@
   .flex-wrap {
     flex-wrap: wrap;
   }
+  .place-items-center {
+    place-items: center;
+  }
   .items-center {
     align-items: center;
   }
   .justify-between {
     justify-content: space-between;
+  }
+  .justify-center {
+    justify-content: center;
+  }
+  .gap-4 {
+    gap: calc(var(--spacing) * 4);
+  }
+  .gap-40 {
+    gap: calc(var(--spacing) * 40);
   }
   .space-x-4 {
     :where(& > :not(:last-child)) {
@@ -1967,13 +2043,11 @@
     border-style: var(--tw-border-style);
     border-width: 1px;
   }
-  .alert-outline {
-    @layer daisyui.style {
-      background-color: transparent;
-      color: var(--alert-color);
-      box-shadow: none;
-      background-image: none;
-    }
+  .border-\[\#e5e5e5\] {
+    border-color: #e5e5e5;
+  }
+  .border-black {
+    border-color: var(--color-black);
   }
   .bg-base-100 {
     background-color: var(--color-base-100);
@@ -1983,6 +2057,12 @@
   }
   .bg-base-300 {
     background-color: var(--color-base-300);
+  }
+  .bg-black {
+    background-color: var(--color-black);
+  }
+  .bg-white {
+    background-color: var(--color-white);
   }
   .fill-current {
     fill: currentcolor;
@@ -1999,20 +2079,11 @@
   .px-4 {
     padding-inline: calc(var(--spacing) * 4);
   }
-  .pt-10 {
-    padding-top: calc(var(--spacing) * 10);
-  }
   .pb-40 {
     padding-bottom: calc(var(--spacing) * 40);
   }
   .pl-2 {
     padding-left: calc(var(--spacing) * 2);
-  }
-  .pl-3 {
-    padding-left: calc(var(--spacing) * 3);
-  }
-  .pl-4 {
-    padding-left: calc(var(--spacing) * 4);
   }
   .text-center {
     text-align: center;
@@ -2034,24 +2105,29 @@
   .whitespace-nowrap {
     white-space: nowrap;
   }
-  .alert-error {
-    @layer daisyui.modifier {
-      color: var(--color-error-content);
-      --alert-border-color: var(--color-error);
-      --alert-color: var(--color-error);
-    }
-  }
   .text-base-content {
     color: var(--color-base-content);
   }
+  .text-black {
+    color: var(--color-black);
+  }
   .text-error {
     color: var(--color-error);
+  }
+  .text-gray-400 {
+    color: var(--color-gray-400);
+  }
+  .text-gray-500 {
+    color: var(--color-gray-500);
   }
   .text-primary {
     color: var(--color-primary);
   }
   .text-success {
     color: var(--color-success);
+  }
+  .text-white {
+    color: var(--color-white);
   }
   .link-hover {
     @layer daisyui.modifier {
@@ -2187,6 +2263,11 @@
   .xl\:mr-2 {
     @media (width >= 80rem) {
       margin-right: calc(var(--spacing) * 2);
+    }
+  }
+  .dark\:text-gray-500 {
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-gray-500);
     }
   }
   .dark\:text-white {
