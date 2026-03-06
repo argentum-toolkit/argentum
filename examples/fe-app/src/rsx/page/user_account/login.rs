@@ -29,7 +29,8 @@ pub fn Login() -> Element {
 
     #[cfg(feature = "web")]
     let callbacks = {
-        use argentum_standard_ui::service::redirect;
+        let home_url = use_context::<HomePageUrl>();
+        use argentum_standard_ui::{HomePageUrl, service::redirect};
         use argentum_user_account_rest::dto::response::MemberLoggedInSuccessfullyResponse;
         use argentum_user_account_ui::security::ClientSideAuthenticator;
 
@@ -38,9 +39,11 @@ pub fn Login() -> Element {
         let on_member_logged_in_successfully = EventHandler::new(
             move |response: MemberLoggedInSuccessfullyResponse| match response {
                 MemberLoggedInSuccessfullyResponse::ApplicationJson(j) => {
+                    use argentum_standard_ui::service::external_redirect;
+
                     authenticator.write().auth_user(j.0.token, j.0.user_id);
 
-                    let _ = redirect(Route::Home {});
+                    let _ = external_redirect(&home_url.0);
                 }
             },
         );
@@ -84,7 +87,7 @@ pub fn Login() -> Element {
     // };
 
     // let mut status = use_signal(|| "Ready to sign in".to_string());
-    // let mut errors = use_signal(Vec::new);
+    let mut errors = use_signal(Vec::new);
 
     rsx! {
         section {
@@ -116,19 +119,16 @@ pub fn Login() -> Element {
 
                     div {
                         class: "flex flex-col items-center justify-center gap-4",
-
-
                             div {
                                 class: "divider",
                                 "OR"
                             }
 
 
-                        // ErrorBlock {errors: errors()}
-                        // TODO:  handle errors
+                        ErrorBlock {errors: errors()}
 
-                        GoogleButton {}
-                        GitHubButton {}
+                        GoogleButton {errors: errors}
+                        GitHubButton {errors: errors}
                     }
                 }
             }

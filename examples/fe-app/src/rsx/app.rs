@@ -1,7 +1,7 @@
 use crate::route::Route;
 
 use argentum_oidc_ui::{GithubClientId, GoogleClientId, OidcRedirectUrl};
-use argentum_standard_ui::rsx::component::dark_mode::use_dark_mode;
+use argentum_standard_ui::{HomePageUrl, rsx::component::dark_mode::use_dark_mode};
 use dioxus::prelude::*;
 use std::env;
 
@@ -16,6 +16,7 @@ pub(crate) fn App() -> Element {
     use_context_provider(|| GoogleClientId(google_client_id.into()));
     use_context_provider(|| GithubClientId(github_client_id.into()));
     use_context_provider(|| OidcRedirectUrl(redirect_url.into()));
+    use_context_provider(|| HomePageUrl((Route::Home {}).to_string()));
 
     #[cfg(feature = "web")]
     {

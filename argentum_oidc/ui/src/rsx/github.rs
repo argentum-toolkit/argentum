@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 #[component]
-pub fn GitHubButton() -> Element {
+pub fn GitHubButton(mut errors: Signal<Vec<String>>) -> Element {
     rsx! {
         button {
             onclick: move |_| {
@@ -10,7 +10,7 @@ pub fn GitHubButton() -> Element {
                     use crate::service::github::start_github_oauth;
                     #[cfg(feature = "web")]
                     if let Err(e) = start_github_oauth().await {
-                        // errors.push(e.clone());
+                        errors.push(e.clone());
                     }
                 });
             },

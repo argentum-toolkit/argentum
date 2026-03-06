@@ -39,7 +39,7 @@ struct GithubUser {
     // avatar_url: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Clone)]
 struct GithubEmail {
     email: String,
     primary: bool,
@@ -174,7 +174,11 @@ where
         let status = token_resp.status();
 
         if !status.is_success() {
-            return Err(ProviderError::BadStatus(status.as_u16()));
+            let token_result = token_resp.text().await;
+            return Err(ProviderError::BadStatus(
+                status.as_u16(),
+                token_result.unwrap_or_default(),
+            ));
         }
 
         let token_result: GithubTokenResponse = match token_resp.json().await {

@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 #[component]
-pub fn GoogleButton() -> Element {
+pub fn GoogleButton(mut errors: Signal<Vec<String>>) -> Element {
     rsx! {
         button {
             onclick: move |_| {
@@ -10,7 +10,7 @@ pub fn GoogleButton() -> Element {
                     use crate::service::google::start_google_oauth;
                     #[cfg(feature = "web")]
                     if let Err(e) = start_google_oauth().await {
-                        // errors.push(e.clone());
+                        errors.push(e.clone());
                     }
                 });
             },
