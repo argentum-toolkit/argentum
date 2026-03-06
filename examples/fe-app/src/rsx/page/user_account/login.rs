@@ -1,6 +1,6 @@
 use crate::route::Route;
 
-use argentum_oidc_ui::rsx::{github::GitHubButton, google::GoogleButton};
+use argentum_oidc_ui::rsx::OidcLoginBlock;
 use argentum_user_account_rest::ui::callbacks::MemberLoginsWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::MemberLoginsWithPasswordForm;
 use argentum_user_account_rest::ui::form_processor::MemberLoginsWithPasswordFormProcessor;
@@ -8,8 +8,6 @@ use dioxus::prelude::*;
 
 #[cfg(feature = "server")]
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
-use argentum_standard_ui::rsx::component::ErrorBlock;
 
 #[component]
 pub fn Login() -> Element {
@@ -87,7 +85,6 @@ pub fn Login() -> Element {
     // };
 
     // let mut status = use_signal(|| "Ready to sign in".to_string());
-    let mut errors = use_signal(Vec::new);
 
     rsx! {
         section {
@@ -108,6 +105,8 @@ pub fn Login() -> Element {
                         Link { class: "text-primary hover:underline pl-2", to: Route::Registration {}, "Sign Up" }
                     }
 
+                    OidcLoginBlock {}
+
                     // div {
                     //     div { "Or login with GitHub" }
                     //     button {
@@ -116,20 +115,6 @@ pub fn Login() -> Element {
                     //         "Login with GitHub"
                     //     }
                     // }
-
-                    div {
-                        class: "flex flex-col items-center justify-center gap-4",
-                            div {
-                                class: "divider",
-                                "OR"
-                            }
-
-
-                        ErrorBlock {errors: errors()}
-
-                        GoogleButton {errors: errors}
-                        GitHubButton {errors: errors}
-                    }
                 }
             }
         }

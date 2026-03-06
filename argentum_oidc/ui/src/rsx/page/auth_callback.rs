@@ -97,7 +97,7 @@ pub fn AuthCallback(provider: String, code: String, state: String) -> Element {
                 "Getting token...",
             },
             Status::Failed(err) => rsx! {
-                ErrorBlock { errors: vec!["Can't exchange a code for a token: {err}".into()]}
+                ErrorBlock { errors: vec![format!("Can't exchange a code for a token: {}", err)]}
 
                 div { class: "pt-10 pl-3",
                     a { class: "text-primary hover:underline", href: home_url, "Go to main page" }
