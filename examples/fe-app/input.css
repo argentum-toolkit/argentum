@@ -37,4 +37,12 @@
     p {
         @apply mb-6 leading-relaxed;
     }
+
+    .label-text {
+        @apply font-medium opacity-75;
+    }
+
+    .required-label {
+        @apply font-bold opacity-100;
+    }
 }

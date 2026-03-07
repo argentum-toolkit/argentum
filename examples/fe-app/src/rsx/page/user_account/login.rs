@@ -28,7 +28,7 @@ pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let callbacks = {
         let home_url = use_context::<HomePageUrl>();
-        use argentum_standard_ui::{HomePageUrl, service::redirect};
+        use argentum_standard_ui::HomePageUrl;
         use argentum_user_account_rest::dto::response::MemberLoggedInSuccessfullyResponse;
         use argentum_user_account_ui::security::ClientSideAuthenticator;
 

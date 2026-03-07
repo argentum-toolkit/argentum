@@ -1,4 +1,5 @@
 use crate::route::Route;
+use argentum_oidc_ui::rsx::OidcLoginBlock;
 use argentum_user_account_rest::dto::response::MemberRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::ui::callbacks::MemberRegistersWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::MemberRegistersWithPasswordForm;
@@ -77,6 +78,8 @@ pub fn Registration() -> Element {
                                     "Privacy Policy"
                                 }
                             }
+
+                            OidcLoginBlock {}
                         }
                     }
                 }

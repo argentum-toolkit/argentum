@@ -48,12 +48,15 @@ module.exports = {
         "mt-5",
         "fieldset",
         "fieldset-legend",
+        "label-text",
+        "required-label",
         "input",
         "input-neutral",
         "input-error",
 
         "bg-black", "text-white", "border-black",
         "bg-white", "text-black", "border-[#e5e5e5]",
+        "flex", "flex-col", "items-center", "justify-center", "gap-4", "divider"
     ],
     darkMode: "class",
     theme: {

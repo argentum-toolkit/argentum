@@ -50,6 +50,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         name: "user_first_name",
         label: "First Name",
         input_type: "text".to_string(),
+        required: true,
             value: first_value,
 
         violations: first_violations,
@@ -64,6 +65,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         name: "user_last_name",
         label: "Last Name",
         input_type: "text".to_string(),
+        required: false,
             value: last_value().unwrap_or("".to_string()),
 
         violations: last_violations,
@@ -78,6 +80,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         name: "user_additional_name",
         label: "Additional name",
         input_type: "text".to_string(),
+        required: false,
             value: additional_value().unwrap_or("".to_string()),
 
         violations: additional_violations,

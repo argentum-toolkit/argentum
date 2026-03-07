@@ -65,6 +65,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
         name: "email",
         label: "Email address",
         input_type: "text".to_string(),
+        required: true,
             value: email_value,
 
         violations: email_violations,
@@ -79,6 +80,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
         name: "password",
         label: "Password",
         input_type: "text".to_string(),
+        required: true,
             value: password_value,
 
         violations: password_violations,
