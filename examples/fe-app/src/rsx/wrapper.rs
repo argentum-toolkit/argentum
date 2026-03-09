@@ -1,8 +1,9 @@
 use crate::route::Route;
-use crate::rsx::component::Footer;
-use crate::rsx::component::NavBar;
+use argentum_skeleton_ui::rsx::component::Footer;
+use argentum_skeleton_ui::rsx::component::NavBar;
 use argentum_standard_ui::rsx::component::dark_mode::DarkMode;
 use argentum_standard_ui::rsx::component::dark_mode::ThemeConfig;
+use argentum_user_account_ui::rsx::AuthBarProps;
 use dioxus::prelude::*;
 
 #[component]
@@ -20,13 +21,31 @@ pub(crate) fn Wrapper() -> Element {
             "data-theme": theme_class(),
             header {
                 class: "navbar bg-base-200 shadow-md",
-                NavBar { theme_config: theme_config() }
+                NavBar {
+                    auth: AuthBarProps {
+                        login_route: Route::Login {},
+                        registration_route: Route::Registration {},
+                        logout_redirect: Route::Home {},
+                    },
+                    links: vec![
+                        ("Home".to_string(), Route::Home {}),
+                        ("Blog".to_string(), Route::Blog {id: 1}),
+                        ("About".to_string(), Route::Home {}),
+                    ],
+                    theme_config: theme_config()
+                }
             }
             main {
                 class: "prose flex-grow p-6",
                 Outlet::<Route> {}
             }
-            Footer {}
+            Footer {
+                links: vec![
+                    ("GitLab".into(), "https://gitlab.com/argentum-toolkit/argentum".into()),
+                    ("GitHub".into(), "https://github.com/argentum-toolkit/argentum".into()),
+                    ("LinkedIn".into(), "https://www.linkedin.com/in/vital-leshchyk".into()),
+                ]
+            }
         }
     }
 }

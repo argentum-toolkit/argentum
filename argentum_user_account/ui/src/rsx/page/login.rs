@@ -1,6 +1,4 @@
-use crate::route::Route;
-
-use argentum_oidc_ui::rsx::OidcLoginBlock;
+use argentum_standard_ui::RegistrationUrl;
 use argentum_user_account_rest::ui::callbacks::MemberLoginsWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::MemberLoginsWithPasswordForm;
 use argentum_user_account_rest::ui::form_processor::MemberLoginsWithPasswordFormProcessor;
@@ -9,11 +7,13 @@ use dioxus::prelude::*;
 #[cfg(feature = "server")]
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+use crate::AdditionalLoginBlock;
+
 #[component]
 pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let auth_token = {
-        use argentum_user_account_ui::security::ClientSideAuthenticator;
+        use crate::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         authenticator
@@ -28,9 +28,9 @@ pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let callbacks = {
         let home_url = use_context::<HomePageUrl>();
+        use crate::security::ClientSideAuthenticator;
         use argentum_standard_ui::HomePageUrl;
         use argentum_user_account_rest::dto::response::MemberLoggedInSuccessfullyResponse;
-        use argentum_user_account_ui::security::ClientSideAuthenticator;
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
@@ -74,7 +74,6 @@ pub fn Login() -> Element {
     //     )
     // };
 
-    use dioxus::prelude::*;
     // use web_sys::window;
     //
     // let on_keycloak_github_click = move |_| {
@@ -85,6 +84,9 @@ pub fn Login() -> Element {
     // };
 
     // let mut status = use_signal(|| "Ready to sign in".to_string());
+
+    let additional = use_context::<AdditionalLoginBlock>().0;
+    let registration_url = use_context::<RegistrationUrl>().0;
 
     rsx! {
         section {
@@ -102,10 +104,10 @@ pub fn Login() -> Element {
                     }
                     div { class: "text-center text-sm mt-2 mb-3",
                         "Don't you have an account?"
-                        Link { class: "text-primary hover:underline pl-2", to: Route::Registration {}, "Sign Up" }
+                        Link { class: "text-primary hover:underline pl-2", to: registration_url, "Sign Up" }
                     }
 
-                    OidcLoginBlock {}
+                    {additional}
 
                     // div {
                     //     div { "Or login with GitHub" }

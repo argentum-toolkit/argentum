@@ -1,5 +1,4 @@
-use crate::route::Route;
-use argentum_oidc_ui::rsx::OidcLoginBlock;
+use argentum_standard_ui::LoginUrl;
 use argentum_user_account_rest::dto::response::MemberRegisteredSuccessfullyResponse;
 use argentum_user_account_rest::ui::callbacks::MemberRegistersWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::MemberRegistersWithPasswordForm;
@@ -8,13 +7,15 @@ use argentum_user_account_rest::ui::form_processor::MemberRegistersWithPasswordF
 use dioxus::prelude::*;
 use std::string::ToString;
 
+use crate::AdditionalLoginBlock;
+
 #[component]
 pub fn Registration() -> Element {
     let mut success: Signal<Option<&str>> = use_signal(|| None);
 
     #[cfg(feature = "web")]
     let auth_token = {
-        use argentum_user_account_ui::security::ClientSideAuthenticator;
+        use crate::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         authenticator
@@ -38,6 +39,9 @@ pub fn Registration() -> Element {
 
     let processor = MemberRegistersWithPasswordFormProcessor::new(callbacks);
 
+    let additional = use_context::<AdditionalLoginBlock>().0;
+    let login_url = use_context::<LoginUrl>().0;
+
     rsx! {
         section {
             div { class: "container",
@@ -53,7 +57,7 @@ pub fn Registration() -> Element {
                                 }
                                 div {
                                     class: "text-center text-sm mt-5",
-                                    Link { class: "text-primary hover:underline", to: Route::Login {}, "Sign In" }
+                                    Link { class: "text-primary hover:underline", to: login_url, "Sign In" }
                                 }
                             }
                         },
@@ -65,7 +69,7 @@ pub fn Registration() -> Element {
 
                             div { class: "text-center text-sm mt-10",
                                 "Already here?"
-                                Link { class: "text-primary hover:underline pl-2", to: Route::Login {}, "Sign In" }
+                                Link { class: "text-primary hover:underline pl-2", to: login_url, "Sign In" }
                             }
 
                             div { class: "text-left text-sm mt-5",
@@ -79,7 +83,7 @@ pub fn Registration() -> Element {
                                 }
                             }
 
-                            OidcLoginBlock {}
+                            {additional}
                         }
                     }
                 }
