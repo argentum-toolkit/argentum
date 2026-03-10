@@ -16,9 +16,9 @@ argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev
 ] }
 argentum_oidc_ui = { path = "../../argentum_oidc/ui", version = ">=0.4.0-dev,<0.5.0" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_skeleton_ui = { path = "../../argentum_skeleton/ui", version = ">=0.4.0-dev,<0.5.0", default-features = false }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
-argentum_skeleton_ui = { path = "../../argentum_skeleton/ui", version = ">=0.4.0-dev,<0.5.0", default-features = false }
 argentum_standard_ui = { path = "../../argentum_standard/ui", version = ">=0.4.0-dev,<0.5.0", default-features = false }
 argentum_user_account_rest = { path = "../../argentum_user_account/rest", version = ">=0.4.0-dev,<0.5.0", features = [
     "client",
@@ -29,39 +29,26 @@ argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.4.0-dev
     "client",
 ] }
 argentum_user_ui = { path = "../../argentum_user/ui", version = ">=0.4.0-dev,<0.5.0" }
+
 async-trait = "0.1.*"
-
-dotenvy = "0.15.*"
-
-serde = { version = "1.*", features = ["derive"] }
-serde_json = "1.*"
 
 dioxus = { version = "0.7.*", features = ["fullstack", "router"] }
 dioxus-logger = "0.7.*"
 
+getrandom = { version = "0.4.1", features = ["wasm_js"] }
+
 uuid = { version = "1.*", features = ["serde", "v4", "js"] }
-urlencoding = "2.*"
-gloo-net = "0.6.*"
-log = "0.4.*"
 
-web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
 
-
-webbrowser = "1.0"
-reqwest = { version = "0.12", default-features = false, features = [
-    "json",
-    "rustls-tls",
-] }
 tokio = { version = "1", default-features = false, features = [
     "rt",
     "macros",
     "sync",
     "time",
 ] }
-anyhow = "1"
-getrandom = { version = "0.4.1", features = ["wasm_js"] }
-# url = "2.5"
-
+web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
 
 [features]
 default = []

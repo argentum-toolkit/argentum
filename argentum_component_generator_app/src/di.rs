@@ -1,6 +1,6 @@
 use crate::generator::fe_app::{
-    FeAppGenerator, FeCargoGenerator, FeGitIgnoreGenerator, FeMainGenerator, FeReadmeAdocGenerator,
-    FeRouteGenerator, FeRsxGenerator, FeStyleGenerator,
+    FeAppGenerator, FeBuildRsGenerator, FeCargoGenerator, FeGitIgnoreGenerator, FeMainGenerator,
+    FeReadmeAdocGenerator, FeRouteGenerator, FeRsxGenerator, FeStyleGenerator,
 };
 use crate::generator::{DbInfrastructureGenerator, FileGenerator};
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
@@ -48,6 +48,10 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
             include_str!("../template/fe_app/Cargo.toml.hbs"),
         ),
         (
+            "fe_app/build.rs",
+            include_str!("../template/fe_app/build.rs.hbs"),
+        ),
+        (
             "fe_app/input.css",
             include_str!("../template/fe_app/input.css.hbs"),
         ),
@@ -72,20 +76,8 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
             include_str!("../template/fe_app/src/rsx/element_mod.hbs"),
         ),
         (
-            "fe_app/src/rsx/element_footer",
-            include_str!("../template/fe_app/src/rsx/element_footer.hbs"),
-        ),
-        (
-            "fe_app/src/rsx/element_navbar",
-            include_str!("../template/fe_app/src/rsx/element_navbar.hbs"),
-        ),
-        (
             "fe_app/src/rsx/page_mod",
             include_str!("../template/fe_app/src/rsx/page_mod.hbs"),
-        ),
-        (
-            "fe_app/src/rsx/page_home",
-            include_str!("../template/fe_app/src/rsx/page_home.hbs"),
         ),
         (
             "fe_app/src/rsx/app",
@@ -125,6 +117,8 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
         template_di.renderer.clone(),
     ));
 
+    let fe_build_rs_generator = Arc::new(FeBuildRsGenerator::new(file_generator.clone()));
+
     let fe_cargo_generator = Arc::new(FeCargoGenerator::new(
         logger.clone(),
         template_di.renderer.clone(),
@@ -146,6 +140,7 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
 
     let fe_app_generator = Arc::new(FeAppGenerator::new(
         logger.clone(),
+        fe_build_rs_generator,
         fe_cargo_generator,
         style_generator,
         gitignore_generator,

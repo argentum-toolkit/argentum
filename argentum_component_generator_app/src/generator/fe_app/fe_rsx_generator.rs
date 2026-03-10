@@ -7,10 +7,7 @@ use crate::{cli_params::FeAppParams, generator::file_generator::FileGenerator};
 use convert_case::{Case, Casing};
 
 const ELEMENT_MOD_TEMPLATE: &str = "fe_app/src/rsx/element_mod";
-const ELEMENT_FOOTER_TEMPLATE: &str = "fe_app/src/rsx/element_footer";
-const ELEMENT_NAVBAR_TEMPLATE: &str = "fe_app/src/rsx/element_navbar";
 const PAGE_MOD_TEMPLATE: &str = "fe_app/src/rsx/page_mod";
-const PAGE_HOME_TEMPLATE: &str = "fe_app/src/rsx/page_home";
 const APP_TEMPLATE: &str = "fe_app/src/rsx/app";
 const MOD_TEMPLATE: &str = "fe_app/src/rsx/mod";
 const WRAPPER_TEMPLATE: &str = "fe_app/src/rsx/wrapper";
@@ -38,22 +35,10 @@ where
             &format!("{}/src/rsx/element/mod.rs", app_name),
             ELEMENT_MOD_TEMPLATE,
         )?;
-        self.file.generate(
-            &format!("{}/src/rsx/element/footer.rs", app_name),
-            ELEMENT_FOOTER_TEMPLATE,
-        )?;
-        self.file.generate(
-            &format!("{}/src/rsx/element/navbar.rs", app_name),
-            ELEMENT_NAVBAR_TEMPLATE,
-        )?;
 
         self.file.generate(
             &format!("{}/src/rsx/page/mod.rs", app_name),
             PAGE_MOD_TEMPLATE,
-        )?;
-        self.file.generate(
-            &format!("{}/src/rsx/page/home.rs", app_name),
-            PAGE_HOME_TEMPLATE,
         )?;
 
         self.file

@@ -1,6 +1,9 @@
 mod fe_app_generator;
 pub(crate) use fe_app_generator::FeAppGenerator;
 
+mod fe_build_rs_generator;
+pub(crate) use fe_build_rs_generator::FeBuildRsGenerator;
+
 mod fe_cargo_generator;
 pub(crate) use fe_cargo_generator::FeCargoGenerator;
 

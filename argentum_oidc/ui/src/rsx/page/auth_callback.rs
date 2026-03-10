@@ -51,7 +51,7 @@ pub fn AuthCallback(provider: String, code: String, state: String) -> Element {
         let mut status = use_signal(|| Status::New);
 
         let client = use_context::<Signal<Client>>();
-        use argentum_standard_ui::{HomePageUrl, rsx::component::ErrorBlock, service::redirect};
+        use argentum_standard_ui::{HomePageUrl, rsx::component::ErrorBlock};
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 

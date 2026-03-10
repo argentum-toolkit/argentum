@@ -69,7 +69,12 @@ where
             .min_connections(2)
             .connect(&self.connection_url)
             .await
-            .map_err(|e| format!("Can't create PG connection pool. Err: {e}"))?;
+            .map_err(|e| {
+                format!(
+                    "Can't create PG connection pool for connection `{}`. Error: {e}",
+                    &self.connection_url
+                )
+            })?;
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
 

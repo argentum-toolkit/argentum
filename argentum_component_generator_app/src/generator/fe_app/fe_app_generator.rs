@@ -5,8 +5,8 @@ use argentum_log_business::LoggerTrait;
 use crate::{
     cli_params::FeAppParams,
     generator::fe_app::{
-        FeGitIgnoreGenerator, FeMainGenerator, FeReadmeAdocGenerator, FeRouteGenerator,
-        FeRsxGenerator, FeStyleGenerator, fe_cargo_generator::FeCargoGenerator,
+        FeBuildRsGenerator, FeGitIgnoreGenerator, FeMainGenerator, FeReadmeAdocGenerator,
+        FeRouteGenerator, FeRsxGenerator, FeStyleGenerator, fe_cargo_generator::FeCargoGenerator,
     },
 };
 
@@ -15,6 +15,7 @@ where
     L: LoggerTrait,
 {
     logger: Arc<L>,
+    build_rs: Arc<FeBuildRsGenerator<L>>,
     cargo: Arc<FeCargoGenerator<L>>,
     style: Arc<FeStyleGenerator<L>>,
     gitignore: Arc<FeGitIgnoreGenerator<L>>,
@@ -30,6 +31,7 @@ where
 {
     pub fn new(
         logger: Arc<L>,
+        build_rs: Arc<FeBuildRsGenerator<L>>,
         cargo: Arc<FeCargoGenerator<L>>,
         style: Arc<FeStyleGenerator<L>>,
         gitignore: Arc<FeGitIgnoreGenerator<L>>,
@@ -40,6 +42,7 @@ where
     ) -> Self {
         Self {
             logger,
+            build_rs,
             cargo,
             style,
             gitignore,
@@ -55,6 +58,7 @@ where
         params: &FeAppParams,
         argentum_path: Option<String>,
     ) -> Result<(), String> {
+        self.build_rs.generate(params)?;
         self.cargo.generate(params, argentum_path)?;
         self.style.generate(params)?;
         self.gitignore.generate(params)?;

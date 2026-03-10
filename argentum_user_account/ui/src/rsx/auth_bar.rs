@@ -29,6 +29,8 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
 
     #[cfg(not(feature = "web"))]
     {
+        let _ = props;
+
         return rsx! {"Loading..."};
     }
 }

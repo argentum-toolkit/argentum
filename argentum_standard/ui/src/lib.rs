@@ -1,5 +1,3 @@
-use dioxus::router::Routable;
-
 pub mod rsx;
 
 #[cfg(feature = "web")]
