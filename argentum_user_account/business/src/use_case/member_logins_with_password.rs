@@ -50,6 +50,9 @@ where
                 PasswordToTokenExchangerError::WrongEmailOrPassword => {
                     return Err(LoginError::WrongEmailOrPassword);
                 }
+                PasswordToTokenExchangerError::EmailNotConfirmed => {
+                    return Err(LoginError::EmailNotConfirmed);
+                }
                 _ => {
                     return Err(LoginError::Infrastructure(Some(Arc::new(e))));
                 }
@@ -75,6 +78,9 @@ pub enum LoginError {
 
     #[error("Wrong email or password")]
     WrongEmailOrPassword,
+
+    #[error("Email is not confirmed. Please check your email inbox.")]
+    EmailNotConfirmed,
 }
 
 #[cfg(test)]

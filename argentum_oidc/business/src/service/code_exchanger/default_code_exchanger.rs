@@ -116,7 +116,7 @@ where
                         let user_id = self.id_factory.create();
                         let name = Name::new(oidc_user.first_name, oidc_user.last_name, None);
 
-                        let user = Member::new(user_id, name, email);
+                        let user = Member::new(user_id, name, email, true);
                         if let Err(e) = self.member_repository.create(&user).await {
                             return Err(CodeExchangerError::Other(Some(Arc::new(e))));
                         }

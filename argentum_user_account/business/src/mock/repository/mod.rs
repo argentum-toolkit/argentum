@@ -1,2 +1,3 @@
+pub mod email_confirmation_token_repository_mock;
 pub mod password_credential_repository_mock;
 pub mod restore_password_token_repository_mock;

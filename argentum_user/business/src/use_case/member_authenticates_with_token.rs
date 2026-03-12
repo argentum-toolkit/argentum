@@ -121,6 +121,7 @@ mod tests {
                 .try_build()
                 .expect("Name should be valid"),
             EmailAddress::try_new("aa@a.com").expect("Email should be valid"),
+            true,
         );
 
         let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
@@ -184,6 +185,7 @@ mod tests {
                 .try_build()
                 .expect("Name should be valid"),
             EmailAddress::try_new("aa@a.com").expect("Email should be valid"),
+            true,
         );
         let session = Session::new(session_id, user_id, token);
 

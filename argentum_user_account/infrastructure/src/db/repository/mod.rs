@@ -1,5 +1,8 @@
-mod password_credential_repository;
-mod restore_password_token_repository;
+mod email_confirmation_token_repository;
+pub use email_confirmation_token_repository::EmailConfirmationTokenRepository;
 
+mod password_credential_repository;
 pub use password_credential_repository::PasswordCredentialRepository;
+
+mod restore_password_token_repository;
 pub use restore_password_token_repository::RestorePasswordTokenRepository;

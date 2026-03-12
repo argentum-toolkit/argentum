@@ -11,28 +11,37 @@ use argentum_user_business::repository::user_repository::{
 use secrecy::SecretString;
 
 use crate::repository::credential_writer::CredentialWriterError;
-use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::data_type::id::{Id, IdFactory};
 use std::sync::Arc;
+
+use crate::service::EmailConfirmationInitiator;
 
 pub struct MemberRegistersWithPasswordUc<I>
 where
     I: Id,
 {
-    user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
+    member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
+    email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
+    id_factory: Arc<dyn IdFactory<Id = I>>,
 }
 
 impl<I> MemberRegistersWithPasswordUc<I>
 where
     I: Id,
+    // L: LoggerTrait,
 {
     pub fn new(
-        user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
+        member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
+        email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
+        id_factory: Arc<dyn IdFactory<Id = I>>,
     ) -> Self {
         Self {
-            user_repository,
+            member_repository,
             credential_writer,
+            email_confirmation_initiator,
+            id_factory,
         }
     }
 
@@ -48,28 +57,28 @@ where
             return Err(RegistrationError::TermsNotAccepted);
         }
 
-        let result = self.user_repository.find_by_email(&email).await;
+        let result = self.member_repository.find_by_email(&email).await;
 
         if result?.is_some() {
             return Err(RegistrationError::EmailAlreadyExists);
         }
 
-        //save user
+        // Save user
         let user = {
-            //it is `temporary mutability` pattern
-            let user = Member::new(id, name, email);
-            self.user_repository.create(&user).await?;
+            let user = Member::new(id, name, email.clone(), false);
+            self.member_repository.create(&user).await?;
 
             user
         };
 
-        //save credentials
-        // let (hashed_password, salt) = self.encryptor.encrypt(password)?;
-
-        // let cred = PasswordCredential::new(user.id, &hashed_password, &salt);
-
         let cred = PasswordCredential::new(user.id, password);
         self.credential_writer.write(&cred).await?;
+
+        // Initiate email confirmation
+        self.email_confirmation_initiator
+            .initiate_confirmation(&user)
+            .await
+            .map_err(RegistrationError::from)?;
 
         Ok(user)
     }
@@ -106,16 +115,21 @@ pub enum RegistrationError {
         #[from]
         CredentialWriterError,
     ),
+
+    #[error(transparent)]
+    EmailConfirmationInitiatorError(#[from] crate::service::EmailConfirmationInitiatorError),
 }
 
 #[cfg(test)]
 mod test {
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
+    use crate::mock::token::TokenGeneratorMock;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::use_case::member_registers_with_password::{
         MemberRegistersWithPasswordUc, RegistrationError,
     };
     use argentum_encryption_business::mock::password::EncryptorMock;
+    use argentum_notification_business::mock::StdoutNotifier;
     use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
@@ -131,9 +145,31 @@ mod test {
             PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let member_repository = MemberRepositoryMock::new();
+
+        // Mock dependencies for EmailConfirmationInitiator
+        use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
+        use crate::service::EmailConfirmationInitiator;
+
+        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let email_confirmation_token_repository =
+            Arc::new(EmailConfirmationTokenRepositoryMock::new());
+        let notifier = Arc::new(StdoutNotifier::new());
+        let product_name = "TestProduct";
+        let email_confirmation_front_url = "http://test.com/confirm/";
+
+        let email_confirmation_initiator = Arc::new(EmailConfirmationInitiator::new(
+            token_generator,
+            email_confirmation_token_repository,
+            notifier,
+            product_name,
+            email_confirmation_front_url,
+        ));
+
         let uc = MemberRegistersWithPasswordUc::new(
             Arc::new(member_repository),
             Arc::new(credential_writer),
+            email_confirmation_initiator,
+            id_factory.clone(),
         );
 
         let id = id_factory.create();
@@ -165,9 +201,31 @@ mod test {
             PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let member_repository = MemberRepositoryMock::new();
+
+        // Mock dependencies for EmailConfirmationInitiator
+        use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
+        use crate::service::EmailConfirmationInitiator;
+
+        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let email_confirmation_token_repository =
+            Arc::new(EmailConfirmationTokenRepositoryMock::new());
+        let notifier = Arc::new(StdoutNotifier::new());
+        let product_name = "TestProduct";
+        let email_confirmation_front_url = "http://test.com/confirm/";
+
+        let email_confirmation_initiator = Arc::new(EmailConfirmationInitiator::new(
+            token_generator,
+            email_confirmation_token_repository,
+            notifier,
+            product_name,
+            email_confirmation_front_url,
+        ));
+
         let uc = MemberRegistersWithPasswordUc::new(
             Arc::new(member_repository),
             Arc::new(credential_writer),
+            email_confirmation_initiator,
+            id_factory.clone(),
         );
 
         let id = id_factory.create();
@@ -175,7 +233,8 @@ mod test {
             .last(Some("Cooper".into()))
             .try_build()
             .expect("Name should be valid");
-        let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
+
+        let email = EmailAddress::try_new("demo@test.com").expect("Email should be valid");
         let password = "123";
         let terms = false;
         let result = uc.execute(id, name, email, password.into(), terms).await;
@@ -196,16 +255,37 @@ mod test {
     #[tokio::test]
     async fn test_user_registers_with_password_with_broken_user_repository()
     -> Result<(), &'static str> {
+        let id_factory = Arc::new(IdFactoryMock::new());
         let credential_repository =
             PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
         let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
         let member_repository = MemberRepositoryMockWihBrokenSave::new();
+
+        // Mock dependencies for EmailConfirmationInitiator
+        use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
+        use crate::service::EmailConfirmationInitiator;
+
+        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let email_confirmation_token_repository =
+            Arc::new(EmailConfirmationTokenRepositoryMock::new());
+        let notifier = Arc::new(StdoutNotifier::new());
+        let product_name = "TestProduct";
+        let email_confirmation_front_url = "http://test.com/confirm/";
+
+        let email_confirmation_initiator = Arc::new(EmailConfirmationInitiator::new(
+            token_generator,
+            email_confirmation_token_repository,
+            notifier,
+            product_name,
+            email_confirmation_front_url,
+        ));
+
         let uc = MemberRegistersWithPasswordUc::new(
             Arc::new(member_repository),
             Arc::new(credential_writer),
+            email_confirmation_initiator,
+            id_factory.clone(),
         );
-
-        let id_factory = IdFactoryMock::new();
 
         let id = id_factory.create();
         let name = NameBuilder::new("John".into())

@@ -1,4 +1,5 @@
 pub mod credential_writer;
+pub mod email_confirmation_token_repository;
 pub mod password_credential_checker;
 pub mod password_credential_repository;
 pub mod password_credential_writer;

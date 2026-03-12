@@ -1,8 +1,6 @@
 use argentum_standard_business::data_type::id::Id;
 use secrecy::SecretString;
 
-// pub trait Credential: Send {}
-
 #[derive(Clone)]
 pub struct PasswordCredential<I>
 where
@@ -11,8 +9,6 @@ where
     pub user_id: I,
     pub password: SecretString,
 }
-
-// impl<I> Credential for PasswordCredential<I> where I: Id {}
 
 impl<I> PasswordCredential<I>
 where

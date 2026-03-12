@@ -7,8 +7,8 @@ pub struct MemberDto {
     pub id: Uuid,
     pub created_at: DateTime<Utc>,
     pub first_name: String,
-    //TODO: optional???
     pub last_name: Option<String>,
-    //TODO: additional name
+    pub additional_name: Option<String>,
     pub email: String,
+    pub email_confirmed: bool,
 }

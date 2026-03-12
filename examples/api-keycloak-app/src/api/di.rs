@@ -85,6 +85,8 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
     let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
         "Argentum ToolKit. Example of API application",
         3600, // TTL 1h
+        3600, // TTL 1h
+        "http://localhost:8082/confirm-email/",
         "http://localhost:8082/change-password/",
         &env.ag_user_account_database_url,
         10,

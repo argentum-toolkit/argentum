@@ -66,7 +66,7 @@ mod tests {
             .expect("Name should be valid");
 
         let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
-        let user = Member::new(user_id, name, email);
+        let user = Member::new(user_id, name, email, true);
 
         //Prefilling
         authenticated_user_repository
@@ -104,7 +104,7 @@ mod tests {
             .expect("Name should be valid");
 
         let email = EmailAddress::try_new("dionne@examples.com").expect("Email should be valid");
-        let user = Member::new(user_id, name, email);
+        let user = Member::new(user_id, name, email, true);
 
         //Prefilling
         authenticated_user_repository

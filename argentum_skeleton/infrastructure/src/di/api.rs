@@ -31,6 +31,7 @@ struct Env {
     pub ag_user_account_member_jwt_secret: String,
     pub ag_user_agent: String,
     pub ag_product_name: String,
+    pub ag_email_confirmation_front_url: String,
     pub ag_restore_password_front_url: String,
 }
 
@@ -94,6 +95,8 @@ where
         let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
             &env.ag_product_name,
             3600, // TTL 1h
+            3600, // TTL 1h
+            &env.ag_email_confirmation_front_url,
             &env.ag_restore_password_front_url,
             &env.ag_user_account_database_url,
             10,

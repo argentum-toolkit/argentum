@@ -502,6 +502,8 @@ dependencies = [
  "argentum_log_business",
  "argentum_standard_business",
  "serde",
+ "sqlx",
+ "sqlx-postgres",
  "thiserror 2.0.17",
  "uuid",
 ]

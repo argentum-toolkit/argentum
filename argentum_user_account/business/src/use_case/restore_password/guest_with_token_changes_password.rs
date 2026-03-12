@@ -95,7 +95,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::entity::restore_password_token::RestorePasswordToken;
+    use crate::entity::RestorePasswordToken;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
     use crate::mock::token::TokenGeneratorMock;
@@ -151,7 +151,7 @@ mod tests {
             .expect("Name should be valid");
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
-        let user = Member::new(user_id, user_name, email);
+        let user = Member::new(user_id, user_name, email, true);
 
         user_repository.create(&user).await?;
 
@@ -207,7 +207,7 @@ mod tests {
 
         let email = EmailAddress::try_new("test@mail.com").expect("Email should be valid");
 
-        let user = Member::new(user_id, user_name.clone(), email.clone());
+        let user = Member::new(user_id, user_name.clone(), email.clone(), true);
 
         user_repository.create(&user).await?;
 

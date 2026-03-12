@@ -1,4 +1,6 @@
-use crate::db::repository::{PasswordCredentialRepository, RestorePasswordTokenRepository};
+use crate::db::repository::{
+    EmailConfirmationTokenRepository, PasswordCredentialRepository, RestorePasswordTokenRepository,
+};
 use crate::rest::handler::{
     GuestRegistersHandler, GuestRequestsRestoreTokenHandler, GuestWithTokenChangesPasswordHandler,
     MemberLoginsWithPasswordHandler, MemberRegistersWithPasswordHandler,
@@ -62,7 +64,9 @@ where
 {
     pub fn new(
         product_name: &str,
+        email_confirmation_token_ttl: u32,
         restore_password_token_ttl: u32,
+        email_confirmation_front_url: &str,
         restore_password_front_url: &str,
         connection_url: &str,
         max_db_connections: u32,
@@ -89,7 +93,9 @@ where
             business_builder: Arc::new(Mutex::new(UserAccountBusinessDiBuilder::new(
                 user_business_builder,
                 product_name,
+                email_confirmation_token_ttl,
                 restore_password_token_ttl,
+                email_confirmation_front_url,
                 restore_password_front_url,
                 id_factory.clone(),
                 logger.clone(),
@@ -128,13 +134,17 @@ where
         let guest_token_generator = Arc::new(StringTokenGenerator::new());
 
         let password_credential_repository = Arc::new(PasswordCredentialRepository::new(
-            pg_adapter,
+            pg_adapter.clone(),
             self.encryptor.clone(),
         ));
+
+        let email_confirmation_token_repository =
+            Arc::new(EmailConfirmationTokenRepository::new(pg_adapter));
 
         self.business_builder.lock()?.with_default_services(
             password_credential_repository,
             restore_password_token_repository,
+            email_confirmation_token_repository,
             guest_token_generator,
             member_token_generator,
         );

@@ -99,7 +99,7 @@ where
             .try_build()
             .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
-        Ok(Some(Member::new(u.id.into(), name, email)))
+        Ok(Some(Member::new(u.id.into(), name, email, true)))
     }
 
     async fn find_by_email(
@@ -128,7 +128,7 @@ where
                     .try_build()
                     .map_err(|e| ExternalUserError::Member(Some(Arc::new(e))))?;
 
-                Ok(Some(Member::new(u.id.into(), name, email)))
+                Ok(Some(Member::new(u.id.into(), name, email, true)))
             }
             None => Ok(None),
         }

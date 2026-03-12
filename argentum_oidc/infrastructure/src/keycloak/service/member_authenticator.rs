@@ -88,7 +88,7 @@ impl MemberAuthenticatorTrait for KeycloakMemberAuthenticator {
                     .try_build()
                     .unwrap();
 
-                Ok(Some(Member::new(m.id.into(), name, email)))
+                Ok(Some(Member::new(m.id.into(), name, email, true)))
             }
             Err(_) => Ok(None),
         }

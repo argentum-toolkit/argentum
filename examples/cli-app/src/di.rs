@@ -7,6 +7,7 @@ use argentum_standard_business::data_type::id::{IdFactory, UIntId};
 use argentum_standard_business::error::DiError;
 use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
 use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
+use argentum_user_account_business::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
 use argentum_user_account_business::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
 use argentum_user_account_business::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
 use argentum_user_account_business::mock::token::TokenGeneratorMock;
@@ -79,6 +80,7 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
     let member_token_generator = Arc::new(TokenGeneratorMock::<UIntId>::new());
     let token_router = Arc::new(TokenRouterMock::new());
     let member_authenticator = Arc::new(MemberAuthenticatorMock::new());
+    let email_confirmation_token_repository = Arc::new(EmailConfirmationTokenRepositoryMock::new());
 
     let user_business_builder = Arc::new(Mutex::new(UserBusinessDiBuilder::new(logger.clone())));
 
@@ -97,6 +99,8 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         user_business_builder.clone(),
         "Argentum ToolKit. Example of CLI application",
         3600, // TTL 1h
+        3600, // TTL 1h
+        "http://localhost:8082/confirm_email/",
         "http://localhost:8082/change-password/",
         id_factory.clone(),
         logger.clone(),
@@ -107,6 +111,7 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
     .with_default_services(
         password_credential_repository,
         restore_password_token_repository,
+        email_confirmation_token_repository,
         guest_token_generator,
         member_token_generator,
     )

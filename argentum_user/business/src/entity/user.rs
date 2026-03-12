@@ -19,20 +19,25 @@ where
     pub created_at: DateTime<Utc>,
     pub name: Name,
     pub email: EmailAddress,
-    //TODO: pub verified: bool,
+    pub email_confirmed: bool,
 }
 
 impl<I> Member<I>
 where
     I: Id,
 {
-    pub fn new(id: I, name: Name, email: EmailAddress) -> Self {
+    pub fn new(id: I, name: Name, email: EmailAddress, email_confirmed: bool) -> Self {
         Member {
             id,
             created_at: Utc::now(),
             name,
             email,
+            email_confirmed,
         }
+    }
+
+    pub fn confirm_email(&mut self) {
+        self.email_confirmed = true;
     }
 }
 
