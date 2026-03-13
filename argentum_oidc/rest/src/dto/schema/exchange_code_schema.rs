@@ -8,12 +8,12 @@ use std::collections::BTreeMap;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ExchangeCodeSchema {
     pub code: String,
-    pub state: Option<String>,
+    pub provider: String,
 }
 
 impl ExchangeCodeSchema {
-    pub fn new(code: String, state: Option<String>) -> Self {
-        Self { code, state }
+    pub fn new(code: String, provider: String) -> Self {
+        Self { code, provider }
     }
 }
 
@@ -32,12 +32,19 @@ impl DeserializableSchemaRaw<'_> for ExchangeCodeSchema {
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
-        let state = raw.state;
+        let provider = raw.provider;
+        if provider.is_none() {
+            argentum_violations.insert(
+                "provider".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
 
         if argentum_violations.is_empty()
             && let Some(code) = code
+            && let Some(provider) = provider
         {
-            Ok(Self::new(code, state))
+            Ok(Self::new(code, provider))
         } else {
             Err(Violations::new(
                 vec!["wrong data for ExchangeCodeSchema".to_string()],
@@ -51,6 +58,6 @@ impl DeserializableSchemaRaw<'_> for ExchangeCodeSchema {
 pub struct ExchangeCodeSchemaRaw {
     #[serde(rename = "code")]
     pub code: Option<String>,
-    #[serde(rename = "state")]
-    pub state: Option<String>,
+    #[serde(rename = "provider")]
+    pub provider: Option<String>,
 }

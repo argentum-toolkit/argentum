@@ -3,6 +3,7 @@ use std::rc::Rc;
 use argentum_user_rest::dto::response::Status404Response;
 use dioxus::prelude::*;
 
+use crate::rsx::AuthBarProps;
 use crate::security::rsx::AuthMenu;
 use argentum_rest_infrastructure::data_type::HttpParams;
 use argentum_rest_infrastructure::data_type::HttpRequest;
@@ -16,16 +17,6 @@ use argentum_user_rest::dto::path_params::GetUserPathParams;
 use argentum_user_rest::dto::request::GetUserRequest;
 use argentum_user_rest::dto::response::GetUserOkResponse;
 use argentum_user_rest::dto::response::Status401Response;
-
-#[derive(Clone, PartialEq, Props)]
-pub struct AuthBarProps<R>
-where
-    R: Routable + std::cmp::PartialEq,
-{
-    pub login_route: R,
-    pub registration_route: R,
-    pub logout_redirect: R,
-}
 
 #[component]
 pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Element {

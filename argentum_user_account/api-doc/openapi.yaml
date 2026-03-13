@@ -35,7 +35,6 @@ servers:
 externalDocs:
   description: Find more info here
   url: https://gitlab.com/argentum-toolkit/argentum
-
 paths:
   /user-account/guest-registration:
     post:
@@ -137,9 +136,9 @@ paths:
       operationId: MemberVerifiesEmail
       summary: New member verifies email address
       tags:
-      - user-account
+        - user-account
       security:
-      - bearerAuth: []
+        - bearerAuth: []
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/EmailVerificationRequestBody"
       responses:

@@ -18,6 +18,19 @@ pub fn up(table_name_prefix: &str) -> Vec<String> {
         prefix = table_name_prefix
     ));
 
+    // CREATE EMAIL_CONFIRMATION_TOKEN DQL
+    queries.push(format!(
+        r#"
+            CREATE TABLE {prefix}email_confirmation_token (
+                id uuid PRIMARY KEY,
+                user_id uuid NOT NULL,
+                token varchar NOT NULL,
+                created_at timestamp with time zone NOT NULL
+            );
+        "#,
+        prefix = table_name_prefix
+    ));
+
     // CREATE RESTORE_PASSWORD_TOKEN DQL
     queries.push(format!(
         r#"

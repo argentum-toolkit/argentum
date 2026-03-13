@@ -1,8 +1,11 @@
-use crate::rsx::page::oidc::AuthCallback;
-use crate::rsx::page::user_account::{Login, Registration};
-use crate::rsx::page::{Blog, Home};
+use crate::rsx::page::Blog;
 use crate::rsx::wrapper::Wrapper;
+use argentum_oidc_ui::rsx::page::AuthCallback;
+use argentum_skeleton_ui::rsx::page::Home;
 use argentum_standard_ui::rsx::page::NotFound;
+use argentum_user_account_ui::rsx::page::EmailConfirmation;
+use argentum_user_account_ui::rsx::page::Login;
+use argentum_user_account_ui::rsx::page::Registration;
 use dioxus::prelude::*;
 
 #[derive(Clone, Routable, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -16,11 +19,13 @@ pub enum Route {
             Login {},
             #[route("/register")]
             Registration {},
+            #[route("/email-confirmation?:token")]
+            EmailConfirmation { token: String },
         #[end_nest]
     
         #[nest("/oidc")]
-            #[route("/auth/callback?:code&:state")]
-            AuthCallback { code: String, state: Option<String> },
+            #[route("/auth/callback?:provider&:code&:state")]
+            AuthCallback { provider: String, code: String, state: String },
         #[end_nest]
         #[route("/blog/:id")]
         Blog { id: i32 },

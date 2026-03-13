@@ -41,7 +41,9 @@ where
             .read()
             .map_err(|_| ExternalUserError::Member(Some(Arc::new(PoisonedLockError))))?
             .get(&id)
-            .map(|u| Member::<Self::Id>::new(u.id(), u.name.clone(), u.email.clone())))
+            .map(|u| {
+                Member::<Self::Id>::new(u.id(), u.name.clone(), u.email.clone(), u.email_confirmed)
+            }))
     }
 
     async fn find_by_email(
@@ -59,6 +61,7 @@ where
                     u.id(),
                     u.name.clone(),
                     u.email.clone(),
+                    u.email_confirmed,
                 )));
             }
         }
@@ -81,6 +84,20 @@ where
         {
             true => Ok(()),
             false => Err(ExternalUserError::Member(None)),
+        }
+    }
+
+    async fn update(&self, user: &Member<Self::Id>) -> Result<(), ExternalUserError> {
+        let mut guard = self
+            .users
+            .write()
+            .map_err(|_| ExternalUserError::Member(Some(Arc::new(PoisonedLockError))))?;
+
+        if let Some(existing_user) = guard.get_mut(&user.id) {
+            *existing_user = user.clone();
+            Ok(())
+        } else {
+            Err(ExternalUserError::Member(None))
         }
     }
 }

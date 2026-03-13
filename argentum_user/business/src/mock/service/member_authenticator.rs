@@ -11,6 +11,7 @@ use crate::{
     service::{MemberAuthenticatorError, MemberAuthenticatorTrait},
 };
 
+#[derive(Default)]
 pub struct MemberAuthenticatorMock {
     users: RwLock<HashMap<String, Member<UIntId>>>,
 }

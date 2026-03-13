@@ -1,5 +1,7 @@
+use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
 use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
 use crate::mock::token::TokenGeneratorMock;
+use crate::repository::email_confirmation_token_repository::EmailConfirmationTokenRepositoryTrait;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
 use crate::repository::password_credential_writer::PasswordCredentialWriter;
@@ -54,12 +56,16 @@ where
     password_credential_repository: Option<Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>>,
     password_to_token_exchanger: Option<Arc<dyn PasswordToTokenExchangerTrait<Id = I>>>,
     restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
+    email_confirmation_token_repository:
+        Option<Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>>,
     guest_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
     member_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
 
     member_confirms_email_uc: Option<Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>>,
+    email_confirmation_token_ttl: u32,
     restore_password_token_ttl: u32,
     product_name: String,
+    email_confirmation_front_url: String,
     restore_password_front_url: String,
     validator: Arc<dyn Validator>,
 
@@ -74,7 +80,9 @@ where
     pub fn new(
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
         product_name: &str,
+        email_confirmation_token_ttl: u32,
         restore_password_token_ttl: u32,
+        email_confirmation_front_url: &str,
         restore_password_front_url: &str,
         id_factory: Arc<dyn IdFactory<Id = I>>,
         logger: Arc<L>,
@@ -90,11 +98,14 @@ where
             password_credential_repository: None,
             password_to_token_exchanger: None,
             restore_password_token_repository: None,
+            email_confirmation_token_repository: None,
             guest_token_generator: None,
             member_token_generator: None,
             member_confirms_email_uc: None,
+            email_confirmation_token_ttl,
             restore_password_token_ttl,
             product_name: product_name.into(),
+            email_confirmation_front_url: email_confirmation_front_url.into(),
             restore_password_front_url: restore_password_front_url.into(),
             validator,
             built_di: None,
@@ -108,6 +119,9 @@ where
         self.restore_password_token_repository =
             Some(Arc::new(RestorePasswordTokenRepositoryMock::new()));
 
+        self.email_confirmation_token_repository =
+            Some(Arc::new(EmailConfirmationTokenRepositoryMock::new()));
+
         self.guest_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
         self.member_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
 
@@ -118,11 +132,13 @@ where
         &mut self,
         password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
+        email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
         guest_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
         member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
     ) -> &mut Self {
         self.password_credential_repository = Some(password_credential_repository);
         self.restore_password_token_repository = Some(restore_password_token_repository);
+        self.email_confirmation_token_repository = Some(email_confirmation_token_repository);
         self.guest_token_generator = Some(guest_token_generator);
         self.member_token_generator = Some(member_token_generator);
 
@@ -143,6 +159,15 @@ where
         password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = I>>,
     ) -> &mut Self {
         self.password_to_token_exchanger = Some(password_to_token_exchanger);
+
+        self
+    }
+
+    pub fn with_email_confirmation_token_repository(
+        &mut self,
+        email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
+    ) -> &mut Self {
+        self.email_confirmation_token_repository = Some(email_confirmation_token_repository);
 
         self
     }
@@ -200,11 +225,18 @@ where
             .clone()
             .ok_or("restore_password_token_repository is not initialized")?;
 
+        let email_confirmation_token_repository = self
+            .email_confirmation_token_repository
+            .clone()
+            .ok_or("email_confirmation_token_repository is not initialized")?;
+
         let member_confirms_email_uc = match self.member_confirms_email_uc.clone() {
             Some(uc) => uc,
             None => Arc::new(DefaultMemberConfirmsEmailUc::new(
                 user_business_di.member_repository.clone(),
+                email_confirmation_token_repository.clone(),
                 self.logger.clone(),
+                self.email_confirmation_token_ttl,
             )),
         };
 
@@ -219,9 +251,19 @@ where
             password_credential_repository.clone(),
         ));
 
+        let email_confirmation_initiator =
+            Arc::new(crate::service::EmailConfirmationInitiator::new(
+                member_token_generator.clone(),
+                email_confirmation_token_repository,
+                self.notifier.clone(),
+                &self.product_name,
+                &self.email_confirmation_front_url,
+            ));
+
         let user_registers_with_password_uc = Arc::new(MemberRegistersWithPasswordUc::new(
             user_business_di.member_repository.clone(),
             password_credential_writer.clone(),
+            email_confirmation_initiator,
         ));
 
         let user_logins_with_password_uc = Arc::new(MemberLoginsWithPasswordUc::new(

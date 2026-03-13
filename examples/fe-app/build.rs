@@ -21,5 +21,6 @@ fn main() {
     from_filename_override(local_path).ok();
 
     export("AG_GITHUB_CLIENT_ID");
+    export("AG_GOOGLE_CLIENT_ID");
     export("AG_OIDC_REDIRECT_URL");
 }

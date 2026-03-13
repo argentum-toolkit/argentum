@@ -1,24 +1,19 @@
-use crate::{
-    route::Route,
-    rsx::app::{GithubClientId, OidcRedirectUrl},
-};
-
+use argentum_standard_ui::RegistrationUrl;
 use argentum_user_account_rest::ui::callbacks::MemberLoginsWithPasswordCallbacks;
 use argentum_user_account_rest::ui::form::MemberLoginsWithPasswordForm;
 use argentum_user_account_rest::ui::form_processor::MemberLoginsWithPasswordFormProcessor;
 use dioxus::prelude::*;
-use rand::{RngExt, distr::Alphanumeric};
-use web_sys::{Location, window};
 
-#[cfg(feature = "server")]
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use url::form_urlencoded;
+//#[cfg(feature = "server")]
+//use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+use crate::AdditionalLoginBlock;
 
 #[component]
 pub fn Login() -> Element {
     #[cfg(feature = "web")]
     let auth_token = {
-        use argentum_user_account_ui::security::ClientSideAuthenticator;
+        use crate::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         authenticator
@@ -32,18 +27,21 @@ pub fn Login() -> Element {
 
     #[cfg(feature = "web")]
     let callbacks = {
-        use argentum_standard_ui::service::redirect;
+        let home_url = use_context::<HomePageUrl>();
+        use crate::security::ClientSideAuthenticator;
+        use argentum_standard_ui::HomePageUrl;
         use argentum_user_account_rest::dto::response::MemberLoggedInSuccessfullyResponse;
-        use argentum_user_account_ui::security::ClientSideAuthenticator;
 
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
         let on_member_logged_in_successfully = EventHandler::new(
             move |response: MemberLoggedInSuccessfullyResponse| match response {
                 MemberLoggedInSuccessfullyResponse::ApplicationJson(j) => {
+                    use argentum_standard_ui::service::external_redirect;
+
                     authenticator.write().auth_user(j.0.token, j.0.user_id);
 
-                    let _ = redirect(Route::Home {});
+                    let _ = external_redirect(&home_url.0);
                 }
             },
         );
@@ -76,7 +74,6 @@ pub fn Login() -> Element {
     //     )
     // };
 
-    use dioxus::prelude::*;
     // use web_sys::window;
     //
     // let on_keycloak_github_click = move |_| {
@@ -86,7 +83,10 @@ pub fn Login() -> Element {
     //     }
     // };
 
-    let mut status = use_signal(|| "Ready to sign in".to_string());
+    // let mut status = use_signal(|| "Ready to sign in".to_string());
+
+    let additional = use_context::<AdditionalLoginBlock>().0;
+    let registration_url = use_context::<RegistrationUrl>().0;
 
     rsx! {
         section {
@@ -102,10 +102,12 @@ pub fn Login() -> Element {
                     div { class: "text-center text-base mt-10",
                         a {href:"#", class:"text-sm text-primary hover:underline", "Forgot password?"}
                     }
-                    div { class: "text-center text-sm mt-2",
+                    div { class: "text-center text-sm mt-2 mb-3",
                         "Don't you have an account?"
-                        Link { class: "text-primary hover:underline pl-2", to: Route::Registration {}, "Sign Up" }
+                        Link { class: "text-primary hover:underline pl-2", to: registration_url, "Sign Up" }
                     }
+
+                    {additional}
 
                     // div {
                     //     div { "Or login with GitHub" }
@@ -115,73 +117,8 @@ pub fn Login() -> Element {
                     //         "Login with GitHub"
                     //     }
                     // }
-
-                    div {
-                        div { "Or login with:" }
-                        button {
-                            onclick: move |_| {
-                                spawn(async move {
-                                    match start_github_oauth().await {
-                                        Ok(_) => {
-                                            status.set("Authorization flow started → check browser".to_string());
-                                        }
-                                        Err(e) => {
-                                            status.set(format!("Error: {}", e));
-                                        }
-                                    }
-                                });
-                            },
-                            class: "btn btn-github btn-primary",
-                            "GitHub"
-                        }
-                    }
                 }
             }
         }
     }
-}
-
-const SCOPE: &str = "read:user user:email";
-
-pub async fn start_github_oauth() -> Result<(), String> {
-    // CSRF
-    let state: String = rand::rng()
-        .sample_iter(Alphanumeric)
-        .take(32)
-        .map(char::from)
-        .collect();
-
-    // Optional: save state in localStorage or sessionStorage
-    // to verify later when callback occurs (recommended)
-    if let Some(window) = window()
-        && let Ok(storage) = window.session_storage()
-    {
-        let _ = storage
-            .expect("Can't create storage object")
-            .set_item("github_oauth_state", &state);
-    }
-
-    let github_client_id = use_context::<GithubClientId>().0;
-    let redirect_url = use_context::<OidcRedirectUrl>().0;
-
-    let params = form_urlencoded::Serializer::new(String::new())
-        .append_pair("client_id", &github_client_id)
-        .append_pair("redirect_uri", &redirect_url)
-        .append_pair("scope", SCOPE)
-        .append_pair("state", &state)
-        .append_pair("response_type", "code") // Authorization Code Flow
-        .finish();
-
-    let auth_url = format!("https://github.com/login/oauth/authorize?{}", params);
-
-    if let Some(win) = window() {
-        let location: Location = win.location();
-        if let Err(e) = location.set_href(&auth_url) {
-            return Err(format!("Failed to navigate: {:?}", e));
-        }
-    } else {
-        return Err("Cannot access window object".to_string());
-    }
-
-    Ok(())
 }

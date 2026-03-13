@@ -4,6 +4,10 @@ services:
     build:
       context: ../../..
       dockerfile: devops/docker/rust/Dockerfile
+    environment:
+      - AG_GITHUB_CLIENT_ID
+      - AG_GOOGLE_CLIENT_ID
+      - AG_OIDC_REDIRECT_URL
     working_dir: /code
     volumes:
       - ../../..:/code

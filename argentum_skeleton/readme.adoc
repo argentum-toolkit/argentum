@@ -5,3 +5,4 @@ Helps to create new application.
 == Packages documentation
 
 * link:infrastructure/readme.adoc[Package with infrastructure layer]
+* link:ui/readme.adoc[Package with UI layer]

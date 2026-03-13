@@ -14,12 +14,14 @@ impl Status {
 }
 
 #[component]
-pub fn AuthCallback(code: String, state: Option<String>) -> Element {
+pub fn AuthCallback(provider: String, code: String, state: String) -> Element {
     #[cfg(not(feature = "web"))]
     return rsx! {};
 
     #[cfg(feature = "web")]
     {
+        let home_url = use_context::<HomePageUrl>().0;
+
         let auth_token = {
             use argentum_user_account_ui::security::ClientSideAuthenticator;
             let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
@@ -29,8 +31,6 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
                 .get_token()
                 .expect("Can't get authentication token")
         };
-
-        use crate::route::Route;
 
         use argentum_oidc_rest::{
             client::Client,
@@ -51,18 +51,20 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
         let mut status = use_signal(|| Status::New);
 
         let client = use_context::<Signal<Client>>();
-        use argentum_standard_ui::service::redirect;
+        use argentum_standard_ui::{HomePageUrl, rsx::component::ErrorBlock};
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let mut authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
+        let home = home_url.clone();
         use_resource(move || {
             let code = code.clone();
-            let state = state.clone();
+            let provider = provider.clone();
             let auth_token = auth_token.clone();
+            let home = home.clone();
 
             async move {
                 let req = ExchangeCodeRequest::new(
-                    ExchangeCodeSchema::new(code.clone(), state.clone()),
+                    ExchangeCodeSchema::new(code.clone(), provider.clone()),
                     ExchangeCodeParams::new(
                         ExchangeCodePathParams::new(),
                         EmptyQueryParams {},
@@ -73,11 +75,13 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
                 match client.read().exchange_code(req).await {
                     Ok(r) => match r {
                         Status201(ApplicationJson(j)) => {
+                            use argentum_standard_ui::service::external_redirect;
+
                             authenticator
                                 .write()
                                 .auth_user(j.0.access_token, j.0.user_id);
 
-                            let _ = redirect(Route::Home {});
+                            let _ = external_redirect(&home);
                         }
                         Status400(ApplicationProblemJson(j)) => {
                             status.set(Status::Failed(j.0.title));
@@ -93,11 +97,10 @@ pub fn AuthCallback(code: String, state: Option<String>) -> Element {
                 "Getting token...",
             },
             Status::Failed(err) => rsx! {
-                div { class: "alert alert-error alert-outline mt-10", role: "alert",
-                    "Can't exchange a code for a token: {err}"
-                }
+                ErrorBlock { errors: vec![format!("Can't exchange a code for a token: {}", err)]}
+
                 div { class: "pt-10 pl-3",
-                    Link { class: "text-primary hover:underline", to: Route::Home {}, "Go to main page" }
+                    a { class: "text-primary hover:underline", href: home_url, "Go to main page" }
                 }
             },
         }

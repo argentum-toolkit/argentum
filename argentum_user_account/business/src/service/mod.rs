@@ -1,3 +1,7 @@
+mod email_confirmation_initiator;
+pub use email_confirmation_initiator::EmailConfirmationInitiator;
+pub use email_confirmation_initiator::EmailConfirmationInitiatorError;
+
 mod password_to_token_exchanger;
 pub use password_to_token_exchanger::DefaultPasswordToTokenExchanger;
 pub use password_to_token_exchanger::PasswordToTokenExchangeResult;

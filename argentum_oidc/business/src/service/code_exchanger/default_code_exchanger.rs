@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     data_type::ExchangedTokenData,
@@ -6,7 +6,7 @@ use crate::{
     repository::CredentialRepositoryTrait,
     service::{
         code_exchanger::{CodeExchangerError, CodeExchangerTrait},
-        provider::ProviderTrait,
+        provider::ProviderStrategyTrait,
     },
 };
 use argentum_log_business::LoggerTrait;
@@ -27,7 +27,7 @@ where
     I: Id,
     L: LoggerTrait,
 {
-    provider: Arc<dyn ProviderTrait>,
+    provider_strategies: HashMap<String, Arc<dyn ProviderStrategyTrait>>,
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
@@ -42,7 +42,7 @@ where
     L: LoggerTrait,
 {
     pub fn new(
-        provider: Arc<dyn ProviderTrait>,
+        provider_strategies: HashMap<String, Arc<dyn ProviderStrategyTrait>>,
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
@@ -51,7 +51,7 @@ where
         logger: Arc<L>,
     ) -> Self {
         Self {
-            provider,
+            provider_strategies,
             member_repository,
             credential_repository,
             session_repository,
@@ -73,16 +73,26 @@ where
     async fn exchange_code(
         &self,
         code: &str,
+        provider_name: &str,
     ) -> Result<ExchangedTokenData<Self::UserId>, CodeExchangerError> {
-        let external_access_token = self.provider.exchange_code(code).await?;
+        let provider = match self.provider_strategies.get(provider_name) {
+            Some(p) => p.clone(),
+            None => {
+                return Err(CodeExchangerError::OidcProviderNotFound(
+                    provider_name.into(),
+                ));
+            }
+        };
 
-        let gh_user = self.provider.get_user_info(&external_access_token).await?;
+        let external_access_token = provider.exchange_code(code).await?;
 
-        let gh_user_id = gh_user.id;
+        let oidc_user = provider.get_user_info(&external_access_token).await?;
+
+        let oidc_user_id = oidc_user.id;
 
         let credential_result = self
             .credential_repository
-            .find_by_external_id(&gh_user_id, self.provider.get_provider_name())
+            .find_by_external_id(&oidc_user_id, provider.get_provider_name())
             .await;
 
         let cred = match credential_result {
@@ -97,31 +107,33 @@ where
         let credential = match cred {
             Some(c) => c,
             None => {
-                let email = gh_user.email;
+                let email = oidc_user.email;
 
-                let user: Option<Member<I>> = None;
+                let user = self.member_repository.find_by_email(&email).await;
                 let user = match user {
-                    Some(u) => u,
-                    None => {
+                    Ok(Some(u)) => u,
+                    Ok(None) => {
                         let user_id = self.id_factory.create();
-                        let name = Name::new(gh_user.first_name, gh_user.last_name, None);
+                        let name = Name::new(oidc_user.first_name, oidc_user.last_name, None);
 
-                        let user = Member::new(user_id, name, email);
+                        let user = Member::new(user_id, name, email, true);
                         if let Err(e) = self.member_repository.create(&user).await {
                             return Err(CodeExchangerError::Other(Some(Arc::new(e))));
                         }
 
                         user
                     }
+                    Err(e) => {
+                        return Err(CodeExchangerError::Other(Some(Arc::new(e))));
+                    }
                 };
 
-                let external_id = user.id.to_string();
                 let created_at = Utc::now();
 
                 let credential = Credential::new(
-                    &external_id,
+                    &oidc_user_id,
                     user.id,
-                    self.provider.get_provider_name(),
+                    provider.get_provider_name(),
                     created_at,
                 );
 

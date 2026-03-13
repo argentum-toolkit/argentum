@@ -3,7 +3,7 @@ use std::sync::Arc;
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::{
     data_type::ExternalUserInfo,
-    service::provider::{ProviderError, ProviderTrait},
+    service::provider::{ProviderError, ProviderStrategyTrait},
 };
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_user_business::data_type::NamePart;
@@ -39,7 +39,7 @@ struct GithubUser {
     // avatar_url: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Clone)]
 struct GithubEmail {
     email: String,
     primary: bool,
@@ -135,7 +135,7 @@ where
 }
 
 #[async_trait]
-impl<L> ProviderTrait for GitHubProvider<L>
+impl<L> ProviderStrategyTrait for GitHubProvider<L>
 where
     L: LoggerTrait,
 {
@@ -174,7 +174,11 @@ where
         let status = token_resp.status();
 
         if !status.is_success() {
-            return Err(ProviderError::BadStatus(status.as_u16()));
+            let token_result = token_resp.text().await;
+            return Err(ProviderError::BadStatus(
+                status.as_u16(),
+                token_result.unwrap_or_default(),
+            ));
         }
 
         let token_result: GithubTokenResponse = match token_resp.json().await {

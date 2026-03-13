@@ -1,24 +1,28 @@
 use crate::route::Route;
 
-use argentum_standard_ui::rsx::component::dark_mode::use_dark_mode;
+use argentum_oidc_ui::{GithubClientId, GoogleClientId, OidcRedirectUrl, rsx::OidcLoginBlock};
+use argentum_standard_ui::{
+    HomePageUrl, LoginUrl, RegistrationUrl, rsx::component::dark_mode::use_dark_mode,
+};
+use argentum_user_account_ui::AdditionalLoginBlock;
 use dioxus::prelude::*;
 use std::env;
 
 static CSS: Asset = asset!("/assets/main.css");
 
-#[derive(Clone)]
-pub struct GithubClientId(pub String);
-
-#[derive(Clone)]
-pub struct OidcRedirectUrl(pub String);
-
 pub(crate) fn App() -> Element {
     //TODO: add better error handling
-    let client_id = env!("AG_GITHUB_CLIENT_ID");
+    let github_client_id = env!("AG_GITHUB_CLIENT_ID");
+    let google_client_id = env!("AG_GOOGLE_CLIENT_ID");
     let redirect_url = env!("AG_OIDC_REDIRECT_URL");
 
-    use_context_provider(|| GithubClientId(client_id.into()));
+    use_context_provider(|| GoogleClientId(google_client_id.into()));
+    use_context_provider(|| GithubClientId(github_client_id.into()));
     use_context_provider(|| OidcRedirectUrl(redirect_url.into()));
+    use_context_provider(|| HomePageUrl((Route::Home {}).to_string()));
+    use_context_provider(|| AdditionalLoginBlock(rsx! {OidcLoginBlock{}}));
+    use_context_provider(|| LoginUrl((Route::Login {}).to_string()));
+    use_context_provider(|| RegistrationUrl((Route::Registration {}).to_string()));
 
     #[cfg(feature = "web")]
     {

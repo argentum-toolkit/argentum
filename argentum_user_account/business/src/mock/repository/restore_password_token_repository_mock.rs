@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::entity::restore_password_token::RestorePasswordToken;
+use crate::entity::RestorePasswordToken;
 use crate::repository::restore_password_token_repository::{
     RestorePasswordTokenRepositoryError, RestorePasswordTokenRepositoryTrait,
 };

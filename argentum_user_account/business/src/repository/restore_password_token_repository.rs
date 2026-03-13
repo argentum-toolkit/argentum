@@ -1,4 +1,4 @@
-use crate::entity::restore_password_token::RestorePasswordToken;
+use crate::entity::RestorePasswordToken;
 use argentum_standard_business::data_type::id::Id;
 use std::{error::Error, sync::Arc};
 

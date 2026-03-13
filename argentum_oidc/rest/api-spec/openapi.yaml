@@ -78,14 +78,15 @@ components:
     ExchangeCodeSchema:
       required:
       - code
+      - provider
       properties:
         code:
           example: abc123def456
           description: Authorization code from Keycloak redirect
           type: string
-        state:
-          example: uuid-1234-5678
-          description: CSRF state nonce (optional, for security)
+        provider:
+          example: Google
+          description: Provider name. E.g. Google, GitHub
           type: string
       type: object
     ProblemDetail:

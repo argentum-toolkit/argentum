@@ -20,6 +20,7 @@ members = [
     "argentum_standard/infrastructure",
     "argentum_standard/ui",
     "argentum_skeleton/infrastructure",
+    "argentum_skeleton/ui",
     "argentum_template/infrastructure",
     "argentum_user/business",
     "argentum_user/infrastructure",

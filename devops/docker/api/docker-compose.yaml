@@ -9,9 +9,9 @@ services:
     privileged: true
     tty: true
     stdin_open: true
-    command: ["tail", "-f", "/dev/null"]
+    # command: ["tail", "-f", "/dev/null"]
     # command: perf record -g --call-graph dwarf cargo run --bin api --release
-    # command: cargo run --bin api #--release
+    command: cargo run --bin api #--release
     # command: cargo run --bin api-keycloak
     environment:
       - CARGO_PROFILE_RELEASE_DEBUG=2
@@ -21,9 +21,12 @@ services:
       - AG_USER_DATABASE_URL
       - AG_USER_AGENT
       - AG_PRODUCT_NAME
+      - AG_EMAIL_CONFIRMATION_FRONT_URL
       - AG_RESTORE_PASSWORD_FRONT_URL
       - AG_GITHUB_CLIENT_ID
       - AG_GITHUB_CLIENT_SECRET
+      - AG_GOOGLE_CLIENT_ID
+      - AG_GOOGLE_CLIENT_SECRET
 
       # - KEYCLOAK_BASE_URL=${KEYCLOAK_BASE_URL}
       # - KEYCLOAK_REALM=${KEYCLOAK_REALM}

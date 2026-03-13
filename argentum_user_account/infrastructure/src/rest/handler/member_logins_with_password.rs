@@ -77,6 +77,9 @@ where
             Err(LoginError::WrongEmailOrPassword) => Err(HttpError::Unauthorized(
                 Unauthorized::new(&format!("{}", LoginError::WrongEmailOrPassword)),
             )),
+            Err(LoginError::EmailNotConfirmed) => Err(HttpError::Unauthorized(Unauthorized::new(
+                &format!("{}", LoginError::EmailNotConfirmed),
+            ))),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
                 Arc::new(e),
             ))),

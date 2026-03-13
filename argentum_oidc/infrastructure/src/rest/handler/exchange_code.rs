@@ -54,7 +54,11 @@ where
             }
         };
 
-        match self.uc.execute(guest, &req.body.code).await {
+        match self
+            .uc
+            .execute(guest, &req.body.code, &req.body.provider)
+            .await
+        {
             Ok(data) => Ok(ExchangeCodeOperationResponseEnum::Status201(
                 CodeExchangedSuccessfullyResponse::new_application_json(ExchangeCodeResult::new(
                     data.access_token,

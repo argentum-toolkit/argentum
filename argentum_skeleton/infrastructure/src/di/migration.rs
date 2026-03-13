@@ -52,7 +52,12 @@ where
             .max_connections(max_db_connections)
             .connect(database_url)
             .await
-            .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?;
+            .map_err(|e| {
+                format!(
+                    "Can't create PG connection pool for connection `{}`. Error: {e}",
+                    database_url
+                )
+            })?;
 
         let adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
 

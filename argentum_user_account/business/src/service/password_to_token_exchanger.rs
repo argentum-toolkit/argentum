@@ -41,6 +41,9 @@ pub enum PasswordToTokenExchangerError {
     #[error("Wrong email or password")]
     WrongEmailOrPassword,
 
+    #[error("Email is not confirmed. Please check your email inbox.")]
+    EmailNotConfirmed,
+
     #[error("Can't get an user. DB error")]
     GetUser(
         #[source]
@@ -123,6 +126,10 @@ where
             Some(u) => u,
             None => return Err(PasswordToTokenExchangerError::WrongEmailOrPassword),
         };
+
+        if !user.email_confirmed {
+            return Err(PasswordToTokenExchangerError::EmailNotConfirmed);
+        }
 
         if !self.credential_checker.check(user.id, password).await? {
             return Err(PasswordToTokenExchangerError::WrongEmailOrPassword);

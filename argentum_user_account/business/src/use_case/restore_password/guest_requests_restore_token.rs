@@ -1,4 +1,4 @@
-use crate::entity::restore_password_token::RestorePasswordToken;
+use crate::entity::RestorePasswordToken;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
 use crate::use_case::restore_password::error::RestorePasswordError;
 
@@ -88,6 +88,7 @@ where
             return Err(RestorePasswordError::TokenRepositoryError(e));
         }
 
+        //TODO: move notification into separate module
         let last = match user.name.last {
             Some(l) => l.to_string(),
             None => "".to_string(),
@@ -177,7 +178,7 @@ mod tests {
         let email = EmailAddress::try_new("test@mail.com".into()).expect("Email should be valid");
 
         let user_id = id_factory.create();
-        let user = Member::new(user_id, user_name, email.clone());
+        let user = Member::new(user_id, user_name, email.clone(), true);
 
         user_repository.create(&user).await?;
 

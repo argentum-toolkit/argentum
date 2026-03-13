@@ -1,4 +1,6 @@
-use crate::db::repository::{PasswordCredentialRepository, RestorePasswordTokenRepository};
+use crate::db::repository::{
+    EmailConfirmationTokenRepository, PasswordCredentialRepository, RestorePasswordTokenRepository,
+};
 use crate::rest::handler::{
     GuestRegistersHandler, GuestRequestsRestoreTokenHandler, GuestWithTokenChangesPasswordHandler,
     MemberLoginsWithPasswordHandler, MemberRegistersWithPasswordHandler,
@@ -19,7 +21,6 @@ use argentum_standard_business::error::DiError;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::di::{UserAccountBusinessDi, UserAccountBusinessDiBuilder};
 use argentum_user_account_business::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
-use argentum_user_account_business::service::PasswordToTokenExchangerTrait;
 use argentum_user_account_business::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
 use argentum_user_account_rest::ApiDi;
 use argentum_user_business::di::UserBusinessDiBuilder;
@@ -62,7 +63,9 @@ where
 {
     pub fn new(
         product_name: &str,
+        email_confirmation_token_ttl: u32,
         restore_password_token_ttl: u32,
+        email_confirmation_front_url: &str,
         restore_password_front_url: &str,
         connection_url: &str,
         max_db_connections: u32,
@@ -89,7 +92,9 @@ where
             business_builder: Arc::new(Mutex::new(UserAccountBusinessDiBuilder::new(
                 user_business_builder,
                 product_name,
+                email_confirmation_token_ttl,
                 restore_password_token_ttl,
+                email_confirmation_front_url,
                 restore_password_front_url,
                 id_factory.clone(),
                 logger.clone(),
@@ -109,7 +114,12 @@ where
             .min_connections(2)
             .connect(&self.connection_url)
             .await
-            .map_err(|e| format!("Can't create PG connection pool. Error: {e}"))?;
+            .map_err(|e| {
+                format!(
+                    "Can't create PG connection pool for connection `{}`. Error: {e}",
+                    &self.connection_url
+                )
+            })?;
 
         let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
 
@@ -123,13 +133,17 @@ where
         let guest_token_generator = Arc::new(StringTokenGenerator::new());
 
         let password_credential_repository = Arc::new(PasswordCredentialRepository::new(
-            pg_adapter,
+            pg_adapter.clone(),
             self.encryptor.clone(),
         ));
+
+        let email_confirmation_token_repository =
+            Arc::new(EmailConfirmationTokenRepository::new(pg_adapter));
 
         self.business_builder.lock()?.with_default_services(
             password_credential_repository,
             restore_password_token_repository,
+            email_confirmation_token_repository,
             guest_token_generator,
             member_token_generator,
         );
@@ -144,17 +158,6 @@ where
         self.business_builder
             .lock()?
             .with_password_credential_repository(password_credential_repository);
-
-        Ok(self)
-    }
-
-    pub fn with_password_to_token_exchanger(
-        &mut self,
-        password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, DiError> {
-        self.business_builder
-            .lock()?
-            .with_password_to_token_exchanger(password_to_token_exchanger);
 
         Ok(self)
     }

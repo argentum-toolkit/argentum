@@ -37,8 +37,12 @@ where
         &self,
         guest: Guest<I>,
         code: &str,
+        provider_name: &str,
     ) -> Result<ExchangedTokenData<I>, CodeExchangerError> {
-        let data = self.auth_code_exchanger.exchange_code(code).await?;
+        let data = self
+            .auth_code_exchanger
+            .exchange_code(code, provider_name)
+            .await?;
 
         self.guest_binder
             .bind_and_logout_guest(Some(guest), data.user_id)

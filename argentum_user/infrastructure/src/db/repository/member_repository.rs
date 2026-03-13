@@ -51,8 +51,9 @@ where
                     }
                 };
 
-                let name_builder =
-                    NameBuilder::new(&dto.first_name).last(dto.last_name.clone().as_deref());
+                let name_builder = NameBuilder::new(&dto.first_name)
+                    .last(dto.last_name.clone().as_deref())
+                    .additional(dto.additional_name.clone().as_deref());
 
                 let name = match name_builder.try_build() {
                     Ok(n) => n,
@@ -66,12 +67,12 @@ where
                     }
                 };
 
-                //TODO: handle errors instead of unwrap
                 Ok(Some(Member {
                     id: dto.id.into(),
                     created_at: dto.created_at,
                     name,
                     email,
+                    email_confirmed: dto.email_confirmed,
                 }))
             }
             Ok(None) => Ok(None),
@@ -91,7 +92,7 @@ where
         let id: Uuid = user_id.into();
 
         let sql = format!(
-            "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
+            "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
         let query = sqlx::query_as(&sql).bind(id);
 
@@ -103,7 +104,7 @@ where
         email: &EmailAddress,
     ) -> Result<Option<Member<Self::Id>>, ExternalUserError> {
         let sql = format!(
-            "SELECT id, created_at, first_name, last_name, email FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
+            "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
         );
         let query = sqlx::query_as(&sql).bind(email.as_string());
 
@@ -112,17 +113,46 @@ where
 
     async fn create(&self, member: &Member<Self::Id>) -> Result<(), ExternalUserError> {
         let last = member.name.last.as_ref().map(|l| l.to_string());
+        let additional = member.name.additional.as_ref().map(|a| a.to_string());
         let member_id: Uuid = member.id.into();
 
         let sql = format!(
-            "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)"
+            "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, additional_name, email, email_confirmed) VALUES ($1, $2, $3, $4, $5, $6, $7)"
         );
+
         let query = sqlx::query(&sql)
             .bind(member_id)
             .bind(member.created_at)
             .bind(member.name.first.to_string())
             .bind(last)
-            .bind(member.email.as_string());
+            .bind(additional)
+            .bind(member.email.as_string())
+            .bind(member.email_confirmed);
+
+        let result = self.adapter.exec(query).await;
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(e) => Err(ExternalUserError::Member(Some(Arc::new(e)))),
+        }
+    }
+
+    async fn update(&self, member: &Member<Self::Id>) -> Result<(), ExternalUserError> {
+        let last = member.name.last.as_ref().map(|l| l.to_string());
+        let additional = member.name.additional.as_ref().map(|a| a.to_string());
+        let member_id: Uuid = member.id.into();
+
+        let sql = format!(
+            "UPDATE {TABLE_NAME} SET first_name = $1, last_name = $2, additional_name = $3, email = $4, email_confirmed = $5 WHERE id = $6"
+        );
+
+        let query = sqlx::query(&sql)
+            .bind(member.name.first.to_string())
+            .bind(last)
+            .bind(additional)
+            .bind(member.email.as_string())
+            .bind(member.email_confirmed)
+            .bind(member_id);
 
         let result = self.adapter.exec(query).await;
 

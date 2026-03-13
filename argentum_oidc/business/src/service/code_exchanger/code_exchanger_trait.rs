@@ -10,5 +10,6 @@ pub trait CodeExchangerTrait: Send + Sync {
     async fn exchange_code(
         &self,
         code: &str,
+        provider_name: &str,
     ) -> Result<ExchangedTokenData<Self::UserId>, CodeExchangerError>;
 }

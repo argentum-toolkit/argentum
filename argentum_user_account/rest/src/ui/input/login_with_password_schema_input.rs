@@ -47,6 +47,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
         name: "unknown",
         label: "Email",
         input_type: "text".to_string(),
+        required: true,
             value: email_value,
 
         violations: email_violations,
@@ -61,6 +62,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
         name: "password",
         label: "Password",
         input_type: "text".to_string(),
+        required: true,
             value: password_value,
 
         violations: password_violations,

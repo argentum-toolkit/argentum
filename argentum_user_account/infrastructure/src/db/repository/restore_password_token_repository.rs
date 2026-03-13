@@ -3,7 +3,7 @@ use argentum_db_infrastructure::adapter::DbAdapterError;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_account_business::entity::restore_password_token::RestorePasswordToken;
+use argentum_user_account_business::entity::RestorePasswordToken;
 use argentum_user_account_business::repository::restore_password_token_repository::{
     RestorePasswordTokenRepositoryError, RestorePasswordTokenRepositoryTrait,
 };
@@ -93,9 +93,12 @@ where
             "INSERT INTO {TABLE_NAME} (id, user_id, token, created_at) VALUES ($1, $2, $3, $4)"
         );
 
+        let id: Uuid = token.id.into();
+        let user_id: Uuid = token.user_id.into();
+
         let query = sqlx::query(&sql)
-            .bind(token.id.to_string())
-            .bind(token.user_id.to_string())
+            .bind(id)
+            .bind(user_id)
             .bind(token.token.clone())
             .bind(token.created_at.naive_utc());
 

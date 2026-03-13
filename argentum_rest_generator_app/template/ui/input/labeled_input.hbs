@@ -1,8 +1,9 @@
 LabeledInput {
     id: "{{ui.id}}",
     name: "{{ui.name}}",
-    label: "{{title}}",           
+    label: "{{title}}",
     input_type: "text".to_string(),
+    required: {{required}},
     {{#if required}}
         value: {{name}}_value,
     {{else}}

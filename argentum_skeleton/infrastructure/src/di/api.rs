@@ -21,14 +21,17 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 struct Env {
-    pub github_client_id: String,
-    pub github_client_secret: String,
+    pub ag_github_client_id: String,
+    pub ag_github_client_secret: String,
+    pub ag_google_client_id: String,
+    pub ag_google_client_secret: String,
     pub ag_oidc_database_url: String,
     pub ag_user_database_url: String,
     pub ag_user_account_database_url: String,
     pub ag_user_account_member_jwt_secret: String,
     pub ag_user_agent: String,
     pub ag_product_name: String,
+    pub ag_email_confirmation_front_url: String,
     pub ag_restore_password_front_url: String,
 }
 
@@ -91,7 +94,9 @@ where
 
         let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
             &env.ag_product_name,
+            3600 * 24 * 30,
             3600, // TTL 1h
+            &env.ag_email_confirmation_front_url,
             &env.ag_restore_password_front_url,
             &env.ag_user_account_database_url,
             10,
@@ -111,8 +116,10 @@ where
         let tmp_oidc_infrastructure_builder = OidcInfrastructureDiBuilder::new(
             &env.ag_oidc_database_url,
             10,
-            &env.github_client_id,
-            &env.github_client_secret,
+            &env.ag_github_client_id,
+            &env.ag_github_client_secret,
+            &env.ag_google_client_id,
+            &env.ag_google_client_secret,
             user_business_builder.clone(),
             user_account_infrastructure_builder.business_builder.clone(),
             rest_builder.clone(),

@@ -36,7 +36,9 @@ impl MemberRepositoryTrait for MemberRepositoryMockWihBrokenSave {
             .read()
             .map_err(|_| ExternalUserError::Member(Some(Arc::new(PoisonedLockError))))?
             .get(&id)
-            .map(|u| Member::<Self::Id>::new(u.id(), u.name.clone(), u.email.clone())))
+            .map(|u| {
+                Member::<Self::Id>::new(u.id(), u.name.clone(), u.email.clone(), u.email_confirmed)
+            }))
     }
 
     async fn find_by_email(
@@ -54,6 +56,7 @@ impl MemberRepositoryTrait for MemberRepositoryMockWihBrokenSave {
                     u.id(),
                     u.name.clone(),
                     u.email.clone(),
+                    u.email_confirmed,
                 )));
             }
         }
@@ -62,6 +65,10 @@ impl MemberRepositoryTrait for MemberRepositoryMockWihBrokenSave {
     }
 
     async fn create(&self, _user: &Member<Self::Id>) -> Result<(), ExternalUserError> {
+        Err(ExternalUserError::Member(None))
+    }
+
+    async fn update(&self, _user: &Member<Self::Id>) -> Result<(), ExternalUserError> {
         Err(ExternalUserError::Member(None))
     }
 }
