@@ -1,5 +1,6 @@
 use crate::service::TokenRouterTrait;
 
+#[derive(Default)]
 pub struct TokenRouterMock {}
 
 impl TokenRouterMock {

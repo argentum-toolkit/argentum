@@ -14,6 +14,7 @@ use secrecy::{ExposeSecret, SecretString};
 
 use argentum_standard_business::data_type::EmailAddress;
 
+#[derive(Default)]
 pub struct PasswordToTokenExchangerMock {
     data: RwLock<HashMap<(String, String), PasswordToTokenExchangeResult<UIntId>>>,
 }
@@ -49,8 +50,7 @@ impl PasswordToTokenExchangerTrait for PasswordToTokenExchangerMock {
         email: &EmailAddress,
         password: &SecretString,
     ) -> PasswordToTokenExchangeResult<Self::Id> {
-        let result = self
-            .data
+        self.data
             .read()
             .map_err(|_| PasswordToTokenExchangerError::Other(Some(Arc::new(PoisonedLockError))))?
             .get(&(email.as_string(), password.expose_secret().into()))
@@ -58,8 +58,6 @@ impl PasswordToTokenExchangerTrait for PasswordToTokenExchangerMock {
             .map(|r| match r {
                 Ok(s) => Ok(Session::new(s.id, s.user_id, &s.token)),
                 Err(e) => Err(e.clone()),
-            })?;
-
-        result
+            })?
     }
 }

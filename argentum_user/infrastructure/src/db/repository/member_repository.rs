@@ -136,6 +136,31 @@ where
             Err(e) => Err(ExternalUserError::Member(Some(Arc::new(e)))),
         }
     }
+
+    async fn update(&self, member: &Member<Self::Id>) -> Result<(), ExternalUserError> {
+        let last = member.name.last.as_ref().map(|l| l.to_string());
+        let additional = member.name.additional.as_ref().map(|a| a.to_string());
+        let member_id: Uuid = member.id.into();
+
+        let sql = format!(
+            "UPDATE {TABLE_NAME} SET first_name = $1, last_name = $2, additional_name = $3, email = $4, email_confirmed = $5 WHERE id = $6"
+        );
+
+        let query = sqlx::query(&sql)
+            .bind(member.name.first.to_string())
+            .bind(last)
+            .bind(additional)
+            .bind(member.email.as_string())
+            .bind(member.email_confirmed)
+            .bind(member_id);
+
+        let result = self.adapter.exec(query).await;
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(e) => Err(ExternalUserError::Member(Some(Arc::new(e)))),
+        }
+    }
 }
 
 #[derive(thiserror::Error, Debug)]

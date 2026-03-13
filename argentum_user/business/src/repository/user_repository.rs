@@ -18,7 +18,9 @@ pub trait MemberRepositoryTrait: Send + Sync {
         email: &EmailAddress,
     ) -> Result<Option<Member<Self::Id>>, ExternalUserError>;
 
-    async fn create(&self, user: &Member<Self::Id>) -> Result<(), ExternalUserError>;
+    async fn create(&self, member: &Member<Self::Id>) -> Result<(), ExternalUserError>;
+
+    async fn update(&self, member: &Member<Self::Id>) -> Result<(), ExternalUserError>;
 }
 
 #[async_trait]

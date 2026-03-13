@@ -21,7 +21,6 @@ use argentum_standard_business::error::DiError;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::di::{UserAccountBusinessDi, UserAccountBusinessDiBuilder};
 use argentum_user_account_business::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
-use argentum_user_account_business::service::PasswordToTokenExchangerTrait;
 use argentum_user_account_business::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
 use argentum_user_account_rest::ApiDi;
 use argentum_user_business::di::UserBusinessDiBuilder;
@@ -159,17 +158,6 @@ where
         self.business_builder
             .lock()?
             .with_password_credential_repository(password_credential_repository);
-
-        Ok(self)
-    }
-
-    pub fn with_password_to_token_exchanger(
-        &mut self,
-        password_to_token_exchanger: Arc<dyn PasswordToTokenExchangerTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, DiError> {
-        self.business_builder
-            .lock()?
-            .with_password_to_token_exchanger(password_to_token_exchanger);
 
         Ok(self)
     }

@@ -11,7 +11,7 @@ use argentum_user_business::repository::user_repository::{
 use secrecy::SecretString;
 
 use crate::repository::credential_writer::CredentialWriterError;
-use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
 use crate::service::EmailConfirmationInitiator;
@@ -23,7 +23,6 @@ where
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
     email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
-    id_factory: Arc<dyn IdFactory<Id = I>>,
 }
 
 impl<I> MemberRegistersWithPasswordUc<I>
@@ -35,13 +34,11 @@ where
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
         email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
-        id_factory: Arc<dyn IdFactory<Id = I>>,
     ) -> Self {
         Self {
             member_repository,
             credential_writer,
             email_confirmation_initiator,
-            id_factory,
         }
     }
 
@@ -169,7 +166,6 @@ mod test {
             Arc::new(member_repository),
             Arc::new(credential_writer),
             email_confirmation_initiator,
-            id_factory.clone(),
         );
 
         let id = id_factory.create();
@@ -225,7 +221,6 @@ mod test {
             Arc::new(member_repository),
             Arc::new(credential_writer),
             email_confirmation_initiator,
-            id_factory.clone(),
         );
 
         let id = id_factory.create();
@@ -284,7 +279,6 @@ mod test {
             Arc::new(member_repository),
             Arc::new(credential_writer),
             email_confirmation_initiator,
-            id_factory.clone(),
         );
 
         let id = id_factory.create();

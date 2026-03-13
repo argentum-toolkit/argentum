@@ -100,8 +100,11 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         pbkdf2.clone(),
         pbkdf2.clone(),
     );
-    let user_account_infrastructure_builder =
-        Arc::new(tmp_user_account_builder.with_default_services().await?);
+    let user_account_infrastructure_builder = Arc::new(
+        tmp_user_account_builder.with_default_services().await?,
+        //
+        // .with_password_to_token_exchanger()
+    );
 
     let mut k_di_builder = KeycloakInfrastructureDiBuilder::new(
         &env.keycloak_base_url,

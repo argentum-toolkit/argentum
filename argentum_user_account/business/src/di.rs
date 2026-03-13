@@ -225,11 +225,18 @@ where
             .clone()
             .ok_or("restore_password_token_repository is not initialized")?;
 
+        let email_confirmation_token_repository = self
+            .email_confirmation_token_repository
+            .clone()
+            .ok_or("email_confirmation_token_repository is not initialized")?;
+
         let member_confirms_email_uc = match self.member_confirms_email_uc.clone() {
             Some(uc) => uc,
             None => Arc::new(DefaultMemberConfirmsEmailUc::new(
                 user_business_di.member_repository.clone(),
+                email_confirmation_token_repository.clone(),
                 self.logger.clone(),
+                self.email_confirmation_token_ttl,
             )),
         };
 
@@ -244,11 +251,6 @@ where
             password_credential_repository.clone(),
         ));
 
-        let email_confirmation_token_repository = self
-            .email_confirmation_token_repository
-            .clone()
-            .ok_or("email_confirmation_token_repository is not initialized")?;
-
         let email_confirmation_initiator =
             Arc::new(crate::service::EmailConfirmationInitiator::new(
                 member_token_generator.clone(),
@@ -262,7 +264,6 @@ where
             user_business_di.member_repository.clone(),
             password_credential_writer.clone(),
             email_confirmation_initiator,
-            self.id_factory.clone(),
         ));
 
         let user_logins_with_password_uc = Arc::new(MemberLoginsWithPasswordUc::new(

@@ -9,9 +9,9 @@ services:
     privileged: true
     tty: true
     stdin_open: true
-    command: ["tail", "-f", "/dev/null"]
+    # command: ["tail", "-f", "/dev/null"]
     # command: perf record -g --call-graph dwarf cargo run --bin api --release
-    # command: cargo run --bin api #--release
+    command: cargo run --bin api #--release
     # command: cargo run --bin api-keycloak
     environment:
       - CARGO_PROFILE_RELEASE_DEBUG=2

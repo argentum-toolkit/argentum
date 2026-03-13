@@ -150,17 +150,15 @@ cargo install dioxus-cli
 * DI
 ** remove mut and mutex from DI
 
-* OIDC
-** login with google or linkedin
-** Email verification
-** ??? automatically confirm emails for social login ????
-** deny login for users with not confirmed email
-** Correct error responses instead of 500
+* User account
+** fix restore password on BE
+** implement FE
 
+* OIDC
+** Correct error responses instead of 500
 ** implement code_verifier/challenge
 ** store auth tokens in secure http only cookies
 ** add support of refresh token
-** customizable UI component for social login
 
 * Component generator
 ** add examples into readme.adoc

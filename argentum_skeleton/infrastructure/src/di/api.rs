@@ -94,7 +94,7 @@ where
 
         let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
             &env.ag_product_name,
-            3600, // TTL 1h
+            3600 * 24 * 30,
             3600, // TTL 1h
             &env.ag_email_confirmation_front_url,
             &env.ag_restore_password_front_url,

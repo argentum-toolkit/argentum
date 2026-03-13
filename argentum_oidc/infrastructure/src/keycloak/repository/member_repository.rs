@@ -191,4 +191,8 @@ where
             ))))
         }
     }
+
+    async fn update(&self, _member: &Member<Self::Id>) -> Result<(), ExternalUserError> {
+        todo!();
+    }
 }
