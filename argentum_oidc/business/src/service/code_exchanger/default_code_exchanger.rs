@@ -9,9 +9,10 @@ use crate::{
         provider::ProviderStrategyTrait,
     },
 };
+use argentum_event_business::EventDispatcher;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
-use argentum_user_account_business::token::GeneratorTrait;
+use argentum_user_account_business::{event::MemberConfirmedEmail, token::GeneratorTrait};
 use argentum_user_business::{
     data_type::Name,
     entity::{session::Session, user::Member},
@@ -34,6 +35,7 @@ where
     token_generator: Arc<dyn GeneratorTrait<Id = I>>,
     id_factory: Arc<dyn IdFactory<Id = I>>,
     logger: Arc<L>,
+    event_dispatcher: Arc<EventDispatcher>,
 }
 
 impl<I, L> DefaultCodeExchanger<I, L>
@@ -49,6 +51,7 @@ where
         token_generator: Arc<dyn GeneratorTrait<Id = I>>,
         id_factory: Arc<dyn IdFactory<Id = I>>,
         logger: Arc<L>,
+        event_dispatcher: Arc<EventDispatcher>,
     ) -> Self {
         Self {
             provider_strategies,
@@ -58,6 +61,7 @@ where
             token_generator,
             id_factory,
             logger,
+            event_dispatcher,
         }
     }
 }
@@ -65,7 +69,7 @@ where
 #[async_trait]
 impl<I, L> CodeExchangerTrait for DefaultCodeExchanger<I, L>
 where
-    I: Id,
+    I: Id + 'static,
     L: LoggerTrait,
 {
     type UserId = I;
@@ -116,12 +120,17 @@ where
                         let user_id = self.id_factory.create();
                         let name = Name::new(oidc_user.first_name, oidc_user.last_name, None);
 
-                        let user = Member::new(user_id, name, email, true);
-                        if let Err(e) = self.member_repository.create(&user).await {
+                        let member = Member::new(user_id, name, email, true);
+                        if let Err(e) = self.member_repository.create(&member).await {
                             return Err(CodeExchangerError::Other(Some(Arc::new(e))));
                         }
 
-                        user
+                        let event = MemberConfirmedEmail::new(member.id);
+                        if let Err(e) = self.event_dispatcher.dispatch(event).await {
+                            return Err(CodeExchangerError::Other(Some(Arc::new(e))));
+                        }
+
+                        member
                     }
                     Err(e) => {
                         return Err(CodeExchangerError::Other(Some(Arc::new(e))));

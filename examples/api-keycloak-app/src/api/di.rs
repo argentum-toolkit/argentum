@@ -1,4 +1,5 @@
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
+use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotifier;
@@ -82,6 +83,8 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
 
     let pbkdf2 = Arc::new(Pbkdf2::new());
 
+    let event_di = Arc::new(Mutex::new(EventBusinessDiBuilder::new()));
+
     let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
         "Argentum ToolKit. Example of API application",
         3600, // TTL 1h
@@ -93,6 +96,7 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         &env.ag_user_account_member_jwt_secret,
         10 * 3600,
         user_business_builder.clone(),
+        event_di.clone(),
         rest_di_builder.clone(),
         unique_id_factory.clone(),
         logger.clone(),
@@ -100,11 +104,8 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         pbkdf2.clone(),
         pbkdf2.clone(),
     );
-    let user_account_infrastructure_builder = Arc::new(
-        tmp_user_account_builder.with_default_services().await?,
-        //
-        // .with_password_to_token_exchanger()
-    );
+    let user_account_infrastructure_builder =
+        Arc::new(tmp_user_account_builder.with_default_services().await?);
 
     let mut k_di_builder = KeycloakInfrastructureDiBuilder::new(
         &env.keycloak_base_url,
@@ -113,6 +114,7 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         &env.keycloak_be_client_id,
         &env.keycloak_be_client_secret,
         &env.keycloak_fe_client_id,
+        event_di.clone(),
         user_business_builder.clone(),
         user_account_infrastructure_builder.business_builder.clone(),
         rest_di_builder.clone(),

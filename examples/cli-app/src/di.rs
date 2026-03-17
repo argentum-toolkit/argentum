@@ -1,5 +1,6 @@
 use argentum_encryption_business::mock::password::EncryptorMock;
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
+use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotifier;
@@ -95,8 +96,11 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
 
     let pbkdf2 = Arc::new(Pbkdf2::new());
 
+    let event_di = Arc::new(Mutex::new(EventBusinessDiBuilder::new()));
+
     let ua_di = UserAccountBusinessDiBuilder::new(
         user_business_builder.clone(),
+        event_di,
         "Argentum ToolKit. Example of CLI application",
         3600, // TTL 1h
         3600, // TTL 1h

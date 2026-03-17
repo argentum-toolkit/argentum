@@ -12,6 +12,7 @@ use crate::rest::transformer::{
 };
 use crate::token::{JwtTokenGenerator, StringTokenGenerator};
 use argentum_encryption_business::password::{Encryptor, Validator};
+use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotifierTrait;
 use argentum_rest_infrastructure::di::RestDiBuilder;
@@ -73,6 +74,7 @@ where
         member_jwt_token_ttl: i64,
 
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
+        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
 
         rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
         id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
@@ -91,6 +93,7 @@ where
             rest_builder,
             business_builder: Arc::new(Mutex::new(UserAccountBusinessDiBuilder::new(
                 user_business_builder,
+                event_business_builder,
                 product_name,
                 email_confirmation_token_ttl,
                 restore_password_token_ttl,
