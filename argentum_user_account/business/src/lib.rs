@@ -1,6 +1,9 @@
 #[cfg(feature = "server")]
 pub mod di;
 pub mod entity;
+
+#[cfg(feature = "server")]
+pub mod event;
 pub mod mock;
 #[cfg(feature = "server")]
 pub mod repository;

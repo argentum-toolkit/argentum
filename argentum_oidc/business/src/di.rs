@@ -1,3 +1,4 @@
+use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::{
     data_type::id::{Id, IdFactory},
@@ -34,6 +35,7 @@ where
     I: Id + 'static,
     L: LoggerTrait,
 {
+    event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
     user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
     user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
 
@@ -52,6 +54,7 @@ where
     L: LoggerTrait + 'static,
 {
     pub fn new(
+        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
         user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
 
@@ -59,6 +62,7 @@ where
         logger: Arc<L>,
     ) -> Self {
         Self {
+            event_business_builder,
             user_business_builder,
             user_account_business_builder,
             id_factory,
@@ -102,6 +106,7 @@ where
             return Ok(di);
         }
 
+        let event_business_di = self.event_business_builder.lock()?.build()?;
         let user_business_di = self.user_business_builder.lock()?.build()?;
         let user_account_business_di = self.user_account_business_builder.lock()?.build()?;
 
@@ -121,6 +126,7 @@ where
                     user_account_business_di.member_token_generator.clone(),
                     self.id_factory.clone(),
                     self.logger.clone(),
+                    event_business_di.event_dispatcher.clone(),
                 ))
             }
         };

@@ -1,4 +1,5 @@
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::{
     di::{OidcBusinessDi, OidcBusinessDiBuilder},
@@ -63,6 +64,7 @@ where
         google_client_id: &str,
         google_client_secret: &str,
 
+        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
         user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
         rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
@@ -80,6 +82,7 @@ where
             google_client_secret: google_client_secret.to_string(),
 
             business_builder: Arc::new(Mutex::new(OidcBusinessDiBuilder::new(
+                event_business_builder,
                 user_business_builder.clone(),
                 user_account_business_builder.clone(),
                 id_factory.clone(),

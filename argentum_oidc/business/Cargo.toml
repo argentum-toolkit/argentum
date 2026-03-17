@@ -13,9 +13,10 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-server = ["dep:tokio"]
+server = ["dep:tokio", "argentum_event_business"]
 
 [dependencies]
+argentum_event_business = { path = "../../argentum_event/business", version = ">=0.4.0-dev,<0.5.0", optional = true }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_oidc_rest = { path = "../rest", version = ">=0.4.0-dev,<0.5.0", features = [
     "server",
@@ -30,12 +31,10 @@ argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", ve
 async-trait = "0.1.*"
 chrono = { version = "0.4.*", features = ["serde"] }
 futures = "0.3.*"
+jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
+reqwest = { version = "0.12.*", features = ["json"] }
 serde = { version = "1.*", features = ["derive"] }
 serde_json = "1.*"
-
-tokio = { version = "1.*", features = ["full"], optional = true }
-reqwest = { version = "0.12.*", features = ["json"] }
-jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
-
 thiserror = "2.*"
+tokio = { version = "1.*", features = ["full"], optional = true }
 uuid = { version = "1.*", features = ["serde", "v4"] }

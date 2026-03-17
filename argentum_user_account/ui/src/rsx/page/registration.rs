@@ -27,10 +27,11 @@ pub fn Registration() -> Element {
     #[cfg(not(feature = "web"))]
     let auth_token = "Server side rendering cant't work with authentication tokens".to_string();
 
-    let on_member_registered_successfully =
-        EventHandler::new(move |_response: MemberRegisteredSuccessfullyResponse| {
-            success.set(Some("Congratulations! Your account has been created."));
-        });
+    let on_member_registered_successfully = EventHandler::new(
+        move |_response: MemberRegisteredSuccessfullyResponse| {
+            success.set(Some("Congratulations! Your account has been created.<br />Please check your email to confirm your account."));
+        },
+    );
 
     let callbacks = MemberRegistersWithPasswordCallbacks {
         on_member_registered_successfully,

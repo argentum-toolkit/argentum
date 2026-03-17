@@ -20,6 +20,7 @@ use crate::{
 };
 use argentum_encryption_business::mock::password::EncryptorMock;
 use argentum_encryption_business::password::Validator;
+use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotifierTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
@@ -48,6 +49,7 @@ where
     L: LoggerTrait,
 {
     user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
+    event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
 
     id_factory: Arc<dyn IdFactory<Id = I>>,
     logger: Arc<L>,
@@ -79,6 +81,8 @@ where
 {
     pub fn new(
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
+        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+
         product_name: &str,
         email_confirmation_token_ttl: u32,
         restore_password_token_ttl: u32,
@@ -91,6 +95,7 @@ where
     ) -> Self {
         Self {
             user_business_builder,
+            event_business_builder,
 
             id_factory,
             logger,
@@ -230,11 +235,14 @@ where
             .clone()
             .ok_or("email_confirmation_token_repository is not initialized")?;
 
+        let event_business_di = self.event_business_builder.lock()?.build()?;
+
         let member_confirms_email_uc = match self.member_confirms_email_uc.clone() {
             Some(uc) => uc,
             None => Arc::new(DefaultMemberConfirmsEmailUc::new(
                 user_business_di.member_repository.clone(),
                 email_confirmation_token_repository.clone(),
+                event_business_di.event_dispatcher.clone(),
                 self.logger.clone(),
                 self.email_confirmation_token_ttl,
             )),

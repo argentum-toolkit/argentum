@@ -1,6 +1,10 @@
 pub mod data_type;
+#[cfg(feature = "server")]
 pub mod di;
 pub mod entity;
+#[cfg(feature = "server")]
 pub mod repository;
+#[cfg(feature = "server")]
 pub mod service;
+#[cfg(feature = "server")]
 pub mod use_case;

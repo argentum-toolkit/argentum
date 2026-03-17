@@ -4,6 +4,7 @@ use std::{
 };
 
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
+use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::mock::StdoutNotifier;
 use argentum_oidc_infrastructure::default_di::OidcInfrastructureDiBuilder;
@@ -49,6 +50,7 @@ where
 {
     listen: String,
     pub logger: Arc<L>,
+    pub event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
     pub rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
     pub user_infrastructure_builder: Arc<Mutex<UserInfrastructureDiBuilder<L>>>,
     pub user_account_infrastructure_builder: Arc<UserAccountInfrastructureDiBuilder<L>>,
@@ -92,6 +94,8 @@ where
 
         let pbkdf2 = Arc::new(Pbkdf2::new());
 
+        let event_business_builder = Arc::new(Mutex::new(EventBusinessDiBuilder::new()));
+
         let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
             &env.ag_product_name,
             3600 * 24 * 30,
@@ -103,6 +107,7 @@ where
             &env.ag_user_account_member_jwt_secret,
             10 * 3600,
             user_business_builder.clone(),
+            event_business_builder.clone(),
             rest_builder.clone(),
             unique_id_factory.clone(),
             logger.clone(),
@@ -120,6 +125,7 @@ where
             &env.ag_github_client_secret,
             &env.ag_google_client_id,
             &env.ag_google_client_secret,
+            event_business_builder.clone(),
             user_business_builder.clone(),
             user_account_infrastructure_builder.business_builder.clone(),
             rest_builder.clone(),
@@ -135,6 +141,7 @@ where
         );
 
         Ok(Self {
+            event_business_builder,
             listen: listen.into(),
             logger,
             rest_builder,

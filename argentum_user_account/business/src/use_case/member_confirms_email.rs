@@ -1,4 +1,8 @@
-use crate::repository::email_confirmation_token_repository::EmailConfirmationTokenRepositoryTrait;
+use crate::{
+    event::MemberConfirmedEmail,
+    repository::email_confirmation_token_repository::EmailConfirmationTokenRepositoryTrait,
+};
+use argentum_event_business::{EventDispatcher, EventDispatcherError};
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
@@ -19,6 +23,7 @@ where
 {
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
+    event_dispatcher: Arc<EventDispatcher>,
     logger: Arc<L>,
     token_ttl: u32,
 }
@@ -31,12 +36,14 @@ where
     pub fn new(
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
+        event_dispatcher: Arc<EventDispatcher>,
         logger: Arc<L>,
         token_ttl: u32,
     ) -> Self {
         Self {
             member_repository,
             email_confirmation_token_repository,
+            event_dispatcher,
             logger,
             token_ttl,
         }
@@ -46,7 +53,7 @@ where
 #[async_trait]
 impl<I, L> MemberConfirmsEmailUcTrait for DefaultMemberConfirmsEmailUc<I, L>
 where
-    I: Id,
+    I: Id + 'static,
     L: LoggerTrait,
 {
     type Id = I;
@@ -78,7 +85,7 @@ where
             .find(confirmation_token.user_id)
             .await;
 
-        let mut user = match result {
+        let mut member = match result {
             Err(err) => return Err(MemberConfirmsEmailError::Network(Arc::new(err))),
             Ok(o) => match o {
                 Some(user) => user,
@@ -86,14 +93,17 @@ where
             },
         };
 
-        user.confirm_email();
-        if let Err(e) = self.member_repository.update(&user).await {
+        member.confirm_email();
+        if let Err(e) = self.member_repository.update(&member).await {
             return Err(MemberConfirmsEmailError::Network(Arc::new(e)));
         }
 
+        let event = MemberConfirmedEmail::new(member.id);
+        self.event_dispatcher.dispatch(event).await?;
+
         if let Err(e) = self
             .email_confirmation_token_repository
-            .delete_users_tokens(user.id)
+            .delete_users_tokens(member.id)
             .await
         {
             self.logger
@@ -118,6 +128,13 @@ pub enum MemberConfirmsEmailError {
     #[error("Can't confirm an email.")]
     Network(#[source] Arc<dyn Error + Send + Sync>),
 
+    #[error("Event dispatcher error")]
+    EventDispatcher(
+        #[source]
+        #[from]
+        EventDispatcherError,
+    ),
+
     #[error("Can't confirm an email.")]
     Other(String),
 }
@@ -130,6 +147,7 @@ mod tests {
     use crate::repository::email_confirmation_token_repository::EmailConfirmationTokenRepositoryTrait;
     use crate::use_case::member_confirms_email::MemberConfirmsEmailError;
     use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
+    use argentum_event_business::EventDispatcher;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
@@ -152,9 +170,12 @@ mod tests {
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
+        let event_dispatcher = Arc::new(EventDispatcher::new());
+
         let uc = super::DefaultMemberConfirmsEmailUc::new(
             member_repository.clone(),
             token_repository.clone(),
+            event_dispatcher,
             logger.clone(),
             100,
         );
@@ -194,9 +215,12 @@ mod tests {
         let writer = Arc::new(StdoutWriter::new());
         let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
 
+        let event_dispatcher = Arc::new(EventDispatcher::new());
+
         let uc = super::DefaultMemberConfirmsEmailUc::new(
             member_repository.clone(),
             token_repository.clone(),
+            event_dispatcher,
             logger.clone(),
             1,
         );
