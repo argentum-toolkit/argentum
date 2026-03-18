@@ -24,7 +24,7 @@ pub struct MockListener {
 
 #[async_trait]
 impl EventListener for MockListener {
-    async fn handle(&self, event: &(dyn Event + 'static)) {
+    async fn handle(&self, event: &dyn Event) {
         if let Some(test_event) = event.as_any().downcast_ref::<TestEvent>() {
             let mut events = self.events_received.lock().unwrap();
             events.push(test_event.data.clone());

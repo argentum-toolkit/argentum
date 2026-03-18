@@ -23,7 +23,7 @@ impl EventDispatcher {
         Ok(())
     }
 
-    pub async fn dispatch(&self, event: impl Event + 'static) -> Result<(), EventDispatcherError> {
+    pub async fn dispatch(&self, event: impl Event) -> Result<(), EventDispatcherError> {
         let event = Arc::new(event);
 
         let listeners = self.listeners.lock()?.clone();

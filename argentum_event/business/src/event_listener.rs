@@ -1,8 +1,7 @@
+use crate::Event;
 use async_trait::async_trait;
 
-use crate::Event;
-
 #[async_trait]
-pub trait EventListener: Send + Sync + 'static {
+pub trait EventListener: Send + Sync {
     async fn handle(&self, event: &dyn Event);
 }
