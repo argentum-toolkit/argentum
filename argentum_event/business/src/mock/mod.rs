@@ -3,11 +3,11 @@ use async_trait::async_trait;
 use std::any::Any;
 
 #[derive(Debug, Clone)]
-pub struct TestEvent {
+pub struct EventMock {
     pub data: String,
 }
 
-impl Event for TestEvent {
+impl Event for EventMock {
     fn name(&self) -> &'static str {
         "TestEvent"
     }
@@ -18,14 +18,14 @@ impl Event for TestEvent {
 }
 
 #[derive(Default)]
-pub struct MockListener {
+pub struct ListenerMock {
     pub events_received: std::sync::Mutex<Vec<String>>,
 }
 
 #[async_trait]
-impl EventListener for MockListener {
+impl EventListener for ListenerMock {
     async fn handle(&self, event: &dyn Event) {
-        if let Some(test_event) = event.as_any().downcast_ref::<TestEvent>() {
+        if let Some(test_event) = event.as_any().downcast_ref::<EventMock>() {
             let mut events = self.events_received.lock().unwrap();
             events.push(test_event.data.clone());
         }

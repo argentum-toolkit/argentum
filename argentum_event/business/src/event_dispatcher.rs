@@ -49,7 +49,7 @@ impl<T> From<PoisonError<MutexGuard<'_, T>>> for EventDispatcherError {
 
 #[cfg(test)]
 mod tests {
-    use crate::mock::{MockListener, TestEvent};
+    use crate::mock::{EventMock, ListenerMock};
 
     use super::*;
     use std::sync::Arc;
@@ -57,7 +57,7 @@ mod tests {
     #[tokio::test]
     async fn test_register_listener() {
         let dispatcher = EventDispatcher::new();
-        let listener = Arc::new(MockListener::default());
+        let listener = Arc::new(ListenerMock::default());
 
         let result = dispatcher.register_listener(listener.clone());
         assert!(result.is_ok());
@@ -72,11 +72,11 @@ mod tests {
     #[tokio::test]
     async fn test_dispatch_event() {
         let dispatcher = EventDispatcher::new();
-        let listener = Arc::new(MockListener::default());
+        let listener = Arc::new(ListenerMock::default());
 
         dispatcher.register_listener(listener.clone()).unwrap();
 
-        let event = TestEvent {
+        let event = EventMock {
             data: "test_data".to_string(),
         };
         let result = dispatcher.dispatch(event).await;
@@ -95,13 +95,13 @@ mod tests {
     #[tokio::test]
     async fn test_dispatch_multiple_listeners() {
         let dispatcher = EventDispatcher::new();
-        let listener1 = Arc::new(MockListener::default());
-        let listener2 = Arc::new(MockListener::default());
+        let listener1 = Arc::new(ListenerMock::default());
+        let listener2 = Arc::new(ListenerMock::default());
 
         dispatcher.register_listener(listener1.clone()).unwrap();
         dispatcher.register_listener(listener2.clone()).unwrap();
 
-        let event = TestEvent {
+        let event = EventMock {
             data: "test_data".to_string(),
         };
         let result = dispatcher.dispatch(event).await;
