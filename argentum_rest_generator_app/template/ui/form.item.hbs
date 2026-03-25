@@ -22,9 +22,15 @@ pub fn {{upper_camel operation.operationId}}Form(
         {{#if needPathParams}}
         path_params: {{upper_camel operation.operationId}}PathParams,
         {{/if}}
+        {{#if schemaName}}
+            {{ snake schemaName }}: Option<{{ upper_camel schemaName }}>,
+        {{/if}}
     ) -> Element {
     {{#if schemaName}}
-    let mut values: Signal<{{ upper_camel schemaName}}> = use_signal(Default::default);
+    let mut values: Signal<{{ upper_camel schemaName }}> = match {{ snake schemaName }} {
+        Some(v) => use_signal(|| v),
+        None => use_signal(Default::default),
+    };
     {{/if}}
     let violations: Signal<ViolationsDto>= use_signal(Default::default);
     let errors = use_signal(Vec::new);
