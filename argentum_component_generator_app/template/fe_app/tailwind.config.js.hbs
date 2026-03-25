@@ -7,6 +7,9 @@ module.exports = {
         "./dist/**/*.js",
     ],
     safelist: [
+        //common
+        "w-full", "relative", "max-w-4xl", "min-h-[10rem]", "max-w-sm",
+
         //authbar
         "dropdown",
         "dropdown-hover",

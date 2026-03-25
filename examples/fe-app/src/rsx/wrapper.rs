@@ -37,7 +37,7 @@ pub(crate) fn Wrapper() -> Element {
                 }
             }
             main {
-                class: "prose flex-grow p-6",
+                class: "relative prose flex-grow p-6 w-full max-w-4xl",
                 Outlet::<Route> {}
             }
             Footer {

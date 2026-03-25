@@ -182,6 +182,11 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     )?;
 
     reg.register_template_string(
+        "ui/input/labeled_textarea",
+        include_str!("../template/ui/input/labeled_textarea.hbs"),
+    )?;
+
+    reg.register_template_string(
         "ui/input/object",
         include_str!("../template/ui/input/object.hbs"),
     )?;

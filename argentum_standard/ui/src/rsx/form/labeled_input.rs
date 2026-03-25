@@ -35,7 +35,7 @@ pub fn LabeledInput(props: InputTextProps) -> Element {
 
     rsx! {
         fieldset {
-            class: "fieldset",
+            class: "fieldset w-full",
             label {
                 "for":"{props.id}",
                 class: "label-text {label_class} {required_class}",
@@ -45,7 +45,7 @@ pub fn LabeledInput(props: InputTextProps) -> Element {
             input {
                 id:"{props.id}", name:"{props.name}", "type":"{props.input_type}", autocomplete:"email", required: props.required,
                 value: "{props.value}",
-                class: "input {input_class}",
+                class: "input  w-full {input_class}",
                 oninput: move |event| props.oninput.call(event.value())
             }
 

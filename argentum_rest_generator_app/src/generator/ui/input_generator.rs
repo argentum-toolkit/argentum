@@ -1,7 +1,7 @@
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{
-    ExtensionUi, RefOrObject, Schema, SchemaType, SpecificationRoot,
+    ExtensionUi, RefOrObject, Schema, SchemaFormat, SchemaType, SpecificationRoot, StandardFormat,
 };
 use convert_case::{Case, Casing};
 use serde::Serialize;
@@ -184,6 +184,54 @@ impl InputGenerator {
                             weight,
                         }
                     }
+                    Some(SchemaType::String) => match s.format {
+                        Some(SchemaFormat::Standard(StandardFormat::Text)) => {
+                            dependencies
+                                .push("argentum_standard_ui::rsx::form::LabeledTextarea".into());
+
+                            let input = self
+                                .renderer
+                                .render_to_result(
+                                    "ui/input/labeled_textarea",
+                                    Input {
+                                        required,
+                                        name: name.clone(),
+                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        ui: schema.extension_ui.into(),
+                                    },
+                                )
+                                .unwrap_or(format!("Can't render property {}", name));
+
+                            KV {
+                                key: name,
+                                value: input,
+                                weight,
+                            }
+                        }
+                        _ => {
+                            dependencies
+                                .push("argentum_standard_ui::rsx::form::LabeledInput".into());
+
+                            let input = self
+                                .renderer
+                                .render_to_result(
+                                    "ui/input/labeled_input",
+                                    Input {
+                                        required,
+                                        name: name.clone(),
+                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        ui: schema.extension_ui.into(),
+                                    },
+                                )
+                                .unwrap_or(format!("Can't render property {}", name));
+
+                            KV {
+                                key: name,
+                                value: input,
+                                weight,
+                            }
+                        }
+                    },
                     _ => {
                         dependencies.push("argentum_standard_ui::rsx::form::LabeledInput".into());
 

@@ -12,8 +12,12 @@ use dioxus::prelude::*;
 pub fn MemberLoginsWithPasswordForm(
     processor: MemberLoginsWithPasswordFormProcessor,
     auth_token: String,
+    login_with_password_schema: Option<LoginWithPasswordSchema>,
 ) -> Element {
-    let mut values: Signal<LoginWithPasswordSchema> = use_signal(Default::default);
+    let mut values: Signal<LoginWithPasswordSchema> = match login_with_password_schema {
+        Some(v) => use_signal(|| v),
+        None => use_signal(Default::default),
+    };
     let violations: Signal<ViolationsDto> = use_signal(Default::default);
     let errors = use_signal(Vec::new);
     let disabled = use_signal(|| false);
