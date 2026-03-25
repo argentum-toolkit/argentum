@@ -1,3 +1,5 @@
+use std::{collections::HashMap, hash::Hash};
+
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Props)]
@@ -7,6 +9,7 @@ where
 {
     pub name: String,
     pub logout_redirect: R,
+    pub links: Vec<(String, R)>,
 }
 
 #[component]
@@ -25,8 +28,14 @@ pub(crate) fn AuthMenu<R: Routable + std::cmp::PartialEq>(props: AuthMenuProps<R
                     "Hello, {props.name}"
             }
             ul {
-                class: "dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm",
+                class: "dropdown-content menu bg-base-300 rounded-box z-1 w-52 p-2 shadow-sm",
                 tabindex: 0,
+                for (title, route) in props.links.iter() {
+                    li {
+                        Link { to: route.clone(), "{title}" }
+                    }
+                }
+                div { class: "divider" }
                 li {
                     link {
                         onclick: move |_| {

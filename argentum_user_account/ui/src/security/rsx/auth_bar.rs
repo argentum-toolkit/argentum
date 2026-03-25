@@ -113,6 +113,7 @@ pub fn AuthBar<R: Routable + std::cmp::PartialEq>(props: AuthBarProps<R>) -> Ele
             AuthMenu {
                 name: first_name().unwrap_or_else(|| "".to_string()),
                 logout_redirect,
+                links: props.links,
             }
         };
     }

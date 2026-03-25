@@ -149,6 +149,7 @@ cargo install dioxus-cli
 
 * DI
 ** remove mut and mutex from DI
+** use .env for argentum_oidc_ui::di::di_init("http://localhost:8082");
 
 * User account
 ** fix restore password on BE

@@ -26,11 +26,12 @@ pub(crate) fn Wrapper() -> Element {
                         login_route: Route::Login {},
                         registration_route: Route::Registration {},
                         logout_redirect: Route::Home {},
+                        links: vec![],
                     },
                     links: vec![
-                        ("Home".to_string(), Route::Home {}),
-                        ("Blog".to_string(), Route::Blog {id: 1}),
-                        ("About".to_string(), Route::Home {}),
+                        ("Home".into(), Route::Home {}),
+                        ("Blog".into(), Route::Blog {id: 1}),
+                        ("About".into(), Route::Home {}),
                     ],
                     theme_config: theme_config()
                 }

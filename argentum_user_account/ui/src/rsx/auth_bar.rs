@@ -8,6 +8,7 @@ where
     pub login_route: R,
     pub registration_route: R,
     pub logout_redirect: R,
+    pub links: Vec<(String, R)>,
 }
 
 #[component]

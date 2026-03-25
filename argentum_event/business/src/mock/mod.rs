@@ -24,7 +24,7 @@ pub struct ListenerMock {
 
 #[async_trait]
 impl EventListener for ListenerMock {
-    async fn handle(&self, event: &dyn Event) {
+    async fn listen(&self, event: &dyn Event) {
         if let Some(test_event) = event.as_any().downcast_ref::<EventMock>() {
             let mut events = self.events_received.lock().unwrap();
             events.push(test_event.data.clone());

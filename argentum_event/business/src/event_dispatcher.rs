@@ -28,7 +28,7 @@ impl EventDispatcher {
 
         let listeners = self.listeners.lock()?.clone();
         for listener in listeners {
-            listener.handle(&*event).await;
+            listener.listen(&*event).await;
         }
 
         Ok(())
