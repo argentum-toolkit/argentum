@@ -13,7 +13,16 @@ pub struct {{ upper_camel name}}Props {
     pub value: {{ upper_camel name}},
     pub violations: Option<ViolationsDto>,
 
+    processor: {{ upper_camel name}}InputProcessor,
+
     oninput: EventHandler<{{ upper_camel name}}>,
+}
+
+#[derive(Clone, PartialEq, Default)]
+pub struct {{ upper_camel name}}InputProcessor {
+    {{#each inputs as |input|}}
+    pub {{snake input.key}}_processor: {{ upper_camel inputName}}Processor,
+    {{/each}}
 }
 
 #[component]
@@ -21,11 +30,12 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
     let {{ upper_camel name}}Props {
         value,
         violations,
+        processor,
         ..
     } = props.clone();
 
     {{#each inputs as |input|}}
-    let mut {{input.key}}_value = use_signal(|| value.{{input.key}});
+    let mut {{snake input.key}}_value = use_signal(|| value.{{snake input.key}});
     {{/each}}
 
     let violation_items = match violations {
@@ -37,7 +47,7 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
     };
 
     {{#each inputs as |input|}}
-    let {{input.key}}_violations = violation_items.get("{{input.key}}").cloned();
+    let {{snake input.key}}_violations = violation_items.get("{{snake input.key}}").cloned();
     {{/each}}
     
     let update = move || {
@@ -45,7 +55,7 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
             .oninput
             .call({{ upper_camel name}}::new(
             {{#each inputs as |input|}}
-                {{input.key}}_value(),
+                {{snake input.key}}_value(),
             {{/each}}
             ))
     };

@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct RequestRestoreTokenSchema {
+    #[serde(rename = "email")]
     pub email: String,
 }
 

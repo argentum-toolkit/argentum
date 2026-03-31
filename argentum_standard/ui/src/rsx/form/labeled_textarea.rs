@@ -13,8 +13,13 @@ pub struct InputTextareaProps {
     pub label: String,
     pub violations: Option<ViolationsDto>,
 
+    processor: LabeledTextareaProcessor,
+
     oninput: EventHandler<String>,
 }
+
+#[derive(Clone, PartialEq, Default)]
+pub struct LabeledTextareaProcessor {}
 
 #[component]
 pub fn LabeledTextarea(props: InputTextareaProps) -> Element {

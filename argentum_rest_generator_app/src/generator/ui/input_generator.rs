@@ -22,10 +22,12 @@ struct Data<'a> {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct KV {
     key: String,
     value: String,
     weight: i16,
+    input_name: String,
 }
 
 #[derive(Serialize)]
@@ -35,6 +37,7 @@ struct Input {
     name: String,
     title: String,
     ui: Ui,
+    value_type: String,
 }
 
 #[derive(Serialize)]
@@ -140,6 +143,7 @@ impl InputGenerator {
 
                     dependencies.push(format!("crate::dto::schema::{}", type_name));
                     dependencies.push(format!("crate::ui::input::{}Input", type_name));
+                    dependencies.push(format!("crate::ui::input::{}InputProcessor", type_name));
 
                     let input = self
                         .renderer
@@ -147,7 +151,7 @@ impl InputGenerator {
                             "ui/input/object",
                             ObjectInput {
                                 required,
-                                type_name,
+                                type_name: type_name.clone(),
                                 name: name.clone(),
                                 ui: schema.clone().extension_ui.into(),
                             },
@@ -158,12 +162,17 @@ impl InputGenerator {
                         key: name,
                         value: input,
                         weight,
+                        input_name: format!("{}Input", type_name),
                     }
                 }
                 RefOrObject::Object(s) => match s.schema_type {
                     Some(SchemaType::Boolean) => {
                         dependencies
                             .push("argentum_standard_ui::rsx::form::LabeledCheckbox".into());
+
+                        dependencies.push(
+                            "argentum_standard_ui::rsx::form::LabeledCheckboxProcessor".into(),
+                        );
 
                         let input = self
                             .renderer
@@ -174,6 +183,7 @@ impl InputGenerator {
                                     name: name.clone(),
                                     title: schema.title.clone().unwrap_or(String::new()),
                                     ui: schema.extension_ui.into(),
+                                    value_type: "bool".into(),
                                 },
                             )
                             .unwrap_or(format!("Can't render property {}", name));
@@ -182,35 +192,17 @@ impl InputGenerator {
                             key: name,
                             value: input,
                             weight,
+                            input_name: "LabeledCheckbox".into(),
                         }
                     }
-                    Some(SchemaType::String) => match s.format {
-                        Some(SchemaFormat::Standard(StandardFormat::Text)) => {
-                            dependencies
-                                .push("argentum_standard_ui::rsx::form::LabeledTextarea".into());
-
-                            let input = self
-                                .renderer
-                                .render_to_result(
-                                    "ui/input/labeled_textarea",
-                                    Input {
-                                        required,
-                                        name: name.clone(),
-                                        title: schema.title.clone().unwrap_or(String::new()),
-                                        ui: schema.extension_ui.into(),
-                                    },
-                                )
-                                .unwrap_or(format!("Can't render property {}", name));
-
-                            KV {
-                                key: name,
-                                value: input,
-                                weight,
-                            }
-                        }
-                        _ => {
+                    Some(SchemaType::Integer) => match s.format {
+                        Some(SchemaFormat::Standard(StandardFormat::Int32)) => {
                             dependencies
                                 .push("argentum_standard_ui::rsx::form::LabeledInput".into());
+
+                            dependencies.push(
+                                "argentum_standard_ui::rsx::form::LabeledInputProcessor".into(),
+                            );
 
                             let input = self
                                 .renderer
@@ -221,6 +213,7 @@ impl InputGenerator {
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or(String::new()),
                                         ui: schema.extension_ui.into(),
+                                        value_type: "i32".into(),
                                     },
                                 )
                                 .unwrap_or(format!("Can't render property {}", name));
@@ -229,11 +222,132 @@ impl InputGenerator {
                                 key: name,
                                 value: input,
                                 weight,
+                                input_name: "LabeledInput".into(),
+                            }
+                        }
+                        _ => {
+                            dependencies
+                                .push("argentum_standard_ui::rsx::form::LabeledInput".into());
+
+                            dependencies.push(
+                                "argentum_standard_ui::rsx::form::LabeledInputProcessor".into(),
+                            );
+
+                            let input = self
+                                .renderer
+                                .render_to_result(
+                                    "ui/input/labeled_input",
+                                    Input {
+                                        required,
+                                        name: name.clone(),
+                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        ui: schema.extension_ui.into(),
+                                        value_type: "i64".into(),
+                                    },
+                                )
+                                .unwrap_or(format!("Can't render property {}", name));
+
+                            KV {
+                                key: name,
+                                value: input,
+                                weight,
+                                input_name: "LabeledInput".into(),
+                            }
+                        }
+                    },
+                    Some(SchemaType::String) => match s.format {
+                        Some(SchemaFormat::Standard(StandardFormat::Text)) => {
+                            dependencies
+                                .push("argentum_standard_ui::rsx::form::LabeledTextarea".into());
+
+                            dependencies.push(
+                                "argentum_standard_ui::rsx::form::LabeledTextareaProcessor".into(),
+                            );
+
+                            let input = self
+                                .renderer
+                                .render_to_result(
+                                    "ui/input/labeled_textarea",
+                                    Input {
+                                        required,
+                                        name: name.clone(),
+                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        ui: schema.extension_ui.into(),
+                                        value_type: "String".into(),
+                                    },
+                                )
+                                .unwrap_or(format!("Can't render property {}", name));
+
+                            KV {
+                                key: name,
+                                value: input,
+                                weight,
+                                input_name: "LabeledTextarea".into(),
+                            }
+                        }
+                        Some(SchemaFormat::Standard(StandardFormat::Uuid)) => {
+                            dependencies
+                                .push("argentum_standard_ui::rsx::form::AutocompleteUuid".into());
+
+                            dependencies.push(
+                                "argentum_standard_ui::rsx::form::AutocompleteUuidProcessor".into(),
+                            );
+
+                            let input = self
+                                .renderer
+                                .render_to_result(
+                                    "ui/input/autocomplete_uuid",
+                                    Input {
+                                        required,
+                                        name: name.clone(),
+                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        ui: schema.extension_ui.into(),
+                                        value_type: "uuid::Uuid".into(),
+                                    },
+                                )
+                                .unwrap_or(format!("Can't render property {}", name));
+
+                            KV {
+                                key: name,
+                                value: input,
+                                weight,
+                                input_name: "AutocompleteUuid".into(),
+                            }
+                        }
+                        _ => {
+                            dependencies
+                                .push("argentum_standard_ui::rsx::form::LabeledInput".into());
+
+                            dependencies.push(
+                                "argentum_standard_ui::rsx::form::LabeledInputProcessor".into(),
+                            );
+
+                            let input = self
+                                .renderer
+                                .render_to_result(
+                                    "ui/input/labeled_input",
+                                    Input {
+                                        required,
+                                        name: name.clone(),
+                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        ui: schema.extension_ui.into(),
+                                        value_type: "String".into(),
+                                    },
+                                )
+                                .unwrap_or(format!("Can't render property {}", name));
+
+                            KV {
+                                key: name,
+                                value: input,
+                                weight,
+                                input_name: "LabeledInput".into(),
                             }
                         }
                     },
                     _ => {
                         dependencies.push("argentum_standard_ui::rsx::form::LabeledInput".into());
+                        dependencies
+                            .push("argentum_standard_ui::rsx::form::LabeledInputProcessor".into());
 
                         let input = self
                             .renderer
@@ -244,6 +358,7 @@ impl InputGenerator {
                                     name: name.clone(),
                                     title: schema.title.clone().unwrap_or(String::new()),
                                     ui: schema.extension_ui.into(),
+                                    value_type: "String".into(),
                                 },
                             )
                             .unwrap_or(format!("Can't render property {}", name));
@@ -252,6 +367,7 @@ impl InputGenerator {
                             key: name,
                             value: input,
                             weight,
+                            input_name: "LabeledInput".into(),
                         }
                     }
                 },

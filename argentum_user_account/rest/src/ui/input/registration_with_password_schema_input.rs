@@ -4,9 +4,12 @@ use crate::dto::schema::RegistrationWithPasswordSchema;
 
 use crate::dto::schema::UserName;
 use crate::ui::input::UserNameInput;
+use crate::ui::input::UserNameInputProcessor;
 use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
 use argentum_standard_ui::rsx::form::LabeledCheckbox;
+use argentum_standard_ui::rsx::form::LabeledCheckboxProcessor;
 use argentum_standard_ui::rsx::form::LabeledInput;
+use argentum_standard_ui::rsx::form::LabeledInputProcessor;
 use dioxus::prelude::*;
 
 #[derive(PartialEq, Props, Clone)]
@@ -14,13 +17,26 @@ pub struct RegistrationWithPasswordSchemaProps {
     pub value: RegistrationWithPasswordSchema,
     pub violations: Option<ViolationsDto>,
 
+    processor: RegistrationWithPasswordSchemaInputProcessor,
+
     oninput: EventHandler<RegistrationWithPasswordSchema>,
+}
+
+#[derive(Clone, PartialEq, Default)]
+pub struct RegistrationWithPasswordSchemaInputProcessor {
+    pub name_processor: UserNameInputProcessor,
+    pub email_processor: LabeledInputProcessor,
+    pub password_processor: LabeledInputProcessor,
+    pub terms_processor: LabeledCheckboxProcessor,
 }
 
 #[component]
 pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchemaProps) -> Element {
     let RegistrationWithPasswordSchemaProps {
-        value, violations, ..
+        value,
+        violations,
+        processor,
+        ..
     } = props.clone();
 
     let mut name_value = use_signal(|| value.name);
@@ -54,10 +70,12 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             UserNameInput {
         value: name_value(),
         violations: name_violations,
-        oninput: move |event: UserName| {
-            name_value.set(event);
+        oninput: move |v: UserName| {
+            name_value.set(v);
             update();
-        }
+        },
+
+        processor: processor.name_processor,
     }
 
             LabeledInput {
@@ -69,10 +87,12 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             value: email_value,
 
         violations: email_violations,
-        oninput: move |event: String| {
-            email_value.set(event);
+        oninput: move |v: String| {
+            email_value.set(v);
             update();
         },
+
+        processor: processor.email_processor,
     }
 
             LabeledInput {
@@ -84,10 +104,12 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             value: password_value,
 
         violations: password_violations,
-        oninput: move |event: String| {
-            password_value.set(event);
+        oninput: move |v: String| {
+            password_value.set(v);
             update();
         },
+
+        processor: processor.password_processor,
     }
 
             LabeledCheckbox {
@@ -97,10 +119,12 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             value: terms_value(),
         violations: terms_violations,
 
-        oninput: move |event: bool| {
-            terms_value.set(event);
+        oninput: move |v: bool| {
+            terms_value.set(v);
             update();
-        }
+        },
+
+        processor: processor.terms_processor,
     }
 
         }

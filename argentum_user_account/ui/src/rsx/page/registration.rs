@@ -38,7 +38,7 @@ pub fn Registration() -> Element {
         ..Default::default()
     };
 
-    let processor = MemberRegistersWithPasswordFormProcessor::new(callbacks);
+    let processor = MemberRegistersWithPasswordFormProcessor::new(callbacks, Default::default());
 
     let additional = use_context::<AdditionalLoginBlock>().0;
     let login_url = use_context::<LoginUrl>().0;

@@ -13,6 +13,7 @@ readme = "README.md"
 [dependencies]
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 dioxus = { version = "0.7.*", features = ["fullstack"] }
+uuid = { version = "1.*", features = ["serde", "v4", "js"] }
 web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
 
 [features]

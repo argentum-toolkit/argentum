@@ -5,3 +5,7 @@ mod user_name_input;
 pub use login_with_password_schema_input::LoginWithPasswordSchemaInput;
 pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInput;
 pub use user_name_input::UserNameInput;
+
+pub use login_with_password_schema_input::LoginWithPasswordSchemaInputProcessor;
+pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInputProcessor;
+pub use user_name_input::UserNameInputProcessor;

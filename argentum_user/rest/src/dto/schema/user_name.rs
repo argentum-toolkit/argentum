@@ -7,8 +7,11 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct UserName {
+    #[serde(rename = "first")]
     pub first: String,
+    #[serde(rename = "last")]
     pub last: Option<String>,
+    #[serde(rename = "additional")]
     pub additional: Option<String>,
 }
 

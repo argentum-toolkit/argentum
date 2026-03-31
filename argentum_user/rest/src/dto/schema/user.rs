@@ -10,8 +10,11 @@ use crate::dto::schema::UserNameRaw;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct User {
+    #[serde(rename = "id")]
     pub id: Option<uuid::Uuid>,
+    #[serde(rename = "email")]
     pub email: String,
+    #[serde(rename = "name")]
     pub name: UserName,
 }
 

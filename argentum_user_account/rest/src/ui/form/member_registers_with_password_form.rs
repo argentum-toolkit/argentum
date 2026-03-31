@@ -54,6 +54,7 @@ pub fn MemberRegistersWithPasswordForm(
                 oninput: move |event: RegistrationWithPasswordSchema| {
                     values.set(event);
                 },
+                processor: processor.input_processor.clone(),
             }
 
             Submit {

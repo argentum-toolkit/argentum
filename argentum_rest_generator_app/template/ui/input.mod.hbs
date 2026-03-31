@@ -5,3 +5,7 @@ mod {{snake  @key}}_input;
 {{#each inputs as |input|~}}
 pub use {{snake @key}}_input::{{upper_camel @key}}Input;
 {{/each}}
+
+{{#each inputs as |input|~}}
+pub use {{snake @key}}_input::{{upper_camel @key}}InputProcessor;
+{{/each}}

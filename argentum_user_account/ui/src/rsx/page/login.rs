@@ -54,7 +54,7 @@ pub fn Login() -> Element {
         ..Default::default()
     };
 
-    let processor = MemberLoginsWithPasswordFormProcessor::new(callbacks);
+    let processor = MemberLoginsWithPasswordFormProcessor::new(callbacks, Default::default());
 
     // let keycloak_url = "http://localhost:8099";
     // let realm = "argentum-realm-dev";

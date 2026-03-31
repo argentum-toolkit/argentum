@@ -73,6 +73,7 @@ pub fn {{upper_camel operation.operationId}}Form(
                 oninput: move |event: {{ upper_camel schemaName}}| {
                     values.set(event);
                 },
+                processor: processor.input_processor.clone(),
             }
             {{/if}}
 

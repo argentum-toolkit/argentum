@@ -4,6 +4,7 @@ use crate::dto::schema::LoginWithPasswordSchema;
 
 use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
 use argentum_standard_ui::rsx::form::LabeledInput;
+use argentum_standard_ui::rsx::form::LabeledInputProcessor;
 use dioxus::prelude::*;
 
 #[derive(PartialEq, Props, Clone)]
@@ -11,13 +12,24 @@ pub struct LoginWithPasswordSchemaProps {
     pub value: LoginWithPasswordSchema,
     pub violations: Option<ViolationsDto>,
 
+    processor: LoginWithPasswordSchemaInputProcessor,
+
     oninput: EventHandler<LoginWithPasswordSchema>,
+}
+
+#[derive(Clone, PartialEq, Default)]
+pub struct LoginWithPasswordSchemaInputProcessor {
+    pub email_processor: LabeledInputProcessor,
+    pub password_processor: LabeledInputProcessor,
 }
 
 #[component]
 pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Element {
     let LoginWithPasswordSchemaProps {
-        value, violations, ..
+        value,
+        violations,
+        processor,
+        ..
     } = props.clone();
 
     let mut email_value = use_signal(|| value.email);
@@ -51,10 +63,12 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             value: email_value,
 
         violations: email_violations,
-        oninput: move |event: String| {
-            email_value.set(event);
+        oninput: move |v: String| {
+            email_value.set(v);
             update();
         },
+
+        processor: processor.email_processor,
     }
 
             LabeledInput {
@@ -66,10 +80,12 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             value: password_value,
 
         violations: password_violations,
-        oninput: move |event: String| {
-            password_value.set(event);
+        oninput: move |v: String| {
+            password_value.set(v);
             update();
         },
+
+        processor: processor.password_processor,
     }
 
         }

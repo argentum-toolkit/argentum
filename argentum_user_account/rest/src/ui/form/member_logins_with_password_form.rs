@@ -53,6 +53,7 @@ pub fn MemberLoginsWithPasswordForm(
                 oninput: move |event: LoginWithPasswordSchema| {
                     values.set(event);
                 },
+                processor: processor.input_processor.clone(),
             }
 
             Submit {

@@ -7,6 +7,7 @@ use crate::ui::callbacks::{{upper_camel operation.operationId}}Callbacks;
 use dioxus::prelude::*;
 {{#if schemaName }}
 use crate::dto::schema::{{upper_camel schemaName}};
+use crate::ui::input::{{upper_camel schemaName}}InputProcessor;
 {{/if}}
 
 {{#if needPathParams}}
@@ -16,11 +17,16 @@ use crate::dto::path_params::{{upper_camel operation.operationId}}PathParams;
 #[derive(Clone, PartialEq)]
 pub struct {{upper_camel operation.operationId}}FormProcessor {
     callbacks: {{upper_camel operation.operationId}}Callbacks,
+
+    pub input_processor: {{ upper_camel schemaName}}InputProcessor,
 }
 
 impl {{upper_camel operation.operationId}}FormProcessor {
-    pub fn new(callbacks:{{upper_camel operation.operationId}}Callbacks) -> Self {
-        Self { callbacks }
+    pub fn new(
+        callbacks:{{upper_camel operation.operationId}}Callbacks,
+        input_processor: {{ upper_camel schemaName}}InputProcessor
+        ) -> Self {
+        Self { callbacks, input_processor }
     }
 
     #[cfg(feature = "web")]

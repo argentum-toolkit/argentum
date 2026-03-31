@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ChangePasswordSchema {
+    #[serde(rename = "token")]
     pub token: String,
+    #[serde(rename = "password")]
     pub password: String,
 }
 

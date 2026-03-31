@@ -1,8 +1,10 @@
 {{ upper_camel typeName }}Input {
-    value: {{name}}_value(),
-    violations: {{name}}_violations,
-    oninput: move |event: {{ upper_camel typeName }}| {
-        {{name}}_value.set(event);
+    value: {{snake name}}_value(),
+    violations: {{snake name}}_violations,
+    oninput: move |v: {{ upper_camel typeName }}| {
+        {{snake name}}_value.set(v);
         update();
-    }
+    },
+
+    processor: processor.{{snake name}}_processor,
 }

@@ -5,18 +5,20 @@ LabeledTextarea {
     input_type: "text".to_string(),
     required: {{required}},
     {{#if required}}
-        value: {{name}}_value,
+        value: {{snake name}}_value,
     {{else}}
-        value: {{name}}_value().unwrap_or("".to_string()),
+        value: {{snake name}}_value().unwrap_or("".to_string()),
     {{/if}}
     
-    violations: {{name}}_violations,
-    oninput: move |event: String| {
+    violations: {{snake name}}_violations,
+    oninput: move |v: {{valueType}}| {
         {{#if required}}
-        {{name}}_value.set(event);
+        {{snake name}}_value.set(v);
         {{else}}
-        {{name}}_value.set(Some(event));
+        {{snake name}}_value.set(Some(v));
         {{/if}}
         update();
     },
+
+    processor: processor.{{snake name}}_processor,
 }

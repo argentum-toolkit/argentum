@@ -172,6 +172,11 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     reg.register_template_string("ui/input.mod", include_str!("../template/ui/input.mod.hbs"))?;
 
     reg.register_template_string(
+        "ui/input/autocomplete_uuid",
+        include_str!("../template/ui/input/autocomplete_uuid.hbs"),
+    )?;
+
+    reg.register_template_string(
         "ui/input/labeled_checkbox",
         include_str!("../template/ui/input/labeled_checkbox.hbs"),
     )?;

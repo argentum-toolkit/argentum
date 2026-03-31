@@ -1,0 +1,23 @@
+AutocompleteUuid {
+    id: "{{ui.id}}",
+    name: "{{ui.name}}",
+    label: "{{title}}",
+    input_type: "text".to_string(),
+    required: {{required}},
+    {{#if required}}
+        value: {{snake name}}_value,
+    {{else}}
+        value: {{snake name}}_value().unwrap_or("".to_string()),
+    {{/if}}
+    
+    violations: {{snake name}}_violations,
+    oninput: move |v: {{valueType}}| {
+        {{#if required}}
+        {{snake name}}_value.set(v);
+        {{else}}
+        {{snake name}}_value.set(Some(v));
+        {{/if}}
+        update();
+    },
+    processor: processor.{{snake name}}_processor,
+}
