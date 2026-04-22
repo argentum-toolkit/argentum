@@ -1,5 +1,4 @@
 use std::pin::Pin;
-use std::str::FromStr;
 use std::sync::Arc;
 
 use crate::rsx::component::ErrorBlock;
@@ -105,14 +104,14 @@ pub fn AutocompleteUuid(props: AutocompleteUuidProps) -> Element {
                 AutocompleteState::Loaded(ref values) => rsx!{div {
                     div {
                         {values.iter().map(|(id, title)| {
-                            let cloned_id = id.clone();
+                            let deref_id = *id;
                             let cloned_title = title.clone();
                             rsx! {
                                 div {
                                     onclick: move |_| {
                                         string_value.set(cloned_title.clone());
 
-                                        props.oninput.call(cloned_id.clone());
+                                        props.oninput.call(deref_id);
                                         state.set(AutocompleteState::Hidden);
                                     },
                                     "{title}",

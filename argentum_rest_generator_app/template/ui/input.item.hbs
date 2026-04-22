@@ -12,6 +12,8 @@ use dioxus::prelude::*;
 pub struct {{ upper_camel name}}Props {
     pub value: {{ upper_camel name}},
     pub violations: Option<ViolationsDto>,
+    pub ui_wrapper: String,
+    pub title: Option<String>,
 
     processor: {{ upper_camel name}}InputProcessor,
 
@@ -27,10 +29,17 @@ pub struct {{ upper_camel name}}InputProcessor {
 
 #[component]
 pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element {
+    let label_class = match props.violations {
+        Some(_) => "text-error",
+        None => "",
+    };
+
     let {{ upper_camel name}}Props {
         value,
         violations,
         processor,
+        ui_wrapper,
+        title,
         ..
     } = props.clone();
 
@@ -49,7 +58,7 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
     {{#each inputs as |input|}}
     let {{snake input.key}}_violations = violation_items.get("{{snake input.key}}").cloned();
     {{/each}}
-    
+
     let update = move || {
         props
             .oninput
@@ -60,9 +69,38 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
             ))
     };
 
-    rsx! {
-        {{#each inputs as |input|}}
-        {{{input.value}}}
-        {{/each}}
+    if ui_wrapper.eq("flex") {
+        rsx! {
+            fieldset {
+                if let Some(t) = title {
+                    legend { class: "fieldset-legend {label_class}", "{t}"}
+                }
+                div {
+                    class: "flex gap-2",
+                    {{#each inputs as |input|}}
+                    {{{input.value}}}
+                    {{/each}}
+                }
+            }
+        }
+     } else if ui_wrapper.eq("block") {
+        rsx! {
+            fieldset {
+                if let Some(t) = title {
+                    legend { class: "fieldset-legend {label_class}", "{t}"}
+                }
+                div {
+                    {{#each inputs as |input|}}
+                    {{{input.value}}}
+                    {{/each}}
+                }
+            }
+        }
+    } else {
+        rsx! {
+            {{#each inputs as |input|}}
+            {{{input.value}}}
+            {{/each}}
+        }
     }
 }

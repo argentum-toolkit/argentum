@@ -11,13 +11,23 @@ use std::sync::Arc;
 const MOD_PATH: &str = "/src/ui/input/mod.rs";
 const MOD_TEMPLATE: &str = "ui/input.mod";
 const ITEM_TEMPLATE: &str = "ui/input.item";
+const OPTIONAL_ITEM_TEMPLATE: &str = "ui/optional_input.item";
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data<'a> {
     name: String,
     input: &'a Schema,
+    ui: Ui,
     inputs: Vec<KV>,
+    dependencies: Vec<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OptionalData<'a> {
+    name: String,
+    input: &'a Schema,
     dependencies: Vec<String>,
 }
 
@@ -46,15 +56,19 @@ struct ObjectInput {
     required: bool,
     type_name: String,
     name: String,
+    title: Option<String>,
     ui: Ui,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 struct Ui {
     pub id: String,
     pub name: String,
     pub label: String,
+    pub wrapper: String,
+    pub optional_title: Option<String>,
+    pub optional_style: String,
 }
 
 impl From<Option<ExtensionUi>> for Ui {
@@ -65,12 +79,32 @@ impl From<Option<ExtensionUi>> for Ui {
                 id: "unknown".into(),
                 name: "unknown".into(),
                 label: "unknown".into(),
+                wrapper: "none".into(),
+                optional_title: None,
+                optional_style: "none".into(),
             },
             Some(v) => Self {
                 id: v.id.unwrap_or("unknown".into()),
                 name: v.name.unwrap_or("unknown".into()),
                 label: v.label.unwrap_or("unknown".into()),
+                wrapper: v.wrapper.into(),
+                optional_title: v.optional_title,
+                optional_style: v.optional_style.into(),
             },
+        }
+    }
+}
+
+impl From<ExtensionUi> for Ui {
+    fn from(value: ExtensionUi) -> Self {
+        //TODO: generate values or show warnings
+        Self {
+            id: value.id.unwrap_or("unknown".into()),
+            name: value.name.unwrap_or("unknown".into()),
+            label: value.label.unwrap_or("unknown".into()),
+            wrapper: value.wrapper.into(),
+            optional_title: value.optional_title,
+            optional_style: value.optional_style.into(),
         }
     }
 }
@@ -102,6 +136,10 @@ impl InputGenerator {
         spec: &SpecificationRoot,
     ) -> Result<(), String> {
         let file_path = format!("/src/ui/input/{}_input.rs", name.to_case(Case::Snake));
+        let optional_file_path = format!(
+            "/src/ui/input/{}_optional_input.rs",
+            name.to_case(Case::Snake)
+        );
 
         let mut inputs = Vec::new();
         let mut dependencies: Vec<String> = vec![];
@@ -142,8 +180,22 @@ impl InputGenerator {
                         .into();
 
                     dependencies.push(format!("crate::dto::schema::{}", type_name));
-                    dependencies.push(format!("crate::ui::input::{}Input", type_name));
+                    if required {
+                        dependencies.push(format!("crate::ui::input::{}Input", type_name));
+                    } else {
+                        dependencies.push(format!("crate::ui::input::{}OptionalInput", type_name));
+                    }
                     dependencies.push(format!("crate::ui::input::{}InputProcessor", type_name));
+
+                    let title = match r.title {
+                        Some(t) => Some(t),
+                        None => schema.title.clone(),
+                    };
+
+                    let ui: Ui = match r.extension_ui {
+                        Some(ext) => ext.into(),
+                        None => schema.clone().extension_ui.into(),
+                    };
 
                     let input = self
                         .renderer
@@ -153,7 +205,8 @@ impl InputGenerator {
                                 required,
                                 type_name: type_name.clone(),
                                 name: name.clone(),
-                                ui: schema.clone().extension_ui.into(),
+                                ui,
+                                title,
                             },
                         )
                         .unwrap_or(format!("Can't render property {}", name));
@@ -181,7 +234,7 @@ impl InputGenerator {
                                 Input {
                                     required,
                                     name: name.clone(),
-                                    title: schema.title.clone().unwrap_or(String::new()),
+                                    title: schema.title.clone().unwrap_or_default(),
                                     ui: schema.extension_ui.into(),
                                     value_type: "bool".into(),
                                 },
@@ -240,7 +293,7 @@ impl InputGenerator {
                                     Input {
                                         required,
                                         name: name.clone(),
-                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        title: schema.title.clone().unwrap_or_default(),
                                         ui: schema.extension_ui.into(),
                                         value_type: "i64".into(),
                                     },
@@ -271,7 +324,7 @@ impl InputGenerator {
                                     Input {
                                         required,
                                         name: name.clone(),
-                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        title: schema.title.clone().unwrap_or_default(),
                                         ui: schema.extension_ui.into(),
                                         value_type: "String".into(),
                                     },
@@ -300,7 +353,7 @@ impl InputGenerator {
                                     Input {
                                         required,
                                         name: name.clone(),
-                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        title: schema.title.clone().unwrap_or_default(),
                                         ui: schema.extension_ui.into(),
                                         value_type: "uuid::Uuid".into(),
                                     },
@@ -329,7 +382,7 @@ impl InputGenerator {
                                     Input {
                                         required,
                                         name: name.clone(),
-                                        title: schema.title.clone().unwrap_or(String::new()),
+                                        title: schema.title.clone().unwrap_or_default(),
                                         ui: schema.extension_ui.into(),
                                         value_type: "String".into(),
                                     },
@@ -381,15 +434,31 @@ impl InputGenerator {
 
         inputs.sort_by_key(|item| item.weight);
 
+        let ui: Ui = input.clone().extension_ui.into();
+
         let data = Data {
-            name,
+            name: name.clone(),
             input,
+            ui,
             inputs,
-            dependencies,
+            dependencies: dependencies.clone(),
         };
 
         self.renderer
             .render(base_output_path, ITEM_TEMPLATE, &data, file_path.as_str())?;
+
+        let optional_data = OptionalData {
+            name,
+            dependencies,
+            input,
+        };
+
+        self.renderer.render(
+            base_output_path,
+            OPTIONAL_ITEM_TEMPLATE,
+            &optional_data,
+            optional_file_path.as_str(),
+        )?;
 
         Ok(())
     }

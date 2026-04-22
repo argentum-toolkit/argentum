@@ -8,7 +8,7 @@ LabeledCheckbox {
         value: {{snake name}}_value().unwrap_or(false),
     {{/if}}
     violations: {{snake name}}_violations,
-    
+
     oninput: move |v: bool| {
         {{#if required}}
         {{snake name}}_value.set(v);
@@ -17,6 +17,6 @@ LabeledCheckbox {
         {{/if}}
         update();
     },
-    
+
     processor: processor.{{snake name}}_processor,
 }

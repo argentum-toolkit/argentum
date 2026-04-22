@@ -5,11 +5,11 @@ LabeledTextarea {
     input_type: "text".to_string(),
     required: {{required}},
     {{#if required}}
-        value: {{snake name}}_value,
+        value: {{snake name}}_value(),
     {{else}}
-        value: {{snake name}}_value().unwrap_or("".to_string()),
+        value: {{snake name}}_value().unwrap_or_default(),
     {{/if}}
-    
+
     violations: {{snake name}}_violations,
     oninput: move |v: {{valueType}}| {
         {{#if required}}

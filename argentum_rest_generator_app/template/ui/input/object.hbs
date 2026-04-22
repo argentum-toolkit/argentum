@@ -1,10 +1,48 @@
-{{ upper_camel typeName }}Input {
-    value: {{snake name}}_value(),
-    violations: {{snake name}}_violations,
-    oninput: move |v: {{ upper_camel typeName }}| {
-        {{snake name}}_value.set(v);
-        update();
-    },
 
-    processor: processor.{{snake name}}_processor,
-}
+            {{#if required}}
+                {{ upper_camel typeName }}Input {
+                    value: {{snake name}}_value(),
+                    violations: {{snake name}}_violations,
+                    ui_wrapper: "{{ui.wrapper}}".to_string(),
+                    {{#if title}}
+                    title: "{{title}}",
+                    {{/if}}
+                    oninput: move |v: {{ upper_camel typeName }}| {
+                        {{snake name}}_value.set(v);
+                        update();
+                    },
+                    processor: processor.{{snake name}}_processor,
+                }
+            {{else}}
+                {{#if (eq ui.optionalStyle "none")}}
+                    {{ upper_camel typeName }}Input {
+                        value: {{snake name}}_value().unwrap_or_default(),
+                        violations: {{snake name}}_violations,
+                        ui_wrapper: "{{ui.wrapper}}".to_string(),
+                        {{#if title}}
+                        title: "{{title}}",
+                        {{/if}}
+                        oninput: move |v: {{ upper_camel typeName }}| {
+                            {{snake name}}_value.set(Some(v));
+                            update();
+                        },
+                        processor: processor.{{snake name}}_processor,
+                    }
+                {{else}}
+                    {{ upper_camel typeName }}OptionalInput {
+                        optional_title: "{{ui.optionalTitle}}",
+                        optional_style: "{{ui.optionalStyle}}",
+                        value: {{snake name}}_value(),
+                        violations: {{snake name}}_violations,
+                        ui_wrapper: "{{ui.wrapper}}".to_string(),
+                        {{#if title}}
+                        title: "{{title}}",
+                        {{/if}}
+                        oninput: move |v: Option<{{ upper_camel typeName }}>| {
+                            {{snake name}}_value.set(v);
+                            update();
+                        },
+                        processor: processor.{{snake name}}_processor,
+                    }
+                {{/if}}
+            {{/if}}

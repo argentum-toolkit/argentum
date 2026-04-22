@@ -169,6 +169,11 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
         include_str!("../template/ui/input.item.hbs"),
     )?;
 
+    reg.register_template_string(
+        "ui/optional_input.item",
+        include_str!("../template/ui/optional_input.item.hbs"),
+    )?;
+
     reg.register_template_string("ui/input.mod", include_str!("../template/ui/input.mod.hbs"))?;
 
     reg.register_template_string(

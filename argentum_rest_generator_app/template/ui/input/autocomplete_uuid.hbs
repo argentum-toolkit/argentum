@@ -7,9 +7,9 @@ AutocompleteUuid {
     {{#if required}}
         value: {{snake name}}_value,
     {{else}}
-        value: {{snake name}}_value().unwrap_or("".to_string()),
+        value: {{snake name}}_value().unwrap_or_default(),
     {{/if}}
-    
+
     violations: {{snake name}}_violations,
     oninput: move |v: {{valueType}}| {
         {{#if required}}
@@ -19,5 +19,6 @@ AutocompleteUuid {
         {{/if}}
         update();
     },
+
     processor: processor.{{snake name}}_processor,
 }

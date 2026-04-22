@@ -3,7 +3,7 @@ name = "argentum_example_fe_app"
 version = "0.4.0-dev"
 authors = ["Vital Leshchyk <vitalleshchyk@gmail.com>"]
 edition = "2024"
-license = "LGPL-3.0"
+license = "LGPL-3.0-or-later"
 
 resolver = "2"
 
@@ -12,7 +12,7 @@ dotenvy = "0.15"
 
 [dependencies]
 argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev,<0.5.0", features = [
-    "client",
+  "client",
 ] }
 argentum_oidc_ui = { path = "../../argentum_oidc/ui", version = ">=0.4.0-dev,<0.5.0" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
@@ -21,12 +21,12 @@ argentum_standard_business = { path = "../../argentum_standard/business", versio
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_ui = { path = "../../argentum_standard/ui", version = ">=0.4.0-dev,<0.5.0", default-features = false }
 argentum_user_account_rest = { path = "../../argentum_user_account/rest", version = ">=0.4.0-dev,<0.5.0", features = [
-    "client",
-    "ui",
+  "client",
+  "ui",
 ] }
 argentum_user_account_ui = { path = "../../argentum_user_account/ui", version = ">=0.4.0-dev,<0.5.0" }
 argentum_user_rest = { path = "../../argentum_user/rest", version = ">=0.4.0-dev,<0.5.0", features = [
-    "client",
+  "client",
 ] }
 argentum_user_ui = { path = "../../argentum_user/ui", version = ">=0.4.0-dev,<0.5.0" }
 
@@ -43,10 +43,10 @@ serde = { version = "1.*", features = ["derive"] }
 serde_json = "1.*"
 
 tokio = { version = "1", default-features = false, features = [
-    "rt",
-    "macros",
-    "sync",
-    "time",
+  "rt",
+  "macros",
+  "sync",
+  "time",
 ] }
 web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
 
@@ -54,11 +54,11 @@ web-sys = { version = "0.3.*", features = ["Navigator", "Window"] }
 default = []
 server = ["dioxus/server"]
 web = [
-    "dioxus/web",
-    "argentum_oidc_ui/web",
-    "argentum_skeleton_ui/web",
-    "argentum_standard_ui/web",
-    "argentum_user_account_ui/web",
-    "argentum_user_account_rest/web",
-    "argentum_user_account_rest/client",
+  "dioxus/web",
+  "argentum_oidc_ui/web",
+  "argentum_skeleton_ui/web",
+  "argentum_standard_ui/web",
+  "argentum_user_account_ui/web",
+  "argentum_user_account_rest/web",
+  "argentum_user_account_rest/client",
 ]

@@ -70,7 +70,7 @@ impl NameBuilder {
         match self.first.clone() {
             Some(first) => Ok(Name::new(first, self.last.clone(), self.additional.clone())),
             None => Err(Violations::new(
-                vec![ERR_WRONG_NAME.to_string()],
+                vec![ERR_WRONG_NAME.into()],
                 Some(ViolationItem::Object(self.violations.clone())),
             )),
         }

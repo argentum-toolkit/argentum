@@ -6,7 +6,7 @@ pub fn Submit(title: String, disabled: bool) -> Element {
     rsx! {
         button {
             "type":"submit",
-            class:"btn btn-active btn-primary mt-5",
+            class:"btn btn-primary mt-5",
             disabled: "{disabled}",
 
             if disabled {

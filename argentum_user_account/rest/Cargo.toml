@@ -2,7 +2,7 @@
 name = "argentum_user_account_rest"
 description = "Argentum User Account component API"
 version = "0.4.0-dev"
-license = "LGPL-3.0"
+license = "LGPL-3.0-or-later"
 edition = "2024"
 
 readme = "README.md"
@@ -13,10 +13,10 @@ readme = "README.md"
 client = ["dep:reqwest"]
 server = ["dep:hyper"]
 ui = [
-    "dep:dioxus",
-    "dep:dioxus-logger",
-    "dep:argentum_standard_infrastructure",
-    "dep:argentum_standard_ui",
+  "dep:dioxus",
+  "dep:dioxus-logger",
+  "dep:argentum_standard_infrastructure",
+  "dep:argentum_standard_ui",
 ]
 web = ["dioxus/web", "argentum_standard_ui/web"]
 
@@ -30,8 +30,8 @@ argentum_user_business = { path = "../../argentum_user/business", version = ">=0
 async-trait = "0.1.*"
 chrono = "0.4.*"
 dioxus = { version = "0.7.*", features = [
-    "fullstack",
-    "router",
+  "fullstack",
+  "router",
 ], optional = true }
 dioxus-logger = { version = "0.7.*", optional = true }
 erased-serde = "0.4.*"

@@ -62,7 +62,6 @@ pub fn EmailConfirmation(token: String) -> Element {
 
             let token = token.clone();
             let auth_token = auth_token.clone();
-            let home = home.clone();
 
             async move {
                 let req = MemberVerifiesEmailRequest::new(
