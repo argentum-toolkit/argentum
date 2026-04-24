@@ -11,6 +11,8 @@ use dioxus::prelude::*;
 pub struct UserNameProps {
     pub value: UserName,
     pub violations: Option<ViolationsDto>,
+    pub ui_wrapper: String,
+    pub title: Option<String>,
 
     processor: UserNameInputProcessor,
 
@@ -26,10 +28,17 @@ pub struct UserNameInputProcessor {
 
 #[component]
 pub fn UserNameInput(props: UserNameProps) -> Element {
+    let label_class = match props.violations {
+        Some(_) => "text-error",
+        None => "",
+    };
+
     let UserNameProps {
         value,
         violations,
         processor,
+        ui_wrapper,
+        title,
         ..
     } = props.clone();
 
@@ -57,57 +66,182 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
         ))
     };
 
-    rsx! {
-            LabeledInput {
-        id: "user_first_name",
-        name: "user_first_name",
-        label: "First Name",
-        input_type: "text".to_string(),
-        required: true,
-            value: first_value,
+    if ui_wrapper.eq("flex") {
+        rsx! {
+                    fieldset {
+                        if let Some(t) = title {
+                            legend { class: "fieldset-legend {label_class}", "{t}"}
+                        }
+                        div {
+                            class: "flex gap-2",
+                            LabeledInput {
+            id: "user_first_name",
+            name: "user_first_name",
+            label: "First Name",
+            input_type: "text".to_string(),
+            required: true,
+                value: first_value(),
 
-        violations: first_violations,
-        oninput: move |v: String| {
-            first_value.set(v);
-            update();
-        },
+            violations: first_violations,
+            oninput: move |v: String| {
+                first_value.set(v);
+                update();
+            },
 
-        processor: processor.first_processor,
-    }
-
-            LabeledInput {
-        id: "user_last_name",
-        name: "user_last_name",
-        label: "Last Name",
-        input_type: "text".to_string(),
-        required: false,
-            value: last_value().unwrap_or("".to_string()),
-
-        violations: last_violations,
-        oninput: move |v: String| {
-            last_value.set(Some(v));
-            update();
-        },
-
-        processor: processor.last_processor,
-    }
-
-            LabeledInput {
-        id: "user_additional_name",
-        name: "user_additional_name",
-        label: "Additional name",
-        input_type: "text".to_string(),
-        required: false,
-            value: additional_value().unwrap_or("".to_string()),
-
-        violations: additional_violations,
-        oninput: move |v: String| {
-            additional_value.set(Some(v));
-            update();
-        },
-
-        processor: processor.additional_processor,
-    }
-
+            processor: processor.first_processor,
         }
+
+                            LabeledInput {
+            id: "user_last_name",
+            name: "user_last_name",
+            label: "Last Name",
+            input_type: "text".to_string(),
+            required: false,
+                value: last_value().unwrap_or_default(),
+
+            violations: last_violations,
+            oninput: move |v: String| {
+                last_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.last_processor,
+        }
+
+                            LabeledInput {
+            id: "user_additional_name",
+            name: "user_additional_name",
+            label: "Additional name",
+            input_type: "text".to_string(),
+            required: false,
+                value: additional_value().unwrap_or_default(),
+
+            violations: additional_violations,
+            oninput: move |v: String| {
+                additional_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.additional_processor,
+        }
+
+                        }
+                    }
+                }
+    } else if ui_wrapper.eq("block") {
+        rsx! {
+                    fieldset {
+                        if let Some(t) = title {
+                            legend { class: "fieldset-legend {label_class}", "{t}"}
+                        }
+                        div {
+                            LabeledInput {
+            id: "user_first_name",
+            name: "user_first_name",
+            label: "First Name",
+            input_type: "text".to_string(),
+            required: true,
+                value: first_value(),
+
+            violations: first_violations,
+            oninput: move |v: String| {
+                first_value.set(v);
+                update();
+            },
+
+            processor: processor.first_processor,
+        }
+
+                            LabeledInput {
+            id: "user_last_name",
+            name: "user_last_name",
+            label: "Last Name",
+            input_type: "text".to_string(),
+            required: false,
+                value: last_value().unwrap_or_default(),
+
+            violations: last_violations,
+            oninput: move |v: String| {
+                last_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.last_processor,
+        }
+
+                            LabeledInput {
+            id: "user_additional_name",
+            name: "user_additional_name",
+            label: "Additional name",
+            input_type: "text".to_string(),
+            required: false,
+                value: additional_value().unwrap_or_default(),
+
+            violations: additional_violations,
+            oninput: move |v: String| {
+                additional_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.additional_processor,
+        }
+
+                        }
+                    }
+                }
+    } else {
+        rsx! {
+                    LabeledInput {
+            id: "user_first_name",
+            name: "user_first_name",
+            label: "First Name",
+            input_type: "text".to_string(),
+            required: true,
+                value: first_value(),
+
+            violations: first_violations,
+            oninput: move |v: String| {
+                first_value.set(v);
+                update();
+            },
+
+            processor: processor.first_processor,
+        }
+
+                    LabeledInput {
+            id: "user_last_name",
+            name: "user_last_name",
+            label: "Last Name",
+            input_type: "text".to_string(),
+            required: false,
+                value: last_value().unwrap_or_default(),
+
+            violations: last_violations,
+            oninput: move |v: String| {
+                last_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.last_processor,
+        }
+
+                    LabeledInput {
+            id: "user_additional_name",
+            name: "user_additional_name",
+            label: "Additional name",
+            input_type: "text".to_string(),
+            required: false,
+                value: additional_value().unwrap_or_default(),
+
+            violations: additional_violations,
+            oninput: move |v: String| {
+                additional_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.additional_processor,
+        }
+
+                }
+    }
 }

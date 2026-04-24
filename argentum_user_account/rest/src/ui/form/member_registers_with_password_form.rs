@@ -37,8 +37,8 @@ pub fn MemberRegistersWithPasswordForm(
                 spawn(async move {
                     processor.submit(
                         auth_token,
-                        values,
 
+                        values,
                         violations,
                         errors,
                         disabled
@@ -51,15 +51,19 @@ pub fn MemberRegistersWithPasswordForm(
             RegistrationWithPasswordSchemaInput {
                 value: values(),
                 violations: violations(),
+                ui_wrapper: "none".to_string(),
                 oninput: move |event: RegistrationWithPasswordSchema| {
                     values.set(event);
                 },
                 processor: processor.input_processor.clone(),
             }
 
-            Submit {
-                title: "Sign Up".to_string(),
-                disabled: disabled(),
+            div {
+                class: "w-full",
+                Submit {
+                    title: "Sign Up".to_string(),
+                    disabled: disabled(),
+                }
             }
         }
     }

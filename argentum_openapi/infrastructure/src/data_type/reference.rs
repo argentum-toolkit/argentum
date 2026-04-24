@@ -14,6 +14,7 @@ pub struct Reference {
     #[serde(rename = "$ref")]
     pub reference: String,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none", rename = "x-ag-ui")]

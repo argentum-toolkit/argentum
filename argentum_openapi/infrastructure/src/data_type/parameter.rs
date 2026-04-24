@@ -17,9 +17,6 @@ pub struct Parameter {
     #[serde(default)]
     pub deprecated: bool,
 
-    #[serde(default)]
-    pub allow_empty_value: bool,
-
     pub schema: RefOrObject<Schema>,
 }
 

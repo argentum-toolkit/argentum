@@ -4,7 +4,7 @@ info:
     url: https://gitlab.com/argentum-toolkit/argentum
   description: User API
   license:
-    name: LGPL-3.0
+    name: LGPL-3.0-or-later
   title: Argentum User component API
   version: 0.4.0-dev
 servers:
@@ -46,7 +46,6 @@ paths:
         description: User ID
         required: true
         deprecated: false
-        allowEmptyValue: false
         schema:
           example: 7e5d7cb4-7d83-46e3-8e24-4fb90a7e61d6
           type: string
@@ -116,6 +115,8 @@ components:
           x-ag-ui:
             id: user_first_name
             name: user_first_name
+            wrapper: none
+            optional-style: none
         last:
           example: Marko
           title: Last Name
@@ -125,6 +126,8 @@ components:
           x-ag-ui:
             id: user_last_name
             name: user_last_name
+            wrapper: none
+            optional-style: none
         additional:
           title: Additional name
           maxLength: 255
@@ -134,6 +137,8 @@ components:
             id: user_additional_name
             name: user_additional_name
             weight: 100
+            wrapper: none
+            optional-style: none
       type: object
     Violation:
       properties:
