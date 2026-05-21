@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::net::TcpListener;
 
-pub struct Server<L>
+pub struct Http1Server<L>
 where
     L: LoggerTrait,
 {
@@ -27,7 +27,7 @@ where
     logger: Arc<L>,
 }
 
-impl<L> Server<L>
+impl<L> Http1Server<L>
 where
     L: LoggerTrait + 'static,
 {

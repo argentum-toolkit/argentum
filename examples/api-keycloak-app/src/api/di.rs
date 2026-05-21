@@ -4,7 +4,7 @@ use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::mock::StdoutNotifier;
 use argentum_oidc_infrastructure::keycloak_di::KeycloakInfrastructureDiBuilder;
-use argentum_rest_infrastructure::service::{RouterCombinator, Server};
+use argentum_rest_infrastructure::service::{RouterCombinator, server::Http1Server};
 use argentum_standard_business::error::DiError;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueIdFactory;
 use argentum_user_business::di::UserBusinessDiBuilder;
@@ -36,14 +36,14 @@ where
     L: LoggerTrait,
 {
     // Public services
-    pub server: Arc<Server<L>>,
+    pub server: Arc<Http1Server<L>>,
 }
 
 impl<L> Di<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(server: Arc<Server<L>>) -> Self {
+    pub fn new(server: Arc<Http1Server<L>>) -> Self {
         Self { server }
     }
 }
@@ -148,7 +148,7 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         rest_di.error_pre_handler.clone(),
     ));
 
-    let server = Arc::new(Server::new(
+    let server = Arc::new(Http1Server::new(
         addr,
         router,
         rest_di.response_transformer.clone(),
