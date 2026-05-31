@@ -10,7 +10,10 @@ use argentum_notification_business::mock::StdoutNotifier;
 use argentum_oidc_infrastructure::default_di::OidcInfrastructureDiBuilder;
 use argentum_rest_infrastructure::{
     di::RestDiBuilder,
-    service::{RouterCombinator, RouterTrait, server::Http1Server},
+    service::{
+        RouterCombinator, RouterTrait,
+        server::{Http1Server, Http2Server},
+    },
 };
 
 use argentum_standard_business::error::DiError;
@@ -41,7 +44,8 @@ where
     L: LoggerTrait,
 {
     // Public services
-    pub server: Arc<Http1Server<L>>,
+    pub http1_server: Arc<Http1Server<L>>,
+    pub http2_server: Arc<Http2Server<L>>,
 }
 
 pub struct SkeletonApiDiBuilder<L>
@@ -174,7 +178,15 @@ where
             .parse()
             .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
 
-        let server = Arc::new(Http1Server::new(
+        let http1_server = Arc::new(Http1Server::new(
+            addr,
+            router.clone(),
+            rest_di.response_transformer.clone(),
+            rest_di.error_handler.clone(),
+            self.logger.clone(),
+        ));
+
+        let http2_server = Arc::new(Http2Server::new(
             addr,
             router,
             rest_di.response_transformer.clone(),
@@ -182,6 +194,9 @@ where
             self.logger.clone(),
         ));
 
-        Ok(SkeletonApiDi { server })
+        Ok(SkeletonApiDi {
+            http1_server,
+            http2_server,
+        })
     }
 }

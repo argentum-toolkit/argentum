@@ -6,3 +6,4 @@ Package to create REST API applications.
 
 - Parsing instead of validation
 - Clean and human-readable error responses
+- HTTP/2 an HTTP/1.1 support

@@ -18,7 +18,18 @@ servers:
       port:
         enum:
           - "8082"
+          - "8080"
         default: "8082"
+      basePath:
+        default: api/v1
+  - url: https://localhost:{port}/{basePath}
+    description: Dev HTTP/2 API Server with CORS
+    variables:
+      port:
+        enum:
+          - "8443"
+          - "8080"
+        default: "8443"
       basePath:
         default: api/v1
   - url: http://localhost:{port}/{basePath}
