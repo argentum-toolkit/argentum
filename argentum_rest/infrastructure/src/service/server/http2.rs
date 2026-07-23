@@ -1,14 +1,21 @@
 use crate::data_type::{Request, Response};
 use crate::service::{ErrorHandler, ResponseToJsonTransformer, RouterTrait};
 use argentum_log_business::LoggerTrait;
-use hyper::server::conn::http1;
+
+use hyper::server::conn::http2;
 use hyper::service::service_fn;
+use hyper_util::rt::{TokioExecutor, TokioIo};
+use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
+
+use std::fs::File;
+use std::io::BufReader;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::net::TcpListener;
+use tokio_rustls::rustls::ServerConfig;
 
-pub struct Server<L>
+pub struct Http2Server<L>
 where
     L: LoggerTrait,
 {
@@ -25,7 +32,7 @@ where
     logger: Arc<L>,
 }
 
-impl<L> Server<L>
+impl<L> Http2Server<L>
 where
     L: LoggerTrait + 'static,
 {
@@ -36,7 +43,7 @@ where
         error_handler: Arc<ErrorHandler<L>>,
         logger: Arc<L>,
     ) -> Self {
-        Server {
+        Self {
             addr,
             router,
             response_transformer,
@@ -76,9 +83,34 @@ where
         let listener = TcpListener::bind(self.addr).await?;
         println!("Listening on http://{}", self.addr);
 
+        let cert_file = File::open("/code/var/cert/api/localhost+3.pem")?;
+        let key_file = File::open("/code/var/cert/api/localhost+3-key.pem")?;
+
+        let cert_chain: Vec<CertificateDer<'static>> =
+            rustls_pemfile::certs(&mut BufReader::new(cert_file)).collect::<Result<_, _>>()?;
+
+        let mut keys: Vec<PrivateKeyDer<'static>> =
+            rustls_pemfile::pkcs8_private_keys(&mut BufReader::new(key_file))
+                .map(|key| key.map(Into::into))
+                .collect::<Result<_, _>>()?;
+
+        if keys.is_empty() {
+            return Err("No private keys found".into());
+        }
+
+        let mut config = ServerConfig::builder()
+            .with_no_client_auth()
+            .with_single_cert(cert_chain, keys.remove(0))?;
+
+        config.alpn_protocols = vec![b"h2".to_vec()];
+
+        let acceptor = tokio_rustls::TlsAcceptor::from(Arc::new(config));
+
         loop {
             let (stream, _) = listener.accept().await?;
-            let io = TokioIo::new(stream);
+            let acceptor = acceptor.clone();
+
+            // let io = TokioIo::new(stream);
 
             let router = self.router.clone();
             let transformer = self.response_transformer.clone();
@@ -86,11 +118,22 @@ where
             let logger = self.logger.clone();
 
             tokio::task::spawn(async move {
-                logger.trace("HTTP request accepted"); //TODO: it is connection. not a request
+                logger.trace("HTTP/2 request accepted"); //TODO: it is connection. not a request
+
+                let tls_stream = match acceptor.accept(stream).await {
+                    Ok(s) => s,
+                    Err(err) => {
+                        logger.error(format!("TLS handshake failed: {:?}", err));
+                        return;
+                    }
+                };
+
+                let io = TokioIo::new(tls_stream);
+
                 let start = Instant::now();
 
                 let log = logger.clone();
-                if let Err(err) = http1::Builder::new()
+                if let Err(err) = http2::Builder::new(TokioExecutor::new())
                     .serve_connection(
                         io,
                         service_fn(move |request| {
@@ -112,92 +155,5 @@ where
                 logger.trace(format!("Duration: {}μs", elapsed.as_micros()));
             });
         }
-    }
-}
-
-//ORIGINAL INTEGRATION https://github.com/hyperium/hyper-util/blob/master/src/rt/tokio_io.rs
-//TODO: implement in differrent file or wait til hyper-util will be published into crates.io
-/// Tokio IO integration for hyper
-use std::{
-    pin::Pin,
-    task::{Context, Poll},
-};
-
-use pin_project_lite::pin_project;
-
-pin_project! {
-    /// A wrapping implementing hyper IO traits for a type that
-    /// implements Tokio's IO traits.
-    #[derive(Debug)]
-    pub struct TokioIo<T> {
-        #[pin]
-        inner: T,
-    }
-}
-
-impl<T> TokioIo<T> {
-    /// Wrap a type implementing Tokio's IO traits.
-    pub fn new(inner: T) -> Self {
-        Self { inner }
-    }
-}
-
-impl<T> hyper::rt::Read for TokioIo<T>
-where
-    T: tokio::io::AsyncRead,
-{
-    fn poll_read(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        mut buf: hyper::rt::ReadBufCursor<'_>,
-    ) -> Poll<Result<(), std::io::Error>> {
-        let n = unsafe {
-            let mut tbuf = tokio::io::ReadBuf::uninit(buf.as_mut());
-            match tokio::io::AsyncRead::poll_read(self.project().inner, cx, &mut tbuf) {
-                Poll::Ready(Ok(())) => tbuf.filled().len(),
-                other => return other,
-            }
-        };
-
-        unsafe {
-            buf.advance(n);
-        }
-        Poll::Ready(Ok(()))
-    }
-}
-
-impl<T> hyper::rt::Write for TokioIo<T>
-where
-    T: tokio::io::AsyncWrite,
-{
-    fn poll_write(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &[u8],
-    ) -> Poll<Result<usize, std::io::Error>> {
-        tokio::io::AsyncWrite::poll_write(self.project().inner, cx, buf)
-    }
-
-    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
-        tokio::io::AsyncWrite::poll_flush(self.project().inner, cx)
-    }
-
-    fn poll_shutdown(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Result<(), std::io::Error>> {
-        tokio::io::AsyncWrite::poll_shutdown(self.project().inner, cx)
-    }
-
-    fn is_write_vectored(&self) -> bool {
-        tokio::io::AsyncWrite::is_write_vectored(&self.inner)
-    }
-
-    fn poll_write_vectored(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        bufs: &[std::io::IoSlice<'_>],
-    ) -> Poll<Result<usize, std::io::Error>> {
-        tokio::io::AsyncWrite::poll_write_vectored(self.project().inner, cx, bufs)
     }
 }

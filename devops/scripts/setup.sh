@@ -5,6 +5,12 @@ set -e
 echo "Set up pre-commit"
 ln -s -f ../../devops/scripts/check.sh .git/hooks/pre-commit
 
+echo "Create certificates for HTTP/2"
+cd var/cert/api
+mkcert -install
+mkcert localhost 127.0.0.1 ::1 api
+cd -
+
 echo "Create folders"
 docker compose stop
 mkdir -p var/db/user/
