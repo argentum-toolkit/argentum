@@ -102,5 +102,7 @@ pub enum StandardFormat {
     DateTime,
     /// Hint to UI to obscure input.
     Password,
+    /// Textarea
+    Text,
     Uuid,
 }

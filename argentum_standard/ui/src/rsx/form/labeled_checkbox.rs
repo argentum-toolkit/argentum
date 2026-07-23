@@ -11,8 +11,13 @@ pub struct CheckboxProps {
     pub label: String,
     pub violations: Option<ViolationsDto>,
 
+    processor: LabeledCheckboxProcessor,
+
     oninput: EventHandler<bool>,
 }
+
+#[derive(Clone, PartialEq, Default)]
+pub struct LabeledCheckboxProcessor {}
 
 #[component]
 pub fn LabeledCheckbox(props: CheckboxProps) -> Element {

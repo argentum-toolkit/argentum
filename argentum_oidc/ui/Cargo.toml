@@ -2,14 +2,14 @@
 name = "argentum_oidc_ui"
 description = "Argentum OIDC extension. UI"
 version = "0.4.0-dev"
-license = "LGPL-3.0"
+license = "LGPL-3.0-or-later"
 edition = "2024"
 
 readme = "README.md"
 
 [dependencies]
 argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev,<0.5.0", features = [
-    "client",
+  "client",
 ] }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_ui = { path = "../../argentum_standard/ui", version = ">=0.4.0-dev,<0.5.0", default-features = false }

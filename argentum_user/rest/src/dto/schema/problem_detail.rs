@@ -10,10 +10,15 @@ use crate::dto::schema::ViolationRaw;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ProblemDetail {
+    #[serde(rename = "status")]
     pub status: i32,
+    #[serde(rename = "title")]
     pub title: String,
+    #[serde(rename = "type")]
     pub r#type: Option<String>,
+    #[serde(rename = "detail")]
     pub detail: Option<String>,
+    #[serde(rename = "body")]
     pub body: Option<Violation>,
 }
 

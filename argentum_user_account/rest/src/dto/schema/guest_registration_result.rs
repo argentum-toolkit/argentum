@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct GuestRegistrationResult {
+    #[serde(rename = "guest_id")]
     pub guest_id: uuid::Uuid,
+    #[serde(rename = "token")]
     pub token: String,
 }
 

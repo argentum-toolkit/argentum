@@ -54,7 +54,7 @@ pub fn Login() -> Element {
         ..Default::default()
     };
 
-    let processor = MemberLoginsWithPasswordFormProcessor::new(callbacks);
+    let processor = MemberLoginsWithPasswordFormProcessor::new(callbacks, Default::default());
 
     // let keycloak_url = "http://localhost:8099";
     // let realm = "argentum-realm-dev";
@@ -87,8 +87,8 @@ pub fn Login() -> Element {
 
     rsx! {
         section {
-            div { class: "container",
-                div { class:"pb-40",
+            div { class: "container flex justify-center",
+                div { class:"pb-40 w-full max-w-sm",
                     h2 { "Sign in to your account" }
 
                     MemberLoginsWithPasswordForm {
@@ -96,7 +96,7 @@ pub fn Login() -> Element {
                         auth_token,
                     }
 
-                    div { class: "text-center text-base mt-10",
+                    div { class: "text-base mt-10",
                         a {href:"#", class:"text-sm text-primary hover:underline", "Forgot password?"}
                     }
                     div { class: "text-center text-sm mt-2 mb-3",

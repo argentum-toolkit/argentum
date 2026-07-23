@@ -4,7 +4,7 @@
 
 * Docker
 * Docker Compose
-* Rust 1.89+
+* Rust 1.94+
 * Cargo
 
 === Optional for contributors

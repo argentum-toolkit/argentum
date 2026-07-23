@@ -3,18 +3,20 @@ LabeledCheckbox {
     name: "{{ui.name}}",
     label: "{{title}}",
     {{#if required}}
-        value: {{name}}_value(),
+        value: {{snake name}}_value(),
     {{else}}
-        value: {{name}}_value().unwrap_or(false),
+        value: {{snake name}}_value().unwrap_or(false),
     {{/if}}
-    violations: {{name}}_violations,
-    
-    oninput: move |event: bool| {
+    violations: {{snake name}}_violations,
+
+    oninput: move |v: bool| {
         {{#if required}}
-        {{name}}_value.set(event);
+        {{snake name}}_value.set(v);
         {{ else }}
-        {{name}}_value.set(Some(event));
+        {{snake name}}_value.set(Some(v));
         {{/if}}
         update();
-    }
+    },
+
+    processor: processor.{{snake name}}_processor,
 }

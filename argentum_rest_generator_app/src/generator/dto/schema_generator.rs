@@ -273,6 +273,7 @@ impl SchemaGenerator {
 
         properties.sort_by_key(|item| item.weight);
 
+        dependencies.sort();
         dependencies.dedup();
 
         let data = Data {
@@ -297,12 +298,6 @@ impl SchemaGenerator {
         name: &String,
         file_path: String,
     ) -> Result<(), String> {
-        // let mut dependencies: Vec<String> = vec![];
-
-        // let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies)?;
-
-        // dependencies.dedup();
-
         let data = EmptyData { name };
 
         self.renderer.render(
@@ -326,6 +321,7 @@ impl SchemaGenerator {
 
         let (data_type, raw_type, is_ref) = self.schema_to_rs(items_type, &mut dependencies)?;
 
+        dependencies.sort();
         dependencies.dedup();
 
         let data = ArrayData {
@@ -360,6 +356,7 @@ impl SchemaGenerator {
         let (data_type, raw_type, is_ref) =
             self.schema_to_rs(additional_type, &mut dependencies)?;
 
+        dependencies.sort();
         dependencies.dedup();
 
         let data = ArrayData {

@@ -167,6 +167,7 @@ cargo install dioxus-cli
 * behavior tests
 
 * rest-generator
+** not only string should be in example. Currently we use example: "2025". Need possibility to use example: 2025
 ** tooling
 *** scripts to simplify generation of API library
 *** publish generator to hub.docker.com

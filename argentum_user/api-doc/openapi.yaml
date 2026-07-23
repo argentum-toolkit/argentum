@@ -5,8 +5,8 @@ info:
   version: 0.4.0-dev
   description: User API
   license:
-    name: LGPL-3.0
-    identifier: LGPL-3.0
+    name: LGPL-3.0-or-later
+    identifier: LGPL-3.0-or-later
 
   contact:
     url: https://gitlab.com/argentum-toolkit/argentum
@@ -54,16 +54,19 @@ paths:
         - user
       operationId: GetUser
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           $ref: "./response.oas.yaml#/components/responses/GetUserOk"
         '401':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/401"
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+            401"
         '403':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/403"
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+            403"
         '404':
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/404"
+          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+            404"
 
 components:
   securitySchemes:

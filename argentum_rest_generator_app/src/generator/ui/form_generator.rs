@@ -1,6 +1,6 @@
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::{InPlace, Operation, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::{InPlace, Operation, Path, SpecificationRoot};
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -41,6 +41,7 @@ impl FormGenerator {
         &self,
         base_output_path: &str,
         operation: &Operation,
+        path: &Path,
         spec: &SpecificationRoot,
     ) -> Result<(), String> {
         let file_path = format!(
@@ -50,7 +51,10 @@ impl FormGenerator {
 
         let need_path_params = match &operation.parameters {
             Some(params) => params.iter().any(|x| x.in_place == InPlace::Path),
-            None => false,
+            None => match &path.parameters {
+                Some(params) => params.iter().any(|x| x.in_place == InPlace::Path),
+                None => false,
+            },
         };
 
         let mut schema_name: Option<String> = None;
@@ -99,14 +103,15 @@ impl FormGenerator {
     }
 
     pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
-        let operations = spec.operations();
-        self.generate_mod(base_output_path, operations.clone())?;
-
-        for operation in operations.into_iter() {
-            if operation.extension_form.is_some() {
-                self.generate_item(base_output_path, &operation, spec)?;
+        for (_, path) in spec.paths.clone().into_iter() {
+            for (_, operation) in path.clone().operations.into_iter() {
+                if operation.extension_form.is_some() {
+                    self.generate_item(base_output_path, &operation, &path, spec)?;
+                }
             }
         }
+
+        self.generate_mod(base_output_path, spec.operations().clone())?;
 
         Ok(())
     }

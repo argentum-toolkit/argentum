@@ -1,7 +1,13 @@
 {{#each inputs as |input|~}}
 mod {{snake  @key}}_input;
+mod {{snake  @key}}_optional_input;
 {{/each}}
 
 {{#each inputs as |input|~}}
 pub use {{snake @key}}_input::{{upper_camel @key}}Input;
+pub use {{snake @key}}_optional_input::{{upper_camel @key}}OptionalInput;
+{{/each}}
+
+{{#each inputs as |input|~}}
+pub use {{snake @key}}_input::{{upper_camel @key}}InputProcessor;
 {{/each}}

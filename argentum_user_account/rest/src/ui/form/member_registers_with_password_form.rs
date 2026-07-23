@@ -12,8 +12,13 @@ use dioxus::prelude::*;
 pub fn MemberRegistersWithPasswordForm(
     processor: MemberRegistersWithPasswordFormProcessor,
     auth_token: String,
+    registration_with_password_schema: Option<RegistrationWithPasswordSchema>,
 ) -> Element {
-    let mut values: Signal<RegistrationWithPasswordSchema> = use_signal(Default::default);
+    let mut values: Signal<RegistrationWithPasswordSchema> = match registration_with_password_schema
+    {
+        Some(v) => use_signal(|| v),
+        None => use_signal(Default::default),
+    };
     let violations: Signal<ViolationsDto> = use_signal(Default::default);
     let errors = use_signal(Vec::new);
     let disabled = use_signal(|| false);
@@ -32,8 +37,8 @@ pub fn MemberRegistersWithPasswordForm(
                 spawn(async move {
                     processor.submit(
                         auth_token,
-                        values,
 
+                        values,
                         violations,
                         errors,
                         disabled
@@ -46,14 +51,19 @@ pub fn MemberRegistersWithPasswordForm(
             RegistrationWithPasswordSchemaInput {
                 value: values(),
                 violations: violations(),
+                ui_wrapper: "none".to_string(),
                 oninput: move |event: RegistrationWithPasswordSchema| {
                     values.set(event);
                 },
+                processor: processor.input_processor.clone(),
             }
 
-            Submit {
-                title: "Sign Up".to_string(),
-                disabled: disabled(),
+            div {
+                class: "w-full",
+                Submit {
+                    title: "Sign Up".to_string(),
+                    disabled: disabled(),
+                }
             }
         }
     }

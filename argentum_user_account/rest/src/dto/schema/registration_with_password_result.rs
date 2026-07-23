@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct RegistrationWithPasswordResult {
+    #[serde(rename = "id")]
     pub id: uuid::Uuid,
 }
 

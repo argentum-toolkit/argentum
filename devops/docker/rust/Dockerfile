@@ -1,6 +1,6 @@
-FROM rust:1.89
+FROM rust:1.94
 
-RUN rustup component add clippy rustfmt 
+RUN rustup component add clippy rustfmt
 RUN cargo install --locked cargo-deny
 
 RUN cargo install flamegraph rustfilt

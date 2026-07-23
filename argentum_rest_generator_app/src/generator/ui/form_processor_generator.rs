@@ -1,7 +1,7 @@
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
 use argentum_openapi_infrastructure::data_type::{
-    InPlace, Operation, RefOrObject, SpecificationRoot,
+    InPlace, Operation, Path, RefOrObject, SpecificationRoot,
 };
 use convert_case::{Case, Casing};
 use serde::Serialize;
@@ -44,6 +44,7 @@ impl FormProcessorGenerator {
         &self,
         base_output_path: &str,
         operation: &Operation,
+        path: &Path,
         spec: &SpecificationRoot,
     ) -> Result<(), String> {
         let file_path = format!(
@@ -55,7 +56,10 @@ impl FormProcessorGenerator {
 
         let need_path_params = match &operation.parameters {
             Some(params) => params.iter().any(|x| x.in_place == InPlace::Path),
-            None => false,
+            None => match &path.parameters {
+                Some(params) => params.iter().any(|x| x.in_place == InPlace::Path),
+                None => false,
+            },
         };
 
         for (code, resp_or_ref) in &operation.responses {
@@ -135,14 +139,15 @@ impl FormProcessorGenerator {
     }
 
     pub fn generate(&self, base_output_path: &str, spec: &SpecificationRoot) -> Result<(), String> {
-        let operations = spec.operations();
-        self.generate_mod(base_output_path, operations.clone())?;
-
-        for operation in operations.into_iter() {
-            if operation.extension_form.is_some() {
-                self.generate_item(base_output_path, &operation, spec)?;
+        for (_, path) in spec.paths.clone().into_iter() {
+            for (_, operation) in path.clone().operations.into_iter() {
+                if operation.extension_form.is_some() {
+                    self.generate_item(base_output_path, &operation, &path, spec)?;
+                }
             }
         }
+
+        self.generate_mod(base_output_path, spec.operations().clone())?;
 
         Ok(())
     }

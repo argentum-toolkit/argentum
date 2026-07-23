@@ -16,6 +16,7 @@ use {{dep}};
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct {{ name }} {
 {{# each properties as |prop| }}
+    #[serde(rename = "{{ prop.rename }}")]
     pub {{ escape_var_name (snake prop.name) }}: {{{ prop.dataType }}},
 {{/each}}
 }

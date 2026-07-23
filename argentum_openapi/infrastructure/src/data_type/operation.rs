@@ -55,6 +55,10 @@ impl Display for StatusCode {
 
 impl Operation {
     pub fn set_request_body_as_ref(&mut self, reference: String) {
-        self.request_body = Some(RefOrObject::Ref(Reference { reference }))
+        self.request_body = Some(RefOrObject::Ref(Reference {
+            reference,
+            title: None,
+            extension_ui: None,
+        }))
     }
 }

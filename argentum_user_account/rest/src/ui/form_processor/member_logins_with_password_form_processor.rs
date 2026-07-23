@@ -5,16 +5,25 @@ use crate::dto::schema::ProblemDetail;
 
 use crate::dto::schema::LoginWithPasswordSchema;
 use crate::ui::callbacks::MemberLoginsWithPasswordCallbacks;
+use crate::ui::input::LoginWithPasswordSchemaInputProcessor;
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq)]
 pub struct MemberLoginsWithPasswordFormProcessor {
     callbacks: MemberLoginsWithPasswordCallbacks,
+
+    pub input_processor: LoginWithPasswordSchemaInputProcessor,
 }
 
 impl MemberLoginsWithPasswordFormProcessor {
-    pub fn new(callbacks: MemberLoginsWithPasswordCallbacks) -> Self {
-        Self { callbacks }
+    pub fn new(
+        callbacks: MemberLoginsWithPasswordCallbacks,
+        input_processor: LoginWithPasswordSchemaInputProcessor,
+    ) -> Self {
+        Self {
+            callbacks,
+            input_processor,
+        }
     }
 
     #[cfg(feature = "web")]

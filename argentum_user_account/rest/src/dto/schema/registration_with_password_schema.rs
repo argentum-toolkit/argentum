@@ -10,9 +10,13 @@ use crate::dto::schema::UserNameRaw;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct RegistrationWithPasswordSchema {
+    #[serde(rename = "name")]
     pub name: UserName,
+    #[serde(rename = "email")]
     pub email: String,
+    #[serde(rename = "password")]
     pub password: String,
+    #[serde(rename = "terms")]
     pub terms: bool,
 }
 

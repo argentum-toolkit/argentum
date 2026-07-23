@@ -10,16 +10,16 @@ This server was generated from OpenAPI specification by the link:https://gitlab.
 - API version: {{ version }}
 - Package Name: {{ packageName }}
 {{#if homepage}}
-    - Home page: {{ homepage }}
+- Home page: {{ homepage }}
 {{/if}}
 {{#if repository}}
-    - Repository: {{ repository }}
+- Repository: {{ repository }}
 {{/if}}
 {{#if documentation}}
-    - Home page: {{ documentation }}
+- Home page: {{ documentation }}
 {{/if}}
 {{#if license}}
-    - License: `{{ license.name }}`{{#if license.url}} link:{{ license.url }}[]{{/if}}
+- License: `{{ license.name }}`{{#if license.url}} link:{{ license.url }}[]{{/if}}
 {{/if}}
 
 
@@ -155,4 +155,3 @@ pub async fn di_factory() -> Di {
 }
 
 ....
-

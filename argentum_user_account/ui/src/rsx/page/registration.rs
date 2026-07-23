@@ -29,7 +29,7 @@ pub fn Registration() -> Element {
 
     let on_member_registered_successfully = EventHandler::new(
         move |_response: MemberRegisteredSuccessfullyResponse| {
-            success.set(Some("Congratulations! Your account has been created.<br />Please check your email to confirm your account."));
+            success.set(Some("Congratulations! Your account has been created. Please check your email to confirm your account."));
         },
     );
 
@@ -38,22 +38,22 @@ pub fn Registration() -> Element {
         ..Default::default()
     };
 
-    let processor = MemberRegistersWithPasswordFormProcessor::new(callbacks);
+    let processor = MemberRegistersWithPasswordFormProcessor::new(callbacks, Default::default());
 
     let additional = use_context::<AdditionalLoginBlock>().0;
     let login_url = use_context::<LoginUrl>().0;
 
     rsx! {
         section {
-            div { class: "container",
-                div { class:"pb-40 sm:max-w-sm",
+            div { class: "container flex justify-center",
+                div { class:"pb-40 w-full max-w-sm",
                     h2 { "Create your account "}
 
                     match success() {
                         Some(success_message) => {
                             rsx! {
                                 div {
-                                    class: "text-center text-sm text-success mt-10",
+                                    class: "text-sm text-success mt-10",
                                     "{success_message}",
                                 }
                                 div {

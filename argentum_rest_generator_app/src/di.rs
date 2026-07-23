@@ -169,7 +169,17 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
         include_str!("../template/ui/input.item.hbs"),
     )?;
 
+    reg.register_template_string(
+        "ui/optional_input.item",
+        include_str!("../template/ui/optional_input.item.hbs"),
+    )?;
+
     reg.register_template_string("ui/input.mod", include_str!("../template/ui/input.mod.hbs"))?;
+
+    reg.register_template_string(
+        "ui/input/autocomplete_uuid",
+        include_str!("../template/ui/input/autocomplete_uuid.hbs"),
+    )?;
 
     reg.register_template_string(
         "ui/input/labeled_checkbox",
@@ -179,6 +189,11 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     reg.register_template_string(
         "ui/input/labeled_input",
         include_str!("../template/ui/input/labeled_input.hbs"),
+    )?;
+
+    reg.register_template_string(
+        "ui/input/labeled_textarea",
+        include_str!("../template/ui/input/labeled_textarea.hbs"),
     )?;
 
     reg.register_template_string(

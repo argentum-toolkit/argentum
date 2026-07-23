@@ -1,10 +1,12 @@
+use std::str::FromStr;
+
 use crate::rsx::component::ErrorBlock;
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 
 #[derive(Clone, PartialEq, Props)]
 #[props(borrowed)]
-pub struct InputTextProps {
+pub struct InputTextProps<V: Clone + PartialEq + FromStr + 'static> {
     pub value: String,
     pub id: String,
     pub name: String,
@@ -13,11 +15,16 @@ pub struct InputTextProps {
     pub label: String,
     pub violations: Option<ViolationsDto>,
 
-    oninput: EventHandler<String>,
+    processor: LabeledInputProcessor,
+
+    oninput: EventHandler<V>,
 }
 
+#[derive(Clone, PartialEq, Default)]
+pub struct LabeledInputProcessor {}
+
 #[component]
-pub fn LabeledInput(props: InputTextProps) -> Element {
+pub fn LabeledInput<V: Clone + PartialEq + FromStr + 'static>(props: InputTextProps<V>) -> Element {
     let label_class = match props.violations {
         Some(_) => "text-error",
         None => "",
@@ -35,7 +42,7 @@ pub fn LabeledInput(props: InputTextProps) -> Element {
 
     rsx! {
         fieldset {
-            class: "fieldset",
+            class: "fieldset w-full",
             label {
                 "for":"{props.id}",
                 class: "label-text {label_class} {required_class}",
@@ -43,10 +50,18 @@ pub fn LabeledInput(props: InputTextProps) -> Element {
             }
 
             input {
-                id:"{props.id}", name:"{props.name}", "type":"{props.input_type}", autocomplete:"email", required: props.required,
+                id:"{props.id}", name:"{props.name}", "type":"{props.input_type}", required: props.required,
                 value: "{props.value}",
-                class: "input {input_class}",
-                oninput: move |event| props.oninput.call(event.value())
+                class: "input  w-full {input_class}",
+                oninput: move |event| {
+                    match event.value().parse::<V>() {
+                        Ok(value) => props.oninput.call(value),
+                        Err(_) => {
+                            // todo: Handle the error, e.g., log it or ignore it
+                            // log::error!("Failed to parse input value");
+                        }
+                    }
+                }
             }
 
             if let Some(v) = props.violations {

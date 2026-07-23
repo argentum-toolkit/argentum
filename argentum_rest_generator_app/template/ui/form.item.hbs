@@ -15,16 +15,22 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn {{upper_camel operation.operationId}}Form(
-        processor: {{upper_camel operation.operationId}}FormProcessor, 
+        processor: {{upper_camel operation.operationId}}FormProcessor,
         {{#if operation.security}}
         auth_token: String,
         {{/if}}
         {{#if needPathParams}}
         path_params: {{upper_camel operation.operationId}}PathParams,
         {{/if}}
+        {{#if schemaName}}
+            {{ snake schemaName }}: Option<{{ upper_camel schemaName }}>,
+        {{/if}}
     ) -> Element {
     {{#if schemaName}}
-    let mut values: Signal<{{ upper_camel schemaName}}> = use_signal(Default::default);
+    let mut values: Signal<{{ upper_camel schemaName }}> = match {{ snake schemaName }} {
+        Some(v) => use_signal(|| v),
+        None => use_signal(Default::default),
+    };
     {{/if}}
     let violations: Signal<ViolationsDto>= use_signal(Default::default);
     let errors = use_signal(Vec::new);
@@ -49,10 +55,10 @@ pub fn {{upper_camel operation.operationId}}Form(
                 spawn(async move {
                     processor.submit(
                         {{#if operation.security}}auth_token,{{/if}}
-                        {{#if schemaName}}values,{{/if}}
                         {{#if needPathParams}}path_params,{{/if}}
-                        violations, 
-                        errors, 
+                        {{#if schemaName}}values,{{/if}}
+                        violations,
+                        errors,
                         disabled
                     ).await;
                 });
@@ -64,19 +70,24 @@ pub fn {{upper_camel operation.operationId}}Form(
             {{ upper_camel schemaName}}Input {
                 value: values(),
                 violations: violations(),
+                ui_wrapper: "none".to_string(),
                 oninput: move |event: {{ upper_camel schemaName}}| {
                     values.set(event);
                 },
+                processor: processor.input_processor.clone(),
             }
             {{/if}}
 
-            Submit {
-                {{#if operation.x-ag-form.submit-label}}
-                title: "{{operation.x-ag-form.submit-label}}".to_string(),
-                {{else}}
-                title: "Submit".to_string(),
-                {{/if}}
-                disabled: disabled(),
+            div {
+                class: "w-full",
+                Submit {
+                    {{#if operation.x-ag-form.submit-label}}
+                    title: "{{operation.x-ag-form.submit-label}}".to_string(),
+                    {{else}}
+                    title: "Submit".to_string(),
+                    {{/if}}
+                    disabled: disabled(),
+                }
             }
         }
     }
