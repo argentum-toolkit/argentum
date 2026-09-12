@@ -49,4 +49,4 @@ inherits = "dev"
 
 
 [profile.release]
-debug = 2
+# debug = 2

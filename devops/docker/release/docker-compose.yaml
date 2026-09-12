@@ -1,0 +1,56 @@
+services:
+  release.fe:
+    build:
+      context: ../../..
+      dockerfile: devops/docker/release/Dockerfile
+      args:
+        - RELEASE_PATH=${FE_RELEASE_PATH}
+    environment:
+      - AG_GITHUB_CLIENT_ID=${AG_GITHUB_CLIENT_ID}
+      - AG_GOOGLE_CLIENT_ID=${AG_GOOGLE_CLIENT_ID}
+      - AG_OIDC_REDIRECT_URL=${AG_OIDC_REDIRECT_URL}
+      - PORT=${PORT:-8080} #Expose in Dockerfile
+      - IP=${IP:-0.0.0.0}
+
+    volumes:
+      - ../../..:/code
+      - ../../../var/cargo/common:/usr/local/cargo/registry
+
+  release.api:
+    build:
+      context: ../../..
+      dockerfile: devops/docker/release/Dockerfile
+      args:
+        - RELEASE_PATH=${API_RELEASE_PATH}
+
+    command: "/app/api"
+    privileged: true
+    tty: true
+    stdin_open: true
+    environment:
+      - CARGO_PROFILE_RELEASE_DEBUG=2
+      - AG_OIDC_DATABASE_URL
+      - AG_USER_ACCOUNT_DATABASE_URL
+      - AG_USER_ACCOUNT_MEMBER_JWT_SECRET
+      - AG_USER_DATABASE_URL
+      - AG_USER_AGENT
+      - AG_PRODUCT_NAME
+      - AG_EMAIL_CONFIRMATION_FRONT_URL
+      - AG_RESTORE_PASSWORD_FRONT_URL
+      - AG_GITHUB_CLIENT_ID
+      - AG_GITHUB_CLIENT_SECRET
+      - AG_GOOGLE_CLIENT_ID
+      - AG_GOOGLE_CLIENT_SECRET
+      - TLS_CERT_FILE
+      - TLS_KEY_FILE
+
+    depends_on:
+      - service.user.db
+      - service.user_account.db
+    working_dir: /code/examples/api-app
+
+    volumes:
+      - ../../..:/code
+      - ../../../var/cargo/common:/usr/local/cargo/registry
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

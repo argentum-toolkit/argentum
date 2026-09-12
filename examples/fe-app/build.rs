@@ -17,10 +17,14 @@ fn main() {
     let env_path = workspace_root.join("./.env");
     let local_path = workspace_root.join("./.env.local");
 
-    from_filename(env_path).ok();
-    from_filename_override(local_path).ok();
+    from_filename(env_path).unwrap();
+    from_filename_override(local_path).unwrap();
 
     export("AG_GITHUB_CLIENT_ID");
     export("AG_GOOGLE_CLIENT_ID");
     export("AG_OIDC_REDIRECT_URL");
+
+    export("AG_USER_API_URL");
+    export("AG_USER_ACCOUNT_API_URL");
+    export("AG_OIDC_API_URL");
 }

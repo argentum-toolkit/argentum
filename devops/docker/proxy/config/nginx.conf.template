@@ -1,0 +1,51 @@
+upstream api_upstream {
+    server ${API_HOST}:${API_PORT};
+    keepalive 64;
+}
+
+upstream fe_upstream {
+    server ${FE_HOST}:${FE_PORT};
+    keepalive 64;
+}
+
+
+# HTTP/2 only
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name localhost;
+
+    ssl_certificate /etc/nginx/cert/cert.pem;
+    ssl_certificate_key /etc/nginx/cert/key.pem;
+
+    ssl_verify_client ${SSL_VERIFY_CLIENT}; #`off` FOR SELF SIGNED. ONLY FOR LOCAL!!!
+    ssl_certificate_compression on;
+
+    location = /favicon.ico {
+        root /html;
+    }
+
+    location /api/ {
+        proxy_pass https://api_upstream;
+
+        proxy_ssl_verify off;
+        proxy_http_version 2;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        proxy_pass http://fe_upstream;
+
+        proxy_ssl_verify off;
+        proxy_http_version 2;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

@@ -22,6 +22,9 @@ where
     //config
     addr: SocketAddr,
 
+    cert_file_path: String,
+    key_file_path: String,
+
     //service dependencies
     router: Arc<dyn RouterTrait>,
 
@@ -38,6 +41,8 @@ where
 {
     pub fn new(
         addr: SocketAddr,
+        cert_file_path: &str,
+        key_file_path: &str,
         router: Arc<dyn RouterTrait>,
         response_transformer: Arc<ResponseToJsonTransformer>,
         error_handler: Arc<ErrorHandler<L>>,
@@ -45,6 +50,8 @@ where
     ) -> Self {
         Self {
             addr,
+            cert_file_path: cert_file_path.into(),
+            key_file_path: key_file_path.into(),
             router,
             response_transformer,
             error_handler,
@@ -83,8 +90,9 @@ where
         let listener = TcpListener::bind(self.addr).await?;
         println!("Listening on http://{}", self.addr);
 
-        let cert_file = File::open("/code/var/cert/api/localhost+3.pem")?;
-        let key_file = File::open("/code/var/cert/api/localhost+3-key.pem")?;
+        //TODO: don't hardcode cert path;
+        let cert_file = File::open(&self.cert_file_path)?;
+        let key_file = File::open(&self.key_file_path)?;
 
         let cert_chain: Vec<CertificateDer<'static>> =
             rustls_pemfile::certs(&mut BufReader::new(cert_file)).collect::<Result<_, _>>()?;
