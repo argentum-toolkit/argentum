@@ -120,7 +120,7 @@ where
             .map_err(|e| {
                 format!(
                     "Can't create PG connection pool for connection `{}`. Error: {e}",
-                    &self.connection_url
+                    self.connection_url
                 )
             })?;
 

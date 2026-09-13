@@ -50,7 +50,7 @@ impl MemberRepositoryTrait for MemberRepositoryMockWihBrokenSave {
             .read()
             .map_err(|_| ExternalUserError::Guest(Some(Arc::new(PoisonedLockError))))?;
 
-        for (_, u) in guard.iter() {
+        for u in guard.values() {
             if &u.email == email {
                 return Ok(Some(Member::<Self::Id>::new(
                     u.id(),

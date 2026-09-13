@@ -60,7 +60,7 @@ where
             RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
         })?;
 
-        for (_, t) in guard.iter() {
+        for t in guard.values() {
             if t.token == token {
                 return Ok(Some(RestorePasswordToken {
                     id: t.id,

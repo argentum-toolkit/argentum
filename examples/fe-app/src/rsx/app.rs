@@ -17,7 +17,6 @@ pub(crate) fn App() -> Element {
     let redirect_url = env!("AG_OIDC_REDIRECT_URL");
 
     let u_api_url = env!("AG_USER_API_URL");
-    let ua_api_url = env!("AG_USER_ACCOUNT_API_URL");
     let oidc_api_url = env!("AG_OIDC_API_URL");
 
     use_context_provider(|| GoogleClientId(google_client_id.into()));
@@ -30,6 +29,7 @@ pub(crate) fn App() -> Element {
 
     #[cfg(feature = "web")]
     {
+        let ua_api_url = env!("AG_USER_ACCOUNT_API_URL");
         let ua_di_result = argentum_user_account_ui::security::di::di_init(ua_api_url);
 
         if let Err(e) = ua_di_result {

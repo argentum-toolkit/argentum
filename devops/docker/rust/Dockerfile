@@ -1,4 +1,4 @@
-FROM rust:1.96 AS rs
+FROM rust:1.98.1 AS rs
 
 RUN rustup component add clippy rustfmt
 RUN cargo install cargo-binstall
