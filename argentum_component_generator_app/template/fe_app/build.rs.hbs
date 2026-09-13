@@ -18,7 +18,7 @@ fn main() {
     let local_path = workspace_root.join("./.env.local");
 
     from_filename(env_path).unwrap();
-    from_filename_override(local_path).unwrap();
+    from_filename_override(local_path).ok(); // ignore if .env.local doesn't exist
 
     export("AG_GITHUB_CLIENT_ID");
     export("AG_GOOGLE_CLIENT_ID");
