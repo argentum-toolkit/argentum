@@ -9,8 +9,3 @@ services:
     #    user: $HOST_UID:$HOST_GID
     volumes:
       - ../../../var/db/user:/var/lib/postgresql
-    tmpfs:
-      - /tmp:exec,size=8G
-    ports:
-      - "54321:5432"
-    #TODO: close ports for production mode

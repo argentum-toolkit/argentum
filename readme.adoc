@@ -147,9 +147,13 @@ cargo install dioxus-cli
 
 === V0.4
 
+* Docker:
+** Don't expose ports in default docker-compose files. Create docker-compose.dev.yaml files instead of.
+** Create docker-compose.release.yaml
+
+
 * DI
 ** remove mut and mutex from DI
-** use .env for argentum_oidc_ui::di::di_init("http://localhost:8082");
 
 * User account
 ** fix restore password on BE

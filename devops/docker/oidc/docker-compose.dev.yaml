@@ -1,0 +1,9 @@
+services:
+  service.oidc.db:
+    ports:
+      - "54323:5432"
+
+    tmpfs:
+      - /tmp:exec,size=8G
+
+    #TODO: close ports for production mode
