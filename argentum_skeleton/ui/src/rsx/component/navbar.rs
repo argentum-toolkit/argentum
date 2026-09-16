@@ -24,7 +24,11 @@ pub fn NavBar<R: Routable + std::cmp::PartialEq>(props: NavBarProps<R>) -> Eleme
             class: "flex space-x-6 text-base-content",
 
             for (label, route) in props.links.iter() {
-                Link { class: "hover:text-primary", to: route.clone(), "{label}" }
+                Link {
+                    class: "hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                    to: route.clone(),
+                    "{label}"
+                }
             }
         }
 

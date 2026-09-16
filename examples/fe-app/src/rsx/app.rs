@@ -34,7 +34,10 @@ pub(crate) fn App() -> Element {
 
         if let Err(e) = ua_di_result {
             return rsx! {
-                "Can't initialize FE application. Error: {e}"
+                div {
+                    class: "text-error p-4 bg-base-200 rounded-lg",
+                    "Can't initialize FE application. Error: {e}"
+                }
             };
         }
     }
@@ -46,6 +49,11 @@ pub(crate) fn App() -> Element {
 
     rsx! {
         document::Stylesheet { href: CSS }
+        document::Title { "Argentum ToolKit" }
+        document::Meta {
+            name: "description",
+            content: "A modular Rust toolkit for building full-stack applications.",
+        }
         Router::<Route> {}
     }
 }
