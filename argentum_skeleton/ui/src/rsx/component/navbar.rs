@@ -8,7 +8,8 @@ pub struct NavBarProps<R>
 where
     R: Routable + std::cmp::PartialEq,
 {
-    pub auth: AuthBarProps<R>,
+    pub logo: Element,
+    pub auth: Option<AuthBarProps<R>>,
 
     pub links: Vec<(String, R)>,
     pub theme_config: ThemeConfig,
@@ -17,7 +18,7 @@ where
 #[component]
 pub fn NavBar<R: Routable + std::cmp::PartialEq>(props: NavBarProps<R>) -> Element {
     rsx! {
-        div { class: "w-30 max-w-full px-4 xl:mr-2 bold dark:text-white", "LOGO"}
+        div { class: "w-30 max-w-full px-4 xl:mr-2 bold dark:text-white", {props.logo}}
 
         nav {
             class: "flex space-x-6 text-base-content",
@@ -29,9 +30,12 @@ pub fn NavBar<R: Routable + std::cmp::PartialEq>(props: NavBarProps<R>) -> Eleme
 
         div {
             class: "flex items-center space-x-4 ml-auto whitespace-nowrap",
-            AuthBar<R> {
-                    ..props.auth
-                }
+
+            match props.auth {
+                Some(a) => rsx! { AuthBar<R> { ..a } },
+                None => rsx! {},
+            }
+
             DarkModeToggle { theme_config: props.theme_config }
         }
     }
