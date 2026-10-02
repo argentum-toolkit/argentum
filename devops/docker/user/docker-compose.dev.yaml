@@ -1,0 +1,6 @@
+services:
+  service.user.db:
+    tmpfs:
+      - /tmp:exec,size=8G
+    ports:
+      - "54321:5432"

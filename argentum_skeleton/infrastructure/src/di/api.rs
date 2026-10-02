@@ -37,6 +37,8 @@ struct Env {
     pub ag_product_name: String,
     pub ag_email_confirmation_front_url: String,
     pub ag_restore_password_front_url: String,
+    pub tls_cert_file: String,
+    pub tls_key_file: String,
 }
 
 pub struct SkeletonApiDi<L>
@@ -159,6 +161,8 @@ where
         &self,
         routers: Vec<Arc<dyn RouterTrait>>,
     ) -> Result<SkeletonApiDi<L>, DiError> {
+        let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
+
         let rest_di = self.rest_builder.build()?;
         let user_infrastructure_di = self.user_infrastructure_builder.lock()?.build()?;
         let user_account_infrastructure_di = self.user_account_infrastructure_builder.build()?;
@@ -188,6 +192,8 @@ where
 
         let http2_server = Arc::new(Http2Server::new(
             addr,
+            &env.tls_cert_file,
+            &env.tls_key_file,
             router,
             rest_di.response_transformer.clone(),
             rest_di.error_handler.clone(),

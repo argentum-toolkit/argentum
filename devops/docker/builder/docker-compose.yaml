@@ -8,6 +8,10 @@ services:
       - AG_GITHUB_CLIENT_ID
       - AG_GOOGLE_CLIENT_ID
       - AG_OIDC_REDIRECT_URL
+      - AG_USER_API_URL
+      - AG_USER_ACCOUNT_API_URL
+      - AG_OIDC_API_URL
+
     working_dir: /code
     volumes:
       - ../../..:/code

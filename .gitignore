@@ -11,3 +11,5 @@ target
 *.pem
 *.key
 var
+.
+AGENTS.md

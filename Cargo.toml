@@ -49,4 +49,10 @@ inherits = "dev"
 
 
 [profile.release]
-debug = 2
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+debug = 0
+# debug = 2

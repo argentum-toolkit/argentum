@@ -1,7 +1,7 @@
 use crate::rsx::page::Blog;
 use crate::rsx::wrapper::Wrapper;
 use argentum_oidc_ui::rsx::page::AuthCallback;
-use argentum_skeleton_ui::rsx::page::Home;
+use argentum_skeleton_ui::rsx::page::{About, Contacts, Home};
 use argentum_standard_ui::rsx::page::NotFound;
 use argentum_user_account_ui::rsx::page::EmailConfirmation;
 use argentum_user_account_ui::rsx::page::Login;
@@ -14,6 +14,13 @@ pub enum Route {
     #[layout(Wrapper)]
         #[route("/")]
         Home {},
+
+        #[route("/about")]
+        About {},
+
+        #[route("/contacts")]
+        Contacts {},
+
         #[nest("/user-account")]
             #[route("/login")]
             Login {},
@@ -22,7 +29,7 @@ pub enum Route {
             #[route("/email-confirmation?:token")]
             EmailConfirmation { token: String },
         #[end_nest]
-    
+
         #[nest("/oidc")]
             #[route("/auth/callback?:provider&:code&:state")]
             AuthCallback { provider: String, code: String, state: String },
@@ -31,7 +38,7 @@ pub enum Route {
         Blog { id: i32 },
 
     #[end_layout]
-    
+
     #[route("/:..route")]
     NotFound { route: Vec<String> },
 }

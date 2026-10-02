@@ -167,7 +167,7 @@ impl ClientGenerator {
                         Err(e) => {
                             return Err(format!(
                                 "Can't parse status code `{}`. Err: {e:?}",
-                                &code.to_string()
+                                code.to_string()
                             ));
                         }
                     };

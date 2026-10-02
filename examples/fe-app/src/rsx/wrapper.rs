@@ -22,6 +22,7 @@ pub(crate) fn Wrapper() -> Element {
             header {
                 class: "navbar bg-base-200 shadow-md",
                 NavBar {
+                    logo: rsx! { "LOGO" },
                     auth: AuthBarProps {
                         login_route: Route::Login {},
                         registration_route: Route::Registration {},
@@ -31,7 +32,8 @@ pub(crate) fn Wrapper() -> Element {
                     links: vec![
                         ("Home".into(), Route::Home {}),
                         ("Blog".into(), Route::Blog {id: 1}),
-                        ("About".into(), Route::Home {}),
+                        ("About".into(), Route::About {}),
+                        ("Contacts".into(), Route::Contacts {}),
                     ],
                     theme_config: theme_config()
                 }
@@ -41,6 +43,7 @@ pub(crate) fn Wrapper() -> Element {
                 Outlet::<Route> {}
             }
             Footer {
+                title: "Follow us",
                 links: vec![
                     ("GitLab".into(), "https://gitlab.com/argentum-toolkit/argentum".into()),
                     ("GitHub".into(), "https://github.com/argentum-toolkit/argentum".into()),

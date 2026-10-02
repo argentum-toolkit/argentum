@@ -4,7 +4,7 @@
 
 * Docker
 * Docker Compose
-* Rust 1.94+
+* Rust 1.98.1+
 * Cargo
 
 === Optional for contributors
@@ -38,10 +38,12 @@ docker compose up
 
 == Also you can run the example of web application locally
 
+!NOTE: Don't forget to export .env values
+
 [bash]
 ----
 cd examples/api-app
-cargo run --bin app
+cargo run --bin api
 ----
 
 Now you can see API documentation and send requests via Swagger-UI. link:http://localhost:8083/[]

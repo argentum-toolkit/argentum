@@ -20,4 +20,3 @@ theme:
 https://github.com/NextJSTemplates/startup-nextjs
 
 https://startup.demo.nextjstemplates.com/
-

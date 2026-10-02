@@ -144,7 +144,7 @@ impl PathParamsGenerator {
         for path in spec.paths.values() {
             let operations = &path.operations;
 
-            for (_method, operation) in operations.iter() {
+            for operation in operations.values() {
                 self.generate_item(base_output_path, operation, &path.parameters)?;
             }
         }

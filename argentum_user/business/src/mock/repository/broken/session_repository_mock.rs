@@ -40,7 +40,7 @@ impl SessionRepositoryTrait for SessionRepositoryMockWithBrokenSave {
             .read()
             .map_err(|_| SessionRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?;
 
-        for (_, s) in guard.iter() {
+        for s in guard.values() {
             if s.token == token {
                 return Ok(Some(Session::<Self::Id>::new(s.id, s.user_id, &s.token)));
             }
