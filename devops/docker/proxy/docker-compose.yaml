@@ -11,7 +11,6 @@ services:
       - FE_PORT=8080
       - API_HOST=release.api
       - API_PORT=8088
-      - SSL_VERIFY_CLIENT=${SSL_VERIFY_CLIENT:-on}
     volumes:
       - ../../../var/cert/api:/etc/nginx/cert
     ports:

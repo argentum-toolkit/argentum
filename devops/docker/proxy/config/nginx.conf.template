@@ -18,7 +18,7 @@ server {
     ssl_certificate /etc/nginx/cert/cert.pem;
     ssl_certificate_key /etc/nginx/cert/key.pem;
 
-    ssl_verify_client ${SSL_VERIFY_CLIENT}; #`off` FOR SELF SIGNED. ONLY FOR LOCAL!!!
+    ssl_verify_client off;
     ssl_certificate_compression on;
 
     location = /favicon.ico {

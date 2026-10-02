@@ -12,10 +12,6 @@ services:
       - PORT=${PORT:-8080} #Expose in Dockerfile
       - IP=${IP:-0.0.0.0}
 
-    volumes:
-      - ../../..:/code
-      - ../../../var/cargo/common:/usr/local/cargo/registry
-
   release.api:
     build:
       context: ../../..
@@ -47,10 +43,6 @@ services:
     depends_on:
       - service.user.db
       - service.user_account.db
-    working_dir: /code/examples/api-app
 
-    volumes:
-      - ../../..:/code
-      - ../../../var/cargo/common:/usr/local/cargo/registry
     extra_hosts:
       - "host.docker.internal:host-gateway"

@@ -6,6 +6,7 @@ echo "Set up pre-commit"
 ln -s -f ../../devops/scripts/check.sh .git/hooks/pre-commit
 
 echo "Create certificates for HTTP/2"
+mkdir -p var/cert/api
 cd var/cert/api
 mkcert -install
 mkcert localhost 127.0.0.1 ::1 api

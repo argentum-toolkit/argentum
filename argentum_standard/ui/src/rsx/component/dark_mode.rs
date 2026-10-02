@@ -63,6 +63,7 @@ pub fn DarkModeToggle(theme_config: ThemeConfig) -> Element {
             input {
                 type: "checkbox",
                 class: "theme-controller",
+                "aria-label": "Toggle theme",
                 checked: dark_mode().0,
                 onclick: move |_event| {
                     #[cfg(feature = "web")]
