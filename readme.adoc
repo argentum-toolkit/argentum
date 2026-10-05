@@ -147,11 +147,6 @@ cargo install dioxus-cli
 
 === V0.4
 
-* Docker:
-** Don't expose ports in default docker-compose files. Create docker-compose.dev.yaml files instead of.
-** Create docker-compose.release.yaml
-
-
 * DI
 ** remove mut and mutex from DI
 

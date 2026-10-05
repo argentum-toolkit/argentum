@@ -49,7 +49,7 @@ where
     L: LoggerTrait,
 {
     user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
-    event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+    event_business_builder: Arc<EventBusinessDiBuilder>,
 
     id_factory: Arc<dyn IdFactory<Id = I>>,
     logger: Arc<L>,
@@ -81,7 +81,7 @@ where
 {
     pub fn new(
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
-        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+        event_business_builder: Arc<EventBusinessDiBuilder>,
 
         product_name: &str,
         email_confirmation_token_ttl: u32,
@@ -235,7 +235,7 @@ where
             .clone()
             .ok_or("email_confirmation_token_repository is not initialized")?;
 
-        let event_business_di = self.event_business_builder.lock()?.build()?;
+        let event_business_di = self.event_business_builder.build()?;
 
         let member_confirms_email_uc = match self.member_confirms_email_uc.clone() {
             Some(uc) => uc,

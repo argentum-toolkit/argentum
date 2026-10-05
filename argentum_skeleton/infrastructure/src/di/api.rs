@@ -56,9 +56,9 @@ where
 {
     listen: String,
     pub logger: Arc<L>,
-    pub event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+    pub event_business_builder: Arc<EventBusinessDiBuilder>,
     pub rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
-    pub user_infrastructure_builder: Arc<Mutex<UserInfrastructureDiBuilder<L>>>,
+    pub user_infrastructure_builder: Arc<UserInfrastructureDiBuilder<L>>,
     pub user_account_infrastructure_builder: Arc<UserAccountInfrastructureDiBuilder<L>>,
     pub oidc_infrastructure_builder: Arc<OidcInfrastructureDiBuilder<L>>,
 }
@@ -67,7 +67,7 @@ impl<L> SkeletonApiDiBuilder<L>
 where
     L: LoggerTrait + 'static,
 {
-    pub async fn try_new(listen: &str, logger: Arc<L>) -> Result<Self, DiError> {
+    pub fn try_new(listen: &str, logger: Arc<L>) -> Result<Self, DiError> {
         let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
 
         let unique_id_factory = Arc::new(UniqueIdFactory::new());
@@ -93,14 +93,13 @@ where
             rest_builder.clone(),
             logger.clone(),
         );
-        let user_infrastructure_builder =
-            Arc::new(Mutex::new(tmp_user_builder.with_default_services().await?));
+        let user_infrastructure_builder = Arc::new(tmp_user_builder.with_default_services()?);
 
         let notifier = Arc::new(StdoutNotifier::new());
 
         let pbkdf2 = Arc::new(Pbkdf2::new());
 
-        let event_business_builder = Arc::new(Mutex::new(EventBusinessDiBuilder::new()));
+        let event_business_builder = Arc::new(EventBusinessDiBuilder::new());
 
         let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
             &env.ag_product_name,
@@ -122,7 +121,7 @@ where
             pbkdf2.clone(),
         );
         let user_account_infrastructure_builder =
-            Arc::new(tmp_user_account_builder.with_default_services().await?);
+            Arc::new(tmp_user_account_builder.with_default_services()?);
 
         let tmp_oidc_infrastructure_builder = OidcInfrastructureDiBuilder::new(
             &env.ag_oidc_database_url,
@@ -140,11 +139,8 @@ where
             r_client.clone(),
         );
 
-        let oidc_infrastructure_builder = Arc::new(
-            tmp_oidc_infrastructure_builder
-                .with_default_services()
-                .await?,
-        );
+        let oidc_infrastructure_builder =
+            Arc::new(tmp_oidc_infrastructure_builder.with_default_services()?);
 
         Ok(Self {
             event_business_builder,
@@ -157,16 +153,13 @@ where
         })
     }
 
-    pub async fn build(
-        &self,
-        routers: Vec<Arc<dyn RouterTrait>>,
-    ) -> Result<SkeletonApiDi<L>, DiError> {
+    pub fn build(&self, routers: Vec<Arc<dyn RouterTrait>>) -> Result<SkeletonApiDi<L>, DiError> {
         let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
 
         let rest_di = self.rest_builder.build()?;
-        let user_infrastructure_di = self.user_infrastructure_builder.lock()?.build()?;
+        let user_infrastructure_di = self.user_infrastructure_builder.build()?;
         let user_account_infrastructure_di = self.user_account_infrastructure_builder.build()?;
-        let oidc_infrastructure_di = self.oidc_infrastructure_builder.build().await?;
+        let oidc_infrastructure_di = self.oidc_infrastructure_builder.build()?;
 
         let mut r: Vec<Arc<dyn RouterTrait>> = vec![
             user_infrastructure_di.api_di.router.clone(),

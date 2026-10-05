@@ -15,9 +15,12 @@ use argentum_user_business::di::{UserBusinessDi, UserBusinessDiBuilder};
 use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
 use argentum_user_business::service::MemberAuthenticatorTrait;
 use argentum_user_rest::ApiDi;
+
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::sync::OnceLock;
+use tokio::runtime::Runtime;
 
 pub struct UserInfrastructureDi<I, L>
 where
@@ -38,7 +41,7 @@ where
     rest_di: Arc<RestDiBuilder<UniqueId, L>>,
     logger: Arc<L>,
 
-    built_di: Option<Arc<UserInfrastructureDi<UniqueId, L>>>,
+    built_di: OnceLock<Arc<UserInfrastructureDi<UniqueId, L>>>,
 }
 
 impl<L> UserInfrastructureDiBuilder<L>
@@ -59,20 +62,23 @@ where
             business_builder,
             rest_di: rest_builder,
             logger,
-            built_di: None,
+            built_di: OnceLock::new(),
         }
     }
 
-    pub async fn with_default_services(self) -> Result<Self, DiError> {
-        let pool = PgPoolOptions::new()
-            .max_connections(self.max_db_connections)
-            .min_connections(2)
-            .connect(&self.connection_url)
-            .await
+    pub fn with_default_services(self) -> Result<Self, DiError> {
+        let pool = Runtime::new()
+            .map_err(|e| DiError::Oher(e.to_string()))?
+            .block_on(
+                PgPoolOptions::new()
+                    .max_connections(self.max_db_connections)
+                    .min_connections(2)
+                    .connect(&self.connection_url),
+            )
             .map_err(|e| {
                 format!(
-                    "Can't create PG connection pool for connection `{}`. Error: {e}",
-                    self.connection_url
+                    "USER COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
+                    &self.connection_url
                 )
             })?;
 
@@ -104,7 +110,7 @@ where
         Ok(self)
     }
 
-    pub async fn with_member_repository(
+    pub fn with_member_repository(
         &mut self,
         member_repository: Arc<dyn MemberRepositoryTrait<Id = UniqueId>>,
     ) -> Result<&mut Self, DiError> {
@@ -115,7 +121,7 @@ where
         Ok(self)
     }
 
-    pub async fn with_member_authenticator(
+    pub fn with_member_authenticator(
         &mut self,
         member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = UniqueId>>,
     ) -> Result<&mut Self, DiError> {
@@ -126,9 +132,9 @@ where
         Ok(self)
     }
 
-    pub fn build(&mut self) -> Result<Arc<UserInfrastructureDi<UniqueId, L>>, DiError> {
-        if let Some(di) = &self.built_di {
-            return Ok(di.clone());
+    pub fn build(&self) -> Result<Arc<UserInfrastructureDi<UniqueId, L>>, DiError> {
+        if let Some(di) = self.built_di.get() {
+            return Ok(Arc::clone(di));
         }
 
         let business_di = self.business_builder.lock()?.build()?;
@@ -136,11 +142,12 @@ where
         let get_user_handler = Arc::new(GetUserHandler::new(business_di.get_user_uc.clone()));
 
         let rest_di = self.rest_di.build()?;
+
         let api_di = ApiDi::new(
             "/api/v1",
             rest_di.request_transformer.clone(),
             rest_di.bearer_authenticator.clone(),
-            get_user_handler.clone(),
+            get_user_handler,
             rest_di.error_pre_handler.clone(),
         );
 
@@ -149,8 +156,14 @@ where
             api_di,
         });
 
-        self.built_di = Some(di.clone());
+        match self.built_di.set(Arc::clone(&di)) {
+            Ok(()) => Ok(di),
 
-        Ok(di)
+            Err(_) => Ok(Arc::clone(
+                self.built_di
+                    .get()
+                    .expect("OnceLock was initialized after set() failed"),
+            )),
+        }
     }
 }

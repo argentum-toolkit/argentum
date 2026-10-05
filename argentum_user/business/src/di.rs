@@ -7,7 +7,7 @@ use crate::repository::user_repository::{GuestUserRepositoryTrait, MemberReposit
 use crate::service::{GuestBinder, MemberAuthenticatorTrait, TokenRouterTrait};
 use crate::use_case::GetUserUc;
 use crate::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 pub struct UserBusinessDi<I, L>
 where
@@ -36,7 +36,7 @@ where
     member_authenticator: Option<Arc<dyn MemberAuthenticatorTrait<Id = I>>>,
     logger: Arc<L>,
 
-    built_di: Option<Arc<UserBusinessDi<I, L>>>,
+    built_di: OnceLock<Arc<UserBusinessDi<I, L>>>,
 }
 
 impl<I, L> UserBusinessDiBuilder<I, L>
@@ -54,7 +54,7 @@ where
             member_authenticator: None,
             logger,
 
-            built_di: None,
+            built_di: OnceLock::new(),
         }
     }
 
@@ -109,9 +109,9 @@ where
         self
     }
 
-    pub fn build(&mut self) -> Result<Arc<UserBusinessDi<I, L>>, String> {
-        if let Some(di) = &self.built_di {
-            return Ok(di.clone());
+    pub fn build(&self) -> Result<Arc<UserBusinessDi<I, L>>, String> {
+        if let Some(di) = self.built_di.get() {
+            return Ok(Arc::clone(di));
         }
 
         let member_repository = self
@@ -168,8 +168,14 @@ where
             guest_binder,
         });
 
-        self.built_di = Some(di.clone());
+        match self.built_di.set(Arc::clone(&di)) {
+            Ok(()) => Ok(di),
 
-        Ok(di)
+            Err(_) => Ok(Arc::clone(
+                self.built_di
+                    .get()
+                    .expect("OnceLock was initialized after set() failed"),
+            )),
+        }
     }
 }

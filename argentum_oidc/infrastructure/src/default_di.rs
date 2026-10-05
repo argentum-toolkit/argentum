@@ -1,3 +1,8 @@
+use crate::{
+    db::repository::CredentialRepository, github::GitHubProvider, google::GoogleProvider,
+    rest::handler::ExchangeCodeHandler,
+};
+
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::LoggerTrait;
@@ -19,10 +24,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use crate::{
-    db::repository::CredentialRepository, github::GitHubProvider, google::GoogleProvider,
-    rest::handler::ExchangeCodeHandler,
-};
+use tokio::runtime::Runtime;
 
 pub struct OidcInfrastructureDi<L>
 where
@@ -64,7 +66,7 @@ where
         google_client_id: &str,
         google_client_secret: &str,
 
-        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+        event_business_builder: Arc<EventBusinessDiBuilder>,
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
         user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
         rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
@@ -97,16 +99,19 @@ where
         }
     }
 
-    pub async fn with_default_services(self) -> Result<Self, DiError> {
-        let pool = PgPoolOptions::new()
-            .max_connections(self.max_db_connections)
-            .min_connections(2)
-            .connect(&self.connection_url)
-            .await
+    pub fn with_default_services(self) -> Result<Self, DiError> {
+        let pool = Runtime::new()
+            .map_err(|e| DiError::Oher(e.to_string()))?
+            .block_on(
+                PgPoolOptions::new()
+                    .max_connections(self.max_db_connections)
+                    .min_connections(2)
+                    .connect(&self.connection_url),
+            )
             .map_err(|e| {
                 format!(
-                    "Can't create PG connection pool for connection `{}`. Error: {e}",
-                    self.connection_url
+                    "OIDC COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
+                    &self.connection_url
                 )
             })?;
 
@@ -139,7 +144,7 @@ where
         Ok(self)
     }
 
-    pub async fn build(&self) -> Result<Arc<OidcInfrastructureDi<L>>, DiError> {
+    pub fn build(&self) -> Result<Arc<OidcInfrastructureDi<L>>, DiError> {
         if let Some(di) = self.built_di.lock()?.clone() {
             return Ok(di);
         }

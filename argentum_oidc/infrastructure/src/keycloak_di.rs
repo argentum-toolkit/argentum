@@ -66,7 +66,7 @@ where
         keycloak_be_client_secret: &str,
         keycloak_fe_client_id: &str,
 
-        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+        event_business_builder: Arc<EventBusinessDiBuilder>,
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
         user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
         rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
@@ -167,7 +167,7 @@ where
         Ok(self)
     }
 
-    pub fn build(&mut self) -> Result<OidcInfrastructureDi<UniqueId, L>, DiError> {
+    pub fn build(&self) -> Result<OidcInfrastructureDi<UniqueId, L>, DiError> {
         let business_di = self.business_builder.lock()?.build()?;
 
         let exchange_code_handler = Arc::new(ExchangeCodeHandler::new(

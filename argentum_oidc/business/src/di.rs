@@ -35,7 +35,7 @@ where
     I: Id + 'static,
     L: LoggerTrait,
 {
-    event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+    event_business_builder: Arc<EventBusinessDiBuilder>,
     user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
     user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
 
@@ -54,7 +54,7 @@ where
     L: LoggerTrait + 'static,
 {
     pub fn new(
-        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+        event_business_builder: Arc<EventBusinessDiBuilder>,
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
         user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
 
@@ -106,7 +106,7 @@ where
             return Ok(di);
         }
 
-        let event_business_di = self.event_business_builder.lock()?.build()?;
+        let event_business_di = self.event_business_builder.build()?;
         let user_business_di = self.user_business_builder.lock()?.build()?;
         let user_account_business_di = self.user_account_business_builder.lock()?.build()?;
 

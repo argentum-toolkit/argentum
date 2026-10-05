@@ -15,6 +15,7 @@ use argentum_rest_infrastructure::di::RestDiBuilder;
 use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiBuilder;
 use argentum_user_infrastructure::di::UserInfrastructureDiBuilder;
 use std::sync::Arc;
+use tokio::runtime::Runtime;
 
 use serde::Deserialize;
 
@@ -48,7 +49,7 @@ where
     }
 }
 
-pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
+pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
     let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
 
     let unique_id_factory = Arc::new(UniqueIdFactory::new());
@@ -75,15 +76,13 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         rest_di_builder.clone(),
         logger.clone(),
     );
-    let user_infrastructure_builder = Arc::new(Mutex::new(
-        tmp_user_di_builder.with_default_services().await?,
-    ));
+    let user_infrastructure_builder = tmp_user_di_builder.with_default_services()?;
 
     let notifier = Arc::new(StdoutNotifier::new());
 
     let pbkdf2 = Arc::new(Pbkdf2::new());
 
-    let event_di = Arc::new(Mutex::new(EventBusinessDiBuilder::new()));
+    let event_di = Arc::new(EventBusinessDiBuilder::new());
 
     let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
         "Argentum ToolKit. Example of API application",
@@ -105,7 +104,7 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         pbkdf2.clone(),
     );
     let user_account_infrastructure_builder =
-        Arc::new(tmp_user_account_builder.with_default_services().await?);
+        Arc::new(tmp_user_account_builder.with_default_services()?);
 
     let mut k_di_builder = KeycloakInfrastructureDiBuilder::new(
         &env.keycloak_base_url,
@@ -123,7 +122,9 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         r_client.clone(),
     );
 
-    k_di_builder.with_default_services().await?;
+    Runtime::new()
+        .map_err(|e| DiError::Oher(e.to_string()))?
+        .block_on(k_di_builder.with_default_services())?;
 
     let k_di = k_di_builder.build()?;
 
@@ -135,7 +136,7 @@ pub async fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
 
     let rest_di = rest_di_builder.build()?;
-    let user_infrastructure_di = Arc::new(user_infrastructure_builder.lock()?.build()?);
+    let user_infrastructure_di = Arc::new(user_infrastructure_builder.build()?);
     let user_account_infrastructure_di = Arc::new(user_account_infrastructure_builder.build()?);
     // let oidc_infrastructure_di = oidc_infrastructure_builder.build().await?;
 

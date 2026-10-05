@@ -29,6 +29,7 @@ use argentum_user_business::di::UserBusinessDiBuilder;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::{Arc, Mutex};
+use tokio::runtime::Runtime;
 
 pub struct UserAccountInfrastructureDi<I, L>
 where
@@ -74,7 +75,7 @@ where
         member_jwt_token_ttl: i64,
 
         user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
-        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
+        event_business_builder: Arc<EventBusinessDiBuilder>,
 
         rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
         id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
@@ -111,16 +112,19 @@ where
         }
     }
 
-    pub async fn with_default_services(self) -> Result<Self, DiError> {
-        let pool = PgPoolOptions::new()
-            .max_connections(self.max_db_connections)
-            .min_connections(2)
-            .connect(&self.connection_url)
-            .await
+    pub fn with_default_services(self) -> Result<Self, DiError> {
+        let pool = Runtime::new()
+            .map_err(|e| DiError::Oher(e.to_string()))?
+            .block_on(
+                PgPoolOptions::new()
+                    .max_connections(self.max_db_connections)
+                    .min_connections(2)
+                    .connect(&self.connection_url),
+            )
             .map_err(|e| {
                 format!(
-                    "Can't create PG connection pool for connection `{}`. Error: {e}",
-                    self.connection_url
+                    "USER_ACCOUNT COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
+                    &self.connection_url
                 )
             })?;
 

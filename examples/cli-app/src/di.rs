@@ -96,7 +96,7 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
 
     let pbkdf2 = Arc::new(Pbkdf2::new());
 
-    let event_di = Arc::new(Mutex::new(EventBusinessDiBuilder::new()));
+    let event_di = Arc::new(EventBusinessDiBuilder::new());
 
     let ua_di = UserAccountBusinessDiBuilder::new(
         user_business_builder.clone(),
