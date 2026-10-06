@@ -4,9 +4,13 @@ use crate::mock::token::TokenGeneratorMock;
 use crate::repository::email_confirmation_token_repository::EmailConfirmationTokenRepositoryTrait;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
-use crate::repository::password_credential_writer::PasswordCredentialWriter;
+use crate::repository::password_credential_writer::{
+    PasswordCredentialWriter, PasswordCredentialWriterTrait,
+};
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
-use crate::service::{DefaultPasswordToTokenExchanger, PasswordToTokenExchangerTrait};
+use crate::service::{
+    DefaultPasswordToTokenExchanger, EmailConfirmationInitiator, PasswordToTokenExchangerTrait,
+};
 use crate::token::GeneratorTrait;
 use crate::use_case::guest_registers::GuestRegistersUc;
 use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
@@ -18,14 +22,20 @@ use crate::{
     mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock,
     use_case::member_confirms_email::DefaultMemberConfirmsEmailUc,
 };
-use argentum_encryption_business::mock::password::EncryptorMock;
+use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
 use argentum_encryption_business::password::Validator;
 use argentum_event_business::di::EventBusinessDiBuilder;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::NotifierTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
+use argentum_standard_business::di_container::Container;
 use argentum_standard_business::error::DiError;
 use argentum_user_business::di::UserBusinessDiBuilder;
+use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
+use argentum_user_business::repository::user_repository::{
+    GuestUserRepositoryTrait, MemberRepositoryTrait,
+};
+use argentum_user_business::service::GuestBinder;
 use std::sync::{Arc, Mutex};
 
 pub struct UserAccountBusinessDi<I, L>
@@ -312,4 +322,122 @@ where
 
         Ok(di)
     }
+}
+
+pub fn user_account_business_provide<I, L>(
+    container: &mut Container,
+    product_name: &'static str,
+    email_confirmation_token_ttl: u32,
+    restore_password_token_ttl: u32,
+    email_confirmation_front_url: &'static str,
+    restore_password_front_url: &'static str,
+) where
+    I: Id + 'static,
+    L: LoggerTrait + 'static,
+{
+    container.provide_factory::<GuestRegistersUc<_>, _>(|c| {
+        let id_factory = c.resolve::<dyn IdFactory<Id = I>>()?;
+
+        let guest_repository = c.resolve::<dyn GuestUserRepositoryTrait<Id = I>>()?;
+        let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = I>>()?;
+        let guest_token_generator = c.resolve::<dyn GeneratorTrait<Id = I>>()?;
+
+        Ok(Arc::new(GuestRegistersUc::new(
+            id_factory,
+            guest_repository,
+            session_repository,
+            guest_token_generator,
+        )))
+    });
+
+    container.provide_factory::<MemberLoginsWithPasswordUc<_, _>, _>(|c| {
+        let password_to_token_exchanger =
+            c.resolve::<dyn PasswordToTokenExchangerTrait<Id = I>>()?;
+        let guest_binder = c.resolve::<GuestBinder<I, L>>()?;
+
+        Ok(Arc::new(MemberLoginsWithPasswordUc::new(
+            password_to_token_exchanger,
+            guest_binder,
+        )))
+    });
+
+    container.provide_factory::<MemberRegistersWithPasswordUc<_>, _>(|c| {
+        let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
+        let credential_writer = c.resolve::<dyn PasswordCredentialWriterTrait<Id = I>>()?;
+        let email_confirmation_initiator = c.resolve::<EmailConfirmationInitiator<I>>()?;
+
+        Ok(Arc::new(MemberRegistersWithPasswordUc::new(
+            member_repository,
+            credential_writer,
+            email_confirmation_initiator,
+        )))
+    });
+
+    container.provide_factory::<dyn PasswordToTokenExchangerTrait<Id = I>, _>(|c| {
+        let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
+        let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = I>>()?;
+        let password_credential_checker = c.resolve::<PasswordCredentialChecker<I>>()?;
+        let id_factory = c.resolve::<dyn IdFactory<Id = I>>()?;
+        let member_token_generator = c.resolve::<dyn GeneratorTrait<Id = I>>()?;
+
+        Ok(Arc::new(DefaultPasswordToTokenExchanger::new(
+            member_repository,
+            session_repository,
+            password_credential_checker,
+            id_factory,
+            member_token_generator,
+        )))
+    });
+
+    container.provide_factory::<dyn PasswordCredentialWriterTrait<Id = I>, _>(|c| {
+        let repository = c.resolve::<dyn PasswordCredentialRepositoryTrait<Id = I>>()?;
+
+        Ok(Arc::new(PasswordCredentialWriter::new(repository)))
+    });
+
+    container.provide_factory::<EmailConfirmationInitiator<I>, _>(|c| {
+        let member_token_generator = c.resolve::<dyn GeneratorTrait<Id = I>>()?;
+        let email_confirmation_token_repository =
+            c.resolve::<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>()?;
+
+        let notifier = c.resolve::<dyn NotifierTrait<Id = I>>()?;
+
+        Ok(Arc::new(EmailConfirmationInitiator::new(
+            member_token_generator,
+            email_confirmation_token_repository,
+            notifier,
+            product_name,
+            email_confirmation_front_url,
+        )))
+    });
+
+    container.provide_factory::<PasswordCredentialChecker<I>, _>(|c| {
+        let repository = c.resolve::<dyn PasswordCredentialRepositoryTrait<Id = I>>()?;
+        let validator = c.resolve::<dyn Validator>()?;
+
+        Ok(Arc::new(PasswordCredentialChecker::new(
+            repository, validator,
+        )))
+    });
+}
+
+pub fn user_account_business_provide_mock<I>(container: &mut Container)
+where
+    I: Id + 'static,
+{
+    container.provide_factory::<dyn GeneratorTrait<Id = I>, _>(|_c| {
+        Ok(Arc::new(TokenGeneratorMock::new()))
+    });
+
+    container.provide_factory::<dyn Validator, _>(|_c| Ok(Arc::new(ValidatorMock::new())));
+
+    container.provide_factory::<dyn PasswordCredentialRepositoryTrait<Id = I>, _>(|_c| {
+        Ok(Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
+            EncryptorMock::new(),
+        ))))
+    });
+
+    container.provide_factory::<dyn EmailConfirmationTokenRepositoryTrait<Id = I>, _>(|_c| {
+        Ok(Arc::new(EmailConfirmationTokenRepositoryMock::new()))
+    });
 }

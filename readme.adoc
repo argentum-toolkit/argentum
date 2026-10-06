@@ -147,6 +147,8 @@ cargo install dioxus-cli
 
 === V0.4
 
+* split `GeneratorTrait` to `GuestGeneratorTrait` and `MemberGeneratorTrait`
+
 * DI
 ** remove mut and mutex from DI
 
