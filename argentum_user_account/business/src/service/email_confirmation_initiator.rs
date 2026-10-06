@@ -2,18 +2,17 @@ use crate::entity::EmailConfirmationToken;
 use crate::repository::email_confirmation_token_repository::{
     EmailConfirmationTokenRepositoryError, EmailConfirmationTokenRepositoryTrait,
 };
+use crate::token::MemberGeneratorTrait;
 use argentum_notification_business::{Notification, NotifierTrait};
+use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::entity::user::Member;
 use std::sync::Arc;
-
-use crate::token::GeneratorTrait;
-use argentum_standard_business::data_type::id::Id;
 
 pub struct EmailConfirmationInitiator<I>
 where
     I: Id,
 {
-    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+    token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
     email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
     notifier: Arc<dyn NotifierTrait<Id = I>>,
     product_name: String,
@@ -25,7 +24,7 @@ where
     I: Id,
 {
     pub fn new(
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
         email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
         notifier: Arc<dyn NotifierTrait<Id = I>>,
         product_name: &str,
@@ -99,7 +98,7 @@ pub enum EmailConfirmationInitiatorError {
 
 #[cfg(test)]
 mod tests {
-    use crate::mock::token::TokenGeneratorMock;
+    use crate::mock::token::MemberGeneratorMock;
     use crate::service::email_confirmation_initiator::EmailConfirmationInitiator;
     use argentum_notification_business::mock::StdoutNotifier;
     use argentum_standard_business::data_type::EmailAddress;
@@ -113,7 +112,7 @@ mod tests {
 
     #[tokio::test]
     async fn initiate_confirmation_success() -> Result<(), &'static str> {
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(MemberGeneratorMock::new());
         let email_confirmation_token_repository =
             Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let notifier = Arc::new(StdoutNotifier::new());

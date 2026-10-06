@@ -12,7 +12,7 @@ use crate::{
 use argentum_event_business::EventDispatcher;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
-use argentum_user_account_business::{event::MemberConfirmedEmail, token::GeneratorTrait};
+use argentum_user_account_business::{event::MemberConfirmedEmail, token::MemberGeneratorTrait};
 use argentum_user_business::{
     data_type::Name,
     entity::{session::Session, user::Member},
@@ -32,7 +32,7 @@ where
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+    token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
     id_factory: Arc<dyn IdFactory<Id = I>>,
     logger: Arc<L>,
     event_dispatcher: Arc<EventDispatcher>,
@@ -48,7 +48,7 @@ where
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
         id_factory: Arc<dyn IdFactory<Id = I>>,
         logger: Arc<L>,
         event_dispatcher: Arc<EventDispatcher>,

@@ -1,6 +1,7 @@
 use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
 use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
-use crate::mock::token::TokenGeneratorMock;
+use crate::mock::token::GuestGeneratorMock;
+use crate::mock::token::MemberGeneratorMock;
 use crate::repository::email_confirmation_token_repository::EmailConfirmationTokenRepositoryTrait;
 use crate::repository::password_credential_checker::PasswordCredentialChecker;
 use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
@@ -11,7 +12,7 @@ use crate::repository::restore_password_token_repository::RestorePasswordTokenRe
 use crate::service::{
     DefaultPasswordToTokenExchanger, EmailConfirmationInitiator, PasswordToTokenExchangerTrait,
 };
-use crate::token::GeneratorTrait;
+use crate::token::{GuestGeneratorTrait, MemberGeneratorTrait};
 use crate::use_case::guest_registers::GuestRegistersUc;
 use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
 use crate::use_case::member_logins_with_password::MemberLoginsWithPasswordUc;
@@ -50,7 +51,7 @@ where
     pub guest_with_token_changes_password_uc: Arc<GuestWithTokenChangesPasswordUc<I, L>>,
     pub guest_requests_restore_token_uc: Arc<GuestRequestsRestoreTokenUc<I, L>>,
     pub member_confirms_email_uc: Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>,
-    pub member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+    pub member_token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
 }
 
 pub struct UserAccountBusinessDiBuilder<I, L>
@@ -70,8 +71,8 @@ where
     restore_password_token_repository: Option<Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>>,
     email_confirmation_token_repository:
         Option<Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>>,
-    guest_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
-    member_token_generator: Option<Arc<dyn GeneratorTrait<Id = I>>>,
+    guest_token_generator: Option<Arc<dyn GuestGeneratorTrait<Id = I>>>,
+    member_token_generator: Option<Arc<dyn MemberGeneratorTrait<Id = I>>>,
 
     member_confirms_email_uc: Option<Arc<dyn MemberConfirmsEmailUcTrait<Id = I>>>,
     email_confirmation_token_ttl: u32,
@@ -137,8 +138,8 @@ where
         self.email_confirmation_token_repository =
             Some(Arc::new(EmailConfirmationTokenRepositoryMock::new()));
 
-        self.guest_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
-        self.member_token_generator = Some(Arc::new(TokenGeneratorMock::new()));
+        self.guest_token_generator = Some(Arc::new(GuestGeneratorMock::new()));
+        self.member_token_generator = Some(Arc::new(MemberGeneratorMock::new()));
 
         self
     }
@@ -148,8 +149,8 @@ where
         password_credential_repository: Arc<dyn PasswordCredentialRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
-        guest_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
-        member_token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        guest_token_generator: Arc<dyn GuestGeneratorTrait<Id = I>>,
+        member_token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
     ) -> &mut Self {
         self.password_credential_repository = Some(password_credential_repository);
         self.restore_password_token_repository = Some(restore_password_token_repository);
@@ -340,7 +341,7 @@ pub fn user_account_business_provide<I, L>(
 
         let guest_repository = c.resolve::<dyn GuestUserRepositoryTrait<Id = I>>()?;
         let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = I>>()?;
-        let guest_token_generator = c.resolve::<dyn GeneratorTrait<Id = I>>()?;
+        let guest_token_generator = c.resolve::<dyn GuestGeneratorTrait<Id = I>>()?;
 
         Ok(Arc::new(GuestRegistersUc::new(
             id_factory,
@@ -378,7 +379,7 @@ pub fn user_account_business_provide<I, L>(
         let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = I>>()?;
         let password_credential_checker = c.resolve::<PasswordCredentialChecker<I>>()?;
         let id_factory = c.resolve::<dyn IdFactory<Id = I>>()?;
-        let member_token_generator = c.resolve::<dyn GeneratorTrait<Id = I>>()?;
+        let member_token_generator = c.resolve::<dyn MemberGeneratorTrait<Id = I>>()?;
 
         Ok(Arc::new(DefaultPasswordToTokenExchanger::new(
             member_repository,
@@ -396,7 +397,7 @@ pub fn user_account_business_provide<I, L>(
     });
 
     container.provide_factory::<EmailConfirmationInitiator<I>, _>(|c| {
-        let member_token_generator = c.resolve::<dyn GeneratorTrait<Id = I>>()?;
+        let member_token_generator = c.resolve::<dyn MemberGeneratorTrait<Id = I>>()?;
         let email_confirmation_token_repository =
             c.resolve::<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>()?;
 
@@ -425,8 +426,12 @@ pub fn user_account_business_provide_mock<I>(container: &mut Container)
 where
     I: Id + 'static,
 {
-    container.provide_factory::<dyn GeneratorTrait<Id = I>, _>(|_c| {
-        Ok(Arc::new(TokenGeneratorMock::new()))
+    container.provide_factory::<dyn MemberGeneratorTrait<Id = I>, _>(|_c| {
+        Ok(Arc::new(MemberGeneratorMock::new()))
+    });
+
+    container.provide_factory::<dyn GuestGeneratorTrait<Id = I>, _>(|_c| {
+        Ok(Arc::new(GuestGeneratorMock::new()))
     });
 
     container.provide_factory::<dyn Validator, _>(|_c| Ok(Arc::new(ValidatorMock::new())));

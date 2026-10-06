@@ -20,7 +20,7 @@ use crate::{
     repository::password_credential_checker::{
         PasswordCredentialChecker, PasswordCredentialCheckerError,
     },
-    token::GeneratorTrait,
+    token::MemberGeneratorTrait,
 };
 
 pub type PasswordToTokenExchangeResult<I> = Result<Session<I>, PasswordToTokenExchangerError>;
@@ -84,7 +84,7 @@ where
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
     credential_checker: Arc<PasswordCredentialChecker<I>>,
     id_factory: Arc<dyn IdFactory<Id = I>>,
-    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+    token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
 }
 
 impl<I> DefaultPasswordToTokenExchanger<I>
@@ -96,7 +96,7 @@ where
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
         credential_checker: Arc<PasswordCredentialChecker<I>>,
         id_factory: Arc<dyn IdFactory<Id = I>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        token_generator: Arc<dyn MemberGeneratorTrait<Id = I>>,
     ) -> Self {
         Self {
             user_repository,
