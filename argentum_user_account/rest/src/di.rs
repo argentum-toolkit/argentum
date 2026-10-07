@@ -4,6 +4,7 @@ use crate::server::handler::GuestWithTokenChangesPasswordTrait;
 use crate::server::handler::MemberLoginsWithPasswordTrait;
 use crate::server::handler::MemberRegistersWithPasswordTrait;
 use crate::server::handler::MemberVerifiesEmailTrait;
+
 use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
@@ -12,7 +13,7 @@ use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::di_container::Container;
 use std::sync::Arc;
 
-pub fn user_account_api_provide<I>(container: &mut Container, url_prefix: &'static str)
+pub fn user_account_rest_provide<I>(container: &mut Container, url_prefix: &'static str)
 where
     I: Id + 'static,
 {

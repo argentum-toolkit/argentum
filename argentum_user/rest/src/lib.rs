@@ -10,9 +10,7 @@ pub mod dto;
 pub mod server;
 
 #[cfg(feature = "server")]
-pub use di::ApiDi;
-#[cfg(feature = "server")]
-pub use di::user_api_provide;
+pub use di::user_rest_provide;
 
 #[cfg(feature = "ui")]
 pub mod ui;

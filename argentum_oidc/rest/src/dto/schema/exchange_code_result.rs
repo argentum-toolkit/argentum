@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ExchangeCodeResult {
+    #[serde(rename = "accessToken")]
     pub access_token: String,
+    #[serde(rename = "userId")]
     pub user_id: uuid::Uuid,
 }
 

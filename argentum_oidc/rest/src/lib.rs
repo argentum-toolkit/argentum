@@ -10,7 +10,7 @@ pub mod dto;
 pub mod server;
 
 #[cfg(feature = "server")]
-pub use di::oidc_api_provide;
+pub use di::oidc_rest_provide;
 
 #[cfg(feature = "ui")]
 pub mod ui;

@@ -10,7 +10,7 @@ use argentum_oidc_business::service::provider::ProviderStrategyTrait;
 use argentum_oidc_business::{
     repository::CredentialRepositoryTrait, use_case::UserExchangesCodeToTokenUc,
 };
-use argentum_oidc_rest::{oidc_api_provide, server::handler::ExchangeCodeTrait};
+use argentum_oidc_rest::{oidc_rest_provide, server::handler::ExchangeCodeTrait};
 use argentum_standard_business::di_container::{Container, DiError};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use sqlx::postgres::PgPoolOptions;
@@ -30,7 +30,7 @@ pub async fn oidc_infrastructure_provider<L>(
 where
     L: LoggerTrait + 'static,
 {
-    oidc_api_provide::<UniqueId>(container, "/api/v1");
+    oidc_rest_provide::<UniqueId>(container, "/api/v1");
 
     let connection_url = connection_url.into();
     let github_client_id = github_client_id.into();

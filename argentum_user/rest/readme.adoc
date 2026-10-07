@@ -59,7 +59,7 @@ mod di;
 use crate::di::di_factory;
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let di = di_factory();
+    let di = di_factory()?;
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()

@@ -147,9 +147,6 @@ cargo install dioxus-cli
 
 === V0.4
 
-* DI
-** update rest generator
-
 * User account
 ** sign up form: password input should have type password not text
 ** fix restore password on BE

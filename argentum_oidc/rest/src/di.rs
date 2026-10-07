@@ -1,4 +1,5 @@
 use crate::server::handler::ExchangeCodeTrait;
+
 use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
@@ -7,7 +8,7 @@ use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::di_container::Container;
 use std::sync::Arc;
 
-pub fn oidc_api_provide<I>(container: &mut Container, url_prefix: &'static str)
+pub fn oidc_rest_provide<I>(container: &mut Container, url_prefix: &'static str)
 where
     I: Id + 'static,
 {

@@ -24,7 +24,7 @@ use argentum_user_business::{
 };
 
 use argentum_user_rest::server::handler::GetUserTrait;
-use argentum_user_rest::user_api_provide;
+use argentum_user_rest::user_rest_provide;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
@@ -37,7 +37,7 @@ where
     I: Id + 'static,
     L: LoggerTrait + 'static,
 {
-    user_api_provide::<I>(container, "/api/v1");
+    user_rest_provide::<I>(container, "/api/v1");
 
     let connection_url = connection_url.into();
     let pool = PgPoolOptions::new()

@@ -47,7 +47,7 @@ use argentum_user_account_rest::{
         GuestRegistersTrait, GuestRequestsRestoreTokenTrait, GuestWithTokenChangesPasswordTrait,
         MemberLoginsWithPasswordTrait, MemberRegistersWithPasswordTrait, MemberVerifiesEmailTrait,
     },
-    user_account_api_provide,
+    user_account_rest_provide,
 };
 
 use sqlx::postgres::PgPoolOptions;
@@ -64,7 +64,7 @@ where
     I: Id + 'static,
     L: LoggerTrait + 'static,
 {
-    user_account_api_provide::<I>(container, "/api/v1");
+    user_account_rest_provide::<I>(container, "/api/v1");
 
     let connection_url = connection_url.into();
     let member_jwt_token_secret = member_jwt_token_secret.into();

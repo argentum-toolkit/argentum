@@ -9,7 +9,7 @@ This server was generated from OpenAPI specification by the link:https://gitlab.
 
 - API version: 0.4.0-dev
 - Package Name: argentum_oidc_rest
-    - License: `LGPL-3.0`
+- License: `LGPL-3.0-or-later`
 
 
 == How to use
@@ -58,8 +58,8 @@ mod di;
 
 use crate::di::di_factory;
 
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let di = di_factory();
+fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let di = di_factory()?;
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
