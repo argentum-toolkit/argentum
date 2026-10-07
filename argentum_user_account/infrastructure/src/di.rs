@@ -19,7 +19,10 @@ use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_encryption_business::password::Encryptor;
 use argentum_log_business::LoggerTrait;
 
-use argentum_standard_business::{data_type::id::Id, di_container::Container, error::DiError};
+use argentum_standard_business::{
+    data_type::id::Id,
+    di_container::{Container, DiError},
+};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 
 use argentum_user_account_business::repository::{

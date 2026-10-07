@@ -149,8 +149,6 @@ cargo install dioxus-cli
 
 * DI
 ** update rest generator
-** user thiserror instead of .map_err(|e| {
-            DiError::Other(format!(
 
 * User account
 ** sign up form: password input should have type password not text

@@ -8,7 +8,10 @@ use crate::service::MemberAuthenticator;
 use crate::service::TokenRouter;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::{data_type::id::Id, di_container::Container, error::DiError};
+use argentum_standard_business::{
+    data_type::id::Id,
+    di_container::{Container, DiError},
+};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::repository::{
     guest_binding_repository::GuestBindingRepositoryTrait,

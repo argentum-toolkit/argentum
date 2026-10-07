@@ -1,30 +1,25 @@
-use std::{error::Error, fmt};
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum DiError {
+    #[error("DI service `{type_name}` is not registered")]
     NotRegistered { type_name: &'static str },
 
+    #[error("DI service `{type_name}` has wrong type")]
     TypeMismatch { type_name: &'static str },
 
+    #[error("{0}")]
     Other(String),
 }
 
-impl fmt::Display for DiError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::NotRegistered { type_name } => {
-                write!(f, "DI service `{type_name}` is not registered")
-            }
-
-            Self::TypeMismatch { type_name } => {
-                write!(f, "DI service `{type_name}` has wrong type")
-            }
-
-            Self::Other(message) => {
-                write!(f, "{message}")
-            }
-        }
+impl From<String> for DiError {
+    fn from(message: String) -> Self {
+        Self::Other(message)
     }
 }
 
-impl Error for DiError {}
+impl From<&str> for DiError {
+    fn from(message: &str) -> Self {
+        Self::Other(message.to_owned())
+    }
+}

@@ -9,7 +9,7 @@ use argentum_oidc_infrastructure::db::migration as oidc_migration;
 use argentum_user_account_infrastructure::db::migration as user_account_migration;
 use argentum_user_infrastructure::db::migration as user_migration;
 
-use argentum_standard_business::error::DiError;
+use argentum_standard_business::di_container::DiError;
 use serde::Deserialize;
 use sqlx::postgres::PgPoolOptions;
 

@@ -15,8 +15,7 @@ use argentum_rest_infrastructure::{
     },
 };
 
-use argentum_standard_business::di_container::{Container, DiError as ContainerDiError};
-use argentum_standard_business::error::DiError;
+use argentum_standard_business::di_container::{Container, DiError};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::di::user_account_business_provide;
 use argentum_user_account_infrastructure::di::user_account_infrastructure_provider;
@@ -42,7 +41,7 @@ struct Env {
     pub tls_key_file: String,
 }
 
-fn resolve_router(container: &Container) -> Result<Arc<dyn RouterTrait>, ContainerDiError> {
+fn resolve_router(container: &Container) -> Result<Arc<dyn RouterTrait>, DiError> {
     let pre_handler = container.resolve::<ErrorPreHandler>()?;
 
     let user_router = container.resolve::<argentum_user_rest::server::Router<UniqueId>>()?;
@@ -122,9 +121,9 @@ where
         let router = resolve_router(c)?;
         let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
         let error_handler = c.resolve::<ErrorHandler<L>>()?;
-        let addr = listen.parse().map_err(|e| {
-            ContainerDiError::Other(format!("Unable to parse socket address. Error: {e}"))
-        })?;
+        let addr = listen
+            .parse()
+            .map_err(|e| DiError::Other(format!("Unable to parse socket address. Error: {e}")))?;
 
         Ok(Arc::new(Http1Server::new(
             addr,
@@ -142,9 +141,9 @@ where
         let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
         let error_handler = c.resolve::<ErrorHandler<L>>()?;
 
-        let addr = listen.parse().map_err(|e| {
-            ContainerDiError::Other(format!("Unable to parse socket address. Error: {e}"))
-        })?;
+        let addr = listen
+            .parse()
+            .map_err(|e| DiError::Other(format!("Unable to parse socket address. Error: {e}")))?;
 
         Ok(Arc::new(Http2Server::new(
             addr,
