@@ -33,12 +33,7 @@ where
         .max_connections(max_db_connections)
         .connect(database_url)
         .await
-        .map_err(|e| {
-            format!(
-                "Can't create PG connection pool for connection `{}`. Error: {e}",
-                database_url
-            )
-        })?;
+        .map_err(anyhow::Error::from)?;
 
     let adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger.clone()));
 
@@ -54,7 +49,8 @@ pub async fn skeleton_migration_provide<L>(logger: Arc<L>) -> Result<Vec<Arc<Mig
 where
     L: LoggerTrait + 'static,
 {
-    let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
+    let env: Env =
+        envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
     let max_db_connections = 5;
 
     let user_migrator = create_migrator(

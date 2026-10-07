@@ -61,7 +61,8 @@ pub async fn skeleton_api_provide<L>(
 where
     L: LoggerTrait + 'static,
 {
-    let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
+    let env: Env =
+        envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
 
     event_business_provide(container);
 
@@ -95,7 +96,7 @@ where
         .user_agent(&env.ag_user_agent)
         .pool_max_idle_per_host(20)
         .build()
-        .map_err(|e| format!("Cant create reqwest client. Error: {e}"))?;
+        .map_err(|e| DiError::with_context("Can't create reqwest client", e))?;
 
     oidc_infrastructure_provider::<L>(
         container,
@@ -123,7 +124,7 @@ where
         let error_handler = c.resolve::<ErrorHandler<L>>()?;
         let addr = listen
             .parse()
-            .map_err(|e| DiError::Other(format!("Unable to parse socket address. Error: {e}")))?;
+            .map_err(|e| DiError::with_context("Unable to parse socket address", e))?;
 
         Ok(Arc::new(Http1Server::new(
             addr,
@@ -143,7 +144,7 @@ where
 
         let addr = listen
             .parse()
-            .map_err(|e| DiError::Other(format!("Unable to parse socket address. Error: {e}")))?;
+            .map_err(|e| DiError::with_context("Unable to parse socket address", e))?;
 
         Ok(Arc::new(Http2Server::new(
             addr,

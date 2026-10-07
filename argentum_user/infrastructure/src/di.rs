@@ -45,12 +45,7 @@ where
         .min_connections(2)
         .connect(&connection_url)
         .await
-        .map_err(|e| {
-            DiError::Other(format!(
-                "USER COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
-                connection_url
-            ))
-        })?;
+        .map_err(anyhow::Error::from)?;
 
     container.provide_factory::<UserSqlxPostgresAdapter<L>, _>(move |c| {
         let logger = c.resolve::<L>()?;

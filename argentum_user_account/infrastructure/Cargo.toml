@@ -16,6 +16,7 @@ readme = "README.md"
 server = []
 
 [dependencies]
+anyhow = "1.*"
 argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_encryption_infrastructure = { path = "../../argentum_encryption/infrastructure", version = ">=0.4.0-dev,<0.5.0" }

@@ -11,6 +11,7 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [dependencies]
+anyhow = "1.*"
 chrono = { version = "0.4.*", features = ["serde"] }
 fastrand = "2.*"
 regex = "1.*"

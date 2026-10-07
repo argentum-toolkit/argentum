@@ -8,18 +8,27 @@ pub enum DiError {
     #[error("DI service `{type_name}` has wrong type")]
     TypeMismatch { type_name: &'static str },
 
-    #[error("{0}")]
-    Other(String),
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
+}
+
+impl DiError {
+    pub fn with_context<E>(message: impl Into<String>, source: E) -> Self
+    where
+        E: std::error::Error + Send + Sync + 'static,
+    {
+        Self::Other(anyhow::Error::new(source).context(message.into()))
+    }
 }
 
 impl From<String> for DiError {
     fn from(message: String) -> Self {
-        Self::Other(message)
+        Self::Other(anyhow::Error::msg(message))
     }
 }
 
 impl From<&str> for DiError {
     fn from(message: &str) -> Self {
-        Self::Other(message.to_owned())
+        Self::Other(anyhow::Error::msg(message.to_owned()))
     }
 }
