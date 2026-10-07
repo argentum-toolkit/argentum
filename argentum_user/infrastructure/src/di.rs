@@ -1,3 +1,4 @@
+use crate::db::UserSqlxPostgresAdapter;
 use crate::db::repository::GuestBindingRepository;
 use crate::db::repository::GuestRepository;
 use crate::db::repository::MemberRepository;
@@ -7,163 +8,97 @@ use crate::service::MemberAuthenticator;
 use crate::service::TokenRouter;
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
-use argentum_rest_infrastructure::di::RestDiBuilder;
-use argentum_standard_business::data_type::id::Id;
-use argentum_standard_business::error::DiError;
+use argentum_standard_business::{data_type::id::Id, di_container::Container, error::DiError};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_business::di::{UserBusinessDi, UserBusinessDiBuilder};
-use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
-use argentum_user_business::service::MemberAuthenticatorTrait;
-use argentum_user_rest::ApiDi;
+use argentum_user_business::repository::{
+    guest_binding_repository::GuestBindingRepositoryTrait,
+    session_repository::SessionRepositoryTrait,
+    user_repository::{GuestUserRepositoryTrait, MemberRepositoryTrait},
+};
+use argentum_user_business::{
+    service::{MemberAuthenticatorTrait, TokenRouterTrait},
+    use_case::GetUserUc,
+};
 
+use argentum_user_rest::server::handler::GetUserTrait;
+use argentum_user_rest::user_api_provide;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
-use std::sync::Mutex;
-use std::sync::OnceLock;
-use tokio::runtime::Runtime;
 
-pub struct UserInfrastructureDi<I, L>
+pub async fn user_infrastructure_provide<I, L>(
+    container: &mut Container,
+    connection_url: impl Into<String>,
+    max_db_connections: u32,
+) -> Result<(), DiError>
 where
     I: Id + 'static,
     L: LoggerTrait + 'static,
 {
-    pub business_di: Arc<UserBusinessDi<I, L>>,
-    pub api_di: ApiDi<I>,
-}
+    user_api_provide::<I>(container, "/api/v1");
 
-pub struct UserInfrastructureDiBuilder<L>
-where
-    L: LoggerTrait + 'static,
-{
-    connection_url: String,
-    max_db_connections: u32,
-    business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
-    rest_di: Arc<RestDiBuilder<UniqueId, L>>,
-    logger: Arc<L>,
+    let connection_url = connection_url.into();
+    let pool = PgPoolOptions::new()
+        .max_connections(max_db_connections)
+        .min_connections(2)
+        .connect(&connection_url)
+        .await
+        .map_err(|e| {
+            DiError::Other(format!(
+                "USER COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
+                connection_url
+            ))
+        })?;
 
-    built_di: OnceLock<Arc<UserInfrastructureDi<UniqueId, L>>>,
-}
+    container.provide_factory::<UserSqlxPostgresAdapter<L>, _>(move |c| {
+        let logger = c.resolve::<L>()?;
 
-impl<L> UserInfrastructureDiBuilder<L>
-where
-    L: LoggerTrait,
-{
-    pub fn new(
-        connection_url: &str,
-        max_db_connections: u32,
-
-        business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
-        rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
-        logger: Arc<L>,
-    ) -> Self {
-        Self {
-            connection_url: connection_url.into(),
-            max_db_connections,
-            business_builder,
-            rest_di: rest_builder,
+        Ok(Arc::new(UserSqlxPostgresAdapter(SqlxPostgresAdapter::new(
+            pool.clone(),
             logger,
-            built_di: OnceLock::new(),
-        }
-    }
+        ))))
+    });
 
-    pub fn with_default_services(self) -> Result<Self, DiError> {
-        let pool = Runtime::new()
-            .map_err(|e| DiError::Oher(e.to_string()))?
-            .block_on(
-                PgPoolOptions::new()
-                    .max_connections(self.max_db_connections)
-                    .min_connections(2)
-                    .connect(&self.connection_url),
-            )
-            .map_err(|e| {
-                format!(
-                    "USER COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
-                    &self.connection_url
-                )
-            })?;
+    container.provide_factory::<dyn GuestBindingRepositoryTrait<Id = UniqueId>, _>(|c| {
+        let adapter = c.resolve::<UserSqlxPostgresAdapter<L>>()?;
 
-        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
+        Ok(Arc::new(GuestBindingRepository::new(adapter)))
+    });
 
-        let session_repository = Arc::new(SessionRepository::new(pg_adapter.clone()));
-        self.business_builder
-            .lock()?
-            .with_guest_binding_repository(Arc::new(GuestBindingRepository::new(
-                pg_adapter.clone(),
-            )))
-            .with_guest_repository(Arc::new(GuestRepository::new(pg_adapter.clone())))
-            .with_session_repository(session_repository.clone())
-            .with_token_router(Arc::new(TokenRouter::new()));
+    container.provide_factory::<dyn GuestUserRepositoryTrait<Id = UniqueId>, _>(|c| {
+        let adapter = c.resolve::<UserSqlxPostgresAdapter<L>>()?;
 
-        let member_repo = Arc::new(MemberRepository::new(pg_adapter.clone()));
+        Ok(Arc::new(GuestRepository::new(adapter)))
+    });
 
-        self.business_builder
-            .lock()?
-            .with_member_repository(member_repo.clone());
+    container.provide_factory::<dyn MemberRepositoryTrait<Id = UniqueId>, _>(|c| {
+        let adapter = c.resolve::<UserSqlxPostgresAdapter<L>>()?;
 
-        self.business_builder
-            .lock()?
-            .with_member_authenticator(Arc::new(MemberAuthenticator::new(
-                member_repo.clone(),
-                session_repository,
-            )));
+        Ok(Arc::new(MemberRepository::new(adapter)))
+    });
 
-        Ok(self)
-    }
+    container.provide_factory::<dyn SessionRepositoryTrait<Id = UniqueId>, _>(|c| {
+        let adapter = c.resolve::<UserSqlxPostgresAdapter<L>>()?;
 
-    pub fn with_member_repository(
-        &mut self,
-        member_repository: Arc<dyn MemberRepositoryTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, DiError> {
-        self.business_builder
-            .lock()?
-            .with_member_repository(member_repository.clone());
+        Ok(Arc::new(SessionRepository::new(adapter)))
+    });
 
-        Ok(self)
-    }
+    container.provide_factory::<dyn TokenRouterTrait, _>(|_c| Ok(Arc::new(TokenRouter::new())));
 
-    pub fn with_member_authenticator(
-        &mut self,
-        member_authenticator: Arc<dyn MemberAuthenticatorTrait<Id = UniqueId>>,
-    ) -> Result<&mut Self, DiError> {
-        self.business_builder
-            .lock()?
-            .with_member_authenticator(member_authenticator);
+    container.provide_factory::<dyn MemberAuthenticatorTrait<Id = UniqueId>, _>(|c| {
+        let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = UniqueId>>()?;
+        let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = UniqueId>>()?;
 
-        Ok(self)
-    }
+        Ok(Arc::new(MemberAuthenticator::new(
+            member_repository,
+            session_repository,
+        )))
+    });
 
-    pub fn build(&self) -> Result<Arc<UserInfrastructureDi<UniqueId, L>>, DiError> {
-        if let Some(di) = self.built_di.get() {
-            return Ok(Arc::clone(di));
-        }
+    container.provide_factory::<dyn GetUserTrait<Id = UniqueId>, _>(|c| {
+        let get_user_uc = c.resolve::<GetUserUc<UniqueId>>()?;
 
-        let business_di = self.business_builder.lock()?.build()?;
+        Ok(Arc::new(GetUserHandler::new(get_user_uc)))
+    });
 
-        let get_user_handler = Arc::new(GetUserHandler::new(business_di.get_user_uc.clone()));
-
-        let rest_di = self.rest_di.build()?;
-
-        let api_di = ApiDi::new(
-            "/api/v1",
-            rest_di.request_transformer.clone(),
-            rest_di.bearer_authenticator.clone(),
-            get_user_handler,
-            rest_di.error_pre_handler.clone(),
-        );
-
-        let di = Arc::new(UserInfrastructureDi {
-            business_di,
-            api_di,
-        });
-
-        match self.built_di.set(Arc::clone(&di)) {
-            Ok(()) => Ok(di),
-
-            Err(_) => Ok(Arc::clone(
-                self.built_di
-                    .get()
-                    .expect("OnceLock was initialized after set() failed"),
-            )),
-        }
-    }
+    Ok(())
 }

@@ -11,6 +11,8 @@ pub mod server;
 
 #[cfg(feature = "server")]
 pub use di::ApiDi;
+#[cfg(feature = "server")]
+pub use di::user_api_provide;
 
 #[cfg(feature = "ui")]
 pub mod ui;

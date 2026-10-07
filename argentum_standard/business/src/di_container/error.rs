@@ -6,7 +6,7 @@ pub enum DiError {
 
     TypeMismatch { type_name: &'static str },
 
-    Message(String),
+    Other(String),
 }
 
 impl fmt::Display for DiError {
@@ -20,7 +20,7 @@ impl fmt::Display for DiError {
                 write!(f, "DI service `{type_name}` has wrong type")
             }
 
-            Self::Message(message) => {
+            Self::Other(message) => {
                 write!(f, "{message}")
             }
         }

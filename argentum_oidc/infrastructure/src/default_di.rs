@@ -1,177 +1,108 @@
 use crate::{
-    db::repository::CredentialRepository, github::GitHubProvider, google::GoogleProvider,
-    rest::handler::ExchangeCodeHandler,
+    db::OidcSqlxPostgresAdapter, db::repository::CredentialRepository, github::GitHubProvider,
+    google::GoogleProvider, rest::handler::ExchangeCodeHandler,
 };
 
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
-use argentum_event_business::di::EventBusinessDiBuilder;
-use argentum_log_business::LoggerTrait;
-use argentum_oidc_business::{
-    di::{OidcBusinessDi, OidcBusinessDiBuilder},
-    service::provider::ProviderStrategyTrait,
-};
-use argentum_oidc_rest::ApiDi;
-use argentum_rest_infrastructure::di::RestDiBuilder;
-use argentum_standard_business::{data_type::id::IdFactory, error::DiError};
-use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
 
-use argentum_user_business::di::UserBusinessDiBuilder;
+use argentum_log_business::LoggerTrait;
+use argentum_oidc_business::service::provider::ProviderStrategyTrait;
+use argentum_oidc_business::{
+    repository::CredentialRepositoryTrait, use_case::UserExchangesCodeToTokenUc,
+};
+use argentum_oidc_rest::{oidc_api_provide, server::handler::ExchangeCodeTrait};
+use argentum_standard_business::{di_container::Container, error::DiError};
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use sqlx::postgres::PgPoolOptions;
 
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, sync::Arc};
 
-use tokio::runtime::Runtime;
-
-pub struct OidcInfrastructureDi<L>
-where
-    L: LoggerTrait,
-{
-    pub business_di: Arc<OidcBusinessDi<UniqueId, L>>,
-    pub api_di: ApiDi<UniqueId>,
-}
-
-pub struct OidcInfrastructureDiBuilder<L>
-where
-    L: LoggerTrait + 'static,
-{
-    connection_url: String,
+pub async fn oidc_infrastructure_provider<L>(
+    container: &mut Container,
+    connection_url: impl Into<String>,
     max_db_connections: u32,
-    github_client_id: String,
-    github_client_secret: String,
-    google_client_id: String,
-    google_client_secret: String,
-
-    business_builder: Arc<Mutex<OidcBusinessDiBuilder<UniqueId, L>>>,
-    rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
-
-    logger: Arc<L>,
+    github_client_id: impl Into<String>,
+    github_client_secret: impl Into<String>,
+    google_client_id: impl Into<String>,
+    google_client_secret: impl Into<String>,
     client: Arc<reqwest::Client>,
-
-    built_di: Mutex<Option<Arc<OidcInfrastructureDi<L>>>>,
-}
-
-impl<L> OidcInfrastructureDiBuilder<L>
+) -> Result<(), DiError>
 where
     L: LoggerTrait + 'static,
 {
-    pub fn new(
-        connection_url: &str,
-        max_db_connections: u32,
-        github_client_id: &str,
-        github_client_secret: &str,
-        google_client_id: &str,
-        google_client_secret: &str,
+    oidc_api_provide::<UniqueId>(container, "/api/v1");
 
-        event_business_builder: Arc<EventBusinessDiBuilder>,
-        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<UniqueId, L>>>,
-        user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<UniqueId, L>>>,
-        rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
+    let connection_url = connection_url.into();
+    let github_client_id = github_client_id.into();
+    let github_client_secret = github_client_secret.into();
+    let google_client_id = google_client_id.into();
+    let google_client_secret = google_client_secret.into();
+    let pool = PgPoolOptions::new()
+        .max_connections(max_db_connections)
+        .min_connections(2)
+        .connect(&connection_url)
+        .await
+        .map_err(|e| {
+            DiError::Other(format!(
+                "OIDC COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
+                connection_url
+            ))
+        })?;
 
-        id_factory: Arc<dyn IdFactory<Id = UniqueId>>,
-        logger: Arc<L>,
-        client: Arc<reqwest::Client>,
-    ) -> Self {
-        Self {
-            connection_url: connection_url.to_string(),
-            max_db_connections,
-            github_client_id: github_client_id.to_string(),
-            github_client_secret: github_client_secret.to_string(),
-            google_client_id: google_client_id.to_string(),
-            google_client_secret: google_client_secret.to_string(),
+    container.provide_factory::<OidcSqlxPostgresAdapter<L>, _>(move |c| {
+        let logger = c.resolve::<L>()?;
 
-            business_builder: Arc::new(Mutex::new(OidcBusinessDiBuilder::new(
-                event_business_builder,
-                user_business_builder.clone(),
-                user_account_business_builder.clone(),
-                id_factory.clone(),
-                logger.clone(),
-            ))),
-
-            rest_builder,
+        Ok(Arc::new(OidcSqlxPostgresAdapter(SqlxPostgresAdapter::new(
+            pool.clone(),
             logger,
-            client,
+        ))))
+    });
 
-            built_di: Mutex::new(None),
+    container.provide_factory::<dyn CredentialRepositoryTrait<UserId = UniqueId>, _>(|c| {
+        let adapter = c.resolve::<OidcSqlxPostgresAdapter<L>>()?;
+        Ok(Arc::new(CredentialRepository::new(adapter)))
+    });
+
+    container.provide_factory::<GitHubProvider<L>, _>({
+        let client = client.clone();
+        move |c| {
+            let logger = c.resolve::<L>()?;
+            Ok(Arc::new(GitHubProvider::new(
+                &github_client_id,
+                &github_client_secret,
+                client.clone(),
+                logger,
+            )))
         }
-    }
+    });
 
-    pub fn with_default_services(self) -> Result<Self, DiError> {
-        let pool = Runtime::new()
-            .map_err(|e| DiError::Oher(e.to_string()))?
-            .block_on(
-                PgPoolOptions::new()
-                    .max_connections(self.max_db_connections)
-                    .min_connections(2)
-                    .connect(&self.connection_url),
-            )
-            .map_err(|e| {
-                format!(
-                    "OIDC COMPONENT: Can't create PG connection pool for connection `{}`. Error: {e}",
-                    &self.connection_url
-                )
-            })?;
+    container.provide_factory::<GoogleProvider<L>, _>({
+        let client = client.clone();
+        move |c| {
+            let logger = c.resolve::<L>()?;
+            Ok(Arc::new(GoogleProvider::new(
+                &google_client_id,
+                &google_client_secret,
+                client.clone(),
+                logger,
+            )))
+        }
+    });
 
-        let pg_adapter = Arc::new(SqlxPostgresAdapter::new(pool, self.logger.clone()));
-
-        let github_provider = Arc::new(GitHubProvider::new(
-            &self.github_client_id,
-            &self.github_client_secret,
-            self.client.clone(),
-            self.logger.clone(),
-        ));
-
-        let google_provider = Arc::new(GoogleProvider::new(
-            &self.google_client_id,
-            &self.google_client_secret,
-            self.client.clone(),
-            self.logger.clone(),
-        ));
+    container.provide_factory::<HashMap<String, Arc<dyn ProviderStrategyTrait>>, _>(|c| {
+        let github_provider = c.resolve::<GitHubProvider<L>>()?;
+        let google_provider = c.resolve::<GoogleProvider<L>>()?;
 
         let mut providers: HashMap<String, Arc<dyn ProviderStrategyTrait>> = HashMap::new();
-
         providers.insert("GitHub".into(), github_provider);
         providers.insert("Google".into(), google_provider);
 
-        self.business_builder
-            .lock()?
-            .with_credential_repository(Arc::new(CredentialRepository::new(pg_adapter)))
-            .with_provider_strategies(providers);
+        Ok(Arc::new(providers))
+    });
 
-        Ok(self)
-    }
-
-    pub fn build(&self) -> Result<Arc<OidcInfrastructureDi<L>>, DiError> {
-        if let Some(di) = self.built_di.lock()?.clone() {
-            return Ok(di);
-        }
-
-        let business_di = self.business_builder.lock()?.build()?;
-
-        let exchange_code_handler = Arc::new(ExchangeCodeHandler::new(
-            business_di.user_exchanges_code_to_token_uc.clone(),
-        ));
-
-        let rest_di = self.rest_builder.build()?;
-
-        let api_di = ApiDi::new(
-            "/api/v1",
-            rest_di.request_transformer.clone(),
-            rest_di.bearer_authenticator.clone(),
-            exchange_code_handler,
-            rest_di.error_pre_handler.clone(),
-        );
-
-        let di = Arc::new(OidcInfrastructureDi {
-            business_di,
-            api_di,
-        });
-
-        *self.built_di.lock()? = Some(di.clone());
-
-        Ok(di)
-    }
+    container.provide_factory::<dyn ExchangeCodeTrait<Id = UniqueId>, _>(|c| {
+        let uc = c.resolve::<UserExchangesCodeToTokenUc<UniqueId, L>>()?;
+        Ok(Arc::new(ExchangeCodeHandler::new(uc)))
+    });
+    Ok(())
 }

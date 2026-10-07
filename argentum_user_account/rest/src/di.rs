@@ -9,35 +9,28 @@ use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::di_container::Container;
 use std::sync::Arc;
 
-pub struct ApiDi<I>
+pub fn user_account_api_provide<I>(container: &mut Container, url_prefix: &'static str)
 where
-    I: Id,
+    I: Id + 'static,
 {
-    pub router: Arc<Router<I>>,
-}
+    container.provide_factory::<Router<I>, _>(|c| {
+        let request_transformer = c.resolve::<RequestTransformer>()?;
+        let bearer_auth = c.resolve::<BearerAuthenticator<I>>()?;
+        let guest_registers_handler = c.resolve::<dyn GuestRegistersTrait<Id = I>>()?;
+        let guest_requests_restore_token_handler =
+            c.resolve::<dyn GuestRequestsRestoreTokenTrait<Id = I>>()?;
+        let guest_with_token_changes_password_handler =
+            c.resolve::<dyn GuestWithTokenChangesPasswordTrait<Id = I>>()?;
+        let member_logins_with_password_handler =
+            c.resolve::<dyn MemberLoginsWithPasswordTrait<Id = I>>()?;
+        let member_registers_with_password_handler =
+            c.resolve::<dyn MemberRegistersWithPasswordTrait<Id = I>>()?;
+        let member_verifies_email_handler = c.resolve::<dyn MemberVerifiesEmailTrait<Id = I>>()?;
+        let error_pre_handler = c.resolve::<ErrorPreHandler>()?;
 
-impl<I> ApiDi<I>
-where
-    I: Id,
-{
-    pub fn new(
-        //config
-        url_prefix: &str,
-        //services
-        request_transformer: Arc<RequestTransformer>,
-        bearer_auth: Arc<BearerAuthenticator<I>>,
-        guest_registers_handler: Arc<dyn GuestRegistersTrait<Id = I>>,
-        guest_requests_restore_token_handler: Arc<dyn GuestRequestsRestoreTokenTrait<Id = I>>,
-        guest_with_token_changes_password_handler: Arc<
-            dyn GuestWithTokenChangesPasswordTrait<Id = I>,
-        >,
-        member_logins_with_password_handler: Arc<dyn MemberLoginsWithPasswordTrait<Id = I>>,
-        member_registers_with_password_handler: Arc<dyn MemberRegistersWithPasswordTrait<Id = I>>,
-        member_verifies_email_handler: Arc<dyn MemberVerifiesEmailTrait<Id = I>>,
-        error_pre_handler: Arc<ErrorPreHandler>,
-    ) -> Self {
         let pre_handler = Arc::new(PreHandler::new(
             request_transformer,
             bearer_auth,
@@ -49,8 +42,10 @@ where
             member_verifies_email_handler,
         ));
 
-        let router = Arc::new(Router::new(pre_handler, error_pre_handler, url_prefix));
-
-        ApiDi { router }
-    }
+        Ok(Arc::new(Router::new(
+            pre_handler,
+            error_pre_handler,
+            url_prefix,
+        )))
+    });
 }

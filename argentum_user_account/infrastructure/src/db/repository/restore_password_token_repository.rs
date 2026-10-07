@@ -1,6 +1,6 @@
+use crate::db::UserAccountSqlxPostgresAdapter;
 use crate::db::dto::RestorePasswordTokenDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
-use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::entity::RestorePasswordToken;
@@ -21,14 +21,14 @@ pub struct RestorePasswordTokenRepository<L>
 where
     L: LoggerTrait,
 {
-    adapter: Arc<SqlxPostgresAdapter<L>>,
+    adapter: Arc<UserAccountSqlxPostgresAdapter<L>>,
 }
 
 impl<L> RestorePasswordTokenRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+    pub fn new(adapter: Arc<UserAccountSqlxPostgresAdapter<L>>) -> Self {
         Self { adapter }
     }
 

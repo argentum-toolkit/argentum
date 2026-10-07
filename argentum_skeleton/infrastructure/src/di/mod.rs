@@ -1,5 +1,5 @@
 mod api;
-pub use api::SkeletonApiDiBuilder;
+pub use api::skeleton_api_provide;
 
 mod migration;
-pub use migration::SkeletonMigrationDiBuilder;
+pub use migration::skeleton_migration_provide;

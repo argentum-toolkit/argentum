@@ -7,11 +7,12 @@ pub enum DiError {
     #[error("Mutex was poisoned")]
     MutexPoisoned,
 
+    //TODO: remove String error
     #[error("{0}")]
     String(String),
 
     #[error("Other Error: {0}")]
-    Oher(String),
+    Other(String),
 }
 
 impl<T> From<PoisonError<MutexGuard<'_, T>>> for DiError {
