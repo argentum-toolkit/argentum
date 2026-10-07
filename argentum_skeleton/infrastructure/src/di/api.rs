@@ -42,6 +42,19 @@ struct Env {
     pub tls_key_file: String,
 }
 
+fn resolve_router(container: &Container) -> Result<Arc<dyn RouterTrait>, ContainerDiError> {
+    let pre_handler = container.resolve::<ErrorPreHandler>()?;
+
+    let user_router = container.resolve::<argentum_user_rest::server::Router<UniqueId>>()?;
+    let user_account_router =
+        container.resolve::<argentum_user_account_rest::server::Router<UniqueId>>()?;
+    let oidc_router = container.resolve::<argentum_oidc_rest::server::Router<UniqueId>>()?;
+
+    let routers: Vec<Arc<dyn RouterTrait>> = vec![user_router, user_account_router, oidc_router];
+
+    Ok(Arc::new(RouterCombinator::new(routers, pre_handler)))
+}
+
 pub async fn skeleton_api_provide<L>(
     container: &mut Container,
     listen: &'static str,
@@ -106,19 +119,7 @@ where
     container.provide_factory::<Http1Server<L>, _>(move |c| {
         let logger = c.resolve::<L>()?;
 
-        let pre_handler = c.resolve::<ErrorPreHandler>()?;
-
-        let user_router = c.resolve::<argentum_user_rest::server::Router<UniqueId>>()?;
-        let user_account_router =
-            c.resolve::<argentum_user_account_rest::server::Router<UniqueId>>()?;
-        let oidc_router = c.resolve::<argentum_oidc_rest::server::Router<UniqueId>>()?;
-
-        //TODO: inject all services
-        let r: Vec<Arc<dyn RouterTrait>> = vec![user_router, user_account_router, oidc_router];
-        // r.extend(routers);
-
-        let router = Arc::new(RouterCombinator::new(r, pre_handler));
-        // let router = container.resolve::<RouterCombinator>()?;
+        let router = resolve_router(c)?;
         let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
         let error_handler = c.resolve::<ErrorHandler<L>>()?;
         let addr = listen.parse().map_err(|e| {
@@ -137,11 +138,7 @@ where
     container.provide_factory::<Http2Server<L>, _>(move |c| {
         let logger = c.resolve::<L>()?;
 
-        // let pre_handler = c.resolve::<ErrorPreHandler>>()?;
-
-        // let router = Arc::new(RouterCombinator::new(r, pre_handler));
-
-        let router = c.resolve::<RouterCombinator>()?;
+        let router = resolve_router(c)?;
         let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
         let error_handler = c.resolve::<ErrorHandler<L>>()?;
 

@@ -148,9 +148,12 @@ cargo install dioxus-cli
 === V0.4
 
 * DI
-** remove mut and mutex from DI
+** update rest generator
+** user thiserror instead of .map_err(|e| {
+            DiError::Other(format!(
 
 * User account
+** sign up form: password input should have type password not text
 ** fix restore password on BE
 ** implement FE
 
@@ -189,6 +192,24 @@ cargo install dioxus-cli
 
 * notifications
 * macro for creation Id types (for user, for account for event)
+
+
+== Known Issues
+
+=== Dioxus. Wrong wasm wersion
+
+[text]
+....
+14:29:34 [dev] Build failed: Incorrect wasm-bindgen-cli version: project requires version 0.2.128 but version 0.2.121 is installed
+....
+.Dioxus. Wrong wasm wersion
+
+Uninstall wasm-bindgen-cli. Then run:
+
+[source, bash]
+....
+cargo install wasm-bindgen-cli --version 0.2.128 --force
+....
 
 
 == License
