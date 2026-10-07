@@ -91,7 +91,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             id: "password",
             name: "password",
             label: "Password",
-            input_type: "text".to_string(),
+            input_type: "password".to_string(),
             required: true,
                 value: password_value(),
 
@@ -135,7 +135,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             id: "password",
             name: "password",
             label: "Password",
-            input_type: "text".to_string(),
+            input_type: "password".to_string(),
             required: true,
                 value: password_value(),
 
@@ -174,7 +174,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             id: "password",
             name: "password",
             label: "Password",
-            input_type: "text".to_string(),
+            input_type: "password".to_string(),
             required: true,
                 value: password_value(),
 
