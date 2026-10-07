@@ -1,6 +1,6 @@
-{{~#each operations as |operation|~}}
-    use crate::server::handler::{{upper_camel operation.operationId}}Trait;
-{{~/each~}}
+{{#each operations as |operation|}}
+use crate::server::handler::{{upper_camel operation.operationId}}Trait;
+{{/each}}
 
 use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
@@ -10,48 +10,38 @@ use argentum_rest_infrastructure::service::{
     ErrorPreHandler, RequestTransformer,
 };
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::di_container::Container;
 use std::sync::Arc;
 
-pub struct ApiDi<I>
+pub fn {{package_name_to_container_provider_name packageName}}<I>(container: &mut Container, url_prefix: &'static str)
 where
-    I: Id,
+    I: Id + 'static,
 {
-    pub router: Arc<Router<I>>,
-}
-
-impl<I> ApiDi<I>
-where
-    I: Id,
-{
-    pub fn new(
-        //config
-        url_prefix: &str,
-        //services
-        request_transformer: Arc<RequestTransformer>,
+    container.provide_factory::<Router<I>, _>(|c| {
+        let request_transformer = c.resolve::<RequestTransformer>()?;
         {{#if securityEnabled}}
-            bearer_auth: Arc<BearerAuthenticator<I>>,
+        let bearer_auth = c.resolve::<BearerAuthenticator<I>>()?;
         {{/if}}
         {{#each operations as |operation|}}
-            {{snake operation.operationId}}_handler: Arc<dyn {{upper_camel operation.operationId}}Trait<Id = I>>,
+        let {{snake operation.operationId}}_handler =
+            c.resolve::<dyn {{upper_camel operation.operationId}}Trait<Id = I>>()?;
         {{/each}}
-        error_pre_handler: Arc<ErrorPreHandler>,
-    ) -> Self {
+        let error_pre_handler = c.resolve::<ErrorPreHandler>()?;
+
         let pre_handler = Arc::new(PreHandler::new(
             request_transformer,
             {{#if securityEnabled}}
             bearer_auth,
             {{/if}}
             {{#each operations as |operation|}}
-                {{snake operation.operationId}}_handler,
+            {{snake operation.operationId}}_handler,
             {{/each}}
         ));
 
-        let router = Arc::new(Router::new(
+        Ok(Arc::new(Router::new(
             pre_handler,
             error_pre_handler,
             url_prefix,
-        ));
-
-        ApiDi { router }
-    }
+        )))
+    });
 }

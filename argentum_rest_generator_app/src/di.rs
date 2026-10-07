@@ -18,7 +18,7 @@ use crate::generator::{
 use crate::template::Renderer;
 use crate::template::helper::{
     camel_helper, content_type_to_type_helper, eq_helper, escape_var_name_helper, lower_helper,
-    snake_helper, trim_mod_helper, upper_camel_helper,
+    package_name_to_container_provider_name, snake_helper, trim_mod_helper, upper_camel_helper,
 };
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
@@ -224,6 +224,10 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
 
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
     reg.register_helper("escape_var_name", Box::new(escape_var_name_helper));
+    reg.register_helper(
+        "package_name_to_container_provider_name",
+        Box::new(package_name_to_container_provider_name),
+    );
 
     //services
     let log_writer = Arc::new(PrettyWriter::new());

@@ -29,7 +29,6 @@ members = [
     "argentum_user_account/infrastructure",
     "argentum_user_account/ui",
     "examples/api-app",
-    "examples/api-keycloak-app",
     "examples/cli-app",
     "examples/fe-app",
 ]

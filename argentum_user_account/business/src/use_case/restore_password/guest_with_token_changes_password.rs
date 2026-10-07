@@ -98,13 +98,13 @@ mod tests {
     use crate::entity::RestorePasswordToken;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
-    use crate::mock::token::TokenGeneratorMock;
+    use crate::mock::token::GuestGeneratorMock;
     use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
     use crate::use_case::restore_password::error::RestorePasswordError;
 
-    use crate::token::GeneratorTrait;
+    use crate::token::GuestGeneratorTrait;
     use crate::use_case::restore_password::guest_with_token_changes_password::GuestWithTokenChangesPasswordUc;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
@@ -125,8 +125,8 @@ mod tests {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(MemberRepositoryMock::new());
-        let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
-            Arc::new(TokenGeneratorMock::new());
+        let token_generator: Arc<dyn GuestGeneratorTrait<Id = UIntId>> =
+            Arc::new(GuestGeneratorMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
             EncryptorMock::new(),
         )));
@@ -180,8 +180,8 @@ mod tests {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(MemberRepositoryMock::new());
-        let token_generator: Arc<dyn GeneratorTrait<Id = UIntId>> =
-            Arc::new(TokenGeneratorMock::new());
+        let token_generator: Arc<dyn GuestGeneratorTrait<Id = UIntId>> =
+            Arc::new(GuestGeneratorMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
             EncryptorMock::new(),
         )));

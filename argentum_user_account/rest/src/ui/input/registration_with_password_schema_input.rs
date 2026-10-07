@@ -116,7 +116,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             id: "password",
             name: "password",
             label: "Password",
-            input_type: "text".to_string(),
+            input_type: "password".to_string(),
             required: true,
                 value: password_value(),
 
@@ -187,7 +187,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             id: "password",
             name: "password",
             label: "Password",
-            input_type: "text".to_string(),
+            input_type: "password".to_string(),
             required: true,
                 value: password_value(),
 
@@ -253,7 +253,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
             id: "password",
             name: "password",
             label: "Password",
-            input_type: "text".to_string(),
+            input_type: "password".to_string(),
             required: true,
                 value: password_value(),
 

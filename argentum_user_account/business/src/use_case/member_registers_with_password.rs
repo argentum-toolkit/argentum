@@ -120,7 +120,7 @@ pub enum RegistrationError {
 #[cfg(test)]
 mod test {
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
-    use crate::mock::token::TokenGeneratorMock;
+    use crate::mock::token::MemberGeneratorMock;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::use_case::member_registers_with_password::{
         MemberRegistersWithPasswordUc, RegistrationError,
@@ -147,7 +147,7 @@ mod test {
         use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
         use crate::service::EmailConfirmationInitiator;
 
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(MemberGeneratorMock::new());
         let email_confirmation_token_repository =
             Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let notifier = Arc::new(StdoutNotifier::new());
@@ -202,7 +202,7 @@ mod test {
         use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
         use crate::service::EmailConfirmationInitiator;
 
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(MemberGeneratorMock::new());
         let email_confirmation_token_repository =
             Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let notifier = Arc::new(StdoutNotifier::new());
@@ -260,7 +260,7 @@ mod test {
         use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
         use crate::service::EmailConfirmationInitiator;
 
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(MemberGeneratorMock::new());
         let email_confirmation_token_repository =
             Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let notifier = Arc::new(StdoutNotifier::new());

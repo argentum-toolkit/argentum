@@ -8,8 +8,9 @@ use argentum_user_business::repository::user_repository::{
     ExternalUserError, GuestUserRepositoryTrait,
 };
 
-use crate::token::GeneratorTrait;
 use std::sync::Arc;
+
+use crate::token::GuestGeneratorTrait;
 
 pub struct GuestRegistersUc<I>
 where
@@ -18,7 +19,7 @@ where
     id_factory: Arc<dyn IdFactory<Id = I>>,
     user_repository: Arc<dyn GuestUserRepositoryTrait<Id = I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+    token_generator: Arc<dyn GuestGeneratorTrait<Id = I>>,
 }
 
 impl<I> GuestRegistersUc<I>
@@ -29,7 +30,7 @@ where
         id_factory: Arc<dyn IdFactory<Id = I>>,
         user_repository: Arc<dyn GuestUserRepositoryTrait<Id = I>>,
         session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        token_generator: Arc<dyn GuestGeneratorTrait<Id = I>>,
     ) -> Self {
         Self {
             id_factory,
@@ -79,7 +80,7 @@ pub enum GuestRegistrationError {
 
 #[cfg(test)]
 mod tests {
-    use crate::mock::token::TokenGeneratorMock;
+    use crate::mock::token::GuestGeneratorMock;
     use crate::use_case::guest_registers::{GuestRegistersUc, GuestRegistrationError};
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
@@ -94,7 +95,7 @@ mod tests {
         let guest_repository = Arc::new(GuestRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
         let id_factory = Arc::new(IdFactoryMock::new());
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(GuestGeneratorMock::new());
 
         let uc = GuestRegistersUc::new(
             id_factory.clone(),
@@ -124,7 +125,7 @@ mod tests {
         let guest_repository = Arc::new(GuestRepositoryMockWithBrokenSave::new());
         let session_repository = Arc::new(SessionRepositoryMock::new());
         let id_factory = Arc::new(IdFactoryMock::new());
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(GuestGeneratorMock::new());
 
         let uc = GuestRegistersUc::new(
             id_factory.clone(),
@@ -149,7 +150,7 @@ mod tests {
         let guest_repository = Arc::new(GuestRepositoryMock::new());
         let session_repository = Arc::new(SessionRepositoryMockWithBrokenSave::new());
         let id_factory = Arc::new(IdFactoryMock::new());
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(GuestGeneratorMock::new());
 
         let uc = GuestRegistersUc::new(
             id_factory.clone(),

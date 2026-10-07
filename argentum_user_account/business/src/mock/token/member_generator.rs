@@ -1,14 +1,15 @@
-use crate::token::GeneratorTrait;
+use crate::token::MemberGeneratorTrait;
+
 use argentum_standard_business::data_type::id::Id;
 
-pub struct TokenGeneratorMock<I>
+pub struct MemberGeneratorMock<I>
 where
     I: Id,
 {
     _phantom: std::marker::PhantomData<I>,
 }
 
-impl<I> TokenGeneratorMock<I>
+impl<I> MemberGeneratorMock<I>
 where
     I: Id,
 {
@@ -20,7 +21,7 @@ where
     }
 }
 
-impl<I> GeneratorTrait for TokenGeneratorMock<I>
+impl<I> MemberGeneratorTrait for MemberGeneratorMock<I>
 where
     I: Id,
 {

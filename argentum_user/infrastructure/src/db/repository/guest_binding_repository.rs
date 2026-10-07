@@ -1,6 +1,6 @@
+use crate::db::UserSqlxPostgresAdapter;
 use crate::db::dto::GuestBindingDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
-use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_business::entity::guest_binding::GuestBinding;
@@ -18,14 +18,14 @@ pub struct GuestBindingRepository<L>
 where
     L: LoggerTrait,
 {
-    adapter: Arc<SqlxPostgresAdapter<L>>,
+    adapter: Arc<UserSqlxPostgresAdapter<L>>,
 }
 
 impl<L> GuestBindingRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+    pub fn new(adapter: Arc<UserSqlxPostgresAdapter<L>>) -> Self {
         Self { adapter }
     }
 }

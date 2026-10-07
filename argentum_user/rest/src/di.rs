@@ -1,39 +1,33 @@
 use crate::server::handler::GetUserTrait;
+
 use crate::server::{PreHandler, Router};
 use argentum_rest_infrastructure::service::{
     BearerAuthenticator, ErrorPreHandler, RequestTransformer,
 };
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::di_container::Container;
 use std::sync::Arc;
 
-pub struct ApiDi<I>
+pub fn user_rest_provide<I>(container: &mut Container, url_prefix: &'static str)
 where
-    I: Id,
+    I: Id + 'static,
 {
-    pub router: Arc<Router<I>>,
-}
+    container.provide_factory::<Router<I>, _>(|c| {
+        let request_transformer = c.resolve::<RequestTransformer>()?;
+        let bearer_auth = c.resolve::<BearerAuthenticator<I>>()?;
+        let get_user_handler = c.resolve::<dyn GetUserTrait<Id = I>>()?;
+        let error_pre_handler = c.resolve::<ErrorPreHandler>()?;
 
-impl<I> ApiDi<I>
-where
-    I: Id,
-{
-    pub fn new(
-        //config
-        url_prefix: &str,
-        //services
-        request_transformer: Arc<RequestTransformer>,
-        bearer_auth: Arc<BearerAuthenticator<I>>,
-        get_user_handler: Arc<dyn GetUserTrait<Id = I>>,
-        error_pre_handler: Arc<ErrorPreHandler>,
-    ) -> Self {
         let pre_handler = Arc::new(PreHandler::new(
             request_transformer,
             bearer_auth,
             get_user_handler,
         ));
 
-        let router = Arc::new(Router::new(pre_handler, error_pre_handler, url_prefix));
-
-        ApiDi { router }
-    }
+        Ok(Arc::new(Router::new(
+            pre_handler,
+            error_pre_handler,
+            url_prefix,
+        )))
+    });
 }

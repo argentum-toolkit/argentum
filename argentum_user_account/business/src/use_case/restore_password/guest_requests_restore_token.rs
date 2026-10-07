@@ -1,8 +1,8 @@
 use crate::entity::RestorePasswordToken;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
+use crate::token::GuestGeneratorTrait;
 use crate::use_case::restore_password::error::RestorePasswordError;
 
-use crate::token::GeneratorTrait;
 use argentum_log_business::LoggerTrait;
 use argentum_notification_business::{Notification, NotifierTrait};
 use argentum_standard_business::data_type::EmailAddress;
@@ -22,7 +22,7 @@ where
     id_factory: Arc<dyn IdFactory<Id = I>>,
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
-    token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+    token_generator: Arc<dyn GuestGeneratorTrait<Id = I>>,
     notifier: Arc<dyn NotifierTrait<Id = I>>,
     logger: Arc<L>,
 }
@@ -38,7 +38,7 @@ where
         id_factory: Arc<dyn IdFactory<Id = I>>,
         user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
-        token_generator: Arc<dyn GeneratorTrait<Id = I>>,
+        token_generator: Arc<dyn GuestGeneratorTrait<Id = I>>,
         notifier: Arc<dyn NotifierTrait<Id = I>>,
         logger: Arc<L>,
     ) -> Self {
@@ -130,7 +130,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::mock::repository::restore_password_token_repository_mock::RestorePasswordTokenRepositoryMock;
-    use crate::mock::token::TokenGeneratorMock;
+    use crate::mock::token::GuestGeneratorMock;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
     use crate::use_case::restore_password::guest_requests_restore_token::{
         GuestRequestsRestoreTokenUc, RestorePasswordError,
@@ -153,7 +153,7 @@ mod tests {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(MemberRepositoryMock::new());
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(GuestGeneratorMock::new());
 
         let notificator = Arc::new(StdoutNotifier::new());
         let writer = Arc::new(StdoutWriter::new());
@@ -208,7 +208,7 @@ mod tests {
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(MemberRepositoryMock::new());
-        let token_generator = Arc::new(TokenGeneratorMock::new());
+        let token_generator = Arc::new(GuestGeneratorMock::new());
 
         let notificator = Arc::new(StdoutNotifier::new());
         let writer = Arc::new(StdoutWriter::new());

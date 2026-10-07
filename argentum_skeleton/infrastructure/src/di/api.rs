@@ -1,26 +1,26 @@
-use std::{
-    net::SocketAddr,
-    sync::{Arc, Mutex},
-};
+use std::sync::Arc;
 
+use argentum_encryption_business::password::{Encryptor, Validator};
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
-use argentum_event_business::di::EventBusinessDiBuilder;
+use argentum_event_business::di::event_business_provide;
 use argentum_log_business::LoggerTrait;
-use argentum_notification_business::mock::StdoutNotifier;
-use argentum_oidc_infrastructure::default_di::OidcInfrastructureDiBuilder;
+use argentum_oidc_infrastructure::{
+    default_di::oidc_infrastructure_provider, oidc_business_provide,
+};
 use argentum_rest_infrastructure::{
-    di::RestDiBuilder,
+    di::rest_infrastructure_provide,
     service::{
-        RouterCombinator, RouterTrait,
+        ErrorHandler, ErrorPreHandler, ResponseToJsonTransformer, RouterCombinator, RouterTrait,
         server::{Http1Server, Http2Server},
     },
 };
 
-use argentum_standard_business::error::DiError;
-use argentum_standard_infrastructure::data_type::unique_id::{UniqueId, UniqueIdFactory};
-use argentum_user_account_infrastructure::di::UserAccountInfrastructureDiBuilder;
-use argentum_user_business::di::UserBusinessDiBuilder;
-use argentum_user_infrastructure::di::UserInfrastructureDiBuilder;
+use argentum_standard_business::di_container::{Container, DiError};
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
+use argentum_user_account_business::di::user_account_business_provide;
+use argentum_user_account_infrastructure::di::user_account_infrastructure_provider;
+use argentum_user_business::di::user_business_provide;
+use argentum_user_infrastructure::di::user_infrastructure_provide;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -41,168 +41,121 @@ struct Env {
     pub tls_key_file: String,
 }
 
-pub struct SkeletonApiDi<L>
-where
-    L: LoggerTrait,
-{
-    // Public services
-    pub http1_server: Arc<Http1Server<L>>,
-    pub http2_server: Arc<Http2Server<L>>,
+fn resolve_router(container: &Container) -> Result<Arc<dyn RouterTrait>, DiError> {
+    let pre_handler = container.resolve::<ErrorPreHandler>()?;
+
+    let user_router = container.resolve::<argentum_user_rest::server::Router<UniqueId>>()?;
+    let user_account_router =
+        container.resolve::<argentum_user_account_rest::server::Router<UniqueId>>()?;
+    let oidc_router = container.resolve::<argentum_oidc_rest::server::Router<UniqueId>>()?;
+
+    let routers: Vec<Arc<dyn RouterTrait>> = vec![user_router, user_account_router, oidc_router];
+
+    Ok(Arc::new(RouterCombinator::new(routers, pre_handler)))
 }
 
-pub struct SkeletonApiDiBuilder<L>
+pub async fn skeleton_api_provide<L>(
+    container: &mut Container,
+    listen: &'static str,
+) -> Result<(), DiError>
 where
     L: LoggerTrait + 'static,
 {
-    listen: String,
-    pub logger: Arc<L>,
-    pub event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
-    pub rest_builder: Arc<RestDiBuilder<UniqueId, L>>,
-    pub user_infrastructure_builder: Arc<Mutex<UserInfrastructureDiBuilder<L>>>,
-    pub user_account_infrastructure_builder: Arc<UserAccountInfrastructureDiBuilder<L>>,
-    pub oidc_infrastructure_builder: Arc<OidcInfrastructureDiBuilder<L>>,
-}
+    let env: Env =
+        envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
 
-impl<L> SkeletonApiDiBuilder<L>
-where
-    L: LoggerTrait + 'static,
-{
-    pub async fn try_new(listen: &str, logger: Arc<L>) -> Result<Self, DiError> {
-        let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
+    event_business_provide(container);
 
-        let unique_id_factory = Arc::new(UniqueIdFactory::new());
+    rest_infrastructure_provide::<UniqueId, L>(container);
 
-        let client = reqwest::Client::builder()
-            .user_agent(&env.ag_user_agent)
-            .pool_max_idle_per_host(20)
-            .build()
-            .map_err(|e| format!("Cant create reqwest client. Error: {e}"))?;
-        let r_client = Arc::new(client);
+    user_business_provide::<UniqueId, L>(container);
 
-        let user_business_builder =
-            Arc::new(Mutex::new(UserBusinessDiBuilder::new(logger.clone())));
-        let rest_builder = Arc::new(RestDiBuilder::new(
-            user_business_builder.clone(),
-            logger.clone(),
-        ));
+    user_account_business_provide::<UniqueId, L>(
+        container,
+        env.ag_product_name.clone(),
+        3600 * 24 * 30, // TTL 30 days
+        3600,           // TTL 1h
+        env.ag_email_confirmation_front_url.clone(),
+        env.ag_restore_password_front_url.clone(),
+    );
 
-        let tmp_user_builder = UserInfrastructureDiBuilder::new(
-            &env.ag_user_database_url,
-            10,
-            user_business_builder.clone(),
-            rest_builder.clone(),
-            logger.clone(),
-        );
-        let user_infrastructure_builder =
-            Arc::new(Mutex::new(tmp_user_builder.with_default_services().await?));
+    oidc_business_provide::<UniqueId, L>(container);
 
-        let notifier = Arc::new(StdoutNotifier::new());
+    user_infrastructure_provide::<UniqueId, L>(container, env.ag_user_database_url.clone(), 10)
+        .await?;
+    user_account_infrastructure_provider::<UniqueId, L>(
+        container,
+        env.ag_user_account_database_url.clone(),
+        10,
+        &env.ag_user_account_member_jwt_secret,
+        10 * 3600,
+    )
+    .await?;
 
-        let pbkdf2 = Arc::new(Pbkdf2::new());
+    let client = reqwest::Client::builder()
+        .user_agent(&env.ag_user_agent)
+        .pool_max_idle_per_host(20)
+        .build()
+        .map_err(|e| DiError::with_context("Can't create reqwest client", e))?;
 
-        let event_business_builder = Arc::new(Mutex::new(EventBusinessDiBuilder::new()));
+    oidc_infrastructure_provider::<L>(
+        container,
+        env.ag_oidc_database_url.clone(),
+        10,
+        env.ag_github_client_id.clone(),
+        env.ag_github_client_secret.clone(),
+        env.ag_google_client_id.clone(),
+        env.ag_google_client_secret.clone(),
+        Arc::new(client),
+    )
+    .await?;
 
-        let tmp_user_account_builder = UserAccountInfrastructureDiBuilder::new(
-            &env.ag_product_name,
-            3600 * 24 * 30,
-            3600, // TTL 1h
-            &env.ag_email_confirmation_front_url,
-            &env.ag_restore_password_front_url,
-            &env.ag_user_account_database_url,
-            10,
-            &env.ag_user_account_member_jwt_secret,
-            10 * 3600,
-            user_business_builder.clone(),
-            event_business_builder.clone(),
-            rest_builder.clone(),
-            unique_id_factory.clone(),
-            logger.clone(),
-            notifier,
-            pbkdf2.clone(),
-            pbkdf2.clone(),
-        );
-        let user_account_infrastructure_builder =
-            Arc::new(tmp_user_account_builder.with_default_services().await?);
+    let pbkdf2 = Arc::new(Pbkdf2::new());
+    let encryptor = pbkdf2.clone();
 
-        let tmp_oidc_infrastructure_builder = OidcInfrastructureDiBuilder::new(
-            &env.ag_oidc_database_url,
-            10,
-            &env.ag_github_client_id,
-            &env.ag_github_client_secret,
-            &env.ag_google_client_id,
-            &env.ag_google_client_secret,
-            event_business_builder.clone(),
-            user_business_builder.clone(),
-            user_account_infrastructure_builder.business_builder.clone(),
-            rest_builder.clone(),
-            unique_id_factory.clone(),
-            logger.clone(),
-            r_client.clone(),
-        );
+    container.provide_factory::<dyn Encryptor, _>(move |_c| Ok(encryptor.clone()));
+    container.provide_factory::<dyn Validator, _>(move |_c| Ok(pbkdf2.clone()));
 
-        let oidc_infrastructure_builder = Arc::new(
-            tmp_oidc_infrastructure_builder
-                .with_default_services()
-                .await?,
-        );
+    container.provide_factory::<Http1Server<L>, _>(move |c| {
+        let logger = c.resolve::<L>()?;
 
-        Ok(Self {
-            event_business_builder,
-            listen: listen.into(),
-            logger,
-            rest_builder,
-            user_infrastructure_builder,
-            user_account_infrastructure_builder,
-            oidc_infrastructure_builder,
-        })
-    }
-
-    pub async fn build(
-        &self,
-        routers: Vec<Arc<dyn RouterTrait>>,
-    ) -> Result<SkeletonApiDi<L>, DiError> {
-        let env: Env = envy::from_env::<Env>().map_err(|e| format!("Cant load env. Error: {e}"))?;
-
-        let rest_di = self.rest_builder.build()?;
-        let user_infrastructure_di = self.user_infrastructure_builder.lock()?.build()?;
-        let user_account_infrastructure_di = self.user_account_infrastructure_builder.build()?;
-        let oidc_infrastructure_di = self.oidc_infrastructure_builder.build().await?;
-
-        let mut r: Vec<Arc<dyn RouterTrait>> = vec![
-            user_infrastructure_di.api_di.router.clone(),
-            user_account_infrastructure_di.api_di.router.clone(),
-            oidc_infrastructure_di.api_di.router.clone(),
-        ];
-        r.extend(routers);
-
-        let router = Arc::new(RouterCombinator::new(r, rest_di.error_pre_handler.clone()));
-
-        let addr: SocketAddr = self
-            .listen
+        let router = resolve_router(c)?;
+        let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
+        let error_handler = c.resolve::<ErrorHandler<L>>()?;
+        let addr = listen
             .parse()
-            .map_err(|e| format!("Unable to parse socket address. Error: {e}"))?;
+            .map_err(|e| DiError::with_context("Unable to parse socket address", e))?;
 
-        let http1_server = Arc::new(Http1Server::new(
+        Ok(Arc::new(Http1Server::new(
             addr,
-            router.clone(),
-            rest_di.response_transformer.clone(),
-            rest_di.error_handler.clone(),
-            self.logger.clone(),
-        ));
+            router,
+            response_transformer,
+            error_handler,
+            logger,
+        )))
+    });
 
-        let http2_server = Arc::new(Http2Server::new(
+    container.provide_factory::<Http2Server<L>, _>(move |c| {
+        let logger = c.resolve::<L>()?;
+
+        let router = resolve_router(c)?;
+        let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
+        let error_handler = c.resolve::<ErrorHandler<L>>()?;
+
+        let addr = listen
+            .parse()
+            .map_err(|e| DiError::with_context("Unable to parse socket address", e))?;
+
+        Ok(Arc::new(Http2Server::new(
             addr,
             &env.tls_cert_file,
             &env.tls_key_file,
             router,
-            rest_di.response_transformer.clone(),
-            rest_di.error_handler.clone(),
-            self.logger.clone(),
-        ));
+            response_transformer,
+            error_handler,
+            logger,
+        )))
+    });
 
-        Ok(SkeletonApiDi {
-            http1_server,
-            http2_server,
-        })
-    }
+    Ok(())
 }

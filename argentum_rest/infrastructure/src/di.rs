@@ -4,92 +4,76 @@ use crate::service::{
     ValidationErrorTransformer,
 };
 use argentum_log_business::LoggerTrait;
-use argentum_standard_business::{data_type::id::Id, error::DiError};
-use argentum_user_business::di::UserBusinessDiBuilder;
-use std::sync::{Arc, Mutex};
+use argentum_standard_business::{data_type::id::Id, di_container::Container};
+use argentum_user_business::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
+use std::sync::Arc;
 
-pub struct RestDi<I, L>
-where
-    I: Id,
-    L: LoggerTrait,
-{
-    pub bearer_authenticator: Arc<BearerAuthenticator<I>>,
-    pub request_transformer: Arc<RequestTransformer>,
-    pub response_transformer: Arc<ResponseToJsonTransformer>,
-    pub error_pre_handler: Arc<ErrorPreHandler>,
-    pub error_handler: Arc<ErrorHandler<L>>,
-}
-
-pub struct RestDiBuilder<I, L>
-where
-    I: Id,
-    L: LoggerTrait,
-{
-    user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
-    logger: Arc<L>,
-
-    built_di: Mutex<Option<Arc<RestDi<I, L>>>>,
-}
-
-impl<I, L> RestDiBuilder<I, L>
+pub fn rest_infrastructure_provide<I, L>(container: &mut Container)
 where
     I: Id + 'static,
     L: LoggerTrait + 'static,
 {
-    pub fn new(
-        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
-        logger: Arc<L>,
-    ) -> Self {
-        Self {
-            user_business_builder,
-            logger,
+    container.provide_factory::<ValidationErrorTransformer, _>(|_c| {
+        Ok(Arc::new(ValidationErrorTransformer::new()))
+    });
 
-            built_di: Mutex::new(None),
-        }
-    }
+    container.provide_factory::<SchemaExtractor, _>(|_c| Ok(Arc::new(SchemaExtractor::new())));
 
-    pub fn build(&self) -> Result<Arc<RestDi<I, L>>, DiError> {
-        if let Some(di) = self.built_di.lock()?.clone() {
-            return Ok(di.clone());
-        }
+    container.provide_factory::<HeaderParamsExtractor, _>(|c| {
+        let validation_error_transformer = c.resolve::<ValidationErrorTransformer>()?;
 
-        let validation_error_transformer = Arc::new(ValidationErrorTransformer::new());
-        let schema_extractor = Arc::new(SchemaExtractor::new());
-        let header_params_extractor = Arc::new(HeaderParamsExtractor::new(
-            validation_error_transformer.clone(),
-        ));
-        let path_params_extractor = Arc::new(PathParamsExtractor::new(
-            validation_error_transformer.clone(),
-        ));
-        let query_params_extractor =
-            Arc::new(QueryParamsExtractor::new(validation_error_transformer));
+        Ok(Arc::new(HeaderParamsExtractor::new(
+            validation_error_transformer,
+        )))
+    });
 
-        let request_transformer = Arc::new(RequestTransformer::new(
+    container.provide_factory::<PathParamsExtractor, _>(|c| {
+        let validation_error_transformer = c.resolve::<ValidationErrorTransformer>()?;
+
+        Ok(Arc::new(PathParamsExtractor::new(
+            validation_error_transformer,
+        )))
+    });
+
+    container.provide_factory::<QueryParamsExtractor, _>(|c| {
+        let validation_error_transformer = c.resolve::<ValidationErrorTransformer>()?;
+
+        Ok(Arc::new(QueryParamsExtractor::new(
+            validation_error_transformer,
+        )))
+    });
+
+    container.provide_factory::<RequestTransformer, _>(|c| {
+        let schema_extractor = c.resolve::<SchemaExtractor>()?;
+        let header_params_extractor = c.resolve::<HeaderParamsExtractor>()?;
+        let path_params_extractor = c.resolve::<PathParamsExtractor>()?;
+        let query_params_extractor = c.resolve::<QueryParamsExtractor>()?;
+
+        Ok(Arc::new(RequestTransformer::new(
             schema_extractor,
             header_params_extractor,
             path_params_extractor,
             query_params_extractor,
-        ));
-        let response_transformer = Arc::new(ResponseToJsonTransformer::new());
-        let error_pre_handler = Arc::new(ErrorPreHandler::new());
-        let error_handler = Arc::new(ErrorHandler::new(self.logger.clone()));
+        )))
+    });
 
-        let user_di = self.user_business_builder.lock()?.build()?;
+    container.provide_factory::<ResponseToJsonTransformer, _>(|_c| {
+        Ok(Arc::new(ResponseToJsonTransformer::new()))
+    });
 
-        let bearer_authenticator = Arc::new(BearerAuthenticator::new(
-            user_di.user_authenticates_with_token_uc.clone(),
-        ));
+    container.provide_factory::<ErrorPreHandler, _>(|_c| Ok(Arc::new(ErrorPreHandler::new())));
 
-        let di = Arc::new(RestDi {
-            bearer_authenticator,
-            request_transformer,
-            response_transformer,
-            error_pre_handler,
-            error_handler,
-        });
+    container.provide_factory::<ErrorHandler<L>, _>(|c| {
+        let logger = c.resolve::<L>()?;
 
-        *self.built_di.lock()? = Some(di.clone());
+        Ok(Arc::new(ErrorHandler::new(logger)))
+    });
 
-        Ok(di)
-    }
+    container.provide_factory::<BearerAuthenticator<I>, _>(|c| {
+        let user_authenticates_with_token_uc = c.resolve::<MemberAuthenticatesWithTokenUc<I>>()?;
+
+        Ok(Arc::new(BearerAuthenticator::new(
+            user_authenticates_with_token_uc,
+        )))
+    });
 }

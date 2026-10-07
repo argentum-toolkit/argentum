@@ -82,7 +82,6 @@ where
     {
         let sql = query_as.sql();
         self.logger.debug(sql);
-
         let result: Result<Option<F>, Error> = query_as.fetch_optional(&self.pool).await;
         self.logger.trace("SQL done");
 
@@ -122,6 +121,7 @@ where
         &self,
     ) -> Result<Transaction<'static, Postgres>, DbAdapterError> {
         self.logger.debug("Begin transaction");
+
         match self.pool.begin().await {
             Ok(tx) => Ok(tx),
             Err(e) => Err(DbAdapterError {

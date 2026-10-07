@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct ExchangeCodeSchema {
+    #[serde(rename = "code")]
     pub code: String,
+    #[serde(rename = "provider")]
     pub provider: String,
 }
 

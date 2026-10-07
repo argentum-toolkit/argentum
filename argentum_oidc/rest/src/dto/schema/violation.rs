@@ -12,7 +12,9 @@ use crate::dto::schema::ViolationItemsRaw;
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct Violation {
+    #[serde(rename = "errors")]
     pub errors: Option<ViolationErrors>,
+    #[serde(rename = "items")]
     pub items: Option<ViolationItems>,
 }
 

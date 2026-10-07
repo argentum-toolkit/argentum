@@ -123,8 +123,10 @@ where
         self.client_generator.generate(output, &spec)?;
 
         self.server_generator.generate(output)?;
-        self.di_generator.generate(output, &spec)?;
-        self.lib_generator.generate(output)?;
+        self.di_generator
+            .generate(output, &spec, cli.package_name.as_str())?;
+        self.lib_generator
+            .generate(output, cli.package_name.as_str())?;
         self.cargo_toml_generator.generate(
             output,
             &spec,

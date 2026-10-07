@@ -147,14 +147,6 @@ cargo install dioxus-cli
 
 === V0.4
 
-* Docker:
-** Don't expose ports in default docker-compose files. Create docker-compose.dev.yaml files instead of.
-** Create docker-compose.release.yaml
-
-
-* DI
-** remove mut and mutex from DI
-
 * User account
 ** fix restore password on BE
 ** implement FE
@@ -194,6 +186,24 @@ cargo install dioxus-cli
 
 * notifications
 * macro for creation Id types (for user, for account for event)
+
+
+== Known Issues
+
+=== Dioxus. Wrong wasm wersion
+
+[text]
+....
+14:29:34 [dev] Build failed: Incorrect wasm-bindgen-cli version: project requires version 0.2.128 but version 0.2.121 is installed
+....
+.Dioxus. Wrong wasm wersion
+
+Uninstall wasm-bindgen-cli. Then run:
+
+[source, bash]
+....
+cargo install wasm-bindgen-cli --version 0.2.128 --force
+....
 
 
 == License

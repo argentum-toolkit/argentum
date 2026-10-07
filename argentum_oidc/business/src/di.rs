@@ -1,16 +1,18 @@
-use argentum_event_business::di::EventBusinessDiBuilder;
+use argentum_event_business::EventDispatcher;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::{
     data_type::id::{Id, IdFactory},
-    error::DiError,
+    di_container::Container,
 };
-use argentum_user_account_business::di::UserAccountBusinessDiBuilder;
-use argentum_user_business::di::UserBusinessDiBuilder;
+use argentum_user_account_business::token::MemberGeneratorTrait;
+use argentum_user_business::{
+    repository::{
+        session_repository::SessionRepositoryTrait, user_repository::MemberRepositoryTrait,
+    },
+    service::GuestBinder,
+};
 
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     repository::CredentialRepositoryTrait,
@@ -21,127 +23,40 @@ use crate::{
     use_case::UserExchangesCodeToTokenUc,
 };
 
-pub struct OidcBusinessDi<I, L>
-where
-    I: Id,
-    L: LoggerTrait,
-{
-    // Public services
-    pub user_exchanges_code_to_token_uc: Arc<UserExchangesCodeToTokenUc<I, L>>,
-}
-
-pub struct OidcBusinessDiBuilder<I, L>
-where
-    I: Id + 'static,
-    L: LoggerTrait,
-{
-    event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
-    user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
-    user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
-
-    provider_strategies: HashMap<String, Arc<dyn ProviderStrategyTrait>>,
-    code_exchanger: Option<Arc<dyn CodeExchangerTrait<UserId = I>>>,
-    credential_repository: Option<Arc<dyn CredentialRepositoryTrait<UserId = I>>>,
-    id_factory: Arc<dyn IdFactory<Id = I>>,
-    logger: Arc<L>,
-
-    built_di: Mutex<Option<Arc<OidcBusinessDi<I, L>>>>,
-}
-
-impl<I, L> OidcBusinessDiBuilder<I, L>
+pub fn oidc_business_provide<I, L>(container: &mut Container)
 where
     I: Id + 'static,
     L: LoggerTrait + 'static,
 {
-    pub fn new(
-        event_business_builder: Arc<Mutex<EventBusinessDiBuilder>>,
-        user_business_builder: Arc<Mutex<UserBusinessDiBuilder<I, L>>>,
-        user_account_business_builder: Arc<Mutex<UserAccountBusinessDiBuilder<I, L>>>,
+    container.provide_factory::<dyn CodeExchangerTrait<UserId = I>, _>(|c| {
+        let provider_strategies = c.resolve::<HashMap<String, Arc<dyn ProviderStrategyTrait>>>()?;
+        let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
+        let credential_repository = c.resolve::<dyn CredentialRepositoryTrait<UserId = I>>()?;
+        let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = I>>()?;
+        let member_token_generator = c.resolve::<dyn MemberGeneratorTrait<Id = I>>()?;
+        let id_factory = c.resolve::<dyn IdFactory<Id = I>>()?;
+        let logger = c.resolve::<L>()?;
+        let event_dispatcher = c.resolve::<EventDispatcher>()?;
 
-        id_factory: Arc<dyn IdFactory<Id = I>>,
-        logger: Arc<L>,
-    ) -> Self {
-        Self {
-            event_business_builder,
-            user_business_builder,
-            user_account_business_builder,
+        Ok(Arc::new(DefaultCodeExchanger::new(
+            (*provider_strategies).clone(),
+            member_repository,
+            credential_repository,
+            session_repository,
+            member_token_generator,
             id_factory,
             logger,
-            provider_strategies: HashMap::new(),
-            code_exchanger: None,
-            credential_repository: None,
-            built_di: Mutex::new(None),
-        }
-    }
+            event_dispatcher,
+        )))
+    });
 
-    pub fn with_code_exchanger(
-        &mut self,
-        code_exchanger: Arc<dyn CodeExchangerTrait<UserId = I>>,
-    ) -> &mut Self {
-        self.code_exchanger = Some(code_exchanger);
+    container.provide_factory::<UserExchangesCodeToTokenUc<I, L>, _>(|c| {
+        let code_exchanger = c.resolve::<dyn CodeExchangerTrait<UserId = I>>()?;
+        let guest_binder = c.resolve::<GuestBinder<I, L>>()?;
 
-        self
-    }
-
-    pub fn with_credential_repository(
-        &mut self,
-        credential_repository: Arc<dyn CredentialRepositoryTrait<UserId = I>>,
-    ) -> &mut Self {
-        self.credential_repository = Some(credential_repository);
-
-        self
-    }
-
-    pub fn with_provider_strategies(
-        &mut self,
-        provider_strategies: HashMap<String, Arc<dyn ProviderStrategyTrait>>,
-    ) -> &mut Self {
-        self.provider_strategies = provider_strategies;
-
-        self
-    }
-
-    pub fn build(&self) -> Result<Arc<OidcBusinessDi<I, L>>, DiError> {
-        if let Some(di) = self.built_di.lock()?.clone() {
-            return Ok(di);
-        }
-
-        let event_business_di = self.event_business_builder.lock()?.build()?;
-        let user_business_di = self.user_business_builder.lock()?.build()?;
-        let user_account_business_di = self.user_account_business_builder.lock()?.build()?;
-
-        let code_exchanger = match self.code_exchanger.clone() {
-            Some(c) => c,
-            None => {
-                let credential_repository = self
-                    .credential_repository
-                    .clone()
-                    .ok_or("credential_repository is not initialized!")?;
-
-                Arc::new(DefaultCodeExchanger::new(
-                    self.provider_strategies.clone(),
-                    user_business_di.member_repository.clone(),
-                    credential_repository.clone(),
-                    user_business_di.session_repository.clone(),
-                    user_account_business_di.member_token_generator.clone(),
-                    self.id_factory.clone(),
-                    self.logger.clone(),
-                    event_business_di.event_dispatcher.clone(),
-                ))
-            }
-        };
-
-        let user_exchanges_code_to_token_uc = Arc::new(UserExchangesCodeToTokenUc::new(
+        Ok(Arc::new(UserExchangesCodeToTokenUc::new(
             code_exchanger,
-            user_business_di.guest_binder.clone(),
-        ));
-
-        let di = Arc::new(OidcBusinessDi {
-            user_exchanges_code_to_token_uc,
-        });
-
-        *self.built_di.lock()? = Some(di.clone());
-
-        Ok(di)
-    }
+            guest_binder,
+        )))
+    });
 }

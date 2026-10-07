@@ -1,5 +1,5 @@
+use crate::db::OidcSqlxPostgresAdapter;
 use argentum_db_infrastructure::adapter::DbAdapterError;
-use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::{
     entity::Credential,
@@ -19,14 +19,14 @@ pub struct CredentialRepository<L>
 where
     L: LoggerTrait,
 {
-    adapter: Arc<SqlxPostgresAdapter<L>>,
+    adapter: Arc<OidcSqlxPostgresAdapter<L>>,
 }
 
 impl<L> CredentialRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+    pub fn new(adapter: Arc<OidcSqlxPostgresAdapter<L>>) -> Self {
         Self { adapter }
     }
 }

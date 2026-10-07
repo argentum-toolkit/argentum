@@ -48,6 +48,7 @@ struct Input {
     title: String,
     ui: Ui,
     value_type: String,
+    input_type: String,
 }
 
 #[derive(Serialize)]
@@ -116,6 +117,13 @@ pub(crate) struct InputGenerator {
 }
 
 impl InputGenerator {
+    fn input_type(schema: &Schema) -> String {
+        match schema.format.as_ref() {
+            Some(SchemaFormat::Standard(StandardFormat::Password)) => "password".into(),
+            _ => "text".into(),
+        }
+    }
+
     pub fn new(
         renderer: Arc<Renderer>,
         request_body_extractor: Arc<RequestBodyExtractor>,
@@ -235,6 +243,7 @@ impl InputGenerator {
                                     required,
                                     name: name.clone(),
                                     title: schema.title.clone().unwrap_or_default(),
+                                    input_type: Self::input_type(&schema),
                                     ui: schema.extension_ui.into(),
                                     value_type: "bool".into(),
                                 },
@@ -265,6 +274,7 @@ impl InputGenerator {
                                         required,
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or(String::new()),
+                                        input_type: Self::input_type(&schema),
                                         ui: schema.extension_ui.into(),
                                         value_type: "i32".into(),
                                     },
@@ -294,6 +304,7 @@ impl InputGenerator {
                                         required,
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
+                                        input_type: Self::input_type(&schema),
                                         ui: schema.extension_ui.into(),
                                         value_type: "i64".into(),
                                     },
@@ -325,6 +336,7 @@ impl InputGenerator {
                                         required,
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
+                                        input_type: Self::input_type(&schema),
                                         ui: schema.extension_ui.into(),
                                         value_type: "String".into(),
                                     },
@@ -354,6 +366,7 @@ impl InputGenerator {
                                         required,
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
+                                        input_type: Self::input_type(&schema),
                                         ui: schema.extension_ui.into(),
                                         value_type: "uuid::Uuid".into(),
                                     },
@@ -383,6 +396,7 @@ impl InputGenerator {
                                         required,
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
+                                        input_type: Self::input_type(&schema),
                                         ui: schema.extension_ui.into(),
                                         value_type: "String".into(),
                                     },
@@ -410,6 +424,7 @@ impl InputGenerator {
                                     required,
                                     name: name.clone(),
                                     title: schema.title.clone().unwrap_or(String::new()),
+                                    input_type: Self::input_type(&schema),
                                     ui: schema.extension_ui.into(),
                                     value_type: "String".into(),
                                 },

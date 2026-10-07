@@ -58,10 +58,13 @@ mod di;
 
 use crate::di::di_factory;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let di = di_factory().await;
-    di.server.serve().await
+fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let di = di_factory()?;
+
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?
+        .block_on(server.serve())
 }
 ....
 
@@ -89,7 +92,7 @@ impl Di {
     }
 }
 
-pub async fn di_factory() -> Di {
+pub fn di_factory() -> Di {
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 

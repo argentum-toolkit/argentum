@@ -1,5 +1,5 @@
+use crate::db::UserAccountSqlxPostgresAdapter;
 use argentum_db_infrastructure::adapter::DbAdapterError;
-use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_encryption_business::password::Encryptor;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
@@ -23,7 +23,7 @@ pub struct PasswordCredentialRepository<L>
 where
     L: LoggerTrait,
 {
-    adapter: Arc<SqlxPostgresAdapter<L>>,
+    adapter: Arc<UserAccountSqlxPostgresAdapter<L>>,
     encryptor: Arc<dyn Encryptor>,
 }
 
@@ -31,7 +31,10 @@ impl<L> PasswordCredentialRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>, encryptor: Arc<dyn Encryptor>) -> Self {
+    pub fn new(
+        adapter: Arc<UserAccountSqlxPostgresAdapter<L>>,
+        encryptor: Arc<dyn Encryptor>,
+    ) -> Self {
         Self { adapter, encryptor }
     }
 }

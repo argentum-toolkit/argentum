@@ -1,6 +1,6 @@
+use crate::db::UserSqlxPostgresAdapter;
 use crate::db::dto::MemberDto;
 use argentum_db_infrastructure::adapter::DbAdapterError;
-use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
@@ -23,14 +23,14 @@ pub struct MemberRepository<L>
 where
     L: LoggerTrait,
 {
-    adapter: Arc<SqlxPostgresAdapter<L>>,
+    adapter: Arc<UserSqlxPostgresAdapter<L>>,
 }
 
 impl<L> MemberRepository<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(adapter: Arc<SqlxPostgresAdapter<L>>) -> Self {
+    pub fn new(adapter: Arc<UserSqlxPostgresAdapter<L>>) -> Self {
         Self { adapter }
     }
 
