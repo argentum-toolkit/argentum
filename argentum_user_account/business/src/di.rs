@@ -12,6 +12,7 @@ use crate::repository::restore_password_token_repository::RestorePasswordTokenRe
 use crate::service::{
     DefaultPasswordToTokenExchanger, EmailConfirmationInitiator, PasswordToTokenExchangerTrait,
 };
+use crate::specification::StrongPasswordSpecification;
 use crate::token::{GuestGeneratorTrait, MemberGeneratorTrait};
 use crate::use_case::guest_registers::GuestRegistersUc;
 use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
@@ -45,6 +46,8 @@ pub fn user_account_business_provide<I, L>(
     restore_password_token_ttl: u32,
     email_confirmation_front_url: impl Into<String>,
     restore_password_front_url: impl Into<String>,
+    password_min_length: usize,
+    password_complexity_enabled: bool,
 ) where
     I: Id + 'static,
     L: LoggerTrait + 'static,
@@ -52,6 +55,13 @@ pub fn user_account_business_provide<I, L>(
     let product_name = product_name.into();
     let email_confirmation_front_url = email_confirmation_front_url.into();
     let restore_password_front_url = restore_password_front_url.into();
+
+    container.provide_factory::<StrongPasswordSpecification, _>(move |_c| {
+        Ok(Arc::new(StrongPasswordSpecification::new(
+            password_min_length,
+            password_complexity_enabled,
+        )))
+    });
 
     container.provide_factory::<GuestRegistersUc<_>, _>(|c| {
         let id_factory = c.resolve::<dyn IdFactory<Id = I>>()?;
@@ -83,11 +93,13 @@ pub fn user_account_business_provide<I, L>(
         let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
         let credential_writer = c.resolve::<dyn PasswordCredentialWriterTrait<Id = I>>()?;
         let email_confirmation_initiator = c.resolve::<EmailConfirmationInitiator<I>>()?;
+        let password_specification = c.resolve::<StrongPasswordSpecification>()?;
 
         Ok(Arc::new(MemberRegistersWithPasswordUc::new(
             member_repository,
             credential_writer,
             email_confirmation_initiator,
+            password_specification,
         )))
     });
 
@@ -161,12 +173,14 @@ pub fn user_account_business_provide<I, L>(
         let restore_password_token_repository =
             c.resolve::<dyn RestorePasswordTokenRepositoryTrait<Id = I>>()?;
         let credential_writer = c.resolve::<dyn PasswordCredentialWriterTrait<Id = I>>()?;
+        let password_specification = c.resolve::<StrongPasswordSpecification>()?;
         let logger = c.resolve::<L>()?;
 
         Ok(Arc::new(GuestWithTokenChangesPasswordUc::new(
             member_repository,
             restore_password_token_repository,
             credential_writer,
+            password_specification,
             restore_password_token_ttl,
             logger,
         )))

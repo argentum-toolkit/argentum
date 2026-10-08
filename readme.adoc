@@ -148,7 +148,6 @@ cargo install dioxus-cli
 === V0.4
 
 * User account
-** fix restore password on BE
 ** implement FE
 
 * OIDC

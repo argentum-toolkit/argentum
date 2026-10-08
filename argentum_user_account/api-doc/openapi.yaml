@@ -68,16 +68,19 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-        $ref: "./request.oas.yaml#/components/requestBodies/RegistrationWithPasswordReq\
+        $ref:
+          "./request.oas.yaml#/components/requestBodies/RegistrationWithPasswordReq\
           uestBody"
       responses:
         "201":
           $ref: "./response.oas.yaml#/components/responses/MemberRegisteredSuccessfully"
         "400":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             400"
         "409":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             409"
       x-ag-form:
         submit-label: "Sign Up"
@@ -92,17 +95,20 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-        $ref: "./request.oas.yaml#/components/requestBodies/LoginWithPasswordRequestBod\
+        $ref:
+          "./request.oas.yaml#/components/requestBodies/LoginWithPasswordRequestBod\
           y"
 
       responses:
         "200":
           $ref: "./response.oas.yaml#/components/responses/MemberLoggedInSuccessfully"
         "400":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             400"
         "401":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             401"
       x-ag-form:
         submit-label: "Sign In"
@@ -117,19 +123,25 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-        $ref: "./request.oas.yaml#/components/requestBodies/RequestRestoreTokenRequestB\
+        $ref:
+          "./request.oas.yaml#/components/requestBodies/RequestRestoreTokenRequestB\
           ody"
 
       responses:
         "200":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             EmptyOk"
         "400":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             400"
         "401":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             401"
+      x-ag-form:
+        submit-label: "Request restore password link"
 
   /user-account/restore-password/change-password:
     post:
@@ -145,14 +157,19 @@ paths:
 
       responses:
         "200":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             EmptyOk"
         "400":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             400"
         "401":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             401"
+      x-ag-form:
+        submit-label: "Change password"
 
   /user-account/email-verification:
     post:
@@ -164,17 +181,21 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-        $ref: "./request.oas.yaml#/components/requestBodies/EmailVerificationRequestBod\
+        $ref:
+          "./request.oas.yaml#/components/requestBodies/EmailVerificationRequestBod\
           y"
       responses:
         "200":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             EmptyOk"
         "400":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             400"
         "401":
-          $ref: "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             401"
 
 components:

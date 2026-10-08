@@ -48,6 +48,8 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         3600, // TTL 1h
         "http://localhost:8082/confirm_email/",
         "http://localhost:8082/change-password/",
+        3,
+        false,
     );
     user_account_business_provide_mock::<UIntId>(&mut container);
 

@@ -1,5 +1,8 @@
 use crate::rest::transformer::DtoToMemberRegistersWithPasswordParams;
-use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
+use argentum_rest_infrastructure::data_type::error::{
+    BadRequestError, Conflict, HttpError, InternalServerError,
+};
+use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::use_case::member_registers_with_password::{
     MemberRegistersWithPasswordUc, RegistrationError,
@@ -11,6 +14,7 @@ use argentum_user_account_rest::dto::schema::RegistrationWithPasswordResult;
 use argentum_user_account_rest::server::handler::MemberRegistersWithPasswordTrait;
 use argentum_user_business::entity::user::User;
 use async_trait::async_trait;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 pub struct MemberRegistersWithPasswordHandler {
@@ -65,6 +69,23 @@ impl MemberRegistersWithPasswordTrait for MemberRegistersWithPasswordHandler {
                 }
                 RegistrationError::EmailAlreadyExists => {
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
+                }
+                RegistrationError::PasswordSpecificationErrors(errors) => {
+                    Err(HttpError::BadRequest(BadRequestError::new(
+                        Violations::new(
+                            vec![],
+                            Some(ViolationItem::Object(BTreeMap::from([(
+                                "password".to_string(),
+                                Violations::new(
+                                    errors.into_iter().map(|error| error.to_string()).collect(),
+                                    None,
+                                ),
+                            )]))),
+                        ),
+                        Violations::new(vec![], None),
+                        Violations::new(vec![], None),
+                        Violations::new(vec![], None),
+                    )))
                 }
                 _ => Err(HttpError::InternalServerError(InternalServerError::new(
                     Arc::new(e),

@@ -1,3 +1,25 @@
+{{#if ui.hidden}}
+input {
+    id: "{{ui.id}}",
+    name: "{{ui.name}}",
+    r#type: "hidden",
+    required: {{required}},
+    {{#if required}}
+        value: {{snake name}}_value(),
+    {{else}}
+        value: {{snake name}}_value().unwrap_or_default(),
+    {{/if}}
+    oninput: move |event| {
+        let value = event.value().parse::<{{valueType}}>().unwrap_or_default();
+        {{#if required}}
+        {{snake name}}_value.set(value);
+        {{else}}
+        {{snake name}}_value.set(Some(value));
+        {{/if}}
+        update();
+    },
+}
+{{else}}
 LabeledInput {
     id: "{{ui.id}}",
     name: "{{ui.name}}",
@@ -22,3 +44,4 @@ LabeledInput {
 
     processor: processor.{{snake name}}_processor,
 }
+{{/if}}

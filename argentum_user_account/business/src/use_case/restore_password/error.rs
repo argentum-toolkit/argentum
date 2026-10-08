@@ -1,5 +1,6 @@
 use crate::repository::credential_writer::CredentialWriterError;
 use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryError;
+use crate::specification::PasswordSpecificationError;
 use argentum_encryption_business::password::EncryptionError;
 use argentum_user_business::repository::user_repository::ExternalUserError;
 
@@ -29,4 +30,7 @@ pub enum RestorePasswordError {
 
     #[error("Can't encrypt new password")]
     PasswordEncryptionError(#[from] EncryptionError),
+
+    #[error("Password does not meet the strength requirements")]
+    PasswordSpecificationErrors(Vec<PasswordSpecificationError>),
 }

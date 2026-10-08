@@ -1,17 +1,27 @@
+mod change_password_schema_input;
+mod change_password_schema_optional_input;
 mod login_with_password_schema_input;
 mod login_with_password_schema_optional_input;
 mod registration_with_password_schema_input;
 mod registration_with_password_schema_optional_input;
+mod request_restore_token_schema_input;
+mod request_restore_token_schema_optional_input;
 mod user_name_input;
 mod user_name_optional_input;
 
+pub use change_password_schema_input::ChangePasswordSchemaInput;
+pub use change_password_schema_optional_input::ChangePasswordSchemaOptionalInput;
 pub use login_with_password_schema_input::LoginWithPasswordSchemaInput;
 pub use login_with_password_schema_optional_input::LoginWithPasswordSchemaOptionalInput;
 pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInput;
 pub use registration_with_password_schema_optional_input::RegistrationWithPasswordSchemaOptionalInput;
+pub use request_restore_token_schema_input::RequestRestoreTokenSchemaInput;
+pub use request_restore_token_schema_optional_input::RequestRestoreTokenSchemaOptionalInput;
 pub use user_name_input::UserNameInput;
 pub use user_name_optional_input::UserNameOptionalInput;
 
+pub use change_password_schema_input::ChangePasswordSchemaInputProcessor;
 pub use login_with_password_schema_input::LoginWithPasswordSchemaInputProcessor;
 pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInputProcessor;
+pub use request_restore_token_schema_input::RequestRestoreTokenSchemaInputProcessor;
 pub use user_name_input::UserNameInputProcessor;

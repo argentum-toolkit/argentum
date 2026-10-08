@@ -1,5 +1,9 @@
+mod guest_requests_restore_token_callbacks;
+mod guest_with_token_changes_password_callbacks;
 mod member_logins_with_password_callbacks;
 mod member_registers_with_password_callbacks;
 
+pub use guest_requests_restore_token_callbacks::GuestRequestsRestoreTokenCallbacks;
+pub use guest_with_token_changes_password_callbacks::GuestWithTokenChangesPasswordCallbacks;
 pub use member_logins_with_password_callbacks::MemberLoginsWithPasswordCallbacks;
 pub use member_registers_with_password_callbacks::MemberRegistersWithPasswordCallbacks;

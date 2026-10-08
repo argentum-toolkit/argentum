@@ -9,6 +9,8 @@ use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
 use secrecy::SecretString;
 use std::sync::Arc;
 
+use crate::specification::StrongPasswordSpecification;
+
 pub struct GuestWithTokenChangesPasswordUc<I, L>
 where
     I: Id,
@@ -17,6 +19,7 @@ where
     user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
+    password_specification: Arc<StrongPasswordSpecification>,
 
     token_ttl: u32, //configurable ttl in seconds
     logger: Arc<L>,
@@ -31,6 +34,7 @@ where
         user_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
+        password_specification: Arc<StrongPasswordSpecification>,
         token_ttl: u32,
         logger: Arc<L>,
     ) -> Self {
@@ -38,6 +42,7 @@ where
             user_repository,
             restore_password_token_repository,
             credential_writer,
+            password_specification,
             token_ttl,
             logger,
         }
@@ -74,6 +79,10 @@ where
             },
         };
 
+        self.password_specification
+            .is_satisfied_by(&SecretString::from(password.to_string()))
+            .map_err(RestorePasswordError::PasswordSpecificationErrors)?;
+
         self.credential_writer.delete_for_user(user.id).await?;
 
         let pw = SecretString::new(password.into());
@@ -102,6 +111,7 @@ mod tests {
     use crate::repository::password_credential_repository::PasswordCredentialRepositoryTrait;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
     use crate::repository::restore_password_token_repository::RestorePasswordTokenRepositoryTrait;
+    use crate::specification::StrongPasswordSpecification;
     use crate::use_case::restore_password::error::RestorePasswordError;
 
     use crate::token::GuestGeneratorTrait;
@@ -122,6 +132,7 @@ mod tests {
 
     #[tokio::test]
     async fn guest_with_token_changes_password() -> Result<(), Box<dyn Error>> {
+        let password_specification = Arc::new(StrongPasswordSpecification::new(3, false));
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(MemberRepositoryMock::new());
@@ -140,6 +151,7 @@ mod tests {
             user_repository.clone(),
             token_repository.clone(),
             credential_writer,
+            password_specification,
             100.clone(),
             logger.clone(),
         );
@@ -177,6 +189,7 @@ mod tests {
 
     #[tokio::test]
     async fn guest_with_expired_token_changes_password() -> Result<(), Box<dyn Error>> {
+        let password_specification = Arc::new(StrongPasswordSpecification::new(3, false));
         let id_factory = Arc::new(IdFactoryMock::new());
         let token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let user_repository = Arc::new(MemberRepositoryMock::new());
@@ -195,6 +208,7 @@ mod tests {
             user_repository.clone(),
             token_repository.clone(),
             credential_writer.clone(),
+            password_specification,
             1,
             logger.clone(),
         );

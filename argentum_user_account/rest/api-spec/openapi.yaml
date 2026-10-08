@@ -11,88 +11,88 @@ externalDocs:
   description: Find more info here
   url: https://gitlab.com/argentum-toolkit/argentum
 servers:
-  - description: Dev API Server with CORS
-    url: http://localhost:{port}/{basePath}
-    variables:
-      basePath:
-        default: api/v1
-      port:
-        default: "8082"
-        enum:
-          - "8082"
-          - "8080"
-  - description: Dev HTTP/2 API Server with CORS
-    url: https://localhost:{port}/{basePath}
-    variables:
-      basePath:
-        default: api/v1
-      port:
-        default: "8443"
-        enum:
-          - "8443"
-          - "8080"
-  - description: The production API server
-    url: http://localhost:{port}/{basePath}
-    variables:
-      basePath:
-        default: api/v1
-      port:
-        default: "8080"
-        enum:
-          - "80"
-          - "8080"
+- description: Dev API Server with CORS
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8082'
+      enum:
+      - '8082'
+      - '8080'
+- description: Dev HTTP/2 API Server with CORS
+  url: https://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8443'
+      enum:
+      - '8443'
+      - '8080'
+- description: The production API server
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8080'
+      enum:
+      - '80'
+      - '8080'
 tags:
-  - description: Managing of the guests
-    name: guest
-  - description: Managing of the user account
-    name: user-account
+- description: Managing of the guests
+  name: guest
+- description: Managing of the user account
+  name: user-account
 paths:
   /user-account/email-verification:
     post:
       description: Member sends email verification key
       operationId: MemberVerifiesEmail
       tags:
-        - user-account
+      - user-account
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
-        $ref: "#/components/requestBodies/EmailVerificationRequestBody"
+        $ref: '#/components/requestBodies/EmailVerificationRequestBody'
       summary: New member verifies email address
       responses:
-        "200":
-          $ref: "#/components/responses/EmptyOk"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
   /user-account/guest-registration:
     post:
       description: Guest registers without any data
       operationId: GuestRegisters
       tags:
-        - guest
+      - guest
       summary: Guest registers
       responses:
-        "201":
-          $ref: "#/components/responses/GuestRegisteredSuccessfully"
+        '201':
+          $ref: '#/components/responses/GuestRegisteredSuccessfully'
   /user-account/password-login:
     post:
       description: Login as an member
       operationId: MemberLoginsWithPassword
       tags:
-        - user-account
+      - user-account
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
-        $ref: "#/components/requestBodies/LoginWithPasswordRequestBody"
+        $ref: '#/components/requestBodies/LoginWithPasswordRequestBody'
       summary: Login as an member
       responses:
-        "200":
-          $ref: "#/components/responses/MemberLoggedInSuccessfully"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+        '200':
+          $ref: '#/components/responses/MemberLoggedInSuccessfully'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
       x-ag-form:
         submit-label: Sign In
   /user-account/register:
@@ -100,19 +100,19 @@ paths:
       description: Member registers with email and password
       operationId: MemberRegistersWithPassword
       tags:
-        - user-account
+      - user-account
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
-        $ref: "#/components/requestBodies/RegistrationWithPasswordRequestBody"
+        $ref: '#/components/requestBodies/RegistrationWithPasswordRequestBody'
       summary: Member registers with password
       responses:
-        "201":
-          $ref: "#/components/responses/MemberRegisteredSuccessfully"
-        "400":
-          $ref: "#/components/responses/400"
-        "409":
-          $ref: "#/components/responses/409"
+        '201':
+          $ref: '#/components/responses/MemberRegisteredSuccessfully'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
       x-ag-form:
         submit-label: Sign Up
   /user-account/restore-password/change-password:
@@ -120,83 +120,93 @@ paths:
       description: Final step of restoring password process
       operationId: GuestWithTokenChangesPassword
       tags:
-        - user-account
+      - user-account
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
-        $ref: "#/components/requestBodies/ChangePasswordRequestBody"
+        $ref: '#/components/requestBodies/ChangePasswordRequestBody'
       summary: Member with token changes his password
       responses:
-        "200":
-          $ref: "#/components/responses/EmptyOk"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+      x-ag-form:
+        submit-label: Change password
   /user-account/restore-password/token-request:
     post:
       description: Requested token and link will be sent to email
       operationId: GuestRequestsRestoreToken
       tags:
-        - user-account
+      - user-account
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
-        $ref: "#/components/requestBodies/RequestRestoreTokenRequestBody"
+        $ref: '#/components/requestBodies/RequestRestoreTokenRequestBody'
       summary: Guest requests restore password token
       responses:
-        "200":
-          $ref: "#/components/responses/EmptyOk"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+        '200':
+          $ref: '#/components/responses/EmptyOk'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+      x-ag-form:
+        submit-label: Request restore password link
 components:
   requestBodies:
     ChangePasswordRequestBody:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ChangePasswordSchema"
+            $ref: '#/components/schemas/ChangePasswordSchema'
       description: Required data to change password with token
       required: true
     EmailVerificationRequestBody:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/EmailVerificationSchema"
+            $ref: '#/components/schemas/EmailVerificationSchema'
       description: Required data for email verification
       required: true
     LoginWithPasswordRequestBody:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/LoginWithPasswordSchema"
+            $ref: '#/components/schemas/LoginWithPasswordSchema'
       description: Required data to login with email and password
       required: true
     RegistrationWithPasswordRequestBody:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/RegistrationWithPasswordSchema"
+            $ref: '#/components/schemas/RegistrationWithPasswordSchema'
       description: Data required to register with email and password
       required: true
     RequestRestoreTokenRequestBody:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/RequestRestoreTokenSchema"
+            $ref: '#/components/schemas/RequestRestoreTokenSchema'
       description: Required data to get restore password token
       required: true
   schemas:
     ChangePasswordSchema:
       required:
-        - token
-        - password
+      - token
+      - password
       properties:
         token:
           example: token-example
           type: string
+          x-ag-ui:
+            id: token
+            name: token
+            hidden: true
+            wrapper: none
+            optional-style: none
         password:
           example: secure-password
           type: string
@@ -204,7 +214,7 @@ components:
       type: object
     EmailVerificationSchema:
       required:
-        - key
+      - key
       properties:
         key:
           example: abc123efg567
@@ -215,8 +225,8 @@ components:
       type: null
     GuestRegistrationResult:
       required:
-        - guest_id
-        - token
+      - guest_id
+      - token
       properties:
         guest_id:
           example: c8cabaac-8359-463a-9cce-954eff31e063
@@ -228,8 +238,8 @@ components:
       type: object
     LoginResult:
       required:
-        - user_id
-        - token
+      - user_id
+      - token
       properties:
         user_id:
           example: dd7ea831-ad64-429f-9839-a44c84c74550
@@ -241,8 +251,8 @@ components:
       type: object
     LoginWithPasswordSchema:
       required:
-        - email
-        - password
+      - email
+      - password
       properties:
         email:
           example: test-email@test-email.com
@@ -264,11 +274,11 @@ components:
       title: Schema for error response
       description: RFC 7807 Problem Details for HTTP APIs
       required:
-        - status
-        - title
+      - status
+      - title
       properties:
         status:
-          example: "401"
+          example: '401'
           maximum: 599.0
           minimum: 400.0
           type: integer
@@ -282,11 +292,11 @@ components:
         detail:
           type: string
         body:
-          $ref: "#/components/schemas/Violation"
+          $ref: '#/components/schemas/Violation'
       type: object
     RegistrationWithPasswordResult:
       required:
-        - id
+      - id
       properties:
         id:
           example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
@@ -295,10 +305,10 @@ components:
       type: object
     RegistrationWithPasswordSchema:
       required:
-        - email
-        - name
-        - password
-        - terms
+      - email
+      - name
+      - password
+      - terms
       properties:
         email:
           example: test-email@test-email.com
@@ -312,7 +322,7 @@ components:
             wrapper: none
             optional-style: none
         name:
-          $ref: "#/components/schemas/UserName"
+          $ref: '#/components/schemas/UserName'
         password:
           example: secure-password
           title: Password
@@ -325,7 +335,7 @@ components:
             wrapper: none
             optional-style: none
         terms:
-          example: "false"
+          example: 'false'
           title: By creating account means you agree to the Terms and Conditions, and our Privacy Policy
           type: boolean
           x-ag-ui:
@@ -337,7 +347,7 @@ components:
       type: object
     RequestRestoreTokenSchema:
       required:
-        - email
+      - email
       properties:
         email:
           example: test-email@test-email.com
@@ -346,7 +356,7 @@ components:
       type: object
     UserName:
       required:
-        - first
+      - first
       properties:
         first:
           example: Winston
@@ -385,9 +395,9 @@ components:
     Violation:
       properties:
         errors:
-          $ref: "#/components/schemas/ViolationErrors"
+          $ref: '#/components/schemas/ViolationErrors'
         items:
-          $ref: "#/components/schemas/ViolationItems"
+          $ref: '#/components/schemas/ViolationItems'
       type: object
     ViolationErrors:
       items:
@@ -396,54 +406,54 @@ components:
     ViolationItems:
       type: object
       additionalProperties:
-        $ref: "#/components/schemas/Violation"
+        $ref: '#/components/schemas/Violation'
   responses:
-    "400":
+    '400':
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'
       description: Bad request
-    "401":
+    '401':
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'
       description: Unauthorized
-    "409":
+    '409':
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'
       description: Conflict
     EmptyOk:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/EmptyResponse"
+            $ref: '#/components/schemas/EmptyResponse'
       description: OK
     GuestRegisteredSuccessfully:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/GuestRegistrationResult"
+            $ref: '#/components/schemas/GuestRegistrationResult'
       description: Created
     MemberLoggedInSuccessfully:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/LoginResult"
+            $ref: '#/components/schemas/LoginResult'
       description: OK
     MemberRegisteredSuccessfully:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/RegistrationWithPasswordResult"
+            $ref: '#/components/schemas/RegistrationWithPasswordResult'
       description: Created
   securitySchemes:
     bearerAuth:
       scheme: bearer
       type: http
-      name: ""
+      name: ''
       in: header
-      open_id_connect_url: ""
+      open_id_connect_url: ''

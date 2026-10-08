@@ -3,9 +3,9 @@ use crate::rsx::wrapper::Wrapper;
 use argentum_oidc_ui::rsx::page::AuthCallback;
 use argentum_skeleton_ui::rsx::page::{About, Contacts, Home};
 use argentum_standard_ui::rsx::page::NotFound;
-use argentum_user_account_ui::rsx::page::EmailConfirmation;
 use argentum_user_account_ui::rsx::page::Login;
 use argentum_user_account_ui::rsx::page::Registration;
+use argentum_user_account_ui::rsx::page::{EmailConfirmation, ForgotPassword, ResetPassword};
 use dioxus::prelude::*;
 
 #[derive(Clone, Routable, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -28,6 +28,10 @@ pub enum Route {
             Registration {},
             #[route("/email-confirmation?:token")]
             EmailConfirmation { token: String },
+            #[route("/forgot-password")]
+            ForgotPassword {},
+            #[route("/reset-password?:token")]
+            ResetPassword { token: String },
         #[end_nest]
 
         #[nest("/oidc")]

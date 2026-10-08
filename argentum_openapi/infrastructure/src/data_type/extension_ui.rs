@@ -10,6 +10,10 @@ fn default_optional_style() -> ExtensionUiOptionalStyle {
     ExtensionUiOptionalStyle::None
 }
 
+fn is_false(value: &bool) -> bool {
+    !value
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtensionUi {
@@ -24,6 +28,9 @@ pub struct ExtensionUi {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub weight: Option<i16>,
+
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub hidden: bool,
 
     #[serde(default = "default_wrapper")]
     pub wrapper: ExtensionUiWrapper,
@@ -47,6 +54,7 @@ mod tests {
             name: Some("name1".to_string()),
             label: Some("label1".to_string()),
             weight: Some(1),
+            hidden: false,
             wrapper: ExtensionUiWrapper::Flex,
             optional_title: Some("Enable optional inputs".into()),
             optional_style: ExtensionUiOptionalStyle::Normal,
@@ -67,6 +75,7 @@ mod tests {
             name: Some("name1".to_string()),
             label: Some("label1".to_string()),
             weight: Some(1),
+            hidden: false,
             wrapper: ExtensionUiWrapper::Flex,
             optional_title: Some("Enable optional inputs".into()),
             optional_style: ExtensionUiOptionalStyle::Normal,
@@ -82,6 +91,7 @@ mod tests {
             name: None,
             label: None,
             weight: None,
+            hidden: false,
             wrapper: ExtensionUiWrapper::None,
             optional_title: None,
             optional_style: ExtensionUiOptionalStyle::None,
@@ -90,6 +100,15 @@ mod tests {
         let serialized = serde_json::to_string(&extension_ui).unwrap();
         let expected = r#"{"wrapper":"none","optional-style":"none"}"#;
         assert_eq!(serialized, expected);
+    }
+
+    #[test]
+    fn test_deserialize_hidden() {
+        let json_str = r#"{"id":"token","name":"token","hidden":true}"#;
+        let extension_ui: ExtensionUi = serde_json::from_str(json_str).unwrap();
+
+        assert!(extension_ui.hidden);
+        assert_eq!(extension_ui.id.as_deref(), Some("token"));
     }
 
     #[test]
@@ -102,6 +121,7 @@ mod tests {
             name: None,
             label: None,
             weight: None,
+            hidden: false,
             wrapper: ExtensionUiWrapper::None,
             optional_title: None,
             optional_style: ExtensionUiOptionalStyle::None,

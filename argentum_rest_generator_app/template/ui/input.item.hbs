@@ -56,7 +56,9 @@ pub fn {{ upper_camel name}}Input(props: {{ upper_camel name}}Props) -> Element 
     };
 
     {{#each inputs as |input|}}
+    {{#unless input.hidden}}
     let {{snake input.key}}_violations = violation_items.get("{{snake input.key}}").cloned();
+    {{/unless}}
     {{/each}}
 
     let update = move || {

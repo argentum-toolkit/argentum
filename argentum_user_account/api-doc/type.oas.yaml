@@ -119,6 +119,10 @@ components:
         token:
           type: string
           example: token-example
+          x-ag-ui:
+            id: token
+            name: token
+            hidden: true
         password:
           type: string
           format: password
