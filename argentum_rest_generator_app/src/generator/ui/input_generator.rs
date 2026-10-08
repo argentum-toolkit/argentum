@@ -38,6 +38,7 @@ struct KV {
     value: String,
     weight: i16,
     input_name: String,
+    hidden: bool,
 }
 
 #[derive(Serialize)]
@@ -67,6 +68,7 @@ struct Ui {
     pub id: String,
     pub name: String,
     pub label: String,
+    pub hidden: bool,
     pub wrapper: String,
     pub optional_title: Option<String>,
     pub optional_style: String,
@@ -80,6 +82,7 @@ impl From<Option<ExtensionUi>> for Ui {
                 id: "unknown".into(),
                 name: "unknown".into(),
                 label: "unknown".into(),
+                hidden: false,
                 wrapper: "none".into(),
                 optional_title: None,
                 optional_style: "none".into(),
@@ -88,6 +91,7 @@ impl From<Option<ExtensionUi>> for Ui {
                 id: v.id.unwrap_or("unknown".into()),
                 name: v.name.unwrap_or("unknown".into()),
                 label: v.label.unwrap_or("unknown".into()),
+                hidden: v.hidden,
                 wrapper: v.wrapper.into(),
                 optional_title: v.optional_title,
                 optional_style: v.optional_style.into(),
@@ -103,6 +107,7 @@ impl From<ExtensionUi> for Ui {
             id: value.id.unwrap_or("unknown".into()),
             name: value.name.unwrap_or("unknown".into()),
             label: value.label.unwrap_or("unknown".into()),
+            hidden: value.hidden,
             wrapper: value.wrapper.into(),
             optional_title: value.optional_title,
             optional_style: value.optional_style.into(),
@@ -159,6 +164,11 @@ impl InputGenerator {
             let schema = self.schema_extractor.extract(&property, spec)?;
 
             let required = req.contains(&name);
+            let hidden = schema
+                .extension_ui
+                .as_ref()
+                .map(|ui| ui.hidden)
+                .unwrap_or(false);
 
             let weight = match schema.extension_ui {
                 Some(ref ext) => match ext.weight {
@@ -224,6 +234,7 @@ impl InputGenerator {
                         value: input,
                         weight,
                         input_name: format!("{}Input", type_name),
+                        hidden,
                     }
                 }
                 RefOrObject::Object(s) => match s.schema_type {
@@ -255,6 +266,7 @@ impl InputGenerator {
                             value: input,
                             weight,
                             input_name: "LabeledCheckbox".into(),
+                            hidden,
                         }
                     }
                     Some(SchemaType::Integer) => match s.format {
@@ -286,6 +298,7 @@ impl InputGenerator {
                                 value: input,
                                 weight,
                                 input_name: "LabeledInput".into(),
+                                hidden,
                             }
                         }
                         _ => {
@@ -316,6 +329,7 @@ impl InputGenerator {
                                 value: input,
                                 weight,
                                 input_name: "LabeledInput".into(),
+                                hidden,
                             }
                         }
                     },
@@ -348,6 +362,7 @@ impl InputGenerator {
                                 value: input,
                                 weight,
                                 input_name: "LabeledTextarea".into(),
+                                hidden,
                             }
                         }
                         Some(SchemaFormat::Standard(StandardFormat::Uuid)) => {
@@ -378,6 +393,7 @@ impl InputGenerator {
                                 value: input,
                                 weight,
                                 input_name: "AutocompleteUuid".into(),
+                                hidden,
                             }
                         }
                         _ => {
@@ -408,6 +424,7 @@ impl InputGenerator {
                                 value: input,
                                 weight,
                                 input_name: "LabeledInput".into(),
+                                hidden,
                             }
                         }
                     },
@@ -436,6 +453,7 @@ impl InputGenerator {
                             value: input,
                             weight,
                             input_name: "LabeledInput".into(),
+                            hidden,
                         }
                     }
                 },

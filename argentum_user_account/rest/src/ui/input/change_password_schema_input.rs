@@ -52,7 +52,6 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
         None => BTreeMap::new(),
     };
 
-    let token_violations = violation_items.get("token").cloned();
     let password_violations = violation_items.get("password").cloned();
 
     let update = move || {
@@ -69,21 +68,17 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
                         }
                         div {
                             class: "flex gap-2",
-                            LabeledInput {
-            id: "unknown",
-            name: "unknown",
-            label: "",
-            input_type: "hidden".to_string(),
+                            input {
+            id: "token",
+            name: "token",
+            r#type: "hidden",
             required: true,
                 value: token_value(),
-
-            violations: token_violations,
-            oninput: move |v: String| {
-                token_value.set(v);
+            oninput: move |event| {
+                let value = event.value().parse::<String>().unwrap_or_default();
+                token_value.set(value);
                 update();
             },
-
-            processor: processor.token_processor,
         }
 
                             LabeledInput {
@@ -113,21 +108,17 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
                             legend { class: "fieldset-legend {label_class}", "{t}"}
                         }
                         div {
-                            LabeledInput {
-            id: "unknown",
-            name: "unknown",
-            label: "",
-            input_type: "text".to_string(),
+                            input {
+            id: "token",
+            name: "token",
+            r#type: "hidden",
             required: true,
                 value: token_value(),
-
-            violations: token_violations,
-            oninput: move |v: String| {
-                token_value.set(v);
+            oninput: move |event| {
+                let value = event.value().parse::<String>().unwrap_or_default();
+                token_value.set(value);
                 update();
             },
-
-            processor: processor.token_processor,
         }
 
                             LabeledInput {
@@ -152,21 +143,17 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
                 }
     } else {
         rsx! {
-                    LabeledInput {
-            id: "unknown",
-            name: "unknown",
-            label: "",
-            input_type: "text".to_string(),
+                    input {
+            id: "token",
+            name: "token",
+            r#type: "hidden",
             required: true,
                 value: token_value(),
-
-            violations: token_violations,
-            oninput: move |v: String| {
-                token_value.set(v);
+            oninput: move |event| {
+                let value = event.value().parse::<String>().unwrap_or_default();
+                token_value.set(value);
                 update();
             },
-
-            processor: processor.token_processor,
         }
 
                     LabeledInput {

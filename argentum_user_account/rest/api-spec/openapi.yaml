@@ -201,6 +201,12 @@ components:
         token:
           example: token-example
           type: string
+          x-ag-ui:
+            id: token
+            name: token
+            hidden: true
+            wrapper: none
+            optional-style: none
         password:
           example: secure-password
           type: string
