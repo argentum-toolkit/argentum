@@ -34,42 +34,45 @@ impl StrongPasswordSpecification {
     pub fn is_satisfied_by(
         &self,
         password: &SecretString,
-    ) -> Result<(), PasswordSpecificationError> {
+    ) -> Result<(), Vec<PasswordSpecificationError>> {
         let value = password.expose_secret();
+        let mut errors = Vec::new();
 
         if value.chars().count() < self.minimum_length {
-            return Err(PasswordSpecificationError::TooShort {
+            errors.push(PasswordSpecificationError::TooShort {
                 minimum: self.minimum_length,
             });
         }
 
-        if !self.complexity_enabled {
-            return Ok(());
+        if self.complexity_enabled {
+            if !value
+                .chars()
+                .any(|character| character.is_ascii_lowercase())
+            {
+                errors.push(PasswordSpecificationError::MissingLowercase);
+            }
+            if !value
+                .chars()
+                .any(|character| character.is_ascii_uppercase())
+            {
+                errors.push(PasswordSpecificationError::MissingUppercase);
+            }
+            if !value.chars().any(|character| character.is_ascii_digit()) {
+                errors.push(PasswordSpecificationError::MissingDigit);
+            }
+            if !value
+                .chars()
+                .any(|character| !character.is_ascii_alphanumeric())
+            {
+                errors.push(PasswordSpecificationError::MissingSpecialCharacter);
+            }
         }
 
-        if !value
-            .chars()
-            .any(|character| character.is_ascii_lowercase())
-        {
-            return Err(PasswordSpecificationError::MissingLowercase);
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
         }
-        if !value
-            .chars()
-            .any(|character| character.is_ascii_uppercase())
-        {
-            return Err(PasswordSpecificationError::MissingUppercase);
-        }
-        if !value.chars().any(|character| character.is_ascii_digit()) {
-            return Err(PasswordSpecificationError::MissingDigit);
-        }
-        if !value
-            .chars()
-            .any(|character| !character.is_ascii_alphanumeric())
-        {
-            return Err(PasswordSpecificationError::MissingSpecialCharacter);
-        }
-
-        Ok(())
     }
 }
 
@@ -95,12 +98,17 @@ mod tests {
     }
 
     #[test]
-    fn rejects_short_password_before_complexity_checks() {
+    fn returns_all_password_errors() {
         let specification = StrongPasswordSpecification::new(8, true);
 
         assert_eq!(
-            specification.is_satisfied_by(&password("Ab-1")),
-            Err(PasswordSpecificationError::TooShort { minimum: 8 })
+            specification.is_satisfied_by(&password("1")),
+            Err(vec![
+                PasswordSpecificationError::TooShort { minimum: 8 },
+                PasswordSpecificationError::MissingLowercase,
+                PasswordSpecificationError::MissingUppercase,
+                PasswordSpecificationError::MissingSpecialCharacter,
+            ])
         );
     }
 
@@ -117,7 +125,7 @@ mod tests {
 
         assert_eq!(
             specification.is_satisfied_by(&password("123")),
-            Err(PasswordSpecificationError::TooShort { minimum: 8 })
+            Err(vec![PasswordSpecificationError::TooShort { minimum: 8 }])
         );
     }
 
@@ -126,20 +134,20 @@ mod tests {
         let specification = StrongPasswordSpecification::new(8, true);
 
         assert_eq!(
-            specification.is_satisfied_by(&password("12345678")),
-            Err(PasswordSpecificationError::MissingLowercase)
+            specification.is_satisfied_by(&password("ABCDEF1-")),
+            Err(vec![PasswordSpecificationError::MissingLowercase])
         );
         assert_eq!(
-            specification.is_satisfied_by(&password("abcdefg1")),
-            Err(PasswordSpecificationError::MissingUppercase)
+            specification.is_satisfied_by(&password("abcdef1-")),
+            Err(vec![PasswordSpecificationError::MissingUppercase])
         );
         assert_eq!(
-            specification.is_satisfied_by(&password("Abcdefgh")),
-            Err(PasswordSpecificationError::MissingDigit)
+            specification.is_satisfied_by(&password("Abcdefg-")),
+            Err(vec![PasswordSpecificationError::MissingDigit])
         );
         assert_eq!(
             specification.is_satisfied_by(&password("Abcdefg1")),
-            Err(PasswordSpecificationError::MissingSpecialCharacter)
+            Err(vec![PasswordSpecificationError::MissingSpecialCharacter])
         );
     }
 }

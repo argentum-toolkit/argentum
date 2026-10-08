@@ -4,7 +4,7 @@ use argentum_rest_infrastructure::data_type::error::{
     BadRequestError, HttpError, InternalServerError, UnprocessableEntity,
 };
 use argentum_standard_business::data_type::id::Id;
-use argentum_standard_business::invariant_violation::Violations;
+use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
 use argentum_user_account_business::use_case::restore_password::guest_with_token_changes_password::GuestWithTokenChangesPasswordUc;
 use argentum_user_account_rest::dto::operation_response_enum::GuestWithTokenChangesPasswordOperationResponseEnum;
@@ -13,6 +13,7 @@ use argentum_user_account_rest::dto::response::EmptyOkResponse;
 use argentum_user_account_rest::dto::schema::EmptyResponse;
 use argentum_user_account_rest::server::handler::GuestWithTokenChangesPasswordTrait;
 use argentum_user_business::entity::user::User;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -75,9 +76,18 @@ where
                         Box::new(e),
                     )))
                 }
-                RestorePasswordError::PasswordSpecificationError(_) => {
+                RestorePasswordError::PasswordSpecificationErrors(errors) => {
                     Err(HttpError::BadRequest(BadRequestError::new(
-                        Violations::new(vec![e.to_string()], None),
+                        Violations::new(
+                            vec![],
+                            Some(ViolationItem::Object(BTreeMap::from([(
+                                "password".to_string(),
+                                Violations::new(
+                                    errors.into_iter().map(|error| error.to_string()).collect(),
+                                    None,
+                                ),
+                            )]))),
+                        ),
                         Violations::new(vec![], None),
                         Violations::new(vec![], None),
                         Violations::new(vec![], None),

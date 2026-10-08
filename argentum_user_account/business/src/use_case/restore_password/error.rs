@@ -31,6 +31,6 @@ pub enum RestorePasswordError {
     #[error("Can't encrypt new password")]
     PasswordEncryptionError(#[from] EncryptionError),
 
-    #[error(transparent)]
-    PasswordSpecificationError(#[from] PasswordSpecificationError),
+    #[error("Password does not meet the strength requirements")]
+    PasswordSpecificationErrors(Vec<PasswordSpecificationError>),
 }

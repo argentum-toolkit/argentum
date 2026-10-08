@@ -81,7 +81,7 @@ where
 
         self.password_specification
             .is_satisfied_by(&SecretString::from(password.to_string()))
-            .map_err(RestorePasswordError::PasswordSpecificationError)?;
+            .map_err(RestorePasswordError::PasswordSpecificationErrors)?;
 
         self.credential_writer.delete_for_user(user.id).await?;
 

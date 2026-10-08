@@ -60,7 +60,7 @@ where
 
         self.password_specification
             .is_satisfied_by(&password)
-            .map_err(RegistrationError::PasswordSpecificationError)?;
+            .map_err(RegistrationError::PasswordSpecificationErrors)?;
 
         let result = self.member_repository.find_by_email(&email).await;
 
@@ -99,8 +99,8 @@ pub enum RegistrationError {
     #[error("User with such email already exists")]
     EmailAlreadyExists,
 
-    #[error(transparent)]
-    PasswordSpecificationError(#[from] PasswordSpecificationError),
+    #[error("Password does not meet the strength requirements")]
+    PasswordSpecificationErrors(Vec<PasswordSpecificationError>),
 
     //TODO: there is no such error. map it
     #[error("Can't encrypt password")]
