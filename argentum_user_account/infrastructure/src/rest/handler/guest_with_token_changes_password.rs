@@ -1,9 +1,10 @@
 use crate::rest::transformer::DtoToGuestWithTokenChangesPasswordParams;
 use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{
-    HttpError, InternalServerError, UnprocessableEntity,
+    BadRequestError, HttpError, InternalServerError, UnprocessableEntity,
 };
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::invariant_violation::Violations;
 use argentum_user_account_business::use_case::restore_password::error::RestorePasswordError;
 use argentum_user_account_business::use_case::restore_password::guest_with_token_changes_password::GuestWithTokenChangesPasswordUc;
 use argentum_user_account_rest::dto::operation_response_enum::GuestWithTokenChangesPasswordOperationResponseEnum;
@@ -72,6 +73,14 @@ where
                 RestorePasswordError::TokenExpired | RestorePasswordError::TokenNotFoundError => {
                     Err(HttpError::UnprocessableEntity(UnprocessableEntity::new(
                         Box::new(e),
+                    )))
+                }
+                RestorePasswordError::PasswordSpecificationError(_) => {
+                    Err(HttpError::BadRequest(BadRequestError::new(
+                        Violations::new(vec![e.to_string()], None),
+                        Violations::new(vec![], None),
+                        Violations::new(vec![], None),
+                        Violations::new(vec![], None),
                     )))
                 }
                 _ => Err(HttpError::InternalServerError(InternalServerError::new(

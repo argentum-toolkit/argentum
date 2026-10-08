@@ -1,5 +1,8 @@
 use crate::rest::transformer::DtoToMemberRegistersWithPasswordParams;
-use argentum_rest_infrastructure::data_type::error::{Conflict, HttpError, InternalServerError};
+use argentum_rest_infrastructure::data_type::error::{
+    BadRequestError, Conflict, HttpError, InternalServerError,
+};
+use argentum_standard_business::invariant_violation::Violations;
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::use_case::member_registers_with_password::{
     MemberRegistersWithPasswordUc, RegistrationError,
@@ -65,6 +68,14 @@ impl MemberRegistersWithPasswordTrait for MemberRegistersWithPasswordHandler {
                 }
                 RegistrationError::EmailAlreadyExists => {
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
+                }
+                RegistrationError::PasswordSpecificationError(_) => {
+                    Err(HttpError::BadRequest(BadRequestError::new(
+                        Violations::new(vec![e.to_string()], None),
+                        Violations::new(vec![], None),
+                        Violations::new(vec![], None),
+                        Violations::new(vec![], None),
+                    )))
                 }
                 _ => Err(HttpError::InternalServerError(InternalServerError::new(
                     Arc::new(e),

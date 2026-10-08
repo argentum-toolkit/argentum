@@ -15,6 +15,7 @@ use argentum_standard_business::data_type::id::Id;
 use std::sync::Arc;
 
 use crate::service::EmailConfirmationInitiator;
+use crate::specification::{PasswordSpecificationError, StrongPasswordSpecification};
 
 pub struct MemberRegistersWithPasswordUc<I>
 where
@@ -23,6 +24,7 @@ where
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
     email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
+    password_specification: Arc<StrongPasswordSpecification>,
 }
 
 impl<I> MemberRegistersWithPasswordUc<I>
@@ -34,11 +36,13 @@ where
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
         email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
+        password_specification: Arc<StrongPasswordSpecification>,
     ) -> Self {
         Self {
             member_repository,
             credential_writer,
             email_confirmation_initiator,
+            password_specification,
         }
     }
 
@@ -53,6 +57,10 @@ where
         if !terms_accepted {
             return Err(RegistrationError::TermsNotAccepted);
         }
+
+        self.password_specification
+            .is_satisfied_by(&password)
+            .map_err(RegistrationError::PasswordSpecificationError)?;
 
         let result = self.member_repository.find_by_email(&email).await;
 
@@ -91,6 +99,9 @@ pub enum RegistrationError {
     #[error("User with such email already exists")]
     EmailAlreadyExists,
 
+    #[error(transparent)]
+    PasswordSpecificationError(#[from] PasswordSpecificationError),
+
     //TODO: there is no such error. map it
     #[error("Can't encrypt password")]
     EncryptionError(
@@ -122,6 +133,7 @@ mod test {
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::token::MemberGeneratorMock;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
+    use crate::specification::StrongPasswordSpecification;
     use crate::use_case::member_registers_with_password::{
         MemberRegistersWithPasswordUc, RegistrationError,
     };
@@ -137,6 +149,7 @@ mod test {
 
     #[tokio::test]
     async fn test_user_registers_with_password() -> Result<(), &'static str> {
+        let password_specification = Arc::new(StrongPasswordSpecification::new(3, false));
         let id_factory = Arc::new(IdFactoryMock::new());
         let credential_repository =
             PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
@@ -166,6 +179,7 @@ mod test {
             Arc::new(member_repository),
             Arc::new(credential_writer),
             email_confirmation_initiator,
+            password_specification,
         );
 
         let id = id_factory.create();
@@ -192,6 +206,7 @@ mod test {
 
     #[tokio::test]
     async fn test_user_registers_without_accepting_of_terms() -> Result<(), &'static str> {
+        let password_specification = Arc::new(StrongPasswordSpecification::new(3, false));
         let id_factory = Arc::new(IdFactoryMock::new());
         let credential_repository =
             PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
@@ -221,6 +236,7 @@ mod test {
             Arc::new(member_repository),
             Arc::new(credential_writer),
             email_confirmation_initiator,
+            password_specification,
         );
 
         let id = id_factory.create();
@@ -250,6 +266,7 @@ mod test {
     #[tokio::test]
     async fn test_user_registers_with_password_with_broken_user_repository()
     -> Result<(), &'static str> {
+        let password_specification = Arc::new(StrongPasswordSpecification::new(3, false));
         let id_factory = Arc::new(IdFactoryMock::new());
         let credential_repository =
             PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
@@ -279,6 +296,7 @@ mod test {
             Arc::new(member_repository),
             Arc::new(credential_writer),
             email_confirmation_initiator,
+            password_specification,
         );
 
         let id = id_factory.create();

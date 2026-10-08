@@ -22,10 +22,19 @@ use argentum_standard_business::{
 };
 use argentum_standard_infrastructure::data_type::unique_id::{UniqueId, UniqueIdFactory};
 use argentum_user_account_business::di::user_account_business_provide;
+
 use argentum_user_account_infrastructure::di::user_account_infrastructure_provider;
 use argentum_user_business::di::user_business_provide;
 use argentum_user_infrastructure::di::user_infrastructure_provide;
 use serde::Deserialize;
+
+fn default_password_min_length() -> usize {
+    8
+}
+
+fn default_password_complexity_enabled() -> bool {
+    true
+}
 
 #[derive(Deserialize, Debug)]
 struct Env {
@@ -41,6 +50,10 @@ struct Env {
     pub ag_product_name: String,
     pub ag_email_confirmation_front_url: String,
     pub ag_restore_password_front_url: String,
+    #[serde(default = "default_password_min_length")]
+    pub ag_password_min_length: usize,
+    #[serde(default = "default_password_complexity_enabled")]
+    pub ag_password_complexity_enabled: bool,
     pub tls_cert_file: String,
     pub tls_key_file: String,
 }
@@ -82,6 +95,9 @@ where
 
     user_business_provide::<UniqueId, L>(container);
 
+    let password_min_length = env.ag_password_min_length;
+    let password_complexity_enabled = env.ag_password_complexity_enabled;
+
     user_account_business_provide::<UniqueId, L>(
         container,
         env.ag_product_name.clone(),
@@ -89,6 +105,8 @@ where
         3600,           // TTL 1h
         env.ag_email_confirmation_front_url.clone(),
         env.ag_restore_password_front_url.clone(),
+        password_min_length,
+        password_complexity_enabled,
     );
 
     oidc_business_provide::<UniqueId, L>(container);
