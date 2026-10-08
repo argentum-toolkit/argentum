@@ -4,6 +4,7 @@ use argentum_encryption_business::password::{Encryptor, Validator};
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_event_business::di::event_business_provide;
 use argentum_log_business::LoggerTrait;
+use argentum_notification_business::{NotifierTrait, mock::StdoutNotifier};
 use argentum_oidc_infrastructure::{
     default_di::oidc_infrastructure_provider, oidc_business_provide,
 };
@@ -15,8 +16,11 @@ use argentum_rest_infrastructure::{
     },
 };
 
-use argentum_standard_business::di_container::{Container, DiError};
-use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
+use argentum_standard_business::{
+    data_type::id::IdFactory,
+    di_container::{Container, DiError},
+};
+use argentum_standard_infrastructure::data_type::unique_id::{UniqueId, UniqueIdFactory};
 use argentum_user_account_business::di::user_account_business_provide;
 use argentum_user_account_infrastructure::di::user_account_infrastructure_provider;
 use argentum_user_business::di::user_business_provide;
@@ -63,6 +67,14 @@ where
 {
     let env: Env =
         envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
+
+    container.provide_factory::<dyn IdFactory<Id = UniqueId>, _>(|_c| {
+        Ok(Arc::new(UniqueIdFactory::new()))
+    });
+
+    container.provide_factory::<dyn NotifierTrait<Id = UniqueId>, _>(|_c| {
+        Ok(Arc::new(StdoutNotifier::new()))
+    });
 
     event_business_provide(container);
 
