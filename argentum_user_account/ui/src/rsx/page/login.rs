@@ -97,7 +97,7 @@ pub fn Login() -> Element {
                     }
 
                     div { class: "text-base mt-10",
-                        a {href:"#", class:"text-sm text-primary hover:underline", "Forgot password?"}
+                        a {href:"/user-account/forgot-password", class:"text-sm text-primary hover:underline", "Forgot password?"}
                     }
                     div { class: "text-center text-sm mt-2 mb-3",
                         "Don't you have an account?"

@@ -1,5 +1,9 @@
+mod guest_requests_restore_token_form;
+mod guest_with_token_changes_password_form;
 mod member_logins_with_password_form;
 mod member_registers_with_password_form;
 
+pub use guest_requests_restore_token_form::GuestRequestsRestoreTokenForm;
+pub use guest_with_token_changes_password_form::GuestWithTokenChangesPasswordForm;
 pub use member_logins_with_password_form::MemberLoginsWithPasswordForm;
 pub use member_registers_with_password_form::MemberRegistersWithPasswordForm;
