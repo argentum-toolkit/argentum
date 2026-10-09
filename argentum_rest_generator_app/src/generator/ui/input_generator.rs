@@ -50,6 +50,9 @@ struct Input {
     ui: Ui,
     value_type: String,
     input_type: String,
+    empty_zero: bool,
+    minimum: Option<String>,
+    maximum: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -123,9 +126,16 @@ pub(crate) struct InputGenerator {
 
 impl InputGenerator {
     fn input_type(schema: &Schema) -> String {
-        match schema.format.as_ref() {
-            Some(SchemaFormat::Standard(StandardFormat::Password)) => "password".into(),
-            _ => "text".into(),
+        if matches!(
+            schema.schema_type,
+            Some(SchemaType::Integer | SchemaType::Number)
+        ) {
+            "number".into()
+        } else {
+            match schema.format.as_ref() {
+                Some(SchemaFormat::Standard(StandardFormat::Password)) => "password".into(),
+                _ => "text".into(),
+            }
         }
     }
 
@@ -255,6 +265,12 @@ impl InputGenerator {
                                     name: name.clone(),
                                     title: schema.title.clone().unwrap_or_default(),
                                     input_type: Self::input_type(&schema),
+                                    empty_zero: matches!(
+                                        schema.schema_type,
+                                        Some(SchemaType::Integer)
+                                    ),
+                                    minimum: schema.minimum.map(|value| value.to_string()),
+                                    maximum: schema.maximum.map(|value| value.to_string()),
                                     ui: schema.extension_ui.into(),
                                     value_type: "bool".into(),
                                 },
@@ -287,6 +303,12 @@ impl InputGenerator {
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or(String::new()),
                                         input_type: Self::input_type(&schema),
+                                        empty_zero: matches!(
+                                            schema.schema_type,
+                                            Some(SchemaType::Integer)
+                                        ),
+                                        minimum: schema.minimum.map(|value| value.to_string()),
+                                        maximum: schema.maximum.map(|value| value.to_string()),
                                         ui: schema.extension_ui.into(),
                                         value_type: "i32".into(),
                                     },
@@ -318,6 +340,12 @@ impl InputGenerator {
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
                                         input_type: Self::input_type(&schema),
+                                        empty_zero: matches!(
+                                            schema.schema_type,
+                                            Some(SchemaType::Integer)
+                                        ),
+                                        minimum: schema.minimum.map(|value| value.to_string()),
+                                        maximum: schema.maximum.map(|value| value.to_string()),
                                         ui: schema.extension_ui.into(),
                                         value_type: "i64".into(),
                                     },
@@ -351,6 +379,12 @@ impl InputGenerator {
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
                                         input_type: Self::input_type(&schema),
+                                        empty_zero: matches!(
+                                            schema.schema_type,
+                                            Some(SchemaType::Integer)
+                                        ),
+                                        minimum: schema.minimum.map(|value| value.to_string()),
+                                        maximum: schema.maximum.map(|value| value.to_string()),
                                         ui: schema.extension_ui.into(),
                                         value_type: "String".into(),
                                     },
@@ -382,6 +416,12 @@ impl InputGenerator {
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
                                         input_type: Self::input_type(&schema),
+                                        empty_zero: matches!(
+                                            schema.schema_type,
+                                            Some(SchemaType::Integer)
+                                        ),
+                                        minimum: schema.minimum.map(|value| value.to_string()),
+                                        maximum: schema.maximum.map(|value| value.to_string()),
                                         ui: schema.extension_ui.into(),
                                         value_type: "uuid::Uuid".into(),
                                     },
@@ -413,6 +453,12 @@ impl InputGenerator {
                                         name: name.clone(),
                                         title: schema.title.clone().unwrap_or_default(),
                                         input_type: Self::input_type(&schema),
+                                        empty_zero: matches!(
+                                            schema.schema_type,
+                                            Some(SchemaType::Integer)
+                                        ),
+                                        minimum: schema.minimum.map(|value| value.to_string()),
+                                        maximum: schema.maximum.map(|value| value.to_string()),
                                         ui: schema.extension_ui.into(),
                                         value_type: "String".into(),
                                     },
@@ -442,6 +488,12 @@ impl InputGenerator {
                                     name: name.clone(),
                                     title: schema.title.clone().unwrap_or(String::new()),
                                     input_type: Self::input_type(&schema),
+                                    empty_zero: matches!(
+                                        schema.schema_type,
+                                        Some(SchemaType::Integer)
+                                    ),
+                                    minimum: schema.minimum.map(|value| value.to_string()),
+                                    maximum: schema.maximum.map(|value| value.to_string()),
                                     ui: schema.extension_ui.into(),
                                     value_type: "String".into(),
                                 },

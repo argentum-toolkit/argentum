@@ -1,6 +1,8 @@
 use crate::extractor::{RequestBodyExtractor, SchemaExtractor};
 use crate::template::Renderer;
-use argentum_openapi_infrastructure::data_type::{InPlace, Operation, Path, SpecificationRoot};
+use argentum_openapi_infrastructure::data_type::{
+    InPlace, Operation, Path, RefOrObject, SpecificationRoot,
+};
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -16,6 +18,7 @@ struct Data<'a> {
     need_path_params: bool,
     operation: &'a Operation,
     schema_name: Option<String>,
+    ui_wrapper: String,
 }
 
 pub(crate) struct FormGenerator {
@@ -58,19 +61,34 @@ impl FormGenerator {
         };
 
         let mut schema_name: Option<String> = None;
+        let mut ui_wrapper = "none".to_string();
 
         if let Some(request_body) = self.request_body_extractor.extract(operation, spec)? {
-            //TODO copypasted from request_generator.rs
+            // TODO: copypasted from request_generator.rs
             let body = request_body
                 .content
                 .get("application/json")
                 .ok_or("Request body should contain `application/json` mime type")?;
 
-            if let Some((s_name, _)) = self
+            if let Some(extension_ui) = &body.extension_ui {
+                ui_wrapper = extension_ui.wrapper.clone().into();
+            }
+
+            if let Some((s_name, schema)) = self
                 .schema_extractor
                 .extract_ref_with_name(&body.schema, spec)?
             {
                 schema_name = Some(s_name);
+
+                if body.extension_ui.is_none() {
+                    if let Some(extension_ui) = schema.extension_ui {
+                        ui_wrapper = extension_ui.wrapper.into();
+                    }
+                }
+            } else if let RefOrObject::Object(schema) = &body.schema {
+                if let Some(extension_ui) = schema.extension_ui.clone() {
+                    ui_wrapper = extension_ui.wrapper.into();
+                }
             }
         };
 
@@ -78,6 +96,7 @@ impl FormGenerator {
             need_path_params,
             operation,
             schema_name,
+            ui_wrapper,
         };
 
         self.renderer
