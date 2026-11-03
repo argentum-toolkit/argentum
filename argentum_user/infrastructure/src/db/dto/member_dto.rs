@@ -11,4 +11,5 @@ pub struct MemberDto {
     pub additional_name: Option<String>,
     pub email: String,
     pub email_confirmed: bool,
+    pub slug: String,
 }

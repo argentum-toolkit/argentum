@@ -15,6 +15,11 @@ components:
           type: string
           format: uuid
           example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+        slug:
+          type: string
+          description: System-generated, immutable and read-only profile slug. Not accepted in any request.
+          readOnly: true
+          example: Winston-Marko-20c31ece-c78c-45d6-9ef3-8452e8eea571
         email:
           type: string
           format: email
@@ -22,6 +27,8 @@ components:
         name:
           $ref: "#/components/schemas/UserName"
       required:
+        - id
+        - slug
         - email
         - name
 

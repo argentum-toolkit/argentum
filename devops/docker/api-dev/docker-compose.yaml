@@ -12,7 +12,6 @@ services:
     # command: ["tail", "-f", "/dev/null"]
     # command: perf record -g --call-graph dwarf cargo run --bin api --release
     command: cargo run --bin api #--release
-    # command: cargo run --bin api-keycloak
     environment:
       - CARGO_PROFILE_RELEASE_DEBUG=2
       - AG_OIDC_DATABASE_URL
@@ -32,12 +31,6 @@ services:
       - TLS_CERT_FILE
       - TLS_KEY_FILE
 
-      # - KEYCLOAK_BASE_URL=${KEYCLOAK_BASE_URL}
-      # - KEYCLOAK_REALM=${KEYCLOAK_REALM}
-      # - KEYCLOAK_FE_CLIENT_ID=${KEYCLOAK_FE_CLIENT_ID}
-      # - KEYCLOAK_BE_CLIENT_ID=${KEYCLOAK_BE_CLIENT_ID}
-      # - OIDC_REDIRECT_URL=${OIDC_REDIRECT_URL}
-      # - KEYCLOAK_BE_CLIENT_SECRET=${KEYCLOAK_BE_CLIENT_SECRET}
     depends_on:
       - service.user.db
       - service.user_account.db

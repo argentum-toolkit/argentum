@@ -1,9 +1,9 @@
 openapi: 3.1.0
 
 info:
-  title: Argentum OIDC. Keycloak customization API
+  title: Argentum OIDC API
   version: 0.4.0-dev
-  description: API that helps to customize Keycloak
+  description: OIDC API
   license:
     name: LGPL-3.0-or-later
     identifier: LGPL-3.0-or-later
@@ -40,7 +40,7 @@ paths:
   /exchange-code:
     post:
       summary: Exchange OAuth authorization code for access token
-      description: Exchanges the authorization code received from Keycloak (after social login) for an access token and user info. Requires JSON body with code and optional state for CSRF protection.
+      description: Exchanges the authorization code received after social login for an access token and user info. Requires JSON body with code and optional state for CSRF protection.
       tags:
         - oidc
       operationId: exchangeCode

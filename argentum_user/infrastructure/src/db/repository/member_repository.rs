@@ -73,6 +73,7 @@ where
                     name,
                     email,
                     email_confirmed: dto.email_confirmed,
+                    slug: dto.slug,
                 }))
             }
             Ok(None) => Ok(None),
@@ -92,7 +93,7 @@ where
         let id: Uuid = user_id.into();
 
         let sql = format!(
-            "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
+            "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
         let query = sqlx::query_as(&sql).bind(id);
 
@@ -104,7 +105,7 @@ where
         email: &EmailAddress,
     ) -> Result<Option<Member<Self::Id>>, ExternalUserError> {
         let sql = format!(
-            "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
+            "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
         );
         let query = sqlx::query_as(&sql).bind(email.as_string());
 
@@ -117,7 +118,7 @@ where
         let member_id: Uuid = member.id.into();
 
         let sql = format!(
-            "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, additional_name, email, email_confirmed) VALUES ($1, $2, $3, $4, $5, $6, $7)"
+            "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
         );
 
         let query = sqlx::query(&sql)
@@ -127,7 +128,8 @@ where
             .bind(last)
             .bind(additional)
             .bind(member.email.as_string())
-            .bind(member.email_confirmed);
+            .bind(member.email_confirmed)
+            .bind(member.slug.as_str());
 
         let result = self.adapter.exec(query).await;
 

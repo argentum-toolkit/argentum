@@ -1,7 +1,7 @@
 openapi: 3.1.0
 
 info:
-  title: Argentum OIDC. Keycloak customization API
+  title: Argentum OIDC component
   version: 0.4.0-dev
 paths: {}
 
@@ -15,7 +15,7 @@ components:
       properties:
         code:
           type: string
-          description: Authorization code from Keycloak redirect
+          description: Authorization code from redirect
           example: "abc123def456"
         provider:
           type: string

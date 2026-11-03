@@ -1,6 +1,6 @@
 [package]
 name = "argentum_oidc_infrastructure"
-description = "Infrastructure layer of OIDC component. Keycloak customization."
+description = "Infrastructure layer of OIDC component"
 version = "0.4.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0-or-later"

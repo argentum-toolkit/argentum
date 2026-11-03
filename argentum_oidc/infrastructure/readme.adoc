@@ -1,1 +1,1 @@
-= Argentum ToolKit Keycloak customization. An infrastructure layer.
+= Argentum ToolKit OIDC component. An infrastructure layer.

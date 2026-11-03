@@ -16,10 +16,9 @@ echo "Create folders"
 docker compose stop
 mkdir -p var/db/user/
 mkdir -p var/db/user_account/
-mkdir -p var/db/keycloak/
 
 echo "Initialization of Data Base"
-docker compose up -d service.user.db service.user_account.db service.keycloak.db
+docker compose up -d service.user.db service.user_account.db
 
 #todo: wait-for-it.sh
 sleep 10
