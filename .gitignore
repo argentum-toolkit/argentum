@@ -12,3 +12,4 @@ target
 *.key
 var
 AGENTS.md
+.agents
