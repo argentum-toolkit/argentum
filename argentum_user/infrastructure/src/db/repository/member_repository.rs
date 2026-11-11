@@ -100,6 +100,18 @@ where
         self.find_one(query).await
     }
 
+    async fn find_by_slug(
+        &self,
+        slug: &str,
+    ) -> Result<Option<Member<Self::Id>>, ExternalUserError> {
+        let sql = format!(
+            "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug FROM {TABLE_NAME} WHERE slug = $1 LIMIT 1"
+        );
+        let query = sqlx::query_as(&sql).bind(slug);
+
+        self.find_one(query).await
+    }
+
     async fn find_by_email(
         &self,
         email: &EmailAddress,

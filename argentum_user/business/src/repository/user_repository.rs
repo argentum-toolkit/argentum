@@ -13,6 +13,9 @@ pub trait MemberRepositoryTrait: Send + Sync {
 
     async fn find(&self, id: Self::Id) -> Result<Option<Member<Self::Id>>, ExternalUserError>;
 
+    async fn find_by_slug(&self, slug: &str)
+    -> Result<Option<Member<Self::Id>>, ExternalUserError>;
+
     async fn find_by_email(
         &self,
         email: &EmailAddress,

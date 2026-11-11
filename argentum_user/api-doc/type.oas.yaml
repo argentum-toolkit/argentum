@@ -17,7 +17,7 @@ components:
           example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
         slug:
           type: string
-          description: System-generated, immutable and read-only profile slug. Not accepted in any request.
+          description: System-generated member slug. Returned in member responses and may be supplied as a GET lookup parameter. Current write operations do not assign it.
           readOnly: true
           example: Winston-Marko-20c31ece-c78c-45d6-9ef3-8452e8eea571
         email:

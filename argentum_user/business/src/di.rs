@@ -11,6 +11,7 @@ use crate::repository::guest_binding_repository::GuestBindingRepositoryTrait;
 use crate::repository::session_repository::SessionRepositoryTrait;
 use crate::repository::user_repository::{GuestUserRepositoryTrait, MemberRepositoryTrait};
 use crate::service::{GuestBinder, MemberAuthenticatorTrait, TokenRouterTrait};
+use crate::use_case::GetMemberBySlugUc;
 use crate::use_case::GetUserUc;
 use crate::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
 use std::sync::Arc;
@@ -24,6 +25,12 @@ where
         let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
 
         Ok(Arc::new(GetUserUc::new(member_repository)))
+    });
+
+    container.provide_factory::<GetMemberBySlugUc<_>, _>(|c| {
+        let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
+
+        Ok(Arc::new(GetMemberBySlugUc::new(member_repository)))
     });
 
     container.provide_factory::<MemberAuthenticatesWithTokenUc<I>, _>(|c| {

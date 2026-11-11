@@ -1,4 +1,4 @@
-use crate::entity::user::{Member, UserTrait};
+use crate::entity::user::Member;
 use crate::repository::user_repository::{ExternalUserError, MemberRepositoryTrait};
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::UIntId;
@@ -36,9 +36,20 @@ impl MemberRepositoryTrait for MemberRepositoryMockWihBrokenSave {
             .read()
             .map_err(|_| ExternalUserError::Member(Some(Arc::new(PoisonedLockError))))?
             .get(&id)
-            .map(|u| {
-                Member::<Self::Id>::new(u.id(), u.name.clone(), u.email.clone(), u.email_confirmed)
-            }))
+            .cloned())
+    }
+
+    async fn find_by_slug(
+        &self,
+        slug: &str,
+    ) -> Result<Option<Member<Self::Id>>, ExternalUserError> {
+        Ok(self
+            .users
+            .read()
+            .map_err(|_| ExternalUserError::Member(Some(Arc::new(PoisonedLockError))))?
+            .values()
+            .find(|member| member.slug == slug)
+            .cloned())
     }
 
     async fn find_by_email(
@@ -50,18 +61,10 @@ impl MemberRepositoryTrait for MemberRepositoryMockWihBrokenSave {
             .read()
             .map_err(|_| ExternalUserError::Guest(Some(Arc::new(PoisonedLockError))))?;
 
-        for u in guard.values() {
-            if &u.email == email {
-                return Ok(Some(Member::<Self::Id>::new(
-                    u.id(),
-                    u.name.clone(),
-                    u.email.clone(),
-                    u.email_confirmed,
-                )));
-            }
-        }
-
-        Ok(None)
+        Ok(guard
+            .values()
+            .find(|member| &member.email == email)
+            .cloned())
     }
 
     async fn create(&self, _user: &Member<Self::Id>) -> Result<(), ExternalUserError> {
