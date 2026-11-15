@@ -7,6 +7,7 @@ use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::service::provider::ProviderStrategyTrait;
+use argentum_oidc_business::service::redirect_url::OidcRedirectUrlResolver;
 use argentum_oidc_business::{
     repository::CredentialRepositoryTrait, use_case::UserExchangesCodeToTokenUc,
 };
@@ -25,6 +26,7 @@ pub async fn oidc_infrastructure_provider<L>(
     github_client_secret: impl Into<String>,
     google_client_id: impl Into<String>,
     google_client_secret: impl Into<String>,
+    redirect_url: impl Into<String>,
     client: Arc<reqwest::Client>,
 ) -> Result<(), DiError>
 where
@@ -37,6 +39,7 @@ where
     let github_client_secret = github_client_secret.into();
     let google_client_id = google_client_id.into();
     let google_client_secret = google_client_secret.into();
+    let redirect_url = redirect_url.into();
     let pool = PgPoolOptions::new()
         .max_connections(max_db_connections)
         .min_connections(2)
@@ -58,13 +61,19 @@ where
         Ok(Arc::new(CredentialRepository::new(adapter)))
     });
 
+    container.provide_factory::<OidcRedirectUrlResolver, _>(move |_c| {
+        Ok(Arc::new(OidcRedirectUrlResolver::new(&redirect_url)))
+    });
+
     container.provide_factory::<GitHubProvider<L>, _>({
         let client = client.clone();
         move |c| {
             let logger = c.resolve::<L>()?;
+            let redirect_url_resolver = c.resolve::<OidcRedirectUrlResolver>()?;
             Ok(Arc::new(GitHubProvider::new(
                 &github_client_id,
                 &github_client_secret,
+                redirect_url_resolver,
                 client.clone(),
                 logger,
             )))
@@ -75,9 +84,11 @@ where
         let client = client.clone();
         move |c| {
             let logger = c.resolve::<L>()?;
+            let redirect_url_resolver = c.resolve::<OidcRedirectUrlResolver>()?;
             Ok(Arc::new(GoogleProvider::new(
                 &google_client_id,
                 &google_client_secret,
+                redirect_url_resolver,
                 client.clone(),
                 logger,
             )))

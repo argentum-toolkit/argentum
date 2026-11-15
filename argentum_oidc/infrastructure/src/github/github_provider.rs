@@ -4,6 +4,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::{
     data_type::ExternalUserInfo,
     service::provider::{ProviderError, ProviderStrategyTrait},
+    service::redirect_url::OidcRedirectUrlResolver,
 };
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_user_business::data_type::NamePart;
@@ -52,6 +53,7 @@ where
 {
     github_client_id: String,
     github_client_secret: String,
+    redirect_url_resolver: Arc<OidcRedirectUrlResolver>,
     client: Arc<reqwest::Client>,
     logger: Arc<L>,
 }
@@ -63,12 +65,14 @@ where
     pub fn new(
         github_client_id: &str,
         github_client_secret: &str,
+        redirect_url_resolver: Arc<OidcRedirectUrlResolver>,
         client: Arc<reqwest::Client>,
         logger: Arc<L>,
     ) -> Self {
         Self {
             github_client_id: github_client_id.into(),
             github_client_secret: github_client_secret.into(),
+            redirect_url_resolver,
             client,
             logger,
         }
@@ -145,10 +149,12 @@ where
 
     async fn exchange_code(&self, code: &str) -> Result<String, ProviderError> {
         //TODO: check status codes. There should be not 500 for expired GitHubToken
+        let redirect_url = self.redirect_url_resolver.resolve("GitHub");
         let params = [
             ("client_id", self.github_client_id.as_str()),
             ("client_secret", self.github_client_secret.as_str()),
             ("code", code),
+            ("redirect_uri", redirect_url.as_str()),
             // ("code_verifier", code_verifier),
             //TODO: implement code_verifier/challenge
         ];

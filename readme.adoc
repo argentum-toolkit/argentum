@@ -147,12 +147,16 @@ cargo install dioxus-cli
 
 === V0.4
 
+* devops
+** use includes in docker-compose.yaml
+
 * Convention-based module registration
 ** Add explicit `Application`/`Module` API above `Container`.
 ** Standardize module registration for business, infrastructure, REST and UI.
 ** Migrate the example and update the component generator.
 
 * User account
+** remove account functionallity
 ** implement FE
 
 * OIDC

@@ -4,6 +4,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::{
     data_type::ExternalUserInfo,
     service::provider::{ProviderError, ProviderStrategyTrait},
+    service::redirect_url::OidcRedirectUrlResolver,
 };
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_user_business::data_type::NamePart;
@@ -43,6 +44,7 @@ where
 {
     google_client_id: String,
     google_client_secret: String,
+    redirect_url_resolver: Arc<OidcRedirectUrlResolver>,
     client: Arc<reqwest::Client>,
     logger: Arc<L>,
 }
@@ -54,12 +56,14 @@ where
     pub fn new(
         google_client_id: &str,
         google_client_secret: &str,
+        redirect_url_resolver: Arc<OidcRedirectUrlResolver>,
         client: Arc<reqwest::Client>,
         logger: Arc<L>,
     ) -> Self {
         Self {
             google_client_id: google_client_id.into(),
             google_client_secret: google_client_secret.into(),
+            redirect_url_resolver,
             client,
             logger,
         }
@@ -76,9 +80,7 @@ where
     }
 
     async fn exchange_code(&self, code: &str) -> Result<String, ProviderError> {
-        let r = "http://localhost:8080/oidc/auth/callback".to_string();
-        //TODO: get url from params
-        let redirect_url = r + "?provider=Google";
+        let redirect_url = self.redirect_url_resolver.resolve("Google");
 
         let params = [
             ("client_id", self.google_client_id.as_str()),
