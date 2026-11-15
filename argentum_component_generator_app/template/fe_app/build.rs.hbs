@@ -17,6 +17,9 @@ fn main() {
     let env_path = workspace_root.join("./.env");
     let local_path = workspace_root.join("./.env.local");
 
+    println!("cargo:rerun-if-changed={}", env_path.display());
+    println!("cargo:rerun-if-changed={}", local_path.display());
+
     from_filename(env_path).unwrap();
     from_filename_override(local_path).ok(); // ignore if .env.local doesn't exist
 

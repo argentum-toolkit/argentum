@@ -40,9 +40,10 @@ impl GetUserTrait for GetUserHandler {
 
         match result {
             Ok(user) => {
-                let id = user.id.into();
+                let id: uuid::Uuid = user.id.into();
                 let schema = UserDto::new(
-                    Some(id),
+                    id,
+                    user.slug,
                     user.email.as_string(),
                     UserNameDto::new(
                         user.name.first.to_string(),

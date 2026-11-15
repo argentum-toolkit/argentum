@@ -16,7 +16,8 @@ pub fn up(table_name_prefix: &str) -> Vec<String> {
                 last_name varchar,
                 additional_name varchar,
                 email varchar NOT NULL UNIQUE,
-                email_confirmed boolean NOT NULL
+                email_confirmed boolean NOT NULL,
+                slug varchar NOT NULL UNIQUE
             );
         "#,
         prefix = table_name_prefix

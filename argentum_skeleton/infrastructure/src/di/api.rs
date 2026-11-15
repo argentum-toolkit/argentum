@@ -42,6 +42,7 @@ struct Env {
     pub ag_github_client_secret: String,
     pub ag_google_client_id: String,
     pub ag_google_client_secret: String,
+    pub ag_oidc_redirect_url: String,
     pub ag_oidc_database_url: String,
     pub ag_user_database_url: String,
     pub ag_user_account_database_url: String,
@@ -136,6 +137,7 @@ where
         env.ag_github_client_secret.clone(),
         env.ag_google_client_id.clone(),
         env.ag_google_client_secret.clone(),
+        env.ag_oidc_redirect_url.clone(),
         Arc::new(client),
     )
     .await?;

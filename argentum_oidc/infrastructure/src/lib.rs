@@ -1,12 +1,6 @@
-#[cfg(feature = "server")]
 pub mod db;
-#[cfg(feature = "server")]
 pub mod default_di;
-#[cfg(feature = "server")]
 pub use argentum_oidc_business::di::oidc_business_provide;
-#[cfg(feature = "server")]
 pub mod github;
-#[cfg(feature = "server")]
 pub mod google;
-#[cfg(feature = "server")]
 pub mod rest;

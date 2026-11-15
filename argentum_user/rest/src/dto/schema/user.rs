@@ -11,7 +11,9 @@ use crate::dto::schema::UserNameRaw;
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
 pub struct User {
     #[serde(rename = "id")]
-    pub id: Option<uuid::Uuid>,
+    pub id: uuid::Uuid,
+    #[serde(rename = "slug")]
+    pub slug: String,
     #[serde(rename = "email")]
     pub email: String,
     #[serde(rename = "name")]
@@ -19,8 +21,13 @@ pub struct User {
 }
 
 impl User {
-    pub fn new(id: Option<uuid::Uuid>, email: String, name: UserName) -> Self {
-        Self { id, email, name }
+    pub fn new(id: uuid::Uuid, slug: String, email: String, name: UserName) -> Self {
+        Self {
+            id,
+            slug,
+            email,
+            name,
+        }
     }
 }
 
@@ -33,6 +40,19 @@ impl DeserializableSchemaRaw<'_> for User {
         let mut argentum_violations: ViolationObject = BTreeMap::new();
 
         let id = raw.id;
+        if id.is_none() {
+            argentum_violations.insert(
+                "id".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
+        let slug = raw.slug;
+        if slug.is_none() {
+            argentum_violations.insert(
+                "slug".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
         let email = raw.email;
         if email.is_none() {
             argentum_violations.insert(
@@ -59,10 +79,12 @@ impl DeserializableSchemaRaw<'_> for User {
         };
 
         if argentum_violations.is_empty()
+            && let Some(id) = id
+            && let Some(slug) = slug
             && let Some(email) = email
             && let Some(name) = name
         {
-            Ok(Self::new(id, email, name))
+            Ok(Self::new(id, slug, email, name))
         } else {
             Err(Violations::new(
                 vec!["wrong data for User".to_string()],
@@ -76,6 +98,8 @@ impl DeserializableSchemaRaw<'_> for User {
 pub struct UserRaw {
     #[serde(rename = "id")]
     pub id: Option<uuid::Uuid>,
+    #[serde(rename = "slug")]
+    pub slug: Option<String>,
     #[serde(rename = "email")]
     pub email: Option<String>,
     #[serde(rename = "name")]

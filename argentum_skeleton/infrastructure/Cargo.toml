@@ -21,9 +21,7 @@ argentum_notification_infrastructure = { path = "../../argentum_notification/inf
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0", features = [
   "server",
 ] }
-argentum_oidc_infrastructure = { path = "../../argentum_oidc/infrastructure", version = ">=0.4.0-dev,<0.5.0", features = [
-  "server",
-] }
+argentum_oidc_infrastructure = { path = "../../argentum_oidc/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_oidc_rest = { path = "../../argentum_oidc/rest", version = ">=0.4.0-dev,<0.5.0", features = [
   "server",
 ] }
@@ -52,4 +50,4 @@ sqlx = { version = "0.8.*", features = [
   "chrono",
 ] }
 
-tokio = { version = "1.*", features = ["full"] }
+tokio = { version = "1.*" }

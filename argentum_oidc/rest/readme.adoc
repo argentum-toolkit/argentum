@@ -1,6 +1,6 @@
-= REST library for Argentum OIDC. Keycloak customization API
+= REST library for Argentum OIDC component
 
-API that helps to customize Keycloak
+OIDC API
 
 
 == Overview
@@ -36,7 +36,7 @@ $ cd app
 ....
 [package]
 name = "argentum_oidc_rest_app"
-description = "Argentum OIDC. Keycloak customization API"
+description = "Argentum OIDC API"
 version = "0.4.0-dev"
 edition = "2024"
 

@@ -1,6 +1,6 @@
 [package]
 name = "argentum_oidc_infrastructure"
-description = "Infrastructure layer of OIDC component. Keycloak customization."
+description = "Infrastructure layer of OIDC component"
 version = "0.4.0-dev"
 authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
 license = "LGPL-3.0-or-later"
@@ -12,17 +12,11 @@ readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-server = [
-  "dep:tokio",
-  "argentum_event_business",
-  "argentum_oidc_business/server",
-]
 
 [dependencies]
 anyhow = "1.*"
 argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
-argentum_event_business = { path = "../../argentum_event/business", version = ">=0.4.0-dev,<0.5.0", optional = true }
+argentum_event_business = { path = "../../argentum_event/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.4.0-dev,<0.5.0" }

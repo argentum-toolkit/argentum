@@ -48,7 +48,7 @@ pub fn LabeledTextarea(props: InputTextareaProps) -> Element {
             }
 
             textarea {
-                id:"{props.id}", name:"{props.name}", "type":"{props.input_type}", required: props.required,
+                id:"{props.id}", name:"{props.name}", "type":"{props.input_type}", required: props.required, rows: 15,
                 value: "{props.value}",
                 class: "input  w-full min-h-[10rem] {input_class}",
                 oninput: move |event| props.oninput.call(event.value())

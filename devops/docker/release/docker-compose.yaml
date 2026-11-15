@@ -39,6 +39,7 @@ services:
       - AG_GITHUB_CLIENT_SECRET
       - AG_GOOGLE_CLIENT_ID
       - AG_GOOGLE_CLIENT_SECRET
+      - AG_OIDC_REDIRECT_URL
       - TLS_CERT_FILE
       - TLS_KEY_FILE
 

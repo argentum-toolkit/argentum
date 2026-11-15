@@ -147,7 +147,16 @@ cargo install dioxus-cli
 
 === V0.4
 
+* devops
+** use includes in docker-compose.yaml
+
+* Convention-based module registration
+** Add explicit `Application`/`Module` API above `Container`.
+** Standardize module registration for business, infrastructure, REST and UI.
+** Migrate the example and update the component generator.
+
 * User account
+** remove account functionallity
 ** implement FE
 
 * OIDC
@@ -158,8 +167,6 @@ cargo install dioxus-cli
 
 * Component generator
 ** add examples into readme.adoc
-
-* behavior tests
 
 * rest-generator
 ** not only string should be in example. Currently we use example: "2025". Need possibility to use example: 2025
@@ -174,6 +181,8 @@ cargo install dioxus-cli
 
 * DB
 ** ?Foreign key for session
+
+* behavior tests
 
 * documentation
 ** ADR

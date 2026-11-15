@@ -56,32 +56,6 @@ pub fn Login() -> Element {
 
     let processor = MemberLoginsWithPasswordFormProcessor::new(callbacks, Default::default());
 
-    // let keycloak_url = "http://localhost:8099";
-    // let realm = "argentum-realm-dev";
-    // let client_id = "argentum-fe-client-dev";
-    // let redirect_uri = "http://localhost:8080/oidc/auth/callback";
-
-    // let keycloak_github_login_url = move || {
-    //     format!(
-    //         "{}/realms/{}/protocol/openid-connect/auth?client_id={}&redirect_uri={}&response_type=code&scope=openid profile email&kc_idp_hint=github",
-    //         keycloak_url,
-    //         realm,
-    //         client_id,
-    //         urlencoding::encode(redirect_uri)
-    //     )
-    // };
-
-    // use web_sys::window;
-    //
-    // let on_keycloak_github_click = move |_| {
-    //     if let Some(win) = window() {
-    //         let location = win.location();
-    //         let _ = location.set_href(&keycloak_github_login_url());
-    //     }
-    // };
-
-    // let mut status = use_signal(|| "Ready to sign in".to_string());
-
     let additional = use_context::<AdditionalLoginBlock>().0;
     let registration_url = use_context::<RegistrationUrl>().0;
 
@@ -105,15 +79,6 @@ pub fn Login() -> Element {
                     }
 
                     {additional}
-
-                    // div {
-                    //     div { "Or login with GitHub" }
-                    //     button {
-                    //         onclick: on_keycloak_github_click,
-                    //         class: "btn btn-github btn-primary",
-                    //         "Login with GitHub"
-                    //     }
-                    // }
                 }
             }
         }
