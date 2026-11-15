@@ -37,8 +37,10 @@ resolver = "2"
 [profile]
 
 [profile.wasm-dev]
+# debug = "line-tables-only"
 inherits = "dev"
 opt-level = 1
+debug = 0
 
 [profile.server-dev]
 inherits = "dev"
