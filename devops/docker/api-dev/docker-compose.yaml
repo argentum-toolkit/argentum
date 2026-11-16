@@ -34,13 +34,17 @@ services:
       - TLS_KEY_FILE
 
     depends_on:
-      - service.user.db
-      - service.user_account.db
+      service.user.db:
+        condition: service_healthy
+      service.user_account.db:
+        condition: service_healthy
+      service.oidc.db:
+        condition: service_healthy
     working_dir: /code/examples/api-app
     ports:
       - "8088:8088"
     volumes:
       - ../../..:/code
-      # - ../../../var/cargo/common:/usr/local/cargo/registry
+      - ../../../var/cargo/common:/usr/local/cargo/registry
     extra_hosts:
       - "host.docker.internal:host-gateway"

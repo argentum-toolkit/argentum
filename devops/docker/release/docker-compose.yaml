@@ -44,8 +44,12 @@ services:
       - TLS_KEY_FILE
 
     depends_on:
-      - service.user.db
-      - service.user_account.db
+      service.user.db:
+        condition: service_healthy
+      service.user_account.db:
+        condition: service_healthy
+      service.oidc.db:
+        condition: service_healthy
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

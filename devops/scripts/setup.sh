@@ -41,12 +41,6 @@ mkcert -install
 mkcert localhost 127.0.0.1 ::1 api
 cd -
 
-echo "Initialization of Data Base"
-compose up -d service.user.db service.user_account.db service.oidc.db
-
-#todo: wait-for-it.sh
-sleep 10
-
 ### Migrations
 compose run --rm api cargo run --bin migration
 
