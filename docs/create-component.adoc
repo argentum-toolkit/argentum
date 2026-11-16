@@ -40,7 +40,7 @@ Business packages must not be dependent on 3rd party code.
 ** Add new variable to `.env` `POSTGRES_DB_FOR_{$componentName}`=`$dbName`
 ** Add new variable with connection string to `.env`.
 E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
-* Add new BD service to 'docker-compose.yaml' with name `service.{$componentName}.db`
+* Add new DB service in its own `devops/docker/{$componentName}/docker-compose.yaml` with name `service.{$componentName}.db` and include it in the root `docker-compose.yaml` and `docker-compose.dev.yaml`
 * Add dependencies to `Cargo.toml`
 ** `argentum_standard_business = { path = "../../argentum_standard/business" }`
 ** `argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }`

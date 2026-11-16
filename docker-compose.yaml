@@ -1,0 +1,18 @@
+include:
+  - path:
+      - ./devops/docker/release/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/proxy/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/builder/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/user/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/user-account/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/oidc/docker-compose.yaml

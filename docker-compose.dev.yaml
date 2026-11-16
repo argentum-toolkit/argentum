@@ -1,0 +1,24 @@
+include:
+  - path:
+      - ./devops/docker/api-dev/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/cors-dev/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/open-api-dev/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/builder/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/user/docker-compose.yaml
+      - ./devops/docker/user/docker-compose.dev.yaml
+
+  - path:
+      - ./devops/docker/user-account/docker-compose.yaml
+      - ./devops/docker/user-account/docker-compose.dev.yaml
+
+  - path:
+      - ./devops/docker/oidc/docker-compose.yaml
+      - ./devops/docker/oidc/docker-compose.dev.yaml
