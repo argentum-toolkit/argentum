@@ -15,6 +15,21 @@ COMPOSE_FILE=docker-compose.dev.yaml
 EOF
 fi
 
+# Write the host user/group ids so that containers run as the host user
+# (see devops/docker/rust/entrypoint.sh). Defaults live in .env.
+echo "Write HOST_UID/HOST_GID to .env.local"
+touch .env.local
+TMP_FILE="$(mktemp)"
+grep -v -e '^HOST_UID=' -e '^HOST_GID=' .env.local > "$TMP_FILE" || true
+if [ -s "$TMP_FILE" ] && [ "$(tail -c 1 "$TMP_FILE" | wc -l)" -eq 0 ]; then
+    echo >> "$TMP_FILE"
+fi
+cat >> "$TMP_FILE" <<EOF
+HOST_UID=$(id -u)
+HOST_GID=$(id -g)
+EOF
+mv "$TMP_FILE" .env.local
+
 compose() {
     docker compose --env-file .env --env-file .env.local "$@"
 }
@@ -25,12 +40,6 @@ cd var/cert/api
 mkcert -install
 mkcert localhost 127.0.0.1 ::1 api
 cd -
-
-echo "Create folders"
-compose stop
-mkdir -p var/db/user/
-mkdir -p var/db/user_account/
-mkdir -p var/db/oidc/
 
 echo "Initialization of Data Base"
 compose up -d service.user.db service.user_account.db service.oidc.db

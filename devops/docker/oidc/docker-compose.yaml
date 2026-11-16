@@ -6,6 +6,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_LOGGING=verbose
-    #    user: $HOST_UID:$HOST_GID
     volumes:
-      - ../../../var/db/oidc:/var/lib/postgresql
+      - db-oidc:/var/lib/postgresql
+
+volumes:
+  db-oidc:

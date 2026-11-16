@@ -5,7 +5,6 @@ services:
       context: ../../..
       dockerfile: devops/docker/rust/Dockerfile
 
-    # user: "${HOST_UID}:${HOST_GID}"
     privileged: true
     tty: true
     stdin_open: true
@@ -13,6 +12,8 @@ services:
     # command: perf record -g --call-graph dwarf cargo run --bin api --release
     command: cargo run --bin api #--release
     environment:
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
       - CARGO_PROFILE_RELEASE_DEBUG=2
       - AG_OIDC_DATABASE_URL
       - AG_USER_ACCOUNT_DATABASE_URL
@@ -43,4 +44,3 @@ services:
       # - ../../../var/cargo/common:/usr/local/cargo/registry
     extra_hosts:
       - "host.docker.internal:host-gateway"
-# HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose up
