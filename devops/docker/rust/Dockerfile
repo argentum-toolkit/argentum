@@ -16,7 +16,8 @@ RUN apt-get update \
 # Add additional perf privileges
 RUN echo "kernel.perf_event_paranoid = -1" >>/etc/sysctl.conf
 
-RUN chown -R rust:rust /usr/local/cargo /usr/local/rustup
+RUN useradd --create-home --uid 1000 --user-group rust \
+    && chown -R rust:rust /usr/local/cargo /usr/local/rustup
 
 COPY devops/docker/rust/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
