@@ -63,6 +63,9 @@ feature-depth = 1
 # More documentation for the advisories section can be found here:
 # https://embarkstudios.github.io/cargo-deny/checks/advisories/cfg.html
 [advisories]
+unmaintained = "workspace"
+unsound = "workspace"
+yanked = "warn"
 db-urls = ["https://github.com/RustSec/advisory-db.git"]
 # The path where the advisory databases are cloned/fetched into
 #db-path = "$CARGO_HOME/advisory-dbs"

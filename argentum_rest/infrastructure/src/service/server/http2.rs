@@ -5,10 +5,8 @@ use argentum_log_business::LoggerTrait;
 use hyper::server::conn::http2;
 use hyper::service::service_fn;
 use hyper_util::rt::{TokioExecutor, TokioIo};
-use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject};
 
-use std::fs::File;
-use std::io::BufReader;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Instant;
@@ -91,24 +89,14 @@ where
         println!("Listening on http://{}", self.addr);
 
         //TODO: don't hardcode cert path;
-        let cert_file = File::open(&self.cert_file_path)?;
-        let key_file = File::open(&self.key_file_path)?;
-
         let cert_chain: Vec<CertificateDer<'static>> =
-            rustls_pemfile::certs(&mut BufReader::new(cert_file)).collect::<Result<_, _>>()?;
+            CertificateDer::pem_file_iter(&self.cert_file_path)?.collect::<Result<_, _>>()?;
 
-        let mut keys: Vec<PrivateKeyDer<'static>> =
-            rustls_pemfile::pkcs8_private_keys(&mut BufReader::new(key_file))
-                .map(|key| key.map(Into::into))
-                .collect::<Result<_, _>>()?;
-
-        if keys.is_empty() {
-            return Err("No private keys found".into());
-        }
+        let key = PrivateKeyDer::from_pem_file(&self.key_file_path)?;
 
         let mut config = ServerConfig::builder()
             .with_no_client_auth()
-            .with_single_cert(cert_chain, keys.remove(0))?;
+            .with_single_cert(cert_chain, key)?;
 
         config.alpn_protocols = vec![b"h2".to_vec()];
 

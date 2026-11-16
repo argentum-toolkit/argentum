@@ -1,5 +1,4 @@
-FROM debian:stable
-# FROM debian:stable-slim
+FROM debian:stable-slim
 
 WORKDIR /app
 
@@ -14,6 +13,10 @@ RUN if [ -z "$RELEASE_PATH" ]; then \
 
 # Copy the application
 COPY $RELEASE_PATH /app/
+
+# Run as an unprivileged user
+RUN useradd --system --uid 10001 --user-group app
+USER app
 
 # # Runtime environment variables with defaults
 # PORT an IP is used by Dioxus

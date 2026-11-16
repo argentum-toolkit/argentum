@@ -13,13 +13,13 @@ done
 scriptDir="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 
+cargo fmt --all -- --check
+
 cargo deny check licenses
 cargo deny check bans
-# cargo deny check advisories
 cargo deny check sources
+cargo deny check advisories
 
-cargo check
 cargo clippy
-cargo fmt --all -- --check
 cargo test --workspace --all-targets --all-features
 #cargo publish --dry-run
