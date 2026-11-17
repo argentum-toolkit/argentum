@@ -34,6 +34,8 @@ compose() {
     docker compose --env-file .env --env-file .env.local "$@"
 }
 
+mkdir -p var/cargo/common
+
 echo "Create certificates for HTTP/2"
 mkdir -p var/cert/api
 cd var/cert/api
