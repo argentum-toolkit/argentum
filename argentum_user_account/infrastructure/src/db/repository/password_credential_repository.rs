@@ -54,7 +54,7 @@ where
 
         let user_id: Uuid = cred.user_id.into();
         let sql = format!("INSERT INTO {TABLE_NAME} (user_id, password, salt) VALUES ($1, $2, $3)");
-        let query = sqlx::query(&sql)
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(user_id)
             .bind(password.expose_secret())
             .bind(salt.expose_secret());
@@ -75,7 +75,7 @@ where
         let id: Uuid = user_id.into();
         let sql =
             format!("SELECT user_id, password, salt FROM {TABLE_NAME} WHERE user_id = $1 LIMIT 1");
-        let query_as = sqlx::query_as(&sql).bind(id);
+        let query_as = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
         let result: Result<Option<PasswordCredentialDto>, DbAdapterError> =
             self.adapter.fetch_one(query_as).await;
 
@@ -97,7 +97,7 @@ where
         let user_id: Uuid = cred.user_id.into();
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
 
-        let query = sqlx::query(&sql).bind(user_id);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str())).bind(user_id);
 
         let result = self.adapter.exec(query).await;
 

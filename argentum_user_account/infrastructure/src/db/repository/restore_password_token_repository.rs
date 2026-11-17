@@ -7,6 +7,7 @@ use argentum_user_account_business::entity::RestorePasswordToken;
 use argentum_user_account_business::repository::restore_password_token_repository::{
     RestorePasswordTokenRepositoryError, RestorePasswordTokenRepositoryTrait,
 };
+use jiff_sqlx::ToSqlx;
 use sqlx::Postgres;
 use sqlx::postgres::PgArguments;
 use sqlx::query::QueryAs;
@@ -44,7 +45,7 @@ where
                 id: dto.id.into(),
                 user_id: dto.user_id.into(),
                 token: dto.token,
-                created_at: dto.created_at,
+                created_at: dto.created_at.to_jiff(),
             })),
 
             Ok(None) => Ok(None),
@@ -68,7 +69,7 @@ where
         let sql = format!(
             "SELECT id, user_id, token, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(&sql).bind(id);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
 
         self.find_one(query).await
     }
@@ -80,7 +81,7 @@ where
         let sql = format!(
             "SELECT id, user_id, token, created_at FROM {TABLE_NAME} WHERE token = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(&sql).bind(token);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(token);
 
         self.find_one(query).await
     }
@@ -96,11 +97,11 @@ where
         let id: Uuid = token.id.into();
         let user_id: Uuid = token.user_id.into();
 
-        let query = sqlx::query(&sql)
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(id)
             .bind(user_id)
             .bind(token.token.clone())
-            .bind(token.created_at.naive_utc());
+            .bind(token.created_at.to_sqlx());
 
         let result = self.adapter.exec(query).await;
 
@@ -116,7 +117,7 @@ where
     ) -> Result<(), RestorePasswordTokenRepositoryError> {
         let id: Uuid = user_id.into();
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
-        let query = sqlx::query(&sql).bind(id);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
 
         let result = self.adapter.exec(query).await;
 

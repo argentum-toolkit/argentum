@@ -7,6 +7,8 @@ use argentum_user_business::entity::session::Session;
 use argentum_user_business::repository::session_repository::{
     SessionRepositoryError, SessionRepositoryTrait,
 };
+use jiff_sqlx::ToSqlx;
+
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -44,7 +46,7 @@ where
         let sql = format!(
             "SELECT id, user_id, created_at, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(&sql).bind(token);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(token);
 
         let result: Result<Option<SessionDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
@@ -53,7 +55,7 @@ where
             Ok(Some(dto)) => Ok(Some(Session::<Self::Id> {
                 id: dto.id.into(),
                 user_id: dto.user_id.into(),
-                created_at: dto.created_at,
+                created_at: dto.created_at.to_jiff(),
                 token: dto.token,
             })),
 
@@ -69,10 +71,10 @@ where
         let sql = format!(
             "INSERT INTO {TABLE_NAME} (id, user_id, created_at, token) VALUES ($1, $2, $3, $4)"
         );
-        let query = sqlx::query(&sql)
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(session_id)
             .bind(user_id)
-            .bind(session.created_at)
+            .bind(session.created_at.to_sqlx())
             .bind(session.token.clone());
 
         let result = self.adapter.exec(query).await;
@@ -87,7 +89,7 @@ where
         let id: Uuid = user_id.into();
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
 
-        let query = sqlx::query(&sql).bind(id);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
 
         let result = self.adapter.exec(query).await;
 

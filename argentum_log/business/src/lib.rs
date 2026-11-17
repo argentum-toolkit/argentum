@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use std::fmt;
 use std::sync::Arc;
 
@@ -72,12 +72,12 @@ where
             return;
         }
 
-        self.writer.write(Utc::now(), level, msg.as_ref())
+        self.writer.write(Timestamp::now(), level, msg.as_ref())
     }
 }
 
 pub trait WriterTrait: Send + Sync {
-    fn write<S: AsRef<str>>(&self, date_time: DateTime<Utc>, level: Level, msg: S);
+    fn write<S: AsRef<str>>(&self, date_time: Timestamp, level: Level, msg: S);
 }
 
 pub struct StdoutWriter {}
@@ -95,10 +95,10 @@ impl Default for StdoutWriter {
 }
 
 impl WriterTrait for StdoutWriter {
-    fn write<S: AsRef<str>>(&self, time: DateTime<Utc>, level: Level, msg: S) {
+    fn write<S: AsRef<str>>(&self, time: Timestamp, level: Level, msg: S) {
         println!(
             "{} {}: {}",
-            time.format("%Y-%m-%d %H:%M:%S%.3f%:z"),
+            time.strftime("%Y-%m-%d %H:%M:%S%.3f%:z"),
             level.to_string().to_uppercase(),
             msg.as_ref(),
         );

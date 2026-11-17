@@ -16,7 +16,7 @@ async-trait = "0.1.*"
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_standard_business = { path = "../../argentum_standard/business", version = ">=0.4.0-dev,<0.5.0" }
-chrono = "0.4.*"
+jiff = "1.*"
 thiserror = "2.*"
 
 tokio = { version = "1.*", features = ["macros", "rt"] }

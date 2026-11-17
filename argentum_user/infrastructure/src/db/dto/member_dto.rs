@@ -1,11 +1,11 @@
-use chrono::{DateTime, Utc};
+use jiff_sqlx::Timestamp;
 use sqlx::FromRow;
 use uuid::Uuid;
 
 #[derive(FromRow)]
 pub struct MemberDto {
     pub id: Uuid,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
     pub first_name: String,
     pub last_name: Option<String>,
     pub additional_name: Option<String>,

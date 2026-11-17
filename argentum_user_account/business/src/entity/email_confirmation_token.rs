@@ -1,5 +1,5 @@
 use argentum_standard_business::data_type::id::Id;
-use chrono::{DateTime, Duration, Utc};
+use jiff::{Span, Timestamp};
 
 pub struct EmailConfirmationToken<I>
 where
@@ -8,7 +8,7 @@ where
     pub id: I,
     pub user_id: I,
     pub token: String,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
 }
 
 impl<I> EmailConfirmationToken<I>
@@ -20,13 +20,13 @@ where
             id,
             user_id,
             token: token.into(),
-            created_at: Utc::now(),
+            created_at: Timestamp::now(),
         }
     }
 
     pub fn is_expired(&self, ttl: u32) -> bool {
-        let expires_at = self.created_at + Duration::seconds(ttl as i64);
+        let expires_at = self.created_at + Span::new().seconds(ttl as i64);
 
-        Utc::now().ge(&expires_at)
+        Timestamp::now().ge(&expires_at)
     }
 }

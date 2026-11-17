@@ -11,6 +11,12 @@ services:
       - AG_OIDC_REDIRECT_URL=${AG_OIDC_REDIRECT_URL}
       - PORT=${PORT:-8080} #Expose in Dockerfile
       - IP=${IP:-0.0.0.0}
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<> /dev/tcp/127.0.0.1/${PORT:-8080}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   release.api:
     build:
@@ -20,11 +26,7 @@ services:
         - RELEASE_PATH=${API_RELEASE_PATH}
 
     command: "/app/api"
-    privileged: true
-    tty: true
-    stdin_open: true
     environment:
-      - CARGO_PROFILE_RELEASE_DEBUG=2
       - AG_OIDC_DATABASE_URL
       - AG_USER_ACCOUNT_DATABASE_URL
       - AG_USER_ACCOUNT_MEMBER_JWT_SECRET
@@ -43,9 +45,21 @@ services:
       - TLS_CERT_FILE
       - TLS_KEY_FILE
 
+    # The api binds 0.0.0.0:8088 (see examples/api-app/src/api/di.rs)
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<> /dev/tcp/127.0.0.1/8088"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
     depends_on:
-      - service.user.db
-      - service.user_account.db
+      service.user.db:
+        condition: service_healthy
+      service.user_account.db:
+        condition: service_healthy
+      service.oidc.db:
+        condition: service_healthy
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

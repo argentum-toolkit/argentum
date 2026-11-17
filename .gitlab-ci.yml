@@ -10,12 +10,14 @@ variables:
   DOCKER_DRIVER: overlay2
   # See https://github.com/docker-library/docker/pull/166
   DOCKER_TLS_CERTDIR: ""
+  BUILDER_IMAGE: itcreator/argentum-toolkit-rs-dev
 
 before_script:
   - docker info
   - docker --version
   - docker compose version
-  - docker compose pull builder
+  # Seed the local layer cache with the previously published image.
+  - docker pull "${BUILDER_IMAGE}:latest" || true
 
 stages:
   - build
@@ -23,8 +25,20 @@ stages:
 
 build:
   stage: build
+  cache:
+    key:
+      files:
+        - Cargo.lock
+    paths:
+      - target/
+      - var/cargo/common/
   script:
-    - docker compose run --rm --build builder devops/scripts/check.sh
+    # Rebuilds only the layers affected by Dockerfile changes;
+    # a no-op (all layers cached) when the image is already up to date.
+    - docker build --cache-from "${BUILDER_IMAGE}:latest" -t "${BUILDER_IMAGE}:latest" -f devops/docker/rust/Dockerfile .
+    # Run the container as the CI job user so files written into the cached
+    # target/ stay writable for the next jobs.
+    - HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run --rm builder devops/scripts/check.sh
 
 check_cla:
   stage: check

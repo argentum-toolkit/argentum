@@ -41,13 +41,12 @@ envy = "0.4.*"
 reqwest = { version = "0.12.*", features = ["json"] }
 
 serde = { version = "1.*", features = ["derive"] }
-sqlx = { version = "0.8.*", features = [
+sqlx = { version = "0.9.*", features = [
   "runtime-tokio",
   "tls-native-tls",
   "postgres",
   "uuid",
   "any",
-  "chrono",
 ] }
 
 tokio = { version = "1.*" }

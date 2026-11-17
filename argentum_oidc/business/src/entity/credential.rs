@@ -1,5 +1,5 @@
 use argentum_standard_business::data_type::id::Id;
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 pub struct Credential<I>
 where
@@ -11,14 +11,14 @@ where
 
     pub provider: String,
 
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
 }
 
 impl<I> Credential<I>
 where
     I: Id,
 {
-    pub fn new(external_id: &str, user_id: I, provider: &str, created_at: DateTime<Utc>) -> Self {
+    pub fn new(external_id: &str, user_id: I, provider: &str, created_at: Timestamp) -> Self {
         Self {
             external_id: external_id.into(),
             user_id,

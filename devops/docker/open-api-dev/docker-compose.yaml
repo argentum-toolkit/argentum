@@ -1,5 +1,7 @@
 services:
   swagger-ui:
+    profiles:
+      - swagger
     image: swaggerapi/swagger-ui
     ports:
       - "8083:8080"

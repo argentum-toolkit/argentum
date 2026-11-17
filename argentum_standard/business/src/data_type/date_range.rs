@@ -1,36 +1,31 @@
-use chrono::{Duration, NaiveDate, NaiveDateTime};
+use jiff::ToSpan;
+use jiff::civil::{Date, DateTime};
 use std::mem;
 
 #[derive(Clone)]
-pub struct DateRange(pub NaiveDate, pub NaiveDate);
+pub struct DateRange(pub Date, pub Date);
 
 impl DateRange {
-    pub fn date_in_range(&self, d: NaiveDate) -> bool {
+    pub fn date_in_range(&self, d: Date) -> bool {
         self.0 <= d && d <= self.1
     }
 
     /// NOTE: This function ignores leap seconds
-    pub fn datetime_in_range(&self, dt: NaiveDateTime) -> Result<bool, String> {
+    pub fn datetime_in_range(&self, dt: DateTime) -> Result<bool, String> {
         //TODDO: check leap second
-        let from = self
-            .0
-            .and_hms_opt(0, 0, 0)
-            .ok_or("Cah't convert NativeDate into NativeDateTime")?;
-        let to = self
-            .1
-            .and_hms_opt(23, 59, 59)
-            .ok_or("Cah't convert NativeDate into NativeDateTime")?;
+        let from = self.0.at(0, 0, 0, 0);
+        let to = self.1.at(23, 59, 59, 0);
 
         Ok(from <= dt && dt <= to)
     }
 }
 
 impl Iterator for DateRange {
-    type Item = NaiveDate;
+    type Item = Date;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.0 <= self.1 {
-            let next = self.0 + Duration::days(1);
+            let next = self.0 + 1.day();
             Some(mem::replace(&mut self.0, next))
         } else {
             None
@@ -44,51 +39,37 @@ mod tests {
 
     use crate::data_type::DateRange;
 
-    use chrono::{NaiveDate, NaiveDateTime};
+    use jiff::civil::{Date, DateTime};
 
-    fn date(d: &str) -> NaiveDateTime {
-        NaiveDateTime::parse_from_str(d, "%Y-%m-%dT%H:%M:%S%Z")
-            .expect("Date and format should be valid")
+    fn date(d: &str) -> DateTime {
+        DateTime::strptime("%Y-%m-%dT%H:%M:%SZ", d).expect("Date and format should be valid")
     }
 
     #[test]
     fn date_in_range() -> Result<(), Box<dyn Error>> {
-        let d = DateRange(
-            NaiveDate::from_ymd_opt(2020, 10, 1).ok_or("Can't create date")?,
-            NaiveDate::from_ymd_opt(2020, 10, 12).ok_or("Can't create date")?,
-        );
-        assert!(d.date_in_range(NaiveDate::from_ymd_opt(2020, 10, 1).ok_or("Can't create date")?));
-        assert!(d.date_in_range(NaiveDate::from_ymd_opt(2020, 10, 5).ok_or("Can't create date")?));
-        assert!(d.date_in_range(NaiveDate::from_ymd_opt(2020, 10, 12).ok_or("Can't create date")?));
+        let d = DateRange(Date::new(2020, 10, 1)?, Date::new(2020, 10, 12)?);
+        assert!(d.date_in_range(Date::new(2020, 10, 1)?));
+        assert!(d.date_in_range(Date::new(2020, 10, 5)?));
+        assert!(d.date_in_range(Date::new(2020, 10, 12)?));
 
         Ok(())
     }
 
     #[test]
     fn date_not_in_range() -> Result<(), Box<dyn Error>> {
-        let d = DateRange(
-            NaiveDate::from_ymd_opt(2020, 10, 1).ok_or("Can't create date")?,
-            NaiveDate::from_ymd_opt(2020, 10, 12).ok_or("Can't create date")?,
-        );
+        let d = DateRange(Date::new(2020, 10, 1)?, Date::new(2020, 10, 12)?);
 
-        assert!(!d.date_in_range(NaiveDate::from_ymd_opt(2020, 9, 20).ok_or("Can't create date")?));
-        assert!(!d.date_in_range(NaiveDate::from_ymd_opt(2020, 9, 30).ok_or("Can't create date")?));
-        assert!(
-            !d.date_in_range(NaiveDate::from_ymd_opt(2020, 10, 13).ok_or("Can't create date")?)
-        );
-        assert!(
-            !d.date_in_range(NaiveDate::from_ymd_opt(2020, 10, 15).ok_or("Can't create date")?)
-        );
+        assert!(!d.date_in_range(Date::new(2020, 9, 20)?));
+        assert!(!d.date_in_range(Date::new(2020, 9, 30)?));
+        assert!(!d.date_in_range(Date::new(2020, 10, 13)?));
+        assert!(!d.date_in_range(Date::new(2020, 10, 15)?));
 
         Ok(())
     }
 
     #[test]
     fn datetime_in_range() -> Result<(), Box<dyn Error>> {
-        let d = DateRange(
-            NaiveDate::from_ymd_opt(2020, 10, 1).ok_or("Can't create date")?,
-            NaiveDate::from_ymd_opt(2020, 10, 12).ok_or("Can't create date")?,
-        );
+        let d = DateRange(Date::new(2020, 10, 1)?, Date::new(2020, 10, 12)?);
 
         assert!(d.datetime_in_range(date("2020-10-1T0:0:0Z"))?);
         assert!(d.datetime_in_range(date("2020-10-11T10:10:10Z"))?);
@@ -99,10 +80,7 @@ mod tests {
 
     #[test]
     fn datetime_not_in_range() -> Result<(), Box<dyn Error>> {
-        let d = DateRange(
-            NaiveDate::from_ymd_opt(2020, 10, 1).ok_or("Can't create date")?,
-            NaiveDate::from_ymd_opt(2020, 10, 12).ok_or("Can't create date")?,
-        );
+        let d = DateRange(Date::new(2020, 10, 1)?, Date::new(2020, 10, 12)?);
 
         assert!(!d.datetime_in_range(date("2020-9-30T23:59:59Z"))?);
         assert!(!d.datetime_in_range(date("2020-10-13T0:0:0Z"))?);

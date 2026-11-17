@@ -1,5 +1,6 @@
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::token::{GuestGeneratorTrait, MemberGeneratorTrait};
+use jiff::{Span, Timestamp};
 
 pub struct JwtTokenGenerator {
     secret: String,
@@ -28,10 +29,10 @@ impl GuestGeneratorTrait for JwtTokenGenerator {
             exp: usize,
         }
 
-        let expiration = chrono::Utc::now()
-            .checked_add_signed(chrono::Duration::seconds(self.ttl))
+        let expiration = Timestamp::now()
+            .checked_add(Span::new().seconds(self.ttl))
             .expect("Invalid timestamp")
-            .timestamp();
+            .as_second();
 
         let claims = Claims {
             sub: user_id.to_string(),
@@ -60,10 +61,10 @@ impl MemberGeneratorTrait for JwtTokenGenerator {
             exp: usize,
         }
 
-        let expiration = chrono::Utc::now()
-            .checked_add_signed(chrono::Duration::seconds(self.ttl))
+        let expiration = Timestamp::now()
+            .checked_add(Span::new().seconds(self.ttl))
             .expect("Invalid timestamp")
-            .timestamp();
+            .as_second();
 
         let claims = Claims {
             sub: user_id.to_string(),

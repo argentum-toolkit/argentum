@@ -3,8 +3,8 @@ use crate::slqx_postgres::SqlxPostgresAdapter;
 use crate::slqx_postgres::migration::MigrationDto;
 use crate::slqx_postgres::migration::collection::MigrationCollection;
 use argentum_log_business::LoggerTrait;
+use jiff::Timestamp;
 use sqlx::Transaction;
-use sqlx::types::chrono::Utc;
 use sqlx_postgres::Postgres;
 use std::sync::Arc;
 
@@ -47,7 +47,7 @@ where
             self.migration_table_name
         );
 
-        let query = sqlx::query(&sql);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
         let res = self.adapter.exec(query).await;
         match res {
             Ok(_) => {
@@ -104,7 +104,7 @@ where
             self.migration_table_name
         );
 
-        let query = sqlx::query_as(&sql).bind(version);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(version);
 
         let result: Result<Option<MigrationDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
@@ -124,7 +124,7 @@ where
 
         let dto = MigrationDto {
             version: version.to_string(),
-            executed_at: Utc::now(),
+            executed_at: Timestamp::now().into(),
         };
 
         let sql = format!(
@@ -132,7 +132,9 @@ where
             self.migration_table_name
         );
 
-        let query = sqlx::query(&sql).bind(&dto.version).bind(dto.executed_at);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+            .bind(&dto.version)
+            .bind(dto.executed_at);
 
         let result = self.adapter.exec_with_executor(query, &mut *tx).await;
 
@@ -141,7 +143,7 @@ where
         }
 
         for sql in migration {
-            let query = sqlx::query(sql);
+            let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()));
             let result = self.adapter.exec_with_executor(query, &mut *tx).await;
 
             if let Err(e) = result {

@@ -1,4 +1,5 @@
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
+use argentum_log_infrastructure::log_bridge::LogBridge;
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_notification_business::NotifierTrait;
 use argentum_notification_business::mock::StdoutNotifier;
@@ -94,8 +95,11 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
 fn register_logger(container: &mut Container) {
     container.provide_factory::<DefaultLogger<PrettyWriter>, _>(|_c| {
         let log_writer = Arc::new(PrettyWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
-        Ok(Arc::new(DefaultLogger::new(Level::Trace, log_writer)))
+        LogBridge::install(logger.clone());
+
+        Ok(logger)
     });
 }
 

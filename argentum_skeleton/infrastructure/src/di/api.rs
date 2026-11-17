@@ -4,6 +4,7 @@ use argentum_encryption_business::password::{Encryptor, Validator};
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_event_business::di::event_business_provide;
 use argentum_log_business::LoggerTrait;
+use argentum_log_infrastructure::log_bridge::LogBridge;
 use argentum_notification_business::{NotifierTrait, mock::StdoutNotifier};
 use argentum_oidc_infrastructure::{
     default_di::oidc_infrastructure_provider, oidc_business_provide,
@@ -79,6 +80,9 @@ pub async fn skeleton_api_provide<L>(
 where
     L: LoggerTrait + 'static,
 {
+    let logger: Arc<L> = container.resolve::<L>()?;
+    LogBridge::install(logger);
+
     let env: Env =
         envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
 

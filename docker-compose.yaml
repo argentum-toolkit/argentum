@@ -1,0 +1,18 @@
+include:
+  - path:
+      - ./devops/docker/release/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/proxy/docker-compose.yaml
+
+  - path:
+      - ./devops/docker/builder/docker-compose.yaml
+
+  - path:
+      - ./argentum_user/devops/docker/docker-compose.yaml
+
+  - path:
+      - ./argentum_user_account/devops/docker/docker-compose.yaml
+
+  - path:
+      - ./argentum_oidc/devops/docker/docker-compose.yaml

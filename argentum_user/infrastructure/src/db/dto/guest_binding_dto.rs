@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use jiff_sqlx::Timestamp;
 use sqlx::FromRow;
 use uuid::Uuid;
 
@@ -6,5 +6,5 @@ use uuid::Uuid;
 pub struct GuestBindingDto {
     pub member_id: Uuid,
     pub guest_id: Uuid,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
 }

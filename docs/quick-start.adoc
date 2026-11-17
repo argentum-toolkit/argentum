@@ -30,10 +30,12 @@ rustup update stable
 
 [bash]
 ----
+# RELEASE (default)
 docker compose up
 
-# if you want to use local .env file
-# docker compose --env-file .env --env-file .env.local up
+# DEV
+# requires a local .env.local file with COMPOSE_FILE=docker-compose.dev.yaml
+docker compose --env-file .env --env-file .env.local up
 ----
 
 == Also you can run the example of web application locally
@@ -46,7 +48,8 @@ cd examples/api-app
 cargo run --bin api
 ----
 
-Now you can see API documentation and send requests via Swagger-UI. link:http://localhost:8083/[]
+Now you can see API documentation and send requests via Swagger-UI.
+Start it with `docker compose --env-file .env --env-file .env.local --profile swagger up -d swagger-ui` and open link:http://localhost:8083/[]
 
 == Or run example of cli application:
 

@@ -1,7 +1,7 @@
 use crate::data_type::Name;
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::data_type::id::Id;
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 pub trait UserTrait {
     type Id: Id;
@@ -16,7 +16,7 @@ where
     I: Id,
 {
     pub id: I,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
     pub name: Name,
     pub email: EmailAddress,
     pub email_confirmed: bool,
@@ -31,7 +31,7 @@ where
         Member {
             slug: Self::build_slug(id, &name),
             id,
-            created_at: Utc::now(),
+            created_at: Timestamp::now(),
             name,
             email,
             email_confirmed,
@@ -70,7 +70,7 @@ where
     I: Id,
 {
     pub id: I,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
 }
 
 impl<I> Guest<I>
@@ -80,7 +80,7 @@ where
     pub fn new(id: I) -> Self {
         Guest {
             id,
-            created_at: Utc::now(),
+            created_at: Timestamp::now(),
         }
     }
 }

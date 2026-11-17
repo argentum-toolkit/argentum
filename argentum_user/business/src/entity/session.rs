@@ -1,5 +1,5 @@
 use argentum_standard_business::data_type::id::Id;
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 pub struct Session<I>
 where
@@ -7,7 +7,7 @@ where
 {
     pub id: I,
     pub user_id: I,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
     pub token: String,
     //device_information???
 }
@@ -20,7 +20,7 @@ where
         Session {
             id,
             user_id,
-            created_at: Utc::now(),
+            created_at: Timestamp::now(),
             token: token.into(),
         }
     }

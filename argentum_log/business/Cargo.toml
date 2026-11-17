@@ -11,4 +11,4 @@ documentation = "https://gitlab.com/argentum-toolkit/argentum"
 readme = "README.md"
 
 [dependencies]
-chrono = "0.4.*"
+jiff = "1.*"
