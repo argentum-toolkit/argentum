@@ -21,7 +21,7 @@ use argentum_user_business::{
     },
 };
 use async_trait::async_trait;
-use chrono::Utc;
+use jiff::Timestamp;
 
 pub struct DefaultCodeExchanger<I, L>
 where
@@ -137,7 +137,7 @@ where
                     }
                 };
 
-                let created_at = Utc::now();
+                let created_at = Timestamp::now();
 
                 let credential = Credential::new(
                     &oidc_user_id,

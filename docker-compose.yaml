@@ -9,10 +9,10 @@ include:
       - ./devops/docker/builder/docker-compose.yaml
 
   - path:
-      - ./devops/docker/user/docker-compose.yaml
+      - ./argentum_user/devops/docker/docker-compose.yaml
 
   - path:
-      - ./devops/docker/user-account/docker-compose.yaml
+      - ./argentum_user_account/devops/docker/docker-compose.yaml
 
   - path:
-      - ./devops/docker/oidc/docker-compose.yaml
+      - ./argentum_oidc/devops/docker/docker-compose.yaml

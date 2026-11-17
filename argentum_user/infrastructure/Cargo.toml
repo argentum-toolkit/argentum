@@ -28,16 +28,16 @@ argentum_user_rest = { path = "../../argentum_user/rest", features = [
   "server",
 ], version = ">=0.4.0-dev,<0.5.0" }
 
-chrono = { version = "0.4.*", features = ["serde"] }
+jiff = { version = "1.*", features = ["serde"] }
 
 serde = { version = "1.*", features = ["derive"] }
-sqlx = { version = "0.8.*", features = [
+jiff-sqlx = { version = "1.*", features = ["postgres"] }
+sqlx = { version = "0.9.*", features = [
   "runtime-tokio",
   "tls-native-tls",
   "postgres",
   "uuid",
   "any",
-  "chrono",
 ] }
 thiserror = "2.*"
 tokio = { version = "1.*", features = ["full"] }

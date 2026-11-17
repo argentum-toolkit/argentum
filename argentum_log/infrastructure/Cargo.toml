@@ -12,5 +12,6 @@ readme = "README.md"
 
 [dependencies]
 argentum_log_business = { path = "../business", version = ">=0.4.0-dev,<0.5.0" }
-chrono = "0.4.*"
+jiff = "1.*"
+log = { version = "0.4", features = ["alloc"] }
 yansi = "1.*"

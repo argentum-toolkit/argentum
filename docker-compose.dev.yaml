@@ -12,13 +12,13 @@ include:
       - ./devops/docker/builder/docker-compose.yaml
 
   - path:
-      - ./devops/docker/user/docker-compose.yaml
-      - ./devops/docker/user/docker-compose.dev.yaml
+      - ./argentum_user/devops/docker/docker-compose.yaml
+      - ./argentum_user/devops/docker/docker-compose.dev.yaml
 
   - path:
-      - ./devops/docker/user-account/docker-compose.yaml
-      - ./devops/docker/user-account/docker-compose.dev.yaml
+      - ./argentum_user_account/devops/docker/docker-compose.yaml
+      - ./argentum_user_account/devops/docker/docker-compose.dev.yaml
 
   - path:
-      - ./devops/docker/oidc/docker-compose.yaml
-      - ./devops/docker/oidc/docker-compose.dev.yaml
+      - ./argentum_oidc/devops/docker/docker-compose.yaml
+      - ./argentum_oidc/devops/docker/docker-compose.dev.yaml

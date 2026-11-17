@@ -20,7 +20,7 @@ argentum_standard_business = { path = "../../argentum_standard/business", versio
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.4.0-dev,<0.5.0" }
 
-chrono = "0.4.*"
+jiff = "1.*"
 secrecy = "0.10.*"
 thiserror = "2.*"
 tokio = { version = "1.*" }

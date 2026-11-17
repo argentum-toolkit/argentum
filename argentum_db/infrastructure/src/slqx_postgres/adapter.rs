@@ -5,7 +5,7 @@ use std::future::Future;
 
 use argentum_log_business::LoggerTrait;
 use sqlx::query::{Query, QueryAs};
-use sqlx::{Error, Execute, Executor, FromRow, Postgres, Transaction};
+use sqlx::{Error, Executor, FromRow, Postgres, Transaction};
 use sqlx_postgres::{PgArguments, PgRow};
 use std::sync::Arc;
 
@@ -59,15 +59,12 @@ where
     where
         E: Executor<'q, Database = Postgres> + 'q,
     {
-        let sql = query.sql();
-        self.logger.debug(sql);
         let result = query.execute(executor).await;
-        self.logger.trace("done");
         match result {
             Ok(r) => Ok(r.rows_affected()),
             Err(e) => Err(DbAdapterError {
                 msg: e.to_string(),
-                sql: Some(sql.to_string()),
+                sql: None,
             }),
         }
     }
@@ -80,17 +77,14 @@ where
     where
         F: Send + Unpin + for<'r> FromRow<'r, PgRow> + 'q,
     {
-        let sql = query_as.sql();
-        self.logger.debug(sql);
         let result: Result<Option<F>, Error> = query_as.fetch_optional(&self.pool).await;
-        self.logger.trace("SQL done");
 
         match result {
             Ok(Some(r)) => Ok(Some(r)),
             Ok(None) => Ok(None),
             Err(e) => Err(DbAdapterError {
                 msg: e.to_string(),
-                sql: Some(sql.to_string()),
+                sql: None,
             }),
         }
     }
@@ -102,17 +96,13 @@ where
     where
         F: Send + Unpin + for<'r> FromRow<'r, PgRow> + 'q,
     {
-        let sql = query_as.sql();
-        self.logger.debug(sql);
-
         let result: Result<Vec<F>, Error> = query_as.fetch_all(&self.pool).await;
-        self.logger.trace("SQL done");
 
         match result {
             Ok(rows) => Ok(rows),
             Err(e) => Err(DbAdapterError {
                 msg: e.to_string(),
-                sql: Some(sql.to_string()),
+                sql: None,
             }),
         }
     }

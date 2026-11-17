@@ -174,16 +174,12 @@ impl SchemaGenerator {
                 Some(SchemaType::String) => match schema.format {
                     None => Ok(("String".into(), "Option<String>".into(), false)),
                     Some(SchemaFormat::Standard(StandardFormat::Date)) => {
-                        dependencies.push("chrono::NaiveDate".into());
-                        Ok(("NaiveDate".into(), "Option<NaiveDate>".into(), false))
+                        dependencies.push("jiff::civil::Date".into());
+                        Ok(("Date".into(), "Option<Date>".into(), false))
                     }
                     Some(SchemaFormat::Standard(StandardFormat::DateTime)) => {
-                        dependencies.push("chrono::{DateTime, Utc}".into());
-                        Ok((
-                            "DateTime<Utc>".into(),
-                            "Option<DateTime<Utc>>".into(),
-                            false,
-                        ))
+                        dependencies.push("jiff::Timestamp".into());
+                        Ok(("Timestamp".into(), "Option<Timestamp>".into(), false))
                     }
                     Some(SchemaFormat::Standard(StandardFormat::Uuid)) => {
                         Ok(("uuid::Uuid".into(), "Option<uuid::Uuid>".into(), false))

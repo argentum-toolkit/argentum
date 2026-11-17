@@ -5,6 +5,7 @@ use argentum_db_infrastructure::slqx_postgres::{
     migration::{MigrationCollection, Migrator},
 };
 use argentum_log_business::LoggerTrait;
+use argentum_log_infrastructure::log_bridge::LogBridge;
 use argentum_oidc_infrastructure::db::migration as oidc_migration;
 use argentum_user_account_infrastructure::db::migration as user_account_migration;
 use argentum_user_infrastructure::db::migration as user_migration;
@@ -49,6 +50,8 @@ pub async fn skeleton_migration_provide<L>(logger: Arc<L>) -> Result<Vec<Arc<Mig
 where
     L: LoggerTrait + 'static,
 {
+    LogBridge::install(logger.clone());
+
     let env: Env =
         envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
     let max_db_connections = 5;

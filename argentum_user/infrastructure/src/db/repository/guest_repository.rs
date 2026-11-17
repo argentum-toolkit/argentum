@@ -7,6 +7,7 @@ use argentum_user_business::entity::user::Guest;
 use argentum_user_business::repository::user_repository::{
     ExternalUserError, GuestUserRepositoryTrait,
 };
+use jiff_sqlx::ToSqlx;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -39,14 +40,14 @@ where
     async fn find(&self, id: Self::Id) -> Result<Option<Guest<Self::Id>>, ExternalUserError> {
         let guest_id: Uuid = id.into();
         let sql = format!("SELECT id, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1");
-        let query = sqlx::query_as(&sql).bind(guest_id);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(guest_id);
 
         let result: Result<Option<GuestDto>, DbAdapterError> = self.adapter.fetch_one(query).await;
 
         match result {
             Ok(Some(dto)) => Ok(Some(Guest {
                 id: dto.id.into(),
-                created_at: dto.created_at,
+                created_at: dto.created_at.to_jiff(),
             })),
 
             Ok(None) => Ok(None),
@@ -57,7 +58,9 @@ where
     async fn save(&self, user: &Guest<Self::Id>) -> Result<(), ExternalUserError> {
         let sql = format!("INSERT INTO {TABLE_NAME} (id, created_at) VALUES ($1, $2)");
         let user_id: Uuid = user.id.into();
-        let query = sqlx::query(&sql).bind(user_id).bind(user.created_at);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+            .bind(user_id)
+            .bind(user.created_at.to_sqlx());
 
         let result = self.adapter.exec(query).await;
 

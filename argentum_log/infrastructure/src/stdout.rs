@@ -1,5 +1,5 @@
 use argentum_log_business::{Level, WriterTrait};
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use yansi::Paint;
 
 pub struct PrettyWriter {}
@@ -17,7 +17,7 @@ impl Default for PrettyWriter {
 }
 
 impl WriterTrait for PrettyWriter {
-    fn write<S: AsRef<str>>(&self, time: DateTime<Utc>, level: Level, msg: S) {
+    fn write<S: AsRef<str>>(&self, time: Timestamp, level: Level, msg: S) {
         let l = level.to_string().to_uppercase();
         let colored_level = match level {
             Level::Trace => Paint::blue(&l),
@@ -30,7 +30,7 @@ impl WriterTrait for PrettyWriter {
 
         println!(
             "{} {}: {}",
-            time.format("%Y-%m-%d %H:%M:%S%.3f%:z"),
+            time.strftime("%Y-%m-%d %H:%M:%S%.3f%:z"),
             colored_level,
             msg.as_ref(),
         );

@@ -7,6 +7,7 @@ use argentum_user_business::entity::guest_binding::GuestBinding;
 use argentum_user_business::repository::guest_binding_repository::{
     GuestBindingRepositoryError, GuestBindingRepositoryTrait,
 };
+use jiff_sqlx::ToSqlx;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -46,7 +47,7 @@ where
         );
 
         let id: Uuid = member_id.into();
-        let query = sqlx::query_as(&sql).bind(id);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
 
         let result: Result<Option<GuestBindingDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
@@ -55,7 +56,7 @@ where
             Ok(Some(dto)) => Ok(Some(GuestBinding {
                 member_id: dto.member_id.into(),
                 guest_id: dto.guest_id.into(),
-                created_at: dto.created_at,
+                created_at: dto.created_at.to_jiff(),
             })),
 
             Ok(None) => Ok(None),
@@ -73,10 +74,10 @@ where
         let sql = format!(
             "INSERT INTO {TABLE_NAME} (member_id, guest_id, created_at) VALUES ($1, $2, $3)"
         );
-        let query = sqlx::query(&sql)
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
             .bind(member_id)
             .bind(guest_id)
-            .bind(binding.created_at);
+            .bind(binding.created_at.to_sqlx());
 
         let result = self.adapter.exec(query).await;
 

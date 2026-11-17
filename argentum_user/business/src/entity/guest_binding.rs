@@ -1,5 +1,5 @@
 use argentum_standard_business::data_type::id::Id;
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 
 pub struct GuestBinding<I>
 where
@@ -7,7 +7,7 @@ where
 {
     pub member_id: I,
     pub guest_id: I,
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
 }
 
 impl<I> GuestBinding<I>
@@ -18,7 +18,7 @@ where
         GuestBinding {
             member_id,
             guest_id,
-            created_at: Utc::now(),
+            created_at: Timestamp::now(),
         }
     }
 }
