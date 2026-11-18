@@ -60,7 +60,7 @@ where
             })),
 
             Ok(None) => Ok(None),
-            Err(e) => Err(GuestBindingRepositoryError::Find(Some(Box::new(e)))),
+            Err(e) => Err(GuestBindingRepositoryError::Find(Some(Arc::new(e)))),
         }
     }
 
@@ -83,7 +83,24 @@ where
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(GuestBindingRepositoryError::Save(Some(Box::new(e)))),
+            Err(e) => Err(GuestBindingRepositoryError::Save(Some(Arc::new(e)))),
+        }
+    }
+
+    async fn delete_by_member_id(
+        &self,
+        member_id: Self::Id,
+    ) -> Result<(), GuestBindingRepositoryError> {
+        let member_id: Uuid = member_id.into();
+
+        let sql = format!("DELETE FROM {TABLE_NAME} WHERE member_id = $1");
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql)).bind(member_id);
+
+        let result = self.adapter.exec(query).await;
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(e) => Err(GuestBindingRepositoryError::Other(Some(Arc::new(e)))),
         }
     }
 }

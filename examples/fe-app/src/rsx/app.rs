@@ -4,7 +4,7 @@ use argentum_oidc_ui::{GithubClientId, GoogleClientId, OidcRedirectUrl, rsx::Oid
 use argentum_standard_ui::{
     HomePageUrl, LoginUrl, RegistrationUrl, rsx::component::dark_mode::use_dark_mode,
 };
-use argentum_user_account_ui::AdditionalLoginBlock;
+use argentum_user_account_ui::{AdditionalLoginBlock, DeleteAccountUrl};
 use dioxus::prelude::*;
 use std::env;
 
@@ -26,6 +26,7 @@ pub(crate) fn App() -> Element {
     use_context_provider(|| AdditionalLoginBlock(rsx! {OidcLoginBlock{}}));
     use_context_provider(|| LoginUrl((Route::Login {}).to_string()));
     use_context_provider(|| RegistrationUrl((Route::Registration {}).to_string()));
+    use_context_provider(|| DeleteAccountUrl((Route::DeleteAccount {}).to_string()));
 
     #[cfg(feature = "web")]
     {

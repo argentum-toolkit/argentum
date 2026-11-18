@@ -235,7 +235,8 @@ impl ClientGenerator {
                     });
                 }
 
-                let need_body = matches!(method, Method::Post | Method::Put);
+                let need_body = matches!(method, Method::Post | Method::Put)
+                    || (matches!(method, Method::Delete) && operation.request_body.is_some());
 
                 operations.push(OperationData {
                     method: method.to_string(),

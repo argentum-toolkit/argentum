@@ -89,4 +89,21 @@ where
             Err(e) => Err(CredentialRepositoryError::Find(Some(Arc::new(e)))),
         }
     }
+
+    async fn delete_by_user_id(
+        &self,
+        user_id: Self::UserId,
+    ) -> Result<(), CredentialRepositoryError> {
+        let user_id: Uuid = user_id.into();
+
+        let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql)).bind(user_id);
+
+        let result = self.adapter.exec(query).await;
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(e) => Err(CredentialRepositoryError::Delete(Some(Arc::new(e)))),
+        }
+    }
 }

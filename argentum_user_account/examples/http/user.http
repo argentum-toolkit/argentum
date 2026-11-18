@@ -27,3 +27,13 @@ Authorization: Bearer {{authToken}}
 %}
 
 ###
+
+DELETE http://{{host}}{{baseUrl}}/user-account/member/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "password": "123"
+}
+
+###

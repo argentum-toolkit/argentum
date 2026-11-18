@@ -1,6 +1,7 @@
 mod guest_registers_handler;
 mod guest_requests_restore_token_handler;
 mod guest_with_token_changes_password_handler;
+mod member_deletes_account_handler;
 mod member_logins_with_password_handler;
 mod member_registers_with_password_handler;
 mod member_verifies_email_handler;
@@ -8,6 +9,7 @@ mod member_verifies_email_handler;
 pub use guest_registers_handler::GuestRegistersTrait;
 pub use guest_requests_restore_token_handler::GuestRequestsRestoreTokenTrait;
 pub use guest_with_token_changes_password_handler::GuestWithTokenChangesPasswordTrait;
+pub use member_deletes_account_handler::MemberDeletesAccountTrait;
 pub use member_logins_with_password_handler::MemberLoginsWithPasswordTrait;
 pub use member_registers_with_password_handler::MemberRegistersWithPasswordTrait;
 pub use member_verifies_email_handler::MemberVerifiesEmailTrait;

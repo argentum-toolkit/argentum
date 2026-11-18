@@ -1,4 +1,4 @@
-= REST library for Argentum OIDC component
+= REST library for Argentum OIDC API
 
 OIDC API
 

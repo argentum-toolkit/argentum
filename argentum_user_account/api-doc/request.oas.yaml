@@ -40,6 +40,14 @@ components:
           schema:
             $ref: "type.oas.yaml#/components/schemas/ChangePasswordSchema"
 
+    DeleteAccountRequestBody:
+      description: Required password to confirm account deletion
+      required: true
+      content:
+        "application/json":
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/DeleteAccountSchema"
+
     EmailVerificationRequestBody:
       content:
         application/json:

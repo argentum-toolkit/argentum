@@ -16,6 +16,7 @@ use crate::specification::StrongPasswordSpecification;
 use crate::token::{GuestGeneratorTrait, MemberGeneratorTrait};
 use crate::use_case::guest_registers::GuestRegistersUc;
 use crate::use_case::member_confirms_email::MemberConfirmsEmailUcTrait;
+use crate::use_case::member_deletes_account::MemberDeletesAccountUc;
 use crate::use_case::member_logins_with_password::MemberLoginsWithPasswordUc;
 use crate::use_case::member_registers_with_password::MemberRegistersWithPasswordUc;
 use crate::use_case::restore_password::guest_requests_restore_token::GuestRequestsRestoreTokenUc;
@@ -32,6 +33,7 @@ use argentum_notification_business::NotifierTrait;
 use argentum_standard_business::data_type::id::{Id, IdFactory};
 use argentum_standard_business::di_container::Container;
 
+use argentum_user_business::repository::guest_binding_repository::GuestBindingRepositoryTrait;
 use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
 use argentum_user_business::repository::user_repository::{
     GuestUserRepositoryTrait, MemberRepositoryTrait,
@@ -165,6 +167,32 @@ pub fn user_account_business_provide<I, L>(
             event_dispatcher,
             logger,
             email_confirmation_token_ttl,
+        )))
+    });
+
+    container.provide_factory::<MemberDeletesAccountUc<I, L>, _>(move |c| {
+        let password_checker = c.resolve::<PasswordCredentialChecker<I>>()?;
+        let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = I>>()?;
+        let email_confirmation_token_repository =
+            c.resolve::<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>()?;
+        let restore_password_token_repository =
+            c.resolve::<dyn RestorePasswordTokenRepositoryTrait<Id = I>>()?;
+        let credential_writer = c.resolve::<dyn PasswordCredentialWriterTrait<Id = I>>()?;
+        let guest_binding_repository = c.resolve::<dyn GuestBindingRepositoryTrait<Id = I>>()?;
+        let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
+        let event_dispatcher = c.resolve::<EventDispatcher>()?;
+        let logger = c.resolve::<L>()?;
+
+        Ok(Arc::new(MemberDeletesAccountUc::new(
+            password_checker,
+            session_repository,
+            email_confirmation_token_repository,
+            restore_password_token_repository,
+            credential_writer,
+            guest_binding_repository,
+            member_repository,
+            event_dispatcher,
+            logger,
         )))
     });
 

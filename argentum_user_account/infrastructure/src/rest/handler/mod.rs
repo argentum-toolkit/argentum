@@ -1,12 +1,14 @@
 mod guest_registers;
 mod guest_requests_restore_token;
 mod guest_with_token_changes_password;
+mod member_deletes_account;
 mod member_logins_with_password;
 mod member_registers_with_password;
 
 pub use guest_registers::GuestRegistersHandler;
 pub use guest_requests_restore_token::GuestRequestsRestoreTokenHandler;
 pub use guest_with_token_changes_password::GuestWithTokenChangesPasswordHandler;
+pub use member_deletes_account::MemberDeletesAccountHandler;
 pub use member_logins_with_password::MemberLoginsWithPasswordHandler;
 pub use member_registers_with_password::MemberRegistersWithPasswordHandler;
 

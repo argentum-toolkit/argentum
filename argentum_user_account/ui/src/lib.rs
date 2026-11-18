@@ -7,3 +7,6 @@ pub mod rsx;
 
 #[derive(Clone)]
 pub struct AdditionalLoginBlock(pub Element);
+
+#[derive(Clone)]
+pub struct DeleteAccountUrl(pub String);

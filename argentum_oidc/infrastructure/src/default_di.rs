@@ -4,12 +4,14 @@ use crate::{
 };
 
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_event_business::EventDispatcher;
 
 use argentum_log_business::LoggerTrait;
 use argentum_oidc_business::service::provider::ProviderStrategyTrait;
 use argentum_oidc_business::service::redirect_url::OidcRedirectUrlResolver;
 use argentum_oidc_business::{
-    repository::CredentialRepositoryTrait, use_case::UserExchangesCodeToTokenUc,
+    listener::MemberDeletedAccountListener, repository::CredentialRepositoryTrait,
+    use_case::UserExchangesCodeToTokenUc,
 };
 use argentum_oidc_rest::{oidc_rest_provide, server::handler::ExchangeCodeTrait};
 use argentum_standard_business::di_container::{Container, DiError};
@@ -60,6 +62,20 @@ where
         let adapter = c.resolve::<OidcSqlxPostgresAdapter<L>>()?;
         Ok(Arc::new(CredentialRepository::new(adapter)))
     });
+
+    {
+        let event_dispatcher = container.resolve::<EventDispatcher>()?;
+        let credential_repository =
+            container.resolve::<dyn CredentialRepositoryTrait<UserId = UniqueId>>()?;
+        let logger = container.resolve::<L>()?;
+
+        event_dispatcher
+            .register_listener(Arc::new(MemberDeletedAccountListener::new(
+                credential_repository,
+                logger,
+            )))
+            .map_err(|e| DiError::with_context("Can't register OIDC member listener", e))?;
+    }
 
     container.provide_factory::<OidcRedirectUrlResolver, _>(move |_c| {
         Ok(Arc::new(OidcRedirectUrlResolver::new(&redirect_url)))

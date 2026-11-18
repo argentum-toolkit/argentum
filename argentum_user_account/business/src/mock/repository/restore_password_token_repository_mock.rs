@@ -105,30 +105,12 @@ where
         &self,
         user_id: Self::Id,
     ) -> Result<(), RestorePasswordTokenRepositoryError> {
-        let mut id: Option<Self::Id> = None;
-
-        let guard = self.tokens.read().map_err(|_| {
-            RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
-        })?;
-
-        for (k, t) in guard.iter() {
-            if t.user_id == user_id {
-                id = Some(*k);
-
-                break;
-            }
-        }
-
-        drop(guard);
-
-        if let Some(id) = id {
-            self.tokens
-                .write()
-                .map_err(|_| {
-                    RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
-                })?
-                .remove(&id);
-        }
+        self.tokens
+            .write()
+            .map_err(|_| {
+                RestorePasswordTokenRepositoryError::Other(Some(Arc::new(PoisonedLockError)))
+            })?
+            .retain(|_, t| t.user_id != user_id);
 
         Ok(())
     }

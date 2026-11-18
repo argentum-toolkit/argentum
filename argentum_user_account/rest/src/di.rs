@@ -1,6 +1,7 @@
 use crate::server::handler::GuestRegistersTrait;
 use crate::server::handler::GuestRequestsRestoreTokenTrait;
 use crate::server::handler::GuestWithTokenChangesPasswordTrait;
+use crate::server::handler::MemberDeletesAccountTrait;
 use crate::server::handler::MemberLoginsWithPasswordTrait;
 use crate::server::handler::MemberRegistersWithPasswordTrait;
 use crate::server::handler::MemberVerifiesEmailTrait;
@@ -25,6 +26,8 @@ where
             c.resolve::<dyn GuestRequestsRestoreTokenTrait<Id = I>>()?;
         let guest_with_token_changes_password_handler =
             c.resolve::<dyn GuestWithTokenChangesPasswordTrait<Id = I>>()?;
+        let member_deletes_account_handler =
+            c.resolve::<dyn MemberDeletesAccountTrait<Id = I>>()?;
         let member_logins_with_password_handler =
             c.resolve::<dyn MemberLoginsWithPasswordTrait<Id = I>>()?;
         let member_registers_with_password_handler =
@@ -38,6 +41,7 @@ where
             guest_registers_handler,
             guest_requests_restore_token_handler,
             guest_with_token_changes_password_handler,
+            member_deletes_account_handler,
             member_logins_with_password_handler,
             member_registers_with_password_handler,
             member_verifies_email_handler,

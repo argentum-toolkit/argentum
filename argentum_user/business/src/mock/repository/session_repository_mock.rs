@@ -85,6 +85,8 @@ where
             }
         }
 
+        drop(guard);
+
         if let Some(id) = id {
             self.sessions
                 .write()

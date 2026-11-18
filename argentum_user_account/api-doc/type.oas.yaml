@@ -139,3 +139,17 @@ components:
           type: string
       required:
         - key
+
+    DeleteAccountSchema:
+      type: object
+      properties:
+        password:
+          type: string
+          title: Password
+          format: password
+          example: secure-password
+          x-ag-ui:
+            id: password
+            name: password
+      required:
+        - password

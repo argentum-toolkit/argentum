@@ -7,8 +7,8 @@ use crate::db::{
 };
 use crate::rest::handler::{
     GuestRegistersHandler, GuestRequestsRestoreTokenHandler, GuestWithTokenChangesPasswordHandler,
-    MemberLoginsWithPasswordHandler, MemberRegistersWithPasswordHandler,
-    MemberVerifiesEmailHandler,
+    MemberDeletesAccountHandler, MemberLoginsWithPasswordHandler,
+    MemberRegistersWithPasswordHandler, MemberVerifiesEmailHandler,
 };
 use crate::rest::transformer::{
     DtoToGuestRequestsRestoreTokenParams, DtoToGuestWithTokenChangesPasswordParams,
@@ -35,6 +35,7 @@ use argentum_user_account_business::token::{GuestGeneratorTrait, MemberGenerator
 use argentum_user_account_business::use_case::{
     guest_registers::GuestRegistersUc,
     member_confirms_email::MemberConfirmsEmailUcTrait,
+    member_deletes_account::MemberDeletesAccountUc,
     member_logins_with_password::MemberLoginsWithPasswordUc,
     member_registers_with_password::MemberRegistersWithPasswordUc,
     restore_password::{
@@ -45,7 +46,8 @@ use argentum_user_account_business::use_case::{
 use argentum_user_account_rest::{
     server::handler::{
         GuestRegistersTrait, GuestRequestsRestoreTokenTrait, GuestWithTokenChangesPasswordTrait,
-        MemberLoginsWithPasswordTrait, MemberRegistersWithPasswordTrait, MemberVerifiesEmailTrait,
+        MemberDeletesAccountTrait, MemberLoginsWithPasswordTrait, MemberRegistersWithPasswordTrait,
+        MemberVerifiesEmailTrait,
     },
     user_account_rest_provide,
 };
@@ -135,6 +137,11 @@ where
             uc,
             transformer,
         )))
+    });
+
+    container.provide_factory::<dyn MemberDeletesAccountTrait<Id = UniqueId>, _>(|c| {
+        let uc = c.resolve::<MemberDeletesAccountUc<UniqueId, L>>()?;
+        Ok(Arc::new(MemberDeletesAccountHandler::new(uc)))
     });
 
     container.provide_factory::<dyn MemberLoginsWithPasswordTrait<Id = UniqueId>, _>(|c| {

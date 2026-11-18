@@ -1,5 +1,10 @@
 @import "tailwindcss";
 @source "./public/*.{html,js}";
+@source "./src/**/*.rs";
+@source "../../argentum_user_account/ui/src/**/*.rs";
+@source "../../argentum_skeleton/ui/src/**/*.rs";
+@source "../../argentum_standard/ui/src/**/*.rs";
+@source "../../argentum_oidc/ui/src/**/*.rs";
 
 @plugin "daisyui" {
     themes: corporate --default, dark --prefersdark;

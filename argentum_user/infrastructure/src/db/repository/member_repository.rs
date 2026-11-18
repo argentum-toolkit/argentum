@@ -176,6 +176,20 @@ where
             Err(e) => Err(ExternalUserError::Member(Some(Arc::new(e)))),
         }
     }
+
+    async fn delete(&self, id: Self::Id) -> Result<(), ExternalUserError> {
+        let member_id: Uuid = id.into();
+
+        let sql = format!("DELETE FROM {TABLE_NAME} WHERE id = $1");
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql)).bind(member_id);
+
+        let result = self.adapter.exec(query).await;
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(e) => Err(ExternalUserError::Member(Some(Arc::new(e)))),
+        }
+    }
 }
 
 #[derive(thiserror::Error, Debug)]

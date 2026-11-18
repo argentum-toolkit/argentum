@@ -76,7 +76,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             label: "Email",
             input_type: "text".to_string(),
             required: true,
-                value: email_value(),
+                    value: email_value(),
 
             violations: email_violations,
             oninput: move |v: String| {
@@ -93,7 +93,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             label: "Password",
             input_type: "password".to_string(),
             required: true,
-                value: password_value(),
+                    value: password_value(),
 
             violations: password_violations,
             oninput: move |v: String| {
@@ -120,7 +120,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             label: "Email",
             input_type: "text".to_string(),
             required: true,
-                value: email_value(),
+                    value: email_value(),
 
             violations: email_violations,
             oninput: move |v: String| {
@@ -137,7 +137,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             label: "Password",
             input_type: "password".to_string(),
             required: true,
-                value: password_value(),
+                    value: password_value(),
 
             violations: password_violations,
             oninput: move |v: String| {
@@ -159,7 +159,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             label: "Email",
             input_type: "text".to_string(),
             required: true,
-                value: email_value(),
+                    value: email_value(),
 
             violations: email_violations,
             oninput: move |v: String| {
@@ -176,7 +176,7 @@ pub fn LoginWithPasswordSchemaInput(props: LoginWithPasswordSchemaProps) -> Elem
             label: "Password",
             input_type: "password".to_string(),
             required: true,
-                value: password_value(),
+                    value: password_value(),
 
             violations: password_violations,
             oninput: move |v: String| {
