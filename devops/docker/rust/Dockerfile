@@ -1,7 +1,9 @@
 FROM rust:1.100 AS rs
 
 RUN rustup component add clippy rustfmt
-RUN cargo install cargo-binstall
+# Pre-install the wasm target so `dx bundle --web` doesn't reinstall it on every run
+RUN rustup target add wasm32-unknown-unknown
+RUN curl -sL https://github.com/cargo-bins/cargo-binstall/releases/download/v1.27.0/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz -C /usr/local/cargo/bin
 RUN cargo binstall cargo-deny dioxus-cli flamegraph rustfilt
 
 RUN apt-get update \

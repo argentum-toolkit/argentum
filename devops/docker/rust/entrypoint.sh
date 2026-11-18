@@ -30,8 +30,13 @@ if [ "$(id -g "$DEV_USER")" != "$HOST_GID" ]; then
 fi
 
 # Toolchain homes are pre-chowned to rust (1000:1000) at build time;
-# fix them only when the host uid/gid differs. Bind mounts are already
-# owned by the host user.
+# fix them only when the host uid/gid differs. The registry mount point is
+# a host bind mount that dockerd may have created as root (when the host
+# path didn't exist yet), so it needs fixing regardless of the toolchain
+# home ownership.
+if [ "$(stat -c '%u:%g' /usr/local/cargo/registry)" != "$HOST_UID:$HOST_GID" ]; then
+    chown -R "$HOST_UID:$HOST_GID" /usr/local/cargo/registry
+fi
 if [ "$(stat -c '%u:%g' /usr/local/cargo)" != "$HOST_UID:$HOST_GID" ]; then
     chown -R "$HOST_UID:$HOST_GID" /usr/local/cargo /usr/local/rustup
 fi

@@ -7,6 +7,7 @@ services:
     environment:
       - HOST_UID=${HOST_UID:-1000}
       - HOST_GID=${HOST_GID:-1000}
+      - DX_HOME=/code/var/dx
       - AG_GITHUB_CLIENT_ID
       - AG_GOOGLE_CLIENT_ID
       - AG_OIDC_REDIRECT_URL
