@@ -19,6 +19,11 @@ pub trait CredentialRepositoryTrait: Send + Sync {
         external_id: &str,
         provider: &str,
     ) -> Result<Option<Credential<Self::UserId>>, CredentialRepositoryError>;
+
+    async fn delete_by_user_id(
+        &self,
+        user_id: Self::UserId,
+    ) -> Result<(), CredentialRepositoryError>;
 }
 
 #[derive(thiserror::Error, Debug, Clone)]
@@ -28,4 +33,7 @@ pub enum CredentialRepositoryError {
 
     #[error("Can't find OIDC credential")]
     Find(#[source] Option<Arc<dyn Error + Send + Sync>>),
+
+    #[error("Can't delete OIDC credential")]
+    Delete(#[source] Option<Arc<dyn Error + Send + Sync>>),
 }

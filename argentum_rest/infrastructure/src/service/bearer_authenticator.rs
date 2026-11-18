@@ -2,6 +2,7 @@ use crate::data_type::AuthHeaderParams;
 use crate::data_type::error::{HttpError, InternalServerError, Unauthorized};
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::entity::user::User;
+use argentum_user_business::service::MemberAuthenticatorError;
 use argentum_user_business::use_case::member_authenticates_with_token::AuthenticationError;
 use argentum_user_business::use_case::member_authenticates_with_token::MemberAuthenticatesWithTokenUc;
 use std::sync::Arc;
@@ -37,9 +38,13 @@ where
 
         match self.uc.execute(&token).await {
             Ok(user) => Ok(user),
-            Err(AuthenticationError::UserNotFound) | Err(AuthenticationError::WrongToken) => Err(
-                HttpError::Unauthorized(Unauthorized::new("can't authenticate")),
-            ),
+            Err(AuthenticationError::UserNotFound)
+            | Err(AuthenticationError::WrongToken)
+            | Err(AuthenticationError::MemberAuthenticator(
+                MemberAuthenticatorError::Authenticate(_),
+            )) => Err(HttpError::Unauthorized(Unauthorized::new(
+                "can't authenticate",
+            ))),
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
                 Arc::new(e),
             ))),

@@ -2,10 +2,14 @@ use crate::{
     event::BeforeMemberDeletedAccount,
     repository::{
         credential_writer::CredentialWriterError,
-        email_confirmation_token_repository::EmailConfirmationTokenRepositoryTrait,
+        email_confirmation_token_repository::{
+            EmailConfirmationTokenRepositoryError, EmailConfirmationTokenRepositoryTrait,
+        },
         password_credential_checker::{PasswordCredentialChecker, PasswordCredentialCheckerError},
         password_credential_writer::PasswordCredentialWriterTrait,
-        restore_password_token_repository::RestorePasswordTokenRepositoryTrait,
+        restore_password_token_repository::{
+            RestorePasswordTokenRepositoryError, RestorePasswordTokenRepositoryTrait,
+        },
     },
 };
 use argentum_event_business::{EventDispatcher, EventDispatcherError};
@@ -86,23 +90,13 @@ where
             .delete_users_sessions(member_id)
             .await?;
 
-        if let Err(e) = self
-            .email_confirmation_token_repository
+        self.email_confirmation_token_repository
             .delete_users_tokens(member_id)
-            .await
-        {
-            self.logger
-                .warning(format!("Email confirmation token is not deleted. {e:?}"));
-        }
+            .await?;
 
-        if let Err(e) = self
-            .restore_password_token_repository
+        self.restore_password_token_repository
             .delete_users_tokens(member_id)
-            .await
-        {
-            self.logger
-                .warning(format!("Restore password token is not deleted. {e:?}"));
-        }
+            .await?;
 
         self.credential_writer.delete_for_user(member_id).await?;
 
@@ -143,6 +137,20 @@ pub enum MemberDeletesAccountError {
         #[source]
         #[from]
         CredentialWriterError,
+    ),
+
+    #[error("Can't delete email confirmation tokens")]
+    EmailConfirmationToken(
+        #[source]
+        #[from]
+        EmailConfirmationTokenRepositoryError,
+    ),
+
+    #[error("Can't delete restore password tokens")]
+    RestorePasswordToken(
+        #[source]
+        #[from]
+        RestorePasswordTokenRepositoryError,
     ),
 
     #[error("Can't delete guest bindings")]
@@ -284,6 +292,13 @@ mod test {
                 "email_token",
             ))
             .await?;
+        email_token_repository
+            .save(&EmailConfirmationToken::new(
+                id_factory.create(),
+                user_id,
+                "second_email_token",
+            ))
+            .await?;
         restore_token_repository
             .save(&RestorePasswordToken::new(
                 id_factory.create(),
@@ -303,6 +318,12 @@ mod test {
         assert!(
             email_token_repository
                 .find_by_token("email_token")
+                .await?
+                .is_none()
+        );
+        assert!(
+            email_token_repository
+                .find_by_token("second_email_token")
                 .await?
                 .is_none()
         );
