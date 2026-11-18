@@ -1,5 +1,7 @@
 mod change_password_schema_input;
 mod change_password_schema_optional_input;
+mod delete_account_schema_input;
+mod delete_account_schema_optional_input;
 mod login_with_password_schema_input;
 mod login_with_password_schema_optional_input;
 mod registration_with_password_schema_input;
@@ -11,6 +13,8 @@ mod user_name_optional_input;
 
 pub use change_password_schema_input::ChangePasswordSchemaInput;
 pub use change_password_schema_optional_input::ChangePasswordSchemaOptionalInput;
+pub use delete_account_schema_input::DeleteAccountSchemaInput;
+pub use delete_account_schema_optional_input::DeleteAccountSchemaOptionalInput;
 pub use login_with_password_schema_input::LoginWithPasswordSchemaInput;
 pub use login_with_password_schema_optional_input::LoginWithPasswordSchemaOptionalInput;
 pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInput;
@@ -21,6 +25,7 @@ pub use user_name_input::UserNameInput;
 pub use user_name_optional_input::UserNameOptionalInput;
 
 pub use change_password_schema_input::ChangePasswordSchemaInputProcessor;
+pub use delete_account_schema_input::DeleteAccountSchemaInputProcessor;
 pub use login_with_password_schema_input::LoginWithPasswordSchemaInputProcessor;
 pub use registration_with_password_schema_input::RegistrationWithPasswordSchemaInputProcessor;
 pub use request_restore_token_schema_input::RequestRestoreTokenSchemaInputProcessor;

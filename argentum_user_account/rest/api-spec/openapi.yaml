@@ -75,6 +75,26 @@ paths:
       responses:
         '201':
           $ref: '#/components/responses/GuestRegisteredSuccessfully'
+  /user-account/member:
+    delete:
+      description: Permanently deletes the logged-in member's account. Requires the current password to confirm.
+      operationId: MemberDeletesAccount
+      tags:
+      - user-account
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteAccountRequestBody'
+      summary: Member deletes own account
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+      x-ag-form:
+        submit-label: Delete account
   /user-account/password-login:
     post:
       description: Login as an member
@@ -164,6 +184,13 @@ components:
             $ref: '#/components/schemas/ChangePasswordSchema'
       description: Required data to change password with token
       required: true
+    DeleteAccountRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DeleteAccountSchema'
+      description: Required password to confirm account deletion
+      required: true
     EmailVerificationRequestBody:
       content:
         application/json:
@@ -211,6 +238,21 @@ components:
           example: secure-password
           type: string
           format: password
+      type: object
+    DeleteAccountSchema:
+      required:
+      - password
+      properties:
+        password:
+          example: secure-password
+          title: Password
+          type: string
+          format: password
+          x-ag-ui:
+            id: password
+            name: password
+            wrapper: none
+            optional-style: none
       type: object
     EmailVerificationSchema:
       required:
@@ -408,6 +450,9 @@ components:
       additionalProperties:
         $ref: '#/components/schemas/Violation'
   responses:
+    '204':
+      content: {}
+      description: No Content
     '400':
       content:
         application/problem+json:

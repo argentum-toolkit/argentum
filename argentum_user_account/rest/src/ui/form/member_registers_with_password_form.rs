@@ -51,7 +51,7 @@ pub fn MemberRegistersWithPasswordForm(
             RegistrationWithPasswordSchemaInput {
                 value: values(),
                 violations: violations(),
-                ui_wrapper: "none".to_string(),
+                ui_wrapper: "".to_string(),
                 oninput: move |event: RegistrationWithPasswordSchema| {
                     values.set(event);
                 },

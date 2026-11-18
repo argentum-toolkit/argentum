@@ -33,7 +33,7 @@ pub enum {{ upper_camel responseName }}Response {
     {{content_type_to_type @key}}({{content_type_to_type @key}})
 {{/each}}
 {{else}}
-    NoConten(NoContent)
+    NoContent(NoContent)
 {{/if}}
 }
 
@@ -46,7 +46,7 @@ impl {{ upper_camel responseName }}Response {
     {{/each}}
 {{else}}
     pub fn new_no_content() -> Self{
-        Self::NoConten(NoContent {})
+        Self::NoContent(NoContent {})
     }
 {{/if}}
 

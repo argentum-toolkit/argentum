@@ -80,7 +80,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "First Name",
             input_type: "text".to_string(),
             required: true,
-                value: first_value(),
+                    value: first_value(),
 
             violations: first_violations,
             oninput: move |v: String| {
@@ -97,7 +97,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "Last Name",
             input_type: "text".to_string(),
             required: false,
-                value: last_value().unwrap_or_default(),
+                    value: last_value().unwrap_or_default(),
 
             violations: last_violations,
             oninput: move |v: String| {
@@ -114,7 +114,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "Additional name",
             input_type: "text".to_string(),
             required: false,
-                value: additional_value().unwrap_or_default(),
+                    value: additional_value().unwrap_or_default(),
 
             violations: additional_violations,
             oninput: move |v: String| {
@@ -141,7 +141,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "First Name",
             input_type: "text".to_string(),
             required: true,
-                value: first_value(),
+                    value: first_value(),
 
             violations: first_violations,
             oninput: move |v: String| {
@@ -158,7 +158,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "Last Name",
             input_type: "text".to_string(),
             required: false,
-                value: last_value().unwrap_or_default(),
+                    value: last_value().unwrap_or_default(),
 
             violations: last_violations,
             oninput: move |v: String| {
@@ -175,7 +175,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "Additional name",
             input_type: "text".to_string(),
             required: false,
-                value: additional_value().unwrap_or_default(),
+                    value: additional_value().unwrap_or_default(),
 
             violations: additional_violations,
             oninput: move |v: String| {
@@ -197,7 +197,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "First Name",
             input_type: "text".to_string(),
             required: true,
-                value: first_value(),
+                    value: first_value(),
 
             violations: first_violations,
             oninput: move |v: String| {
@@ -214,7 +214,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "Last Name",
             input_type: "text".to_string(),
             required: false,
-                value: last_value().unwrap_or_default(),
+                    value: last_value().unwrap_or_default(),
 
             violations: last_violations,
             oninput: move |v: String| {
@@ -231,7 +231,7 @@ pub fn UserNameInput(props: UserNameProps) -> Element {
             label: "Additional name",
             input_type: "text".to_string(),
             required: false,
-                value: additional_value().unwrap_or_default(),
+                    value: additional_value().unwrap_or_default(),
 
             violations: additional_violations,
             oninput: move |v: String| {

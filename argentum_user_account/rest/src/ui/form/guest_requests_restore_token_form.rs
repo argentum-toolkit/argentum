@@ -50,7 +50,7 @@ pub fn GuestRequestsRestoreTokenForm(
             RequestRestoreTokenSchemaInput {
                 value: values(),
                 violations: violations(),
-                ui_wrapper: "none".to_string(),
+                ui_wrapper: "".to_string(),
                 oninput: move |event: RequestRestoreTokenSchema| {
                     values.set(event);
                 },

@@ -1,6 +1,7 @@
 mod guest_registers_request;
 mod guest_requests_restore_token_request;
 mod guest_with_token_changes_password_request;
+mod member_deletes_account_request;
 mod member_logins_with_password_request;
 mod member_registers_with_password_request;
 mod member_verifies_email_request;
@@ -8,6 +9,7 @@ mod member_verifies_email_request;
 pub use guest_registers_request::GuestRegistersRequest;
 pub use guest_requests_restore_token_request::GuestRequestsRestoreTokenRequest;
 pub use guest_with_token_changes_password_request::GuestWithTokenChangesPasswordRequest;
+pub use member_deletes_account_request::MemberDeletesAccountRequest;
 pub use member_logins_with_password_request::MemberLoginsWithPasswordRequest;
 pub use member_registers_with_password_request::MemberRegistersWithPasswordRequest;
 pub use member_verifies_email_request::MemberVerifiesEmailRequest;

@@ -1,4 +1,5 @@
 mod change_password_schema;
+mod delete_account_schema;
 mod email_verification_schema;
 mod empty_response;
 mod guest_registration_result;
@@ -15,6 +16,8 @@ mod violation_items;
 
 pub use change_password_schema::ChangePasswordSchema;
 pub use change_password_schema::ChangePasswordSchemaRaw;
+pub use delete_account_schema::DeleteAccountSchema;
+pub use delete_account_schema::DeleteAccountSchemaRaw;
 pub use email_verification_schema::EmailVerificationSchema;
 pub use email_verification_schema::EmailVerificationSchemaRaw;
 pub use empty_response::EmptyResponse;

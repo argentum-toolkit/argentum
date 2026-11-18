@@ -19,6 +19,7 @@ where
     url_prefix: String,
     regex_user_account_email_verification: Regex,
     regex_user_account_guest_registration: Regex,
+    regex_user_account_member: Regex,
     regex_user_account_password_login: Regex,
     regex_user_account_register: Regex,
     regex_user_account_restore_password_change_password: Regex,
@@ -36,6 +37,7 @@ where
     ) -> Self {
         let regex_user_account_email_verification = regex!(r"\/user-account\/email-verification$");
         let regex_user_account_guest_registration = regex!(r"\/user-account\/guest-registration$");
+        let regex_user_account_member = regex!(r"\/user-account\/member$");
         let regex_user_account_password_login = regex!(r"\/user-account\/password-login$");
         let regex_user_account_register = regex!(r"\/user-account\/register$");
         let regex_user_account_restore_password_change_password =
@@ -49,6 +51,7 @@ where
             url_prefix: url_prefix.into(),
             regex_user_account_email_verification,
             regex_user_account_guest_registration,
+            regex_user_account_member,
             regex_user_account_password_login,
             regex_user_account_register,
             regex_user_account_restore_password_change_password,
@@ -87,6 +90,13 @@ where
         {
             return match *method {
                 Method::POST => true,
+                _ => false,
+            };
+        }
+
+        if self.regex_user_account_member.captures(path).is_some() {
+            return match *method {
+                Method::DELETE => true,
                 _ => false,
             };
         }
@@ -167,6 +177,19 @@ where
 
             return match *req.method() {
                 Method::POST => self.pre_handler.guest_registers(req, raw_path_params).await,
+                _ => self.error_pre_handler.method_not_allowed(req).await,
+            };
+        }
+
+        if self.regex_user_account_member.captures(path).is_some() {
+            let raw_path_params = HashMap::new();
+
+            return match *req.method() {
+                Method::DELETE => {
+                    self.pre_handler
+                        .member_deletes_account(req, raw_path_params)
+                        .await
+                }
                 _ => self.error_pre_handler.method_not_allowed(req).await,
             };
         }

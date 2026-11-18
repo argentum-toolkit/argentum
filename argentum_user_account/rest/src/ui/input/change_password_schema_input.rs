@@ -73,7 +73,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             name: "token",
             r#type: "hidden",
             required: true,
-                value: token_value(),
+                    value: token_value(),
             oninput: move |event| {
                 let value = event.value().parse::<String>().unwrap_or_default();
                 token_value.set(value);
@@ -87,7 +87,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             label: "",
             input_type: "password".to_string(),
             required: true,
-                value: password_value(),
+                    value: password_value(),
 
             violations: password_violations,
             oninput: move |v: String| {
@@ -113,7 +113,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             name: "token",
             r#type: "hidden",
             required: true,
-                value: token_value(),
+                    value: token_value(),
             oninput: move |event| {
                 let value = event.value().parse::<String>().unwrap_or_default();
                 token_value.set(value);
@@ -127,7 +127,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             label: "",
             input_type: "password".to_string(),
             required: true,
-                value: password_value(),
+                    value: password_value(),
 
             violations: password_violations,
             oninput: move |v: String| {
@@ -148,7 +148,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             name: "token",
             r#type: "hidden",
             required: true,
-                value: token_value(),
+                    value: token_value(),
             oninput: move |event| {
                 let value = event.value().parse::<String>().unwrap_or_default();
                 token_value.set(value);
@@ -162,7 +162,7 @@ pub fn ChangePasswordSchemaInput(props: ChangePasswordSchemaProps) -> Element {
             label: "",
             input_type: "password".to_string(),
             required: true,
-                value: password_value(),
+                    value: password_value(),
 
             violations: password_violations,
             oninput: move |v: String| {

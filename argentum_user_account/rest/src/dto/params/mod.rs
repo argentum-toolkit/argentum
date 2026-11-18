@@ -1,6 +1,7 @@
 mod guest_registers_params;
 mod guest_requests_restore_token_params;
 mod guest_with_token_changes_password_params;
+mod member_deletes_account_params;
 mod member_logins_with_password_params;
 mod member_registers_with_password_params;
 mod member_verifies_email_params;
@@ -8,6 +9,7 @@ mod member_verifies_email_params;
 pub use guest_registers_params::GuestRegistersParams;
 pub use guest_requests_restore_token_params::GuestRequestsRestoreTokenParams;
 pub use guest_with_token_changes_password_params::GuestWithTokenChangesPasswordParams;
+pub use member_deletes_account_params::MemberDeletesAccountParams;
 pub use member_logins_with_password_params::MemberLoginsWithPasswordParams;
 pub use member_registers_with_password_params::MemberRegistersWithPasswordParams;
 pub use member_verifies_email_params::MemberVerifiesEmailParams;

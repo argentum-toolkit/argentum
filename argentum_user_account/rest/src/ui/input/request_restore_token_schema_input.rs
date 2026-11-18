@@ -72,7 +72,7 @@ pub fn RequestRestoreTokenSchemaInput(props: RequestRestoreTokenSchemaProps) -> 
             label: "",
             input_type: "text".to_string(),
             required: true,
-                value: email_value(),
+                    value: email_value(),
 
             violations: email_violations,
             oninput: move |v: String| {
@@ -99,7 +99,7 @@ pub fn RequestRestoreTokenSchemaInput(props: RequestRestoreTokenSchemaProps) -> 
             label: "",
             input_type: "text".to_string(),
             required: true,
-                value: email_value(),
+                    value: email_value(),
 
             violations: email_violations,
             oninput: move |v: String| {
@@ -121,7 +121,7 @@ pub fn RequestRestoreTokenSchemaInput(props: RequestRestoreTokenSchemaProps) -> 
             label: "",
             input_type: "text".to_string(),
             required: true,
-                value: email_value(),
+                    value: email_value(),
 
             violations: email_violations,
             oninput: move |v: String| {

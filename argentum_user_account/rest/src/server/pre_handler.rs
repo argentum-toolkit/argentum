@@ -1,6 +1,7 @@
 use crate::dto::request::GuestRegistersRequest;
 use crate::dto::request::GuestRequestsRestoreTokenRequest;
 use crate::dto::request::GuestWithTokenChangesPasswordRequest;
+use crate::dto::request::MemberDeletesAccountRequest;
 use crate::dto::request::MemberLoginsWithPasswordRequest;
 use crate::dto::request::MemberRegistersWithPasswordRequest;
 use crate::dto::request::MemberVerifiesEmailRequest;
@@ -8,6 +9,7 @@ use crate::dto::request::MemberVerifiesEmailRequest;
 use crate::server::handler::GuestRegistersTrait;
 use crate::server::handler::GuestRequestsRestoreTokenTrait;
 use crate::server::handler::GuestWithTokenChangesPasswordTrait;
+use crate::server::handler::MemberDeletesAccountTrait;
 use crate::server::handler::MemberLoginsWithPasswordTrait;
 use crate::server::handler::MemberRegistersWithPasswordTrait;
 use crate::server::handler::MemberVerifiesEmailTrait;
@@ -27,6 +29,7 @@ where
     guest_registers: Arc<dyn GuestRegistersTrait<Id = I>>,
     guest_requests_restore_token: Arc<dyn GuestRequestsRestoreTokenTrait<Id = I>>,
     guest_with_token_changes_password: Arc<dyn GuestWithTokenChangesPasswordTrait<Id = I>>,
+    member_deletes_account: Arc<dyn MemberDeletesAccountTrait<Id = I>>,
     member_logins_with_password: Arc<dyn MemberLoginsWithPasswordTrait<Id = I>>,
     member_registers_with_password: Arc<dyn MemberRegistersWithPasswordTrait<Id = I>>,
     member_verifies_email: Arc<dyn MemberVerifiesEmailTrait<Id = I>>,
@@ -42,6 +45,7 @@ where
         guest_registers: Arc<dyn GuestRegistersTrait<Id = I>>,
         guest_requests_restore_token: Arc<dyn GuestRequestsRestoreTokenTrait<Id = I>>,
         guest_with_token_changes_password: Arc<dyn GuestWithTokenChangesPasswordTrait<Id = I>>,
+        member_deletes_account: Arc<dyn MemberDeletesAccountTrait<Id = I>>,
         member_logins_with_password: Arc<dyn MemberLoginsWithPasswordTrait<Id = I>>,
         member_registers_with_password: Arc<dyn MemberRegistersWithPasswordTrait<Id = I>>,
         member_verifies_email: Arc<dyn MemberVerifiesEmailTrait<Id = I>>,
@@ -52,6 +56,7 @@ where
             guest_registers,
             guest_requests_restore_token,
             guest_with_token_changes_password,
+            member_deletes_account,
             member_logins_with_password,
             member_registers_with_password,
             member_verifies_email,
@@ -110,6 +115,25 @@ where
             .guest_with_token_changes_password
             .handle(req, user)
             .await?;
+
+        Ok(HttpResponse::new(
+            r.to_status_code(),
+            r.to_response().body(),
+        ))
+    }
+
+    pub async fn member_deletes_account(
+        &self,
+        request: impl RequestTrait,
+        raw_path_params: HashMap<&str, &str>,
+    ) -> Result<HttpResponse, HttpError> {
+        let raw_query_params = HashMap::from([]);
+        let req: MemberDeletesAccountRequest = self
+            .request_transformer
+            .transform(request, raw_path_params, raw_query_params)
+            .await?;
+        let user = self.bearer_auth.auth(&req.params.headers).await?;
+        let r = self.member_deletes_account.handle(req, user).await?;
 
         Ok(HttpResponse::new(
             r.to_status_code(),
