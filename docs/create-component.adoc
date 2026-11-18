@@ -40,14 +40,17 @@ Business packages must not be dependent on 3rd party code.
 ** Add new variable to `.env` `POSTGRES_DB_FOR_{$componentName}`=`$dbName`
 ** Add new variable with connection string to `.env`.
 E.g.: `AG_USER_DATABASE_URL=postgres://dev:dev@*:5432/argentum_user`
-* Add new DB service in its own `{$componentName}/devops/docker/docker-compose.yaml` with name `service.{$componentName}.db` and include it in the root `docker-compose.yaml` and `docker-compose.dev.yaml`.
-Component specific docker files live inside the component, see link:../argentum_user/devops/docker[argentum_user/devops/docker] as an example. Only shared docker files stay in link:../devops/docker[devops/docker].
+* Add a DB service in its own `{$componentName}/devops/docker/docker-compose.yaml` with name `service.{$componentName}.db`, and include it in the root `docker-compose.yaml` and `docker-compose.dev.yaml`.
+Component-specific Docker files live inside the component; see link:../argentum_user/devops/docker[argentum_user/devops/docker] as an example. Only shared Docker files stay in link:../devops/docker[devops/docker].
+* Add DEV-only settings (e.g. `tmpfs`, published ports) to `{$componentName}/devops/docker/docker-compose.dev.yaml` and include it in the root `docker-compose.dev.yaml`.
+* Add the `POSTGRES_DB_FOR_{$componentName}` variable to `.env` and reference the service from the API service `depends_on` with `condition: service_healthy`.
 * Add dependencies to `Cargo.toml`
 ** `argentum_standard_business = { path = "../../argentum_standard/business" }`
 ** `argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure" }`
-** `sqlx = { version = "0.8.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any", "chrono"] }`
+** `sqlx = { version = "0.9.*", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "any"] }`
+** `jiff = { version = "1.*", features = ["serde"] }`
+** `jiff-sqlx = { version = "1.*", features = ["postgres"] }`
 ** `dotenvy = "0.15.*"`
-** `chrono = { version = "0.4.19", features = ["serde"] }`
 ** `serde = { version = "1.0", features = ["derive"] }`
 ** `uuid = { version = "1.*, features = ["serde", "v4"] }`
 

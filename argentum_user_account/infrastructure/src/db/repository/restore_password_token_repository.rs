@@ -69,7 +69,7 @@ where
         let sql = format!(
             "SELECT id, user_id, token, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(id);
 
         self.find_one(query).await
     }
@@ -81,7 +81,7 @@ where
         let sql = format!(
             "SELECT id, user_id, token, created_at FROM {TABLE_NAME} WHERE token = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(token);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(token);
 
         self.find_one(query).await
     }
@@ -97,7 +97,7 @@ where
         let id: Uuid = token.id.into();
         let user_id: Uuid = token.user_id.into();
 
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(id)
             .bind(user_id)
             .bind(token.token.clone())
@@ -117,7 +117,7 @@ where
     ) -> Result<(), RestorePasswordTokenRepositoryError> {
         let id: Uuid = user_id.into();
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql)).bind(id);
 
         let result = self.adapter.exec(query).await;
 

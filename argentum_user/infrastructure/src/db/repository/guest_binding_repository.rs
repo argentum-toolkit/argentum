@@ -47,7 +47,7 @@ where
         );
 
         let id: Uuid = member_id.into();
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(id);
 
         let result: Result<Option<GuestBindingDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
@@ -74,7 +74,7 @@ where
         let sql = format!(
             "INSERT INTO {TABLE_NAME} (member_id, guest_id, created_at) VALUES ($1, $2, $3)"
         );
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(member_id)
             .bind(guest_id)
             .bind(binding.created_at.to_sqlx());

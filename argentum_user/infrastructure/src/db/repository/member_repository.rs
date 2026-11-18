@@ -96,7 +96,7 @@ where
         let sql = format!(
             "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug FROM {TABLE_NAME} WHERE id = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(id);
 
         self.find_one(query).await
     }
@@ -108,7 +108,7 @@ where
         let sql = format!(
             "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug FROM {TABLE_NAME} WHERE slug = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(slug);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(slug);
 
         self.find_one(query).await
     }
@@ -120,7 +120,7 @@ where
         let sql = format!(
             "SELECT id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug FROM {TABLE_NAME} WHERE email = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(email.as_string());
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(email.as_string());
 
         self.find_one(query).await
     }
@@ -134,7 +134,7 @@ where
             "INSERT INTO {TABLE_NAME} (id, created_at, first_name, last_name, additional_name, email, email_confirmed, slug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
         );
 
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(member_id)
             .bind(member.created_at.to_sqlx())
             .bind(member.name.first.to_string())
@@ -161,7 +161,7 @@ where
             "UPDATE {TABLE_NAME} SET first_name = $1, last_name = $2, additional_name = $3, email = $4, email_confirmed = $5 WHERE id = $6"
         );
 
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(member.name.first.to_string())
             .bind(last)
             .bind(additional)
