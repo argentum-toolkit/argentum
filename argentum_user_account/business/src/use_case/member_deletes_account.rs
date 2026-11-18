@@ -12,6 +12,7 @@ use argentum_event_business::{EventDispatcher, EventDispatcherError};
 use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::repository::{
+    guest_binding_repository::{GuestBindingRepositoryError, GuestBindingRepositoryTrait},
     session_repository::{SessionRepositoryError, SessionRepositoryTrait},
     user_repository::{ExternalUserError, MemberRepositoryTrait},
 };
@@ -28,6 +29,7 @@ where
     email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
     restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
+    guest_binding_repository: Arc<dyn GuestBindingRepositoryTrait<Id = I>>,
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     event_dispatcher: Arc<EventDispatcher>,
     logger: Arc<L>,
@@ -44,6 +46,7 @@ where
         email_confirmation_token_repository: Arc<dyn EmailConfirmationTokenRepositoryTrait<Id = I>>,
         restore_password_token_repository: Arc<dyn RestorePasswordTokenRepositoryTrait<Id = I>>,
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
+        guest_binding_repository: Arc<dyn GuestBindingRepositoryTrait<Id = I>>,
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         event_dispatcher: Arc<EventDispatcher>,
         logger: Arc<L>,
@@ -54,6 +57,7 @@ where
             email_confirmation_token_repository,
             restore_password_token_repository,
             credential_writer,
+            guest_binding_repository,
             member_repository,
             event_dispatcher,
             logger,
@@ -102,6 +106,10 @@ where
 
         self.credential_writer.delete_for_user(member_id).await?;
 
+        self.guest_binding_repository
+            .delete_by_member_id(member_id)
+            .await?;
+
         self.member_repository.delete(member_id).await?;
 
         Ok(())
@@ -135,6 +143,13 @@ pub enum MemberDeletesAccountError {
         #[source]
         #[from]
         CredentialWriterError,
+    ),
+
+    #[error("Can't delete guest bindings")]
+    GuestBinding(
+        #[source]
+        #[from]
+        GuestBindingRepositoryError,
     ),
 
     #[error("Can't delete member")]
@@ -177,11 +192,14 @@ mod test {
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;
+    use argentum_user_business::entity::guest_binding::GuestBinding;
     use argentum_user_business::entity::session::Session;
     use argentum_user_business::entity::user::Member;
     use argentum_user_business::mock::repository::broken::member_repository_mock::MemberRepositoryMockWihBrokenSave;
+    use argentum_user_business::mock::repository::guest_binding_repository_mock::GuestBindingRepositoryMock;
     use argentum_user_business::mock::repository::member_repository_mock::MemberRepositoryMock;
     use argentum_user_business::mock::repository::session_repository_mock::SessionRepositoryMock;
+    use argentum_user_business::repository::guest_binding_repository::GuestBindingRepositoryTrait;
     use argentum_user_business::repository::session_repository::SessionRepositoryTrait;
     use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
     use async_trait::async_trait;
@@ -208,6 +226,7 @@ mod test {
         let email_token_repository = Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let restore_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let member_repository = Arc::new(MemberRepositoryMock::new());
+        let guest_binding_repository = Arc::new(GuestBindingRepositoryMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
             EncryptorMock::new(),
         )));
@@ -231,6 +250,7 @@ mod test {
             email_token_repository.clone(),
             restore_token_repository.clone(),
             credential_writer.clone(),
+            guest_binding_repository.clone(),
             member_repository.clone(),
             event_dispatcher,
             logger,
@@ -248,6 +268,10 @@ mod test {
         let password = "12345";
         credential_writer
             .write(&PasswordCredential::new(user_id, password.into()))
+            .await?;
+
+        guest_binding_repository
+            .save(&GuestBinding::new(user_id, id_factory.create()))
             .await?;
 
         session_repository
@@ -295,6 +319,12 @@ mod test {
                 .is_none()
         );
         assert!(member_repository.find(user_id).await?.is_none());
+        assert!(
+            guest_binding_repository
+                .find_by_member_id(user_id)
+                .await?
+                .is_none()
+        );
 
         let names = listener.names.lock().unwrap();
         assert_eq!(
@@ -312,6 +342,7 @@ mod test {
         let email_token_repository = Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let restore_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let member_repository = Arc::new(MemberRepositoryMock::new());
+        let guest_binding_repository = Arc::new(GuestBindingRepositoryMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
             EncryptorMock::new(),
         )));
@@ -335,6 +366,7 @@ mod test {
             email_token_repository.clone(),
             restore_token_repository.clone(),
             credential_writer.clone(),
+            guest_binding_repository.clone(),
             member_repository.clone(),
             event_dispatcher,
             logger,
@@ -390,6 +422,7 @@ mod test {
         let email_token_repository = Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let restore_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let member_repository = Arc::new(MemberRepositoryMock::new());
+        let guest_binding_repository = Arc::new(GuestBindingRepositoryMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
             EncryptorMock::new(),
         )));
@@ -413,6 +446,7 @@ mod test {
             email_token_repository.clone(),
             restore_token_repository.clone(),
             credential_writer.clone(),
+            guest_binding_repository.clone(),
             member_repository.clone(),
             event_dispatcher,
             logger,
@@ -468,6 +502,7 @@ mod test {
         let email_token_repository = Arc::new(EmailConfirmationTokenRepositoryMock::new());
         let restore_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
         let member_repository = Arc::new(MemberRepositoryMockWihBrokenSave::new());
+        let guest_binding_repository = Arc::new(GuestBindingRepositoryMock::new());
         let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
             EncryptorMock::new(),
         )));
@@ -491,6 +526,7 @@ mod test {
             email_token_repository,
             restore_token_repository,
             credential_writer.clone(),
+            guest_binding_repository,
             member_repository,
             event_dispatcher,
             logger,

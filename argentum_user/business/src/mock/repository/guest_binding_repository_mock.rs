@@ -5,7 +5,8 @@ use crate::repository::guest_binding_repository::{
     GuestBindingRepositoryError, GuestBindingRepositoryTrait,
 };
 use argentum_standard_business::data_type::id::Id;
-use std::sync::RwLock;
+use argentum_standard_business::error::PoisonedLockError;
+use std::sync::{Arc, RwLock};
 
 use async_trait::async_trait;
 
@@ -42,7 +43,7 @@ where
         let binding = self
             .sessions
             .read()
-            .map_err(|_| GuestBindingRepositoryError::Other(Some("`RwLock` is poisoned".into())))?
+            .map_err(|_| GuestBindingRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?
             .get(&user_id)
             .map(|b| GuestBinding::<Self::Id>::new(b.member_id, b.guest_id));
 
@@ -60,12 +61,24 @@ where
         match self
             .sessions
             .write()
-            .map_err(|_| GuestBindingRepositoryError::Other(Some("`RwLock` is poisoned".into())))?
+            .map_err(|_| GuestBindingRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?
             .insert(binding.member_id, s)
             .is_none()
         {
             true => Ok(()),
             false => Err(GuestBindingRepositoryError::Save(None)),
         }
+    }
+
+    async fn delete_by_member_id(
+        &self,
+        member_id: Self::Id,
+    ) -> Result<(), GuestBindingRepositoryError> {
+        self.sessions
+            .write()
+            .map_err(|_| GuestBindingRepositoryError::Other(Some(Arc::new(PoisonedLockError))))?
+            .retain(|_, b| b.member_id != member_id);
+
+        Ok(())
     }
 }
