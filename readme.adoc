@@ -147,6 +147,15 @@ cargo install dioxus-cli
 
 === V0.4
 
+* devops
+** use includes in docker-compose.yaml
+
+* Email confirmation security
+** Require explicit user action (button click) before confirming email
+** Prevent automatic confirmation when email client prefetches/opens link
+** Add CSRF protection to email verification endpoint
+
+
 * Convention-based module registration
 ** Add explicit `Application`/`Module` API above `Container`.
 ** Standardize module registration for business, infrastructure, REST and UI.

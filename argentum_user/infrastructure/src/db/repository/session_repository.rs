@@ -46,7 +46,7 @@ where
         let sql = format!(
             "SELECT id, user_id, created_at, token FROM {TABLE_NAME} WHERE token = $1 LIMIT 1"
         );
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(token);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(token);
 
         let result: Result<Option<SessionDto>, DbAdapterError> =
             self.adapter.fetch_one(query).await;
@@ -71,7 +71,7 @@ where
         let sql = format!(
             "INSERT INTO {TABLE_NAME} (id, user_id, created_at, token) VALUES ($1, $2, $3, $4)"
         );
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(session_id)
             .bind(user_id)
             .bind(session.created_at.to_sqlx())
@@ -89,7 +89,7 @@ where
         let id: Uuid = user_id.into();
         let sql = format!("DELETE FROM {TABLE_NAME} WHERE user_id = $1");
 
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str())).bind(id);
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql)).bind(id);
 
         let result = self.adapter.exec(query).await;
 

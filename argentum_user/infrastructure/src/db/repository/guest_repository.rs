@@ -40,7 +40,7 @@ where
     async fn find(&self, id: Self::Id) -> Result<Option<Guest<Self::Id>>, ExternalUserError> {
         let guest_id: Uuid = id.into();
         let sql = format!("SELECT id, created_at FROM {TABLE_NAME} WHERE id = $1 LIMIT 1");
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str())).bind(guest_id);
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(guest_id);
 
         let result: Result<Option<GuestDto>, DbAdapterError> = self.adapter.fetch_one(query).await;
 
@@ -58,7 +58,7 @@ where
     async fn save(&self, user: &Guest<Self::Id>) -> Result<(), ExternalUserError> {
         let sql = format!("INSERT INTO {TABLE_NAME} (id, created_at) VALUES ($1, $2)");
         let user_id: Uuid = user.id.into();
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(user_id)
             .bind(user.created_at.to_sqlx());
 

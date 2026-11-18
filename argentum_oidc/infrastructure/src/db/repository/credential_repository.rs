@@ -48,7 +48,7 @@ where
         let sql = format!(
             "INSERT INTO {TABLE_NAME} (external_id, user_id, provider, created_at) VALUES ($1, $2, $3, $4)"
         );
-        let query = sqlx::query(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(credential.external_id.clone())
             .bind(user_id)
             .bind(credential.provider.clone())
@@ -70,7 +70,7 @@ where
         let sql = format!(
             "SELECT external_id, user_id, provider, created_at FROM {TABLE_NAME} WHERE external_id = $1 AND provider = $2 LIMIT 1"
         );
-        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str()))
+        let query = sqlx::query_as(sqlx::AssertSqlSafe(sql))
             .bind(external_id)
             .bind(provider);
 
