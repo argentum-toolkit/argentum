@@ -19,7 +19,7 @@ where
     url_prefix: String,
     regex_user_account_email_verification: Regex,
     regex_user_account_guest_registration: Regex,
-    regex_user_account_member: Regex,
+    regex_user_account_member_userid: Regex,
     regex_user_account_password_login: Regex,
     regex_user_account_register: Regex,
     regex_user_account_restore_password_change_password: Regex,
@@ -37,7 +37,9 @@ where
     ) -> Self {
         let regex_user_account_email_verification = regex!(r"\/user-account\/email-verification$");
         let regex_user_account_guest_registration = regex!(r"\/user-account\/guest-registration$");
-        let regex_user_account_member = regex!(r"\/user-account\/member$");
+        let regex_user_account_member_userid = regex!(
+            r"\/user-account\/member\/(?<userId>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"
+        );
         let regex_user_account_password_login = regex!(r"\/user-account\/password-login$");
         let regex_user_account_register = regex!(r"\/user-account\/register$");
         let regex_user_account_restore_password_change_password =
@@ -51,7 +53,7 @@ where
             url_prefix: url_prefix.into(),
             regex_user_account_email_verification,
             regex_user_account_guest_registration,
-            regex_user_account_member,
+            regex_user_account_member_userid,
             regex_user_account_password_login,
             regex_user_account_register,
             regex_user_account_restore_password_change_password,
@@ -94,7 +96,11 @@ where
             };
         }
 
-        if self.regex_user_account_member.captures(path).is_some() {
+        if self
+            .regex_user_account_member_userid
+            .captures(path)
+            .is_some()
+        {
             return match *method {
                 Method::DELETE => true,
                 _ => false,
@@ -181,8 +187,10 @@ where
             };
         }
 
-        if self.regex_user_account_member.captures(path).is_some() {
-            let raw_path_params = HashMap::new();
+        if let Some(caps) = self.regex_user_account_member_userid.captures(path) {
+            let user_id = caps["userId"].to_string();
+
+            let raw_path_params = HashMap::from([("user_id", user_id.as_str())]);
 
             return match *req.method() {
                 Method::DELETE => {

@@ -8,6 +8,8 @@ use crate::ui::callbacks::MemberDeletesAccountCallbacks;
 use crate::ui::input::DeleteAccountSchemaInputProcessor;
 use dioxus::prelude::*;
 
+use crate::dto::path_params::MemberDeletesAccountPathParams;
+
 #[derive(Clone, PartialEq)]
 pub struct MemberDeletesAccountFormProcessor {
     callbacks: MemberDeletesAccountCallbacks,
@@ -69,6 +71,7 @@ impl MemberDeletesAccountFormProcessor {
     pub async fn submit(
         &self,
         _auth_token: String,
+        _path_params: MemberDeletesAccountPathParams,
         _values: Signal<DeleteAccountSchema>,
         mut _violations: Signal<ViolationsDto>,
         mut _errors: Signal<Vec<String>>,
@@ -80,6 +83,7 @@ impl MemberDeletesAccountFormProcessor {
     pub async fn submit(
         &self,
         auth_token: String,
+        path_params: MemberDeletesAccountPathParams,
         values: Signal<DeleteAccountSchema>,
         mut violations: Signal<ViolationsDto>,
         mut errors: Signal<Vec<String>>,
@@ -91,7 +95,6 @@ impl MemberDeletesAccountFormProcessor {
 
         use crate::dto::operation_response_enum::MemberDeletesAccountOperationResponseEnum;
         use crate::dto::params::MemberDeletesAccountParams;
-        use crate::dto::path_params::MemberDeletesAccountPathParams;
         use crate::dto::request::MemberDeletesAccountRequest;
 
         use crate::dto::response::Status400Response;
@@ -106,7 +109,7 @@ impl MemberDeletesAccountFormProcessor {
         let req = MemberDeletesAccountRequest::new(
             values().into(),
             MemberDeletesAccountParams::new(
-                MemberDeletesAccountPathParams::new(),
+                path_params,
                 EmptyQueryParams {},
                 AuthHeaderParams::new(auth_token),
             ),

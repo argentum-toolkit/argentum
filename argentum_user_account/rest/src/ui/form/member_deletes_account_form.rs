@@ -1,3 +1,4 @@
+use crate::dto::path_params::MemberDeletesAccountPathParams;
 use crate::dto::schema::DeleteAccountSchema;
 use crate::ui::form_processor::MemberDeletesAccountFormProcessor;
 use crate::ui::input::DeleteAccountSchemaInput;
@@ -12,6 +13,7 @@ use dioxus::prelude::*;
 pub fn MemberDeletesAccountForm(
     processor: MemberDeletesAccountFormProcessor,
     auth_token: String,
+    path_params: MemberDeletesAccountPathParams,
     delete_account_schema: Option<DeleteAccountSchema>,
 ) -> Element {
     let mut values: Signal<DeleteAccountSchema> = match delete_account_schema {
@@ -31,12 +33,13 @@ pub fn MemberDeletesAccountForm(
                 e.prevent_default();
 
                 let processor = processor.clone();
+                let path_params = path_params.clone();
                 let auth_token = auth_token.clone();
 
                 spawn(async move {
                     processor.submit(
                         auth_token,
-
+                        path_params,
                         values,
                         violations,
                         errors,

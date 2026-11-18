@@ -1,4 +1,5 @@
 use argentum_standard_ui::LoginUrl;
+use argentum_user_account_rest::dto::path_params::MemberDeletesAccountPathParams;
 use argentum_user_account_rest::ui::callbacks::MemberDeletesAccountCallbacks;
 use argentum_user_account_rest::ui::form::MemberDeletesAccountForm;
 use argentum_user_account_rest::ui::form_processor::MemberDeletesAccountFormProcessor;
@@ -10,15 +11,21 @@ pub fn DeleteAccount() -> Element {
     let login_url = use_context::<LoginUrl>().0;
 
     #[cfg(feature = "web")]
-    let member_token = {
+    let (member_token, member_id) = {
         use crate::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        authenticator.read().get_user().map(|(token, _)| token)
+        match authenticator.read().get_user() {
+            Some((token, id)) => (Some(token), Some(id)),
+            None => (None, None),
+        }
     };
 
     #[cfg(not(feature = "web"))]
-    let member_token = Some("Server side rendering can't submit forms".to_string());
+    let (member_token, member_id) = (
+        Some("Server side rendering can't submit forms".to_string()),
+        None,
+    );
 
     #[cfg(feature = "web")]
     let callbacks = {
@@ -72,6 +79,7 @@ pub fn DeleteAccount() -> Element {
                                     MemberDeletesAccountForm {
                                         processor,
                                         auth_token,
+                                        path_params: member_id.map(|user_id| MemberDeletesAccountPathParams::new(user_id)).unwrap_or_default(),
                                         delete_account_schema: None,
                                     }
                                 }

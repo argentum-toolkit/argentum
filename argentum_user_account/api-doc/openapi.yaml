@@ -198,7 +198,7 @@ paths:
             "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
             401"
 
-  /user-account/member:
+  /user-account/member/{userId}:
     delete:
       summary: Member deletes own account
       description: Permanently deletes the logged-in member's account. Requires the current password to confirm.
@@ -207,6 +207,15 @@ paths:
       operationId: MemberDeletesAccount
       security:
         - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID of the logged-in member
+          schema:
+            type: string
+            format: uuid
+            example: "7e5d7cb4-7d83-46e3-8e24-4fb90a7e61d6"
       requestBody:
         $ref: "./request.oas.yaml#/components/requestBodies/DeleteAccountRequestBody"
       responses:

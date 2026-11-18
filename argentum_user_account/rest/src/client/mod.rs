@@ -143,10 +143,14 @@ impl Client {
     ) -> Result<MemberDeletesAccountOperationResponseEnum, String> {
         //TODO: use better type instead of Err(String)
 
-        let url_tpl = "/user-account/member".to_string();
+        let mut url_tpl = "/user-account/member/{userId}".to_string();
+
+        url_tpl = url_tpl.replace("{userId}", req.params.path.user_id.to_string().as_str());
 
         let url = format!("{}{}{}", self.server_url, self.base_path, url_tpl);
 
+        let body = serde_json::to_vec_pretty(&req.body)
+            .map_err(|e| format!("Can't parse request body. Error: {e}"))?;
         //TODO: params: header, query
 
         let client = reqwest::Client::new();
@@ -159,6 +163,7 @@ impl Client {
                 "authorization",
                 format!("Bearer {}", req.params.headers.authorization),
             )
+            .body(body)
             .send()
             .await;
 

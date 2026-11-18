@@ -75,7 +75,7 @@ paths:
       responses:
         '201':
           $ref: '#/components/responses/GuestRegisteredSuccessfully'
-  /user-account/member:
+  /user-account/member/{userId}:
     delete:
       description: Permanently deletes the logged-in member's account. Requires the current password to confirm.
       operationId: MemberDeletesAccount
@@ -86,6 +86,16 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/DeleteAccountRequestBody'
       summary: Member deletes own account
+      parameters:
+      - name: userId
+        in: path
+        description: User ID of the logged-in member
+        required: true
+        deprecated: false
+        schema:
+          example: 7e5d7cb4-7d83-46e3-8e24-4fb90a7e61d6
+          type: string
+          format: uuid
       responses:
         '204':
           $ref: '#/components/responses/204'

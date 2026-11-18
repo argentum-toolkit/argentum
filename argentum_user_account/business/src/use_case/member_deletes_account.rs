@@ -63,8 +63,13 @@ where
     pub async fn execute(
         &self,
         member_id: I,
+        requested_user_id: I,
         password: SecretString,
     ) -> Result<(), MemberDeletesAccountError> {
+        if requested_user_id != member_id {
+            return Err(MemberDeletesAccountError::UserIdMismatch);
+        }
+
         if !self.password_checker.check(member_id, &password).await? {
             return Err(MemberDeletesAccountError::WrongPassword);
         }
@@ -107,6 +112,9 @@ where
 pub enum MemberDeletesAccountError {
     #[error("Wrong password")]
     WrongPassword,
+
+    #[error("Requested user id does not match the logged-in member")]
+    UserIdMismatch,
 
     #[error("Can't check password")]
     PasswordCheck(
@@ -260,7 +268,7 @@ mod test {
             ))
             .await?;
 
-        uc.execute(user_id, password.into()).await?;
+        uc.execute(user_id, user_id, password.into()).await?;
 
         assert!(
             session_repository
@@ -348,11 +356,91 @@ mod test {
             .save(&Session::new(id_factory.create(), user_id, "session_token"))
             .await?;
 
-        let result = uc.execute(user_id, SecretString::from("wrong")).await;
+        let result = uc
+            .execute(user_id, user_id, SecretString::from("wrong"))
+            .await;
 
         match result {
             Err(MemberDeletesAccountError::WrongPassword) => {}
             _ => return Err("Should return 'WrongPassword' error".into()),
+        }
+
+        assert!(
+            session_repository
+                .find_by_token("session_token")
+                .await?
+                .is_some()
+        );
+        assert!(
+            credential_repository
+                .find_by_user_id(user_id)
+                .await?
+                .is_some()
+        );
+        assert!(member_repository.find(user_id).await?.is_some());
+        assert!(listener.names.lock().unwrap().is_empty());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn member_deletes_account_with_mismatched_user_id() -> Result<(), Box<dyn Error>> {
+        let id_factory = Arc::new(IdFactoryMock::new());
+        let session_repository = Arc::new(SessionRepositoryMock::new());
+        let email_token_repository = Arc::new(EmailConfirmationTokenRepositoryMock::new());
+        let restore_token_repository = Arc::new(RestorePasswordTokenRepositoryMock::new());
+        let member_repository = Arc::new(MemberRepositoryMock::new());
+        let credential_repository = Arc::new(PasswordCredentialRepositoryMock::new(Arc::new(
+            EncryptorMock::new(),
+        )));
+        let credential_writer =
+            Arc::new(PasswordCredentialWriter::new(credential_repository.clone()));
+        let password_checker = Arc::new(PasswordCredentialChecker::new(
+            credential_repository.clone(),
+            Arc::new(ValidatorMock::new()),
+        ));
+
+        let event_dispatcher = Arc::new(EventDispatcher::new());
+        let listener = Arc::new(EventNameListener::default());
+        event_dispatcher.register_listener(listener.clone())?;
+
+        let writer = Arc::new(StdoutWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
+
+        let uc = MemberDeletesAccountUc::new(
+            password_checker,
+            session_repository.clone(),
+            email_token_repository.clone(),
+            restore_token_repository.clone(),
+            credential_writer.clone(),
+            member_repository.clone(),
+            event_dispatcher,
+            logger,
+        );
+
+        let user_id = id_factory.create();
+        let user_name = NameBuilder::new("Dionne")
+            .last(Some("Morrison"))
+            .try_build()
+            .expect("Name should be valid");
+        let email = EmailAddress::try_new("test@mail.com").expect("Email should be valid");
+        let member = Member::new(user_id, user_name, email, true);
+        member_repository.create(&member).await?;
+
+        let password = "12345";
+        credential_writer
+            .write(&PasswordCredential::new(user_id, password.into()))
+            .await?;
+        session_repository
+            .save(&Session::new(id_factory.create(), user_id, "session_token"))
+            .await?;
+
+        let other_user_id = id_factory.create();
+        let result = uc.execute(user_id, other_user_id, password.into()).await;
+
+        match result {
+            Err(MemberDeletesAccountError::UserIdMismatch) => {}
+            _ => return Err("Should return 'UserIdMismatch' error".into()),
         }
 
         assert!(
@@ -414,7 +502,7 @@ mod test {
             .write(&PasswordCredential::new(user_id, password.into()))
             .await?;
 
-        let result = uc.execute(user_id, password.into()).await;
+        let result = uc.execute(user_id, user_id, password.into()).await;
 
         match result {
             Err(MemberDeletesAccountError::Member(_)) => {}

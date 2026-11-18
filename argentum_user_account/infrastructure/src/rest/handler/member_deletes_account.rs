@@ -1,8 +1,9 @@
 use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{
-    HttpError, InternalServerError, Unauthorized,
+    Forbidden, HttpError, InternalServerError, Unauthorized,
 };
 use argentum_standard_business::data_type::id::Id;
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
 use argentum_user_account_business::use_case::member_deletes_account::{
     MemberDeletesAccountError, MemberDeletesAccountUc,
 };
@@ -35,7 +36,7 @@ where
 #[async_trait]
 impl<I, L> MemberDeletesAccountTrait for MemberDeletesAccountHandler<I, L>
 where
-    I: Id + 'static,
+    I: Id + From<UniqueId> + 'static,
     L: LoggerTrait,
 {
     type Id = I;
@@ -54,7 +55,11 @@ where
             }
         };
 
-        let result = self.uc.execute(member.id(), req.body.password.into()).await;
+        let requested_user_id: I = UniqueId::from(req.params.path.user_id).as_id();
+        let result = self
+            .uc
+            .execute(member.id(), requested_user_id, req.body.password.into())
+            .await;
 
         match result {
             Ok(_) => Ok(MemberDeletesAccountOperationResponseEnum::Status204(
@@ -63,6 +68,9 @@ where
             Err(MemberDeletesAccountError::WrongPassword) => Err(HttpError::Unauthorized(
                 Unauthorized::new(&format!("{}", MemberDeletesAccountError::WrongPassword)),
             )),
+            Err(e @ MemberDeletesAccountError::UserIdMismatch) => {
+                Err(HttpError::Forbidden(Forbidden::new(Arc::new(e))))
+            }
             Err(e) => Err(HttpError::InternalServerError(InternalServerError::new(
                 Arc::new(e),
             ))),
