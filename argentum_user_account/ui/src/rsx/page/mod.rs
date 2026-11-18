@@ -12,3 +12,9 @@ pub use login::Login;
 
 mod registration;
 pub use registration::Registration;
+
+mod delete_account;
+pub use delete_account::DeleteAccount;
+
+mod user_account;
+pub use user_account::UserAccount;

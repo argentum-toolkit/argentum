@@ -1,17 +1,20 @@
 use crate::rsx::page::Blog;
-use crate::rsx::wrapper::Wrapper;
+use crate::rsx::wrapper::{AccountWrapper, SiteWrapper};
 use argentum_oidc_ui::rsx::page::AuthCallback;
 use argentum_skeleton_ui::rsx::page::{About, Contacts, Home};
 use argentum_standard_ui::rsx::page::NotFound;
 use argentum_user_account_ui::rsx::page::Login;
 use argentum_user_account_ui::rsx::page::Registration;
-use argentum_user_account_ui::rsx::page::{EmailConfirmation, ForgotPassword, ResetPassword};
+use argentum_user_account_ui::rsx::page::UserAccount;
+use argentum_user_account_ui::rsx::page::{
+    DeleteAccount, EmailConfirmation, ForgotPassword, ResetPassword,
+};
 use dioxus::prelude::*;
 
 #[derive(Clone, Routable, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[rustfmt::skip]
 pub enum Route {
-    #[layout(Wrapper)]
+    #[layout(SiteWrapper)]
         #[route("/")]
         Home {},
 
@@ -41,6 +44,15 @@ pub enum Route {
         #[route("/blog/:id")]
         Blog { id: i32 },
 
+    #[end_layout]
+
+    #[layout(AccountWrapper)]
+        #[nest("/user-account")]
+            #[route("")]
+            UserAccount {},
+            #[route("/delete-account")]
+            DeleteAccount {},
+        #[end_nest]
     #[end_layout]
 
     #[route("/:..route")]
