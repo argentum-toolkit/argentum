@@ -74,4 +74,8 @@ impl MemberRepositoryTrait for MemberRepositoryMockWihBrokenSave {
     async fn update(&self, _user: &Member<Self::Id>) -> Result<(), ExternalUserError> {
         Err(ExternalUserError::Member(None))
     }
+
+    async fn delete(&self, _id: Self::Id) -> Result<(), ExternalUserError> {
+        Err(ExternalUserError::Member(None))
+    }
 }

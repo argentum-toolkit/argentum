@@ -103,4 +103,13 @@ where
             Err(ExternalUserError::Member(None))
         }
     }
+
+    async fn delete(&self, id: Self::Id) -> Result<(), ExternalUserError> {
+        self.users
+            .write()
+            .map_err(|_| ExternalUserError::Member(Some(Arc::new(PoisonedLockError))))?
+            .remove(&id);
+
+        Ok(())
+    }
 }
