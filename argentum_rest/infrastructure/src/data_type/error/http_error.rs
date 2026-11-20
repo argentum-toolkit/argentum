@@ -2,7 +2,7 @@ use crate::data_type::SerializableBody;
 use crate::data_type::error::method_not_allowed::MethodNotAllowedError;
 use crate::data_type::error::{
     BadRequestError, Conflict, Forbidden, InternalServerError, NotFoundError, NotImplementedError,
-    Unauthorized, UnprocessableEntity,
+    ServiceUnavailableError, Unauthorized, UnprocessableEntity,
 };
 use serde::Serialize;
 
@@ -12,6 +12,8 @@ pub enum HttpError {
     InternalServerError(InternalServerError),
 
     NotImplemented(NotImplementedError),
+
+    ServiceUnavailable(ServiceUnavailableError),
 
     //4xx
     BadRequest(BadRequestError),

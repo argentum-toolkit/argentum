@@ -12,6 +12,8 @@ use crate::dto::schema::UserNameRaw;
 pub struct RegistrationWithPasswordSchema {
     #[serde(rename = "name")]
     pub name: UserName,
+    #[serde(rename = "captcha")]
+    pub captcha: Option<String>,
     #[serde(rename = "email")]
     pub email: String,
     #[serde(rename = "password")]
@@ -21,9 +23,16 @@ pub struct RegistrationWithPasswordSchema {
 }
 
 impl RegistrationWithPasswordSchema {
-    pub fn new(name: UserName, email: String, password: String, terms: bool) -> Self {
+    pub fn new(
+        name: UserName,
+        captcha: Option<String>,
+        email: String,
+        password: String,
+        terms: bool,
+    ) -> Self {
         Self {
             name,
+            captcha,
             email,
             password,
             terms,
@@ -56,6 +65,7 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
                 None
             }
         };
+        let captcha = raw.captcha;
         let email = raw.email;
         if email.is_none() {
             argentum_violations.insert(
@@ -84,7 +94,7 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
             && let Some(password) = password
             && let Some(terms) = terms
         {
-            Ok(Self::new(name, email, password, terms))
+            Ok(Self::new(name, captcha, email, password, terms))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordSchema".to_string()],
@@ -98,6 +108,8 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
 pub struct RegistrationWithPasswordSchemaRaw {
     #[serde(rename = "name")]
     pub name: Option<UserNameRaw>,
+    #[serde(rename = "captcha")]
+    pub captcha: Option<String>,
     #[serde(rename = "email")]
     pub email: Option<String>,
     #[serde(rename = "password")]

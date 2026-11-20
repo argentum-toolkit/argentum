@@ -6,6 +6,8 @@ use crate::dto::schema::UserName;
 use crate::ui::input::UserNameInput;
 use crate::ui::input::UserNameInputProcessor;
 use argentum_standard_infrastructure::invariant_violation::{ViolationItemDto, ViolationsDto};
+use argentum_standard_ui::rsx::form::Captcha;
+use argentum_standard_ui::rsx::form::CaptchaProcessor;
 use argentum_standard_ui::rsx::form::LabeledCheckbox;
 use argentum_standard_ui::rsx::form::LabeledCheckboxProcessor;
 use argentum_standard_ui::rsx::form::LabeledInput;
@@ -27,6 +29,7 @@ pub struct RegistrationWithPasswordSchemaProps {
 #[derive(Clone, PartialEq, Default)]
 pub struct RegistrationWithPasswordSchemaInputProcessor {
     pub name_processor: UserNameInputProcessor,
+    pub captcha_processor: CaptchaProcessor,
     pub email_processor: LabeledInputProcessor,
     pub password_processor: LabeledInputProcessor,
     pub terms_processor: LabeledCheckboxProcessor,
@@ -49,6 +52,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
     } = props.clone();
 
     let mut name_value = use_signal(|| value.name);
+    let mut captcha_value = use_signal(|| value.captcha);
     let mut email_value = use_signal(|| value.email);
     let mut password_value = use_signal(|| value.password);
     let mut terms_value = use_signal(|| value.terms);
@@ -62,6 +66,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
     };
 
     let name_violations = violation_items.get("name").cloned();
+    let captcha_violations = violation_items.get("captcha").cloned();
     let email_violations = violation_items.get("email").cloned();
     let password_violations = violation_items.get("password").cloned();
     let terms_violations = violation_items.get("terms").cloned();
@@ -69,6 +74,7 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
     let update = move || {
         props.oninput.call(RegistrationWithPasswordSchema::new(
             name_value(),
+            captcha_value(),
             email_value(),
             password_value(),
             terms_value(),
@@ -94,6 +100,22 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
                             },
                             processor: processor.name_processor,
                         }
+
+                            Captcha {
+            id: "captcha",
+            name: "captcha",
+            label: "",
+            required: false,
+                value: captcha_value().unwrap_or_default(),
+            violations: captcha_violations,
+
+            oninput: move |v: String| {
+                captcha_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.captcha_processor,
+        }
 
                             LabeledInput {
             id: "email",
@@ -166,6 +188,22 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
                             processor: processor.name_processor,
                         }
 
+                            Captcha {
+            id: "captcha",
+            name: "captcha",
+            label: "",
+            required: false,
+                value: captcha_value().unwrap_or_default(),
+            violations: captcha_violations,
+
+            oninput: move |v: String| {
+                captcha_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.captcha_processor,
+        }
+
                             LabeledInput {
             id: "email",
             name: "email",
@@ -231,6 +269,22 @@ pub fn RegistrationWithPasswordSchemaInput(props: RegistrationWithPasswordSchema
                             },
                             processor: processor.name_processor,
                         }
+
+                    Captcha {
+            id: "captcha",
+            name: "captcha",
+            label: "",
+            required: false,
+                value: captcha_value().unwrap_or_default(),
+            violations: captcha_violations,
+
+            oninput: move |v: String| {
+                captcha_value.set(Some(v));
+                update();
+            },
+
+            processor: processor.captcha_processor,
+        }
 
                     LabeledInput {
             id: "email",

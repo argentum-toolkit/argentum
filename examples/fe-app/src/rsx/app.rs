@@ -2,7 +2,8 @@ use crate::route::Route;
 
 use argentum_oidc_ui::{GithubClientId, GoogleClientId, OidcRedirectUrl, rsx::OidcLoginBlock};
 use argentum_standard_ui::{
-    HomePageUrl, LoginUrl, RegistrationUrl, rsx::component::dark_mode::use_dark_mode,
+    CaptchaTurnstileSiteKey, HomePageUrl, LoginUrl, RegistrationUrl,
+    rsx::component::dark_mode::use_dark_mode,
 };
 use argentum_user_account_ui::{AdditionalLoginBlock, DeleteAccountUrl};
 use dioxus::prelude::*;
@@ -18,6 +19,7 @@ pub(crate) fn App() -> Element {
 
     let u_api_url = env!("AG_USER_API_URL");
     let oidc_api_url = env!("AG_OIDC_API_URL");
+    let captcha_turnstile_site_key = env!("AG_CAPTCHA_TURNSTILE_SITE_KEY");
 
     use_context_provider(|| GoogleClientId(google_client_id.into()));
     use_context_provider(|| GithubClientId(github_client_id.into()));
@@ -27,6 +29,7 @@ pub(crate) fn App() -> Element {
     use_context_provider(|| LoginUrl((Route::Login {}).to_string()));
     use_context_provider(|| RegistrationUrl((Route::Registration {}).to_string()));
     use_context_provider(|| DeleteAccountUrl((Route::DeleteAccount {}).to_string()));
+    use_context_provider(|| CaptchaTurnstileSiteKey(captcha_turnstile_site_key.into()));
 
     #[cfg(feature = "web")]
     {

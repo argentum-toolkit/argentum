@@ -11,3 +11,6 @@ pub struct LoginUrl(pub String);
 
 #[derive(Clone)]
 pub struct RegistrationUrl(pub String);
+
+#[derive(Clone)]
+pub struct CaptchaTurnstileSiteKey(pub String);

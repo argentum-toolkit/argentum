@@ -92,6 +92,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "argentum_captcha_business"
+version = "0.4.0-dev"
+dependencies = [
+ "argentum_log_business",
+ "argentum_standard_business",
+ "async-trait",
+ "thiserror 2.0.21",
+ "tokio",
+]
+
+[[package]]
+name = "argentum_captcha_infrastructure"
+version = "0.4.0-dev"
+dependencies = [
+ "argentum_captcha_business",
+ "argentum_standard_business",
+ "async-trait",
+ "reqwest",
+ "secrecy",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "argentum_component_generator_app"
 version = "0.4.0-dev"
 dependencies = [
@@ -182,6 +206,7 @@ dependencies = [
 name = "argentum_example_app"
 version = "0.4.0-dev"
 dependencies = [
+ "argentum_captcha_business",
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",
  "argentum_event_business",
@@ -421,6 +446,8 @@ name = "argentum_skeleton_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
  "anyhow",
+ "argentum_captcha_business",
+ "argentum_captcha_infrastructure",
  "argentum_db_infrastructure",
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",
@@ -442,6 +469,7 @@ dependencies = [
  "argentum_user_rest",
  "envy",
  "reqwest",
+ "secrecy",
  "serde",
  "sqlx",
  "tokio",
@@ -487,6 +515,7 @@ version = "0.4.0-dev"
 dependencies = [
  "argentum_standard_infrastructure",
  "dioxus",
+ "serde",
  "uuid",
  "web-sys",
 ]
@@ -506,6 +535,7 @@ dependencies = [
 name = "argentum_user_account_business"
 version = "0.4.0-dev"
 dependencies = [
+ "argentum_captcha_business",
  "argentum_encryption_business",
  "argentum_event_business",
  "argentum_log_business",
@@ -524,6 +554,7 @@ name = "argentum_user_account_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
  "anyhow",
+ "argentum_captcha_business",
  "argentum_db_infrastructure",
  "argentum_encryption_business",
  "argentum_encryption_infrastructure",

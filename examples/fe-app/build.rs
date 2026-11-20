@@ -30,4 +30,6 @@ fn main() {
     export("AG_USER_API_URL");
     export("AG_USER_ACCOUNT_API_URL");
     export("AG_OIDC_API_URL");
+
+    export("AG_CAPTCHA_TURNSTILE_SITE_KEY");
 }

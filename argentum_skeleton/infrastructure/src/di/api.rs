@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use argentum_captcha_business::di::{captcha_business_provide, captcha_business_provide_mock};
+use argentum_captcha_infrastructure::di::captcha_infrastructure_provide_turnstile;
 use argentum_encryption_business::password::{Encryptor, Validator};
 use argentum_encryption_infrastructure::pbkdf2::Pbkdf2;
 use argentum_event_business::di::event_business_provide;
@@ -27,6 +29,7 @@ use argentum_user_account_business::di::user_account_business_provide;
 use argentum_user_account_infrastructure::di::user_account_infrastructure_provider;
 use argentum_user_business::di::user_business_provide;
 use argentum_user_infrastructure::di::user_infrastructure_provide;
+use secrecy::SecretString;
 use serde::Deserialize;
 
 fn default_password_min_length() -> usize {
@@ -34,6 +37,10 @@ fn default_password_min_length() -> usize {
 }
 
 fn default_password_complexity_enabled() -> bool {
+    true
+}
+
+fn default_captcha_enabled() -> bool {
     true
 }
 
@@ -56,6 +63,10 @@ struct Env {
     pub ag_password_min_length: usize,
     #[serde(default = "default_password_complexity_enabled")]
     pub ag_password_complexity_enabled: bool,
+    #[serde(default = "default_captcha_enabled")]
+    pub ag_captcha_enabled: bool,
+    #[serde(default)]
+    pub ag_captcha_turnstile_secret_key: String,
     pub tls_cert_file: String,
     pub tls_key_file: String,
 }
@@ -132,6 +143,7 @@ where
         .pool_max_idle_per_host(20)
         .build()
         .map_err(|e| DiError::with_context("Can't create reqwest client", e))?;
+    let client = Arc::new(client);
 
     oidc_infrastructure_provider::<L>(
         container,
@@ -142,9 +154,26 @@ where
         env.ag_google_client_id.clone(),
         env.ag_google_client_secret.clone(),
         env.ag_oidc_redirect_url.clone(),
-        Arc::new(client),
+        client.clone(),
     )
     .await?;
+
+    if env.ag_captcha_enabled {
+        if env.ag_captcha_turnstile_secret_key.is_empty() {
+            return Err(DiError::from(
+                "AG_CAPTCHA_TURNSTILE_SECRET_KEY is required when AG_CAPTCHA_ENABLED=true",
+            ));
+        }
+
+        captcha_infrastructure_provide_turnstile(
+            container,
+            SecretString::from(env.ag_captcha_turnstile_secret_key.clone()),
+            client,
+        );
+    } else {
+        captcha_business_provide_mock(container);
+    }
+    captcha_business_provide::<L>(container, env.ag_captcha_enabled);
 
     let pbkdf2 = Arc::new(Pbkdf2::new());
     let encryptor = pbkdf2.clone();

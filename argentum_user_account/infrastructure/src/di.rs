@@ -15,6 +15,7 @@ use crate::rest::transformer::{
     DtoToMemberLoginsWithPasswordParams, DtoToMemberRegistersWithPasswordParams,
 };
 use crate::token::{JwtTokenGenerator, StringTokenGenerator};
+
 use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
 use argentum_encryption_business::password::Encryptor;
 use argentum_log_business::LoggerTrait;

@@ -182,6 +182,11 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     )?;
 
     reg.register_template_string(
+        "ui/input/captcha",
+        include_str!("../template/ui/input/captcha.hbs"),
+    )?;
+
+    reg.register_template_string(
         "ui/input/labeled_checkbox",
         include_str!("../template/ui/input/labeled_checkbox.hbs"),
     )?;

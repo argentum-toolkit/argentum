@@ -1,3 +1,4 @@
+use argentum_captcha_business::data_type::Captcha;
 use argentum_rest_infrastructure::data_type::error::{BadRequestError, HttpError};
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
@@ -16,7 +17,7 @@ impl DtoToMemberRegistersWithPasswordParams {
     pub fn transform(
         &self,
         req: MemberRegistersWithPasswordRequest,
-    ) -> Result<(Name, EmailAddress, String, bool), HttpError> {
+    ) -> Result<(Name, EmailAddress, String, bool, Option<Captcha>), HttpError> {
         let mut vo = BTreeMap::new();
 
         let raw_name = req.body.name.clone();
@@ -42,13 +43,27 @@ impl DtoToMemberRegistersWithPasswordParams {
             }
         };
 
+        let captcha = match req
+            .body
+            .captcha
+            .as_deref()
+            .map(Captcha::try_new)
+            .transpose()
+        {
+            Ok(c) => c,
+            Err(v) => {
+                vo.insert("captcha".to_string(), v);
+                None
+            }
+        };
+
         let terms_accepted = req.body.terms;
 
         if vo.is_empty()
             && let Some(n) = name
             && let Some(e) = email
         {
-            Ok((n, e, req.body.password, terms_accepted))
+            Ok((n, e, req.body.password, terms_accepted, captcha))
         } else {
             Err(HttpError::BadRequest(BadRequestError::new(
                 Violations::new(vec![], Some(ViolationItem::Object(vo))),

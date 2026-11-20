@@ -138,6 +138,21 @@ where
                     )),
                 )
             }
+            HttpError::ServiceUnavailable(e) => {
+                self.logger.error(format!("Service unavailable {e:?}"));
+
+                let code = StatusCode::SERVICE_UNAVAILABLE;
+                HttpResponse::new(
+                    code,
+                    Box::new(ProblemDetail::new(
+                        None,
+                        code.canonical_reason().unwrap_or("unknown").to_string(),
+                        code,
+                        None,
+                        None,
+                    )),
+                )
+            }
         }
     }
 }
@@ -146,7 +161,7 @@ where
 mod tests {
     use crate::data_type::error::{
         BadRequestError, HttpError, InternalServerError, MethodNotAllowedError, NotFoundError,
-        NotImplementedError,
+        NotImplementedError, ServiceUnavailableError,
     };
 
     use crate::service::ErrorHandler;
@@ -276,6 +291,31 @@ mod tests {
             "type": "about:blank",
             "title": "Internal Server Error",
             "status": 500,
+            "detail": null
+        });
+
+        assert_eq!(str, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_handle_service_unavailable() -> Result<(), Box<dyn Error>> {
+        let log_writer = Arc::new(StdoutWriter::new());
+        let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+        let handler = ErrorHandler::new(logger);
+
+        let response = handler.handle(HttpError::ServiceUnavailable(ServiceUnavailableError::new(
+            Arc::new(ErrorMock {}),
+        )));
+        assert_eq!(response.code, StatusCode::SERVICE_UNAVAILABLE);
+
+        let str = serde_json::to_value(&response.body)?;
+
+        let expected = json!({
+            "type": "about:blank",
+            "title": "Service Unavailable",
+            "status": 503,
             "detail": null
         });
 

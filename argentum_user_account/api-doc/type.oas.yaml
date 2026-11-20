@@ -39,6 +39,14 @@ components:
             id: terms
             name: terms
             weight: 40
+        captcha:
+          type: string
+          format: captcha
+          description: Captcha token. Required when captcha is enabled on the server.
+          example: captcha-token-example
+          x-ag-ui:
+            id: captcha
+            name: captcha
       required:
         - email
         - name

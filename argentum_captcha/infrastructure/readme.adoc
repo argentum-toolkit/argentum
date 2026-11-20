@@ -1,0 +1,10 @@
+= Argentum ToolKit. Captcha. Infrastructure layer.
+
+Vendor adapters for `argentum_captcha_business`. The current adapter is Cloudflare Turnstile (Siteverify API).
+
+Environment variables are read by `argentum_skeleton_infrastructure`:
+
+* `AG_CAPTCHA_ENABLED` - default `true`. `false` wires `AlwaysPassingCaptchaProviderMock` and skips the check. Use `false` only in DEV.
+* `AG_CAPTCHA_TURNSTILE_SECRET_KEY` - required when `AG_CAPTCHA_ENABLED=true`. The application does not start without it.
+
+Test secret keys for DEV are described in https://developers.cloudflare.com/turnstile/troubleshooting/testing/[Cloudflare documentation]. Production keys must not be committed.

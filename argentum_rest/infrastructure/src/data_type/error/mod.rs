@@ -9,6 +9,7 @@ mod internal_server_error;
 mod method_not_allowed;
 mod not_found;
 mod not_implemented;
+mod service_unavailable;
 mod unauthorized;
 mod unprocessable_entity;
 
@@ -20,5 +21,6 @@ pub use internal_server_error::InternalServerError;
 pub use method_not_allowed::MethodNotAllowedError;
 pub use not_found::NotFoundError;
 pub use not_implemented::NotImplementedError;
+pub use service_unavailable::ServiceUnavailableError;
 pub use unauthorized::Unauthorized;
 pub use unprocessable_entity::UnprocessableEntity;
