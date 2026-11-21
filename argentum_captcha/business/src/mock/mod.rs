@@ -1,0 +1,3 @@
+mod always_passing_captcha_provider_mock;
+
+pub use always_passing_captcha_provider_mock::AlwaysPassingCaptchaProviderMock;

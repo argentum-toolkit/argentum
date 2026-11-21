@@ -1,6 +1,9 @@
 use crate::entity::credential::PasswordCredential;
 use crate::repository::password_credential_writer::PasswordCredentialWriterTrait;
 
+use argentum_captcha_business::{
+    CaptchaError, data_type::Captcha, use_case::UserPassesCaptchaUcTrait,
+};
 use argentum_encryption_business::password::EncryptionError;
 use argentum_standard_business::data_type::EmailAddress;
 use argentum_user_business::data_type::Name;
@@ -25,6 +28,7 @@ where
     credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
     email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
     password_specification: Arc<StrongPasswordSpecification>,
+    captcha_uc: Arc<dyn UserPassesCaptchaUcTrait>,
 }
 
 impl<I> MemberRegistersWithPasswordUc<I>
@@ -37,23 +41,30 @@ where
         credential_writer: Arc<dyn PasswordCredentialWriterTrait<Id = I>>,
         email_confirmation_initiator: Arc<EmailConfirmationInitiator<I>>,
         password_specification: Arc<StrongPasswordSpecification>,
+        captcha_uc: Arc<dyn UserPassesCaptchaUcTrait>,
     ) -> Self {
         Self {
             member_repository,
             credential_writer,
             email_confirmation_initiator,
             password_specification,
+            captcha_uc,
         }
     }
 
     pub async fn execute(
         &self,
+        captcha: Option<Captcha>,
         id: I,
         name: Name,
         email: EmailAddress,
         password: SecretString,
         terms_accepted: bool,
     ) -> Result<Member<I>, RegistrationError> {
+        if !self.captcha_uc.execute(captcha.as_ref()).await? {
+            return Err(RegistrationError::CaptchaFailed);
+        }
+
         if !terms_accepted {
             return Err(RegistrationError::TermsNotAccepted);
         }
@@ -91,6 +102,16 @@ where
 
 #[derive(thiserror::Error, Debug)]
 pub enum RegistrationError {
+    #[error("Captcha check failed")]
+    CaptchaFailed,
+
+    #[error("Captcha can't be checked")]
+    CaptchaUnavailable(
+        #[source]
+        #[from]
+        CaptchaError,
+    ),
+
     #[error(
         "Please confirm that you agree to the Terms and Conditions and our Privacy Policy to proceed."
     )]
@@ -130,6 +151,7 @@ pub enum RegistrationError {
 
 #[cfg(test)]
 mod test {
+    use crate::mock::UserPassesCaptchaMock;
     use crate::mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock;
     use crate::mock::token::MemberGeneratorMock;
     use crate::repository::password_credential_writer::PasswordCredentialWriter;
@@ -137,15 +159,55 @@ mod test {
     use crate::use_case::member_registers_with_password::{
         MemberRegistersWithPasswordUc, RegistrationError,
     };
+    use argentum_captcha_business::data_type::Captcha;
+    use argentum_captcha_business::use_case::UserPassesCaptchaUcTrait;
     use argentum_encryption_business::mock::password::EncryptorMock;
     use argentum_notification_business::mock::StdoutNotifier;
     use argentum_standard_business::data_type::EmailAddress;
-    use argentum_standard_business::data_type::id::IdFactory;
+    use argentum_standard_business::data_type::id::{IdFactory, UIntId};
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
     use argentum_user_business::data_type::builder::NameBuilder;
     use argentum_user_business::mock::repository::broken::member_repository_mock::MemberRepositoryMockWihBrokenSave;
     use argentum_user_business::mock::repository::member_repository_mock::MemberRepositoryMock;
+    use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
     use std::sync::Arc;
+
+    fn token() -> Captcha {
+        Captcha::try_new("token-value").expect("captcha should be valid")
+    }
+
+    fn registration_uc(
+        captcha_uc: Arc<dyn UserPassesCaptchaUcTrait>,
+    ) -> (
+        MemberRegistersWithPasswordUc<UIntId>,
+        Arc<MemberRepositoryMock<UIntId>>,
+    ) {
+        use crate::mock::repository::email_confirmation_token_repository_mock::EmailConfirmationTokenRepositoryMock;
+        use crate::service::EmailConfirmationInitiator;
+
+        let credential_repository =
+            PasswordCredentialRepositoryMock::new(Arc::new(EncryptorMock::new()));
+        let credential_writer = PasswordCredentialWriter::new(Arc::new(credential_repository));
+        let member_repository = Arc::new(MemberRepositoryMock::new());
+
+        let email_confirmation_initiator = Arc::new(EmailConfirmationInitiator::new(
+            Arc::new(MemberGeneratorMock::new()),
+            Arc::new(EmailConfirmationTokenRepositoryMock::new()),
+            Arc::new(StdoutNotifier::new()),
+            "TestProduct",
+            "http://test.com/confirm/",
+        ));
+
+        let uc = MemberRegistersWithPasswordUc::new(
+            member_repository.clone(),
+            Arc::new(credential_writer),
+            email_confirmation_initiator,
+            Arc::new(StrongPasswordSpecification::new(3, false)),
+            captcha_uc,
+        );
+
+        (uc, member_repository)
+    }
 
     #[tokio::test]
     async fn test_user_registers_with_password() -> Result<(), &'static str> {
@@ -180,6 +242,7 @@ mod test {
             Arc::new(credential_writer),
             email_confirmation_initiator,
             password_specification,
+            Arc::new(UserPassesCaptchaMock::passing()),
         );
 
         let id = id_factory.create();
@@ -190,7 +253,9 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com").expect("Email should be valid");
         let password = "123";
         let terms = true;
-        let result = uc.execute(id, name, email, password.into(), terms).await;
+        let result = uc
+            .execute(Some(token()), id, name, email, password.into(), terms)
+            .await;
 
         match result {
             Ok(u) => {
@@ -237,6 +302,7 @@ mod test {
             Arc::new(credential_writer),
             email_confirmation_initiator,
             password_specification,
+            Arc::new(UserPassesCaptchaMock::passing()),
         );
 
         let id = id_factory.create();
@@ -248,7 +314,9 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com").expect("Email should be valid");
         let password = "123";
         let terms = false;
-        let result = uc.execute(id, name, email, password.into(), terms).await;
+        let result = uc
+            .execute(Some(token()), id, name, email, password.into(), terms)
+            .await;
 
         match result {
             Ok(u) => {
@@ -297,6 +365,7 @@ mod test {
             Arc::new(credential_writer),
             email_confirmation_initiator,
             password_specification,
+            Arc::new(UserPassesCaptchaMock::passing()),
         );
 
         let id = id_factory.create();
@@ -307,7 +376,9 @@ mod test {
         let email = EmailAddress::try_new("demo@test.com".into()).expect("Email should be valid");
         let password = "123";
         let terms = true;
-        let result = uc.execute(id, name, email, password.into(), terms).await;
+        let result = uc
+            .execute(Some(token()), id, name, email, password.into(), terms)
+            .await;
 
         match result {
             Ok(u) => {
@@ -320,5 +391,98 @@ mod test {
                 _ => Err("Wrong Error"),
             },
         }
+    }
+
+    #[tokio::test]
+    async fn captcha_failure_rejects_registration_without_saving_member() -> Result<(), String> {
+        let (uc, member_repository) = registration_uc(Arc::new(UserPassesCaptchaMock::failing()));
+        let id = IdFactoryMock::new().create();
+        let name = NameBuilder::new("John")
+            .try_build()
+            .map_err(|error| format!("{error:?}"))?;
+        let email = EmailAddress::try_new("demo@test.com").map_err(|error| format!("{error:?}"))?;
+
+        let result = uc
+            .execute(Some(token()), id, name, email, "123".into(), true)
+            .await;
+
+        assert!(matches!(result, Err(RegistrationError::CaptchaFailed)));
+        assert!(
+            member_repository
+                .find(id)
+                .await
+                .map_err(|e| format!("{e:?}"))?
+                .is_none()
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn unavailable_captcha_provider_stops_registration() -> Result<(), String> {
+        let (uc, member_repository) =
+            registration_uc(Arc::new(UserPassesCaptchaMock::unavailable()));
+        let id = IdFactoryMock::new().create();
+        let name = NameBuilder::new("John")
+            .try_build()
+            .map_err(|error| format!("{error:?}"))?;
+        let email = EmailAddress::try_new("demo@test.com").map_err(|error| format!("{error:?}"))?;
+
+        let result = uc
+            .execute(Some(token()), id, name, email, "123".into(), true)
+            .await;
+
+        assert!(matches!(
+            result,
+            Err(RegistrationError::CaptchaUnavailable(_))
+        ));
+        assert!(
+            member_repository
+                .find(id)
+                .await
+                .map_err(|e| format!("{e:?}"))?
+                .is_none()
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn captcha_is_checked_before_terms() -> Result<(), String> {
+        let (uc, _member_repository) = registration_uc(Arc::new(UserPassesCaptchaMock::failing()));
+        let id = IdFactoryMock::new().create();
+        let name = NameBuilder::new("John")
+            .try_build()
+            .map_err(|error| format!("{error:?}"))?;
+        let email = EmailAddress::try_new("demo@test.com").map_err(|error| format!("{error:?}"))?;
+
+        let result = uc
+            .execute(Some(token()), id, name, email, "123".into(), false)
+            .await;
+
+        assert!(matches!(result, Err(RegistrationError::CaptchaFailed)));
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn passed_captcha_allows_registration_and_saves_member() -> Result<(), String> {
+        let (uc, member_repository) = registration_uc(Arc::new(UserPassesCaptchaMock::passing()));
+        let id = IdFactoryMock::new().create();
+        let name = NameBuilder::new("John")
+            .try_build()
+            .map_err(|error| format!("{error:?}"))?;
+        let email = EmailAddress::try_new("demo@test.com").map_err(|error| format!("{error:?}"))?;
+
+        let result = uc
+            .execute(Some(token()), id, name, email, "123".into(), true)
+            .await;
+
+        assert!(result.is_ok());
+        assert!(
+            member_repository
+                .find(id)
+                .await
+                .map_err(|e| format!("{e:?}"))?
+                .is_some()
+        );
+        Ok(())
     }
 }

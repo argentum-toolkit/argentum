@@ -1,3 +1,4 @@
+use argentum_captcha_business::di::{captcha_business_provide, captcha_business_provide_mock};
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::log_bridge::LogBridge;
 use argentum_log_infrastructure::stdout::PrettyWriter;
@@ -53,6 +54,9 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, DiError> {
         false,
     );
     user_account_business_provide_mock::<UIntId>(&mut container);
+
+    captcha_business_provide_mock(&mut container);
+    captcha_business_provide::<DefaultLogger<PrettyWriter>>(&mut container, false);
 
     container.provide_factory::<dyn MemberAuthenticatorTrait<Id = UIntId>, _>(|_c| {
         Ok(Arc::new(MemberAuthenticatorMock::new()))

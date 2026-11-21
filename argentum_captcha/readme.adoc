@@ -1,0 +1,60 @@
+= Argentum CAPTCHA
+
+== Business description
+
+=== Purpose
+
+Argentum CAPTCHA is a reusable component that helps forms of Argentum applications confirm that a request comes from a human and not from an automated bot.
+
+Forms such as registration, login, password recovery or public submissions are common targets for spam and abuse. The component provides one consistent way to protect them.
+
+=== Business value
+
+* *Reduced automation* - bots find it harder to create accounts, flood forms or guess passwords at scale. Captcha lowers the risk, but does not guarantee that a request is made by a human.
+* *Freedom of choice* - the business does not depend on a particular captcha service. A provider can be replaced for cost, legal, privacy or regional reasons.
+* *Easy development* - captcha can be disabled in the development environment.
+
+=== Captcha as a data type
+
+Captcha is a data type that carries the result of a human check. It is validated by business rules and is accepted only when the check has passed. A missing or failed check is treated as a regular validation error.
+
+=== Business rules
+
+* The check is always performed on the server. A client-side success alone is not enough.
+
+* Captcha can be disabled per environment (for example, `dev`). The disabled state is logged.
+* If the captcha provider is unavailable, the protected action is rejected.
+
+=== Vendor independence
+
+The architecture is independent of the vendor. Business rules and the captcha data type do not know which provider is used.
+Providers are injected through dependency injection and can be replaced or selected per environment without changing business code or forms.
+
+=== Architecture principles
+
+* Provider wiring happens in dependency injection. This follows link:../docs/adr/003-component-based-architecture.adoc[003 Component-Based Architecture].
+
+== How to enable captcha in an application
+
+. Set `AG_CAPTCHA_ENABLED=true` in `.env.local` (the file is not committed) and configure the variables of the chosen provider.
+
+To disable captcha in DEV, set `AG_CAPTCHA_ENABLED=false` in `.env.local` and rebuild the frontend.
+
+=== Cloudflare Turnstile
+
+Provider: `argentum_captcha_infrastructure::TurnstileCaptchaProvider`.
+
+Variables in `.env.local`:
+
+[source,shell]
+----
+AG_CAPTCHA_TURNSTILE_SECRET_KEY=<secret key>
+AG_CAPTCHA_TURNSTILE_SITE_KEY=<site key>
+----
+
+For DEV, use Cloudflare test keys from `.env`: the `2x...` pair always fails, the `1x...` pair always passes. Test keys are not for production.
+
+== Packages documentation
+
+* link:business/readme.adoc[Package with the business logic]
+* link:infrastructure/readme.adoc[Package with the infrastructure code]

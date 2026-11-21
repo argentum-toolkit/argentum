@@ -2,6 +2,10 @@ mod autocomplete_uuid;
 pub use autocomplete_uuid::AutocompleteUuid;
 pub use autocomplete_uuid::AutocompleteUuidProcessor;
 
+mod captcha;
+pub use captcha::Captcha;
+pub use captcha::CaptchaProcessor;
+
 mod labeled_checkbox;
 pub use labeled_checkbox::LabeledCheckbox;
 pub use labeled_checkbox::LabeledCheckboxProcessor;

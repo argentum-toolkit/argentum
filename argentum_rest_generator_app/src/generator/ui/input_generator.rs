@@ -399,6 +399,38 @@ impl InputGenerator {
                                 hidden,
                             }
                         }
+                        Some(SchemaFormat::Custom(ref format)) if format == "captcha" => {
+                            dependencies.push("argentum_standard_ui::rsx::form::Captcha".into());
+
+                            dependencies
+                                .push("argentum_standard_ui::rsx::form::CaptchaProcessor".into());
+
+                            let input = self
+                                .renderer
+                                .render_to_result(
+                                    "ui/input/captcha",
+                                    Input {
+                                        required,
+                                        name: name.clone(),
+                                        title: schema.title.clone().unwrap_or_default(),
+                                        input_type: Self::input_type(&schema),
+                                        empty_zero: false,
+                                        minimum: None,
+                                        maximum: None,
+                                        ui: schema.extension_ui.into(),
+                                        value_type: "String".into(),
+                                    },
+                                )
+                                .unwrap_or(format!("Can't render property {}", name));
+
+                            KV {
+                                key: name,
+                                value: input,
+                                weight,
+                                input_name: "Captcha".into(),
+                                hidden,
+                            }
+                        }
                         Some(SchemaFormat::Standard(StandardFormat::Uuid)) => {
                             dependencies
                                 .push("argentum_standard_ui::rsx::form::AutocompleteUuid".into());

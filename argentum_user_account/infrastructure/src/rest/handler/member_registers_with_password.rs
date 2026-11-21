@@ -1,6 +1,6 @@
 use crate::rest::transformer::DtoToMemberRegistersWithPasswordParams;
 use argentum_rest_infrastructure::data_type::error::{
-    BadRequestError, Conflict, HttpError, InternalServerError,
+    BadRequestError, Conflict, HttpError, InternalServerError, ServiceUnavailableError,
 };
 use argentum_standard_business::invariant_violation::{ViolationItem, Violations};
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
@@ -34,6 +34,21 @@ impl MemberRegistersWithPasswordHandler {
     }
 }
 
+fn captcha_field_error(captcha_violations: Violations) -> HttpError {
+    HttpError::BadRequest(BadRequestError::new(
+        Violations::new(
+            vec![],
+            Some(ViolationItem::Object(BTreeMap::from([(
+                "captcha".to_string(),
+                captcha_violations,
+            )]))),
+        ),
+        Violations::new(vec![], None),
+        Violations::new(vec![], None),
+        Violations::new(vec![], None),
+    ))
+}
+
 #[async_trait]
 impl MemberRegistersWithPasswordTrait for MemberRegistersWithPasswordHandler {
     type Id = UniqueId;
@@ -45,13 +60,20 @@ impl MemberRegistersWithPasswordTrait for MemberRegistersWithPasswordHandler {
     ) -> Result<MemberRegistersWithPasswordOperationResponseEnum, HttpError> {
         let user_id = UniqueId::new();
 
-        let (name, email, password, terms_accepted) = self
+        let (name, email, password, terms_accepted, captcha) = self
             .dto_to_user_registers_with_password_params
             .transform(req)?;
 
         let result = self
             .uc
-            .execute(user_id, name, email, password.into(), terms_accepted)
+            .execute(
+                captcha,
+                user_id,
+                name,
+                email,
+                password.into(),
+                terms_accepted,
+            )
             .await;
 
         match result {
@@ -64,6 +86,13 @@ impl MemberRegistersWithPasswordTrait for MemberRegistersWithPasswordHandler {
             }
 
             Err(e) => match e {
+                RegistrationError::CaptchaFailed => Err(captcha_field_error(Violations::new(
+                    vec!["captcha check failed".to_string()],
+                    None,
+                ))),
+                RegistrationError::CaptchaUnavailable(source) => Err(
+                    HttpError::ServiceUnavailable(ServiceUnavailableError::new(Arc::new(source))),
+                ),
                 RegistrationError::TermsNotAccepted => {
                     Err(HttpError::Conflict(Conflict::new(Box::new(e))))
                 }

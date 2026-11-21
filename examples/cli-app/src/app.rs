@@ -85,7 +85,7 @@ where
 
         let res = self
             .member_registers_with_pw
-            .execute(user_id, name, email, password.into(), true)
+            .execute(None, user_id, name, email, password.into(), true)
             .await;
         match res {
             Ok(_) => {

@@ -25,6 +25,7 @@ use crate::{
     mock::repository::password_credential_repository_mock::PasswordCredentialRepositoryMock,
     use_case::member_confirms_email::DefaultMemberConfirmsEmailUc,
 };
+use argentum_captcha_business::use_case::UserPassesCaptchaUcTrait;
 use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
 use argentum_encryption_business::password::Validator;
 use argentum_event_business::EventDispatcher;
@@ -96,12 +97,14 @@ pub fn user_account_business_provide<I, L>(
         let credential_writer = c.resolve::<dyn PasswordCredentialWriterTrait<Id = I>>()?;
         let email_confirmation_initiator = c.resolve::<EmailConfirmationInitiator<I>>()?;
         let password_specification = c.resolve::<StrongPasswordSpecification>()?;
+        let captcha_uc = c.resolve::<dyn UserPassesCaptchaUcTrait>()?;
 
         Ok(Arc::new(MemberRegistersWithPasswordUc::new(
             member_repository,
             credential_writer,
             email_confirmation_initiator,
             password_specification,
+            captcha_uc,
         )))
     });
 

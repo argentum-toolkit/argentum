@@ -396,6 +396,16 @@ components:
             weight: 40
             wrapper: none
             optional-style: none
+        captcha:
+          example: captcha-token-example
+          description: Captcha token. Required when captcha is enabled on the server.
+          type: string
+          format: captcha
+          x-ag-ui:
+            id: captcha
+            name: captcha
+            wrapper: none
+            optional-style: none
       type: object
     RequestRestoreTokenSchema:
       required:

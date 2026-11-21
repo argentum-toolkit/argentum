@@ -15,6 +15,7 @@ readme = "README.md"
 
 [dependencies]
 anyhow = "1.*"
+argentum_captcha_business = { path = "../../argentum_captcha/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_encryption_infrastructure = { path = "../../argentum_encryption/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
