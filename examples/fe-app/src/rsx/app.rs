@@ -2,7 +2,7 @@ use crate::route::Route;
 
 use argentum_oidc_ui::{GithubClientId, GoogleClientId, OidcRedirectUrl, rsx::OidcLoginBlock};
 use argentum_standard_ui::{
-    CaptchaTurnstileSiteKey, HomePageUrl, LoginUrl, RegistrationUrl,
+    CaptchaEnabled, CaptchaTurnstileSiteKey, HomePageUrl, LoginUrl, RegistrationUrl,
     rsx::component::dark_mode::use_dark_mode,
 };
 use argentum_user_account_ui::{AdditionalLoginBlock, DeleteAccountUrl};
@@ -20,6 +20,7 @@ pub(crate) fn App() -> Element {
     let u_api_url = env!("AG_USER_API_URL");
     let oidc_api_url = env!("AG_OIDC_API_URL");
     let captcha_turnstile_site_key = env!("AG_CAPTCHA_TURNSTILE_SITE_KEY");
+    let captcha_enabled = env!("AG_CAPTCHA_ENABLED") == "true";
 
     use_context_provider(|| GoogleClientId(google_client_id.into()));
     use_context_provider(|| GithubClientId(github_client_id.into()));
@@ -30,6 +31,7 @@ pub(crate) fn App() -> Element {
     use_context_provider(|| RegistrationUrl((Route::Registration {}).to_string()));
     use_context_provider(|| DeleteAccountUrl((Route::DeleteAccount {}).to_string()));
     use_context_provider(|| CaptchaTurnstileSiteKey(captcha_turnstile_site_key.into()));
+    use_context_provider(|| CaptchaEnabled(captcha_enabled));
 
     #[cfg(feature = "web")]
     {

@@ -14,3 +14,6 @@ pub struct RegistrationUrl(pub String);
 
 #[derive(Clone)]
 pub struct CaptchaTurnstileSiteKey(pub String);
+
+#[derive(Clone)]
+pub struct CaptchaEnabled(pub bool);

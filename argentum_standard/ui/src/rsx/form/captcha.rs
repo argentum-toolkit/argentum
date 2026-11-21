@@ -1,5 +1,5 @@
-use crate::CaptchaTurnstileSiteKey;
 use crate::rsx::component::ErrorBlock;
+use crate::{CaptchaEnabled, CaptchaTurnstileSiteKey};
 use argentum_standard_infrastructure::invariant_violation::ViolationsDto;
 use dioxus::prelude::*;
 use serde::Deserialize;
@@ -36,8 +36,10 @@ enum TurnstileEvent {
 
 #[component]
 pub fn Captcha(props: CaptchaProps) -> Element {
+    let captcha_enabled = try_use_context::<CaptchaEnabled>().is_some_and(|enabled| enabled.0);
     let site_key = try_use_context::<CaptchaTurnstileSiteKey>()
-        .and_then(|key| turnstile_site_key(Some(&key.0)));
+        .and_then(|key| turnstile_site_key(Some(&key.0)))
+        .filter(|_| captcha_enabled);
 
     let label_class = match props.violations {
         Some(_) => "text-error",
