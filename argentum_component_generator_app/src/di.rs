@@ -2,7 +2,7 @@ use crate::generator::fe_app::{
     FeAppGenerator, FeBuildRsGenerator, FeCargoGenerator, FeGitIgnoreGenerator, FeMainGenerator,
     FeReadmeAdocGenerator, FeRouteGenerator, FeRsxGenerator, FeStyleGenerator,
 };
-use crate::generator::{DbInfrastructureGenerator, FileGenerator};
+use crate::generator::{DbInfrastructureGenerator, FileExistenceChecker, FileGenerator};
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
 use argentum_log_infrastructure::stdout::PrettyWriter;
 use argentum_template_infrastructure::di::template_infrastructure_di_factory;
@@ -107,14 +107,18 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     let log_writer = Arc::new(PrettyWriter::new());
     let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 
+    let file_existence_checker = Arc::new(FileExistenceChecker);
+
     let file_generator = Arc::new(FileGenerator::new(
         logger.clone(),
         template_di.renderer.clone(),
+        file_existence_checker.clone(),
     ));
 
     let db_infrastructure_generator = Arc::new(DbInfrastructureGenerator::new(
         logger.clone(),
         template_di.renderer.clone(),
+        file_existence_checker.clone(),
     ));
 
     let fe_build_rs_generator = Arc::new(FeBuildRsGenerator::new(file_generator.clone()));
@@ -122,6 +126,7 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     let fe_cargo_generator = Arc::new(FeCargoGenerator::new(
         logger.clone(),
         template_di.renderer.clone(),
+        file_existence_checker.clone(),
     ));
 
     let style_generator = Arc::new(FeStyleGenerator::new(

@@ -4,6 +4,7 @@ use argentum_log_business::LoggerTrait;
 use argentum_template_infrastructure::Renderer;
 
 use crate::cli_params::FeAppParams;
+use crate::generator::FileExistenceChecker;
 
 use convert_case::{Case, Casing};
 use serde::Serialize;
@@ -24,14 +25,23 @@ where
 {
     logger: Arc<L>,
     renderer: Arc<Renderer>,
+    file_existence_checker: Arc<FileExistenceChecker>,
 }
 
 impl<L> FeCargoGenerator<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(logger: Arc<L>, renderer: Arc<Renderer>) -> Self {
-        Self { logger, renderer }
+    pub fn new(
+        logger: Arc<L>,
+        renderer: Arc<Renderer>,
+        file_existence_checker: Arc<FileExistenceChecker>,
+    ) -> Self {
+        Self {
+            logger,
+            renderer,
+            file_existence_checker,
+        }
     }
 
     pub fn generate(
@@ -47,6 +57,8 @@ where
             app_name: app_name.to_case(Case::Kebab),
             argentum_path,
         };
+
+        self.file_existence_checker.ensure_absent(&output_path)?;
 
         self.renderer
             .render("", CARGO_TEMPLATE, &data, &output_path)?;

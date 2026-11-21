@@ -127,6 +127,7 @@ dependencies = [
  "handlebars",
  "serde",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]

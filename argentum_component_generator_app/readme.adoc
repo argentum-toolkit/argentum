@@ -1,18 +1,11 @@
 = Argentum ToolKit. Component Generator.
 
-Component Generator is a tools that creates components and it's parts from templates.
+Component Generator creates components and their parts from templates.
 
-Supported generators
+== Supported generators
 
-- component structure
-- business layer #TODO
--- use case #TODO
-- infrastructure
--- repository implementation #TODO
--- HTTP handler implementation #TODO
-
-
-
+- db-infrastructure: DTO and Postgres repository for an entity
+- fe-app: Dioxus front-end application skeleton
 
 == How to install
 
@@ -28,33 +21,62 @@ cargo install argentum_component_generator_app
 [source,shell]
 ----
 git clone git@gitlab.com:argentum-toolkit/argentum.git
-
 ----
 
 .Install binary
 [source,shell]
 ----
 cargo install --path argentum_component_generator_app/
-
 ----
 
 == How to use
 
-.Generate REST API server library
 [source,shell]
 ----
-argentum_component_generator_app pg-repository --component-name pro_pro --entity-name=Skill
-#OR
-cargo run -- pg-repository --component-name pro_pro --entity-name=Skill
+argentum_component_generator_app db-infrastructure --component-name user_account --entity-name User
+argentum_component_generator_app fe-app --app-name my_app
 ----
 
-Or you can generate via `cargo run` (sources should be cloned)
+Or via `cargo run` from the repository root (sources should be cloned):
 
-.Example
 [source,shell]
 ----
-cd argentum/argentum_component_generator_app
-
+cargo run -p argentum_component_generator_app -- db-infrastructure --component-name user_account --entity-name User
 ----
 
-// TODO: add example
+`fe-app` accepts the global `--argentum-path` option to link local argentum crates:
+
+[source,shell]
+----
+argentum_component_generator_app --argentum-path /path/to/argentum fe-app --app-name my_app
+----
+
+== Example
+
+Generate a repository for a `Skill` entity in a `pro_pro` component:
+
+[source,shell]
+----
+argentum_component_generator_app db-infrastructure --component-name pro_pro --entity-name Skill
+----
+
+Result:
+
+- `pro_pro/infrastructure/src/db/dto/skill_dto.rs`
+- `pro_pro/infrastructure/src/db/repository/skill_repository.rs`
+
+The following lines are appended to `pro_pro/infrastructure/src/db/dto/mod.rs`:
+
+[source,rust]
+----
+mod skill_dto;
+pub(crate) use skill_dto::SkillDto;
+----
+
+The following lines are appended to `pro_pro/infrastructure/src/db/repository/mod.rs`:
+
+[source,rust]
+----
+mod skill_repository;
+pub use skill_repository::SkillRepository;
+----
