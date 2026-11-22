@@ -74,4 +74,4 @@ Basically we use that path `api-doc/openapi.yaml`
 
 === Generate REST API library with code generator
 
-link:../argentum_rest_generator_app/readme.adoc[Argentum REST Generator]
+link:../argentum_rest_generator/readme.adoc[Argentum REST Generator]

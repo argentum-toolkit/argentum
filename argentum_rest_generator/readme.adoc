@@ -1,0 +1,10 @@
+= Argentum ToolKit. REST Generator.
+
+REST Generator is a tool that creates API libraries from OpenAPI specification.
+
+== Structure
+
+* link:cli-app/readme.adoc[CLI application] — standalone command line entry point
+* link:infrastructure/readme.adoc[Infrastructure library] — reusable generation core
+(extractor, generators, templates). Used by the CLI application and by
+link:../argentum_generator_app/readme.adoc[Argentum Generator].

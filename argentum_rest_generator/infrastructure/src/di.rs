@@ -20,8 +20,7 @@ use crate::template::helper::{
     camel_helper, content_type_to_type_helper, escape_var_name_helper, lower_helper,
     package_name_to_container_provider_name, snake_helper, trim_mod_helper, upper_camel_helper,
 };
-use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
-use argentum_log_infrastructure::stdout::PrettyWriter;
+use argentum_log_business::LoggerTrait;
 use handlebars::Handlebars;
 use std::error::Error;
 use std::sync::Arc;
@@ -43,7 +42,10 @@ where
     }
 }
 
-pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
+pub fn di_factory<L>(logger: Arc<L>) -> Result<Di<L>, Box<dyn Error>>
+where
+    L: LoggerTrait + 'static,
+{
     let mut reg = Handlebars::new();
     reg.register_template_string(
         "dto/operation_response_enum.item",
@@ -234,8 +236,6 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     );
 
     //services
-    let log_writer = Arc::new(PrettyWriter::new());
-    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
     let renderer = Arc::new(Renderer::new(Arc::new(reg)));
     let oas_yaml_generator = Arc::new(OasYamlGenerator::new());
     let dto_generator = Arc::new(DtoGenerator::new(renderer.clone()));
@@ -322,5 +322,5 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
         ui_generator,
     ));
 
-    Ok(Di::<DefaultLogger<PrettyWriter>>::new(openapi_generator))
+    Ok(Di::new(openapi_generator))
 }

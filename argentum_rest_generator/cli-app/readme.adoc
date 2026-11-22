@@ -42,7 +42,7 @@ git clone git@gitlab.com:argentum-toolkit/argentum.git
 .Install binary
 [source,shell]
 ----
-cargo install --path argentum_rest_generator_app/
+cargo install --path argentum_rest_generator/cli-app/
 
 ----
 
@@ -59,7 +59,7 @@ Or you can generate via `cargo run` (sources should be cloned)
 .Example
 [source,shell]
 ----
-cd argentum/argentum_rest_generator_app
+cd argentum/argentum_rest_generator/cli-app
 
 cargo run -- --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest
 ----

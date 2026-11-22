@@ -1,4 +1,3 @@
-use crate::cli_params::CliParams;
 use crate::generator::client::ClientGenerator;
 use crate::generator::dto::{
     DtoGenerator, OperationResponseEnumGenerator, ParamsGenerator, PathParamsGenerator,
@@ -11,6 +10,7 @@ use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasYamlGenerator,
     ReadmeAdocGenerator,
 };
+use crate::generator_params::GeneratorParams;
 use argentum_log_business::LoggerTrait;
 use std::sync::Arc;
 
@@ -95,13 +95,13 @@ where
         }
     }
 
-    pub fn generate(&self, cli: CliParams) -> Result<(), String> {
+    pub fn generate(&self, params: GeneratorParams) -> Result<(), String> {
         self.logger.info("Start generation...");
         self.logger.info("Combine OpenAPI specification...");
-        let spec = self.combiner.combine(&cli.input)?;
+        let spec = self.combiner.combine(&params.input)?;
         self.logger.info("OpenAPI specification is combined");
 
-        let output = cli.output.as_str();
+        let output = params.output.as_str();
 
         //generation
         self.logger.info("Generate combined OpenAPI YAML file");
@@ -124,27 +124,27 @@ where
 
         self.server_generator.generate(output)?;
         self.di_generator
-            .generate(output, &spec, cli.package_name.as_str())?;
+            .generate(output, &spec, params.package_name.as_str())?;
         self.lib_generator
-            .generate(output, cli.package_name.as_str())?;
+            .generate(output, params.package_name.as_str())?;
         self.cargo_toml_generator.generate(
             output,
             &spec,
-            cli.package_name.clone(),
-            cli.homepage.clone(),
-            cli.repository.clone(),
-            cli.documentation.clone(),
-            cli.argentum_path.clone(),
+            params.package_name.clone(),
+            params.homepage.clone(),
+            params.repository.clone(),
+            params.documentation.clone(),
+            params.argentum_path.clone(),
         )?;
 
         self.readme_adoc_generator.generate(
             output,
             &spec,
-            cli.package_name,
-            cli.homepage,
-            cli.repository,
-            cli.documentation,
-            cli.argentum_path,
+            params.package_name,
+            params.homepage,
+            params.repository,
+            params.documentation,
+            params.argentum_path,
         )?;
         self.gitignore_generator.generate(output)?;
         self.schema_generator.generate(output, &spec)?;
