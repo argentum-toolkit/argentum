@@ -1,0 +1,33 @@
+= Argentum ToolKit. Generator. Infrastructure layer.
+
+Reusable core of the component generator:
+
+* Generators for component parts: business, api-doc, devops, infrastructure, ui, fe-app (`generator`)
+* Handlebars templates (`template`)
+* Plain parameter structs (`params`)
+
+The layer is transport-agnostic: callers provide a logger and
+`di::di_factory` returns a container with all generator services.
+
+== How to use
+
+[source,rust]
+----
+use argentum_generator_infrastructure::di::di_factory;
+use argentum_generator_infrastructure::params::ComponentParams;
+use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_infrastructure::stdout::PrettyWriter;
+use std::sync::Arc;
+
+let log_writer = Arc::new(PrettyWriter::new());
+let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+
+let di = di_factory(logger)?;
+
+let params = ComponentParams {
+    component_name: "user_account".to_string(),
+    entity_name: None,
+};
+
+di.component_generator.generate(&params)?;
+----

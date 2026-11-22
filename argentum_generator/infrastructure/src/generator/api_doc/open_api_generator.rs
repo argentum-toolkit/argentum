@@ -1,0 +1,50 @@
+use std::sync::Arc;
+
+use argentum_log_business::LoggerTrait;
+use argentum_template_infrastructure::Renderer;
+
+use crate::generator::FileExistenceChecker;
+use crate::generator::api_doc::api_doc_data::ApiDocData;
+use crate::params::ApiDocParams;
+
+const TEMPLATE: &str = "api_doc/openapi.yaml";
+
+pub struct OpenApiGenerator<L>
+where
+    L: LoggerTrait,
+{
+    logger: Arc<L>,
+    renderer: Arc<Renderer>,
+    file_existence_checker: Arc<FileExistenceChecker>,
+}
+
+impl<L> OpenApiGenerator<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(
+        logger: Arc<L>,
+        renderer: Arc<Renderer>,
+        file_existence_checker: Arc<FileExistenceChecker>,
+    ) -> Self {
+        Self {
+            logger,
+            renderer,
+            file_existence_checker,
+        }
+    }
+
+    pub fn generate(&self, params: &ApiDocParams) -> Result<(), String> {
+        let data = ApiDocData::new(params.component_name.clone());
+
+        let output_path = format!("{}/api-doc/openapi.yaml", data.component_name);
+
+        self.file_existence_checker.ensure_absent(&output_path)?;
+
+        self.renderer.render("", TEMPLATE, &data, &output_path)?;
+
+        self.logger.info("openapi.yaml is generated.");
+
+        Ok(())
+    }
+}

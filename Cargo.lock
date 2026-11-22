@@ -241,10 +241,18 @@ dependencies = [
 name = "argentum_generator_app"
 version = "0.4.0-dev"
 dependencies = [
+ "argentum_generator_infrastructure",
  "argentum_log_business",
  "argentum_log_infrastructure",
- "argentum_template_infrastructure",
  "clap",
+]
+
+[[package]]
+name = "argentum_generator_infrastructure"
+version = "0.4.0-dev"
+dependencies = [
+ "argentum_log_business",
+ "argentum_template_infrastructure",
  "convert_case 0.8.0",
  "handlebars",
  "serde",
