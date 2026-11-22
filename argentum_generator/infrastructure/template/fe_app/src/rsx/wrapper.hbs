@@ -22,10 +22,12 @@ pub(crate) fn Wrapper() -> Element {
             header {
                 class: "navbar bg-base-200 shadow-md",
                 NavBar {
+                    logo: rsx! { "LOGO" },
                     auth: AuthBarProps {
                         login_route: Route::Login {},
                         registration_route: Route::Registration {},
                         logout_redirect: Route::Home {},
+                        links: vec![],
                     },
                     links: vec![
                         ("Home".to_string(), Route::Home {}),
