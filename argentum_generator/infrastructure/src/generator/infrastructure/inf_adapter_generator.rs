@@ -43,9 +43,11 @@ where
     }
 
     pub fn generate(&self, params: &InfrastructureParams) -> Result<(), String> {
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
         let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
 
-        let output_path = format!("{}/infrastructure/src/db/adapter.rs", component_name);
+        let output_path = format!("{}/infrastructure/src/db/adapter.rs", dir);
 
         let data = Data {
             component_name: component_name.clone(),

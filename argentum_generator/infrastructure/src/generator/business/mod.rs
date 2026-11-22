@@ -87,11 +87,14 @@ mod tests {
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(temp_dir.path()).unwrap();
 
-        let cargo_path = temp_dir.path().join("test_comp/business/Cargo.toml");
+        let cargo_path = temp_dir
+            .path()
+            .join("argentum_test_comp/business/Cargo.toml");
         std::fs::create_dir_all(cargo_path.parent().unwrap()).unwrap();
         std::fs::write(&cargo_path, "existing").unwrap();
 
         let result = test_business_generator().generate(&BusinessParams {
+            project_prefix: "argentum".to_string(),
             component_name: "test_comp".to_string(),
             entity_name: "TestComp".to_string(),
         });

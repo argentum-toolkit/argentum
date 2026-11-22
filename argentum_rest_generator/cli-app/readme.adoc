@@ -51,8 +51,11 @@ cargo install --path argentum_rest_generator/cli-app/
 .Generate REST API server library
 [source,shell]
 ----
-argentum_rest_generator_app --input api-doc/openapi.yaml --output rest/ --package-name user_account_rest
+argentum_rest_generator_app --input api-doc/openapi.yaml --output rest/ --component-name user_account
 ----
+
+The package name is derived from the component name (`<component>_rest`).
+Pass `-p`/`--package-name` explicitly to override it:
 
 Or you can generate via `cargo run` (sources should be cloned)
 
@@ -61,7 +64,7 @@ Or you can generate via `cargo run` (sources should be cloned)
 ----
 cd argentum/argentum_rest_generator/cli-app
 
-cargo run -- --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest
+cargo run -- --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --component-name user_account -p argentum_user_account_rest
 ----
 
 === Argentum path
@@ -75,7 +78,7 @@ the output directory. For an output of `<component>/rest/` use `-a ../..`:
 
 [source,shell]
 ----
-argentum_rest_generator_app -a ../.. --input argentum_user_account/api-doc/openapi.yaml --output argentum_user_account/rest/ --package-name argentum_user_account_rest
+argentum_rest_generator_app -a ../.. --input argentum_user_account/api-doc/openapi.yaml --output argentum_user_account/rest/ --component-name user_account -p argentum_user_account_rest
 ----
 
 This produces dependencies like `path = "../../argentum_user_account/business"`.
@@ -84,6 +87,16 @@ paths into the generated files, so the relative form is recommended.
 
 If the flag is omitted, the business dependency is not added to the generated
 `Cargo.toml`.
+
+=== Component name
+
+The required `-c`/`--component-name` flag declares the component name used in
+the generated DI provider function (e.g. `user_account` produces
+`user_account_rest_provide`). It is passed explicitly instead of being derived
+from the package name, so any project prefix works.
+
+The optional `-p`/`--package-name` flag overrides the generated crate name.
+When omitted, the crate is named `<component>_rest`.
 
 == Restrictions
 

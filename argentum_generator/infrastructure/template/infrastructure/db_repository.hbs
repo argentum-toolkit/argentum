@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
-use argentum_{{componentName}}_business::entity::{{entityName}};
-use argentum_{{componentName}}_business::repository::{{snake entityName}}_repository::{
+use {{projectPrefix}}_{{componentName}}_business::entity::{{entityName}};
+use {{projectPrefix}}_{{componentName}}_business::repository::{{snake entityName}}_repository::{
     {{entityName}}RepositoryError, {{entityName}}RepositoryTrait,
 };
 
@@ -15,7 +15,7 @@ use uuid::Uuid;
 use crate::db::{{upper_camel componentName}}SqlxPostgresAdapter;
 use crate::db::dto::{{entityName}}Dto;
 
-const TABLE_NAME: &str = "ag_{{componentName}}_{{snake entityName}}";
+const TABLE_NAME: &str = "{{projectPrefix}}_{{componentName}}_{{snake entityName}}";
 
 pub struct {{entityName}}Repository<L>
 where

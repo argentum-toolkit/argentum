@@ -27,7 +27,11 @@ where
         self.file.generate(
             &format!(
                 "{}/infrastructure/readme.adoc",
-                params.component_name.to_case(Case::Snake)
+                format!(
+                    "{}_{}",
+                    params.project_prefix.to_case(Case::Snake),
+                    params.component_name.to_case(Case::Snake)
+                )
             ),
             TEMPLATE,
         )

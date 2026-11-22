@@ -10,7 +10,10 @@ pub struct CliParams {
     pub(crate) output: String,
 
     #[arg(short, long)]
-    pub(crate) package_name: String,
+    pub(crate) package_name: Option<String>,
+
+    #[arg(short, long)]
+    pub(crate) component_name: String,
 
     #[arg(long)]
     pub(crate) homepage: Option<String>,
@@ -30,7 +33,10 @@ impl From<CliParams> for GeneratorParams {
         Self {
             input: cli.input,
             output: cli.output,
-            package_name: cli.package_name,
+            package_name: cli
+                .package_name
+                .unwrap_or_else(|| format!("{}_rest", cli.component_name)),
+            component_name: cli.component_name,
             homepage: cli.homepage,
             repository: cli.repository,
             documentation: cli.documentation,

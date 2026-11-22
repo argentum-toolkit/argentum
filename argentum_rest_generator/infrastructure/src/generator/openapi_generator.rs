@@ -124,9 +124,9 @@ where
 
         self.server_generator.generate(output)?;
         self.di_generator
-            .generate(output, &spec, params.package_name.as_str())?;
+            .generate(output, &spec, params.component_name.as_str())?;
         self.lib_generator
-            .generate(output, params.package_name.as_str())?;
+            .generate(output, params.component_name.as_str())?;
         self.cargo_toml_generator.generate(
             output,
             &spec,

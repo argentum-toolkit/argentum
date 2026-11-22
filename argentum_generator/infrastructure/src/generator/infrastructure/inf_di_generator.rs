@@ -14,6 +14,7 @@ const DI_TEMPLATE: &str = "infrastructure/src/di";
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data {
+    project_prefix: String,
     component_name: String,
     entity_name: String,
 }
@@ -44,12 +45,15 @@ where
     }
 
     pub fn generate(&self, params: &InfrastructureParams) -> Result<(), String> {
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
         let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
         let entity_name = params.entity_name.to_case(Case::Pascal);
 
-        let output_path = format!("{}/infrastructure/src/di.rs", component_name);
+        let output_path = format!("{}/infrastructure/src/di.rs", dir);
 
         let data = Data {
+            project_prefix: project_prefix.clone(),
             component_name: component_name.clone(),
             entity_name,
         };

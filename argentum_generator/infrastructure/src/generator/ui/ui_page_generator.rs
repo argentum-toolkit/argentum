@@ -35,11 +35,11 @@ where
     }
 
     pub fn generate(&self, params: &UiParams) -> Result<(), String> {
-        let data = UiData::new(params.component_name.clone());
+        let data = UiData::new(params.project_prefix.clone(), params.component_name.clone());
 
         let output_path = format!(
-            "{}/ui/src/rsx/page/{}.rs",
-            data.component_name, data.component_name
+            "{}_{}/ui/src/rsx/page/{}.rs",
+            data.project_prefix, data.component_name, data.component_name
         );
 
         if self.file_existence_checker.exists(&output_path) {

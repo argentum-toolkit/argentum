@@ -24,10 +24,13 @@ where
     }
 
     pub fn generate(&self, params: &UiParams) -> Result<(), String> {
-        let data = UiData::new(params.component_name.clone());
+        let data = UiData::new(params.project_prefix.clone(), params.component_name.clone());
 
         self.file.generate(
-            &format!("{}/ui/src/rsx/mod.rs", data.component_name),
+            &format!(
+                "{}_{}/ui/src/rsx/mod.rs",
+                data.project_prefix, data.component_name
+            ),
             TEMPLATE,
         )
     }

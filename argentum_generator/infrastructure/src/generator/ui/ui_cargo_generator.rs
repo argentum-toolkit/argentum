@@ -35,9 +35,12 @@ where
     }
 
     pub fn generate(&self, params: &UiParams) -> Result<(), String> {
-        let data = UiData::new(params.component_name.clone());
+        let data = UiData::new(params.project_prefix.clone(), params.component_name.clone());
 
-        let output_path = format!("{}/ui/Cargo.toml", data.component_name);
+        let output_path = format!(
+            "{}_{}/ui/Cargo.toml",
+            data.project_prefix, data.component_name
+        );
 
         if self.file_existence_checker.exists(&output_path) {
             self.logger

@@ -11,7 +11,7 @@ const TEMPLATE: &str = "di";
 struct Data {
     pub operations: Vec<Operation>,
     pub security_enabled: bool,
-    pub package_name: String,
+    pub component_name: String,
 }
 
 pub(crate) struct DiGenerator {
@@ -27,7 +27,7 @@ impl DiGenerator {
         &self,
         base_output_path: &str,
         spec: &SpecificationRoot,
-        package_name: &str,
+        component_name: &str,
     ) -> Result<(), String> {
         let operations = spec.operations();
 
@@ -44,7 +44,7 @@ impl DiGenerator {
         let data = Data {
             operations,
             security_enabled,
-            package_name: package_name.to_owned(),
+            component_name: component_name.to_owned(),
         };
 
         self.renderer

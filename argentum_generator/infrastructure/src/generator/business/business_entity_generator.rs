@@ -44,11 +44,13 @@ where
     }
 
     pub fn generate(&self, params: &BusinessParams) -> Result<(), String> {
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
         let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
         let entity_name = params.entity_name.to_case(Case::Pascal);
         let entity_snake = entity_name.to_case(Case::Snake);
 
-        let output_path = format!("{}/business/src/entity/{}.rs", component_name, entity_snake);
+        let output_path = format!("{}/business/src/entity/{}.rs", dir, entity_snake);
 
         let data = Data {
             entity_name: entity_name.clone(),
@@ -69,7 +71,7 @@ where
             format!("pub use {}::{};", entity_snake, entity_name),
         ];
 
-        let mod_path = format!("{}/business/src/entity/mod.rs", component_name);
+        let mod_path = format!("{}/business/src/entity/mod.rs", dir);
 
         append_mod(&mod_path, lines)?;
 

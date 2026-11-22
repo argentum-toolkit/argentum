@@ -35,11 +35,11 @@ where
     }
 
     pub fn generate(&self, params: &DevopsParams) -> Result<(), String> {
-        let data = DevopsDocker::new(params.component_name.clone());
+        let data = DevopsDocker::new(params.project_prefix.clone(), params.component_name.clone());
 
         let output_path = format!(
-            "{}/devops/docker/docker-compose.dev.yaml",
-            data.component_name
+            "{}_{}/devops/docker/docker-compose.dev.yaml",
+            data.project_prefix, data.component_name
         );
 
         if self.file_existence_checker.exists(&output_path) {

@@ -15,6 +15,7 @@ const DTO_TEMPLATE: &str = "infrastructure/db_dto";
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data {
+    project_prefix: String,
     component_name: String,
     entity_name: String,
 }
@@ -45,16 +46,19 @@ where
     }
 
     fn generate_repository(&self, params: DbInfrastructureParams) -> Result<(), String> {
-        let component_name = params.component_name;
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
+        let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
         let entity_name = params.entity_name;
 
         let output_path = format!(
             "{}/infrastructure/src/db/repository/{}_repository.rs",
-            component_name.to_case(Case::Snake),
+            dir,
             entity_name.to_case(Case::Snake)
         );
 
         let data = Data {
+            project_prefix: project_prefix.clone(),
             component_name: component_name.clone(),
             entity_name: entity_name.clone(),
         };
@@ -78,25 +82,25 @@ where
             ),
         ];
 
-        let mod_path = format!(
-            "{}/infrastructure/src/db/repository/mod.rs",
-            component_name.to_case(Case::Snake)
-        );
+        let mod_path = format!("{}/infrastructure/src/db/repository/mod.rs", dir);
 
         append_mod(&mod_path, lines)
     }
 
     pub fn generate_dto(&self, params: DbInfrastructureParams) -> Result<(), String> {
-        let component_name = params.component_name;
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
+        let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
         let entity_name = params.entity_name;
 
         let output_path = format!(
             "{}/infrastructure/src/db/dto/{}_dto.rs",
-            component_name.to_case(Case::Snake),
+            dir,
             entity_name.to_case(Case::Snake),
         );
 
         let data = Data {
+            project_prefix: project_prefix.clone(),
             component_name: component_name.clone(),
             entity_name: entity_name.clone(),
         };
@@ -120,10 +124,7 @@ where
             ),
         ];
 
-        let mod_path = format!(
-            "{}/infrastructure/src/db/dto/mod.rs",
-            component_name.to_case(Case::Snake)
-        );
+        let mod_path = format!("{}/infrastructure/src/db/dto/mod.rs", dir);
 
         append_mod(&mod_path, lines)
     }
@@ -171,11 +172,12 @@ mod tests {
 
         let dto_path = temp_dir
             .path()
-            .join("user_account/infrastructure/src/db/dto/user_account_dto.rs");
+            .join("argentum_user_account/infrastructure/src/db/dto/user_account_dto.rs");
         std::fs::create_dir_all(dto_path.parent().unwrap()).unwrap();
         std::fs::write(&dto_path, "existing").unwrap();
 
         let result = test_generator().generate(DbInfrastructureParams {
+            project_prefix: "argentum".to_string(),
             component_name: "user_account".to_string(),
             entity_name: "UserAccount".to_string(),
         });

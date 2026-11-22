@@ -72,7 +72,7 @@ The component generator creates the whole skeleton in one run:
 
 [source,shell]
 ----
-argentum_generator_app component --component-name user_account
+argentum_generator_app component --project-prefix argentum --component-name user_account
 ----
 
 It generates the `business`, `api-doc`, `rest`, `devops`, `infrastructure` and `ui` parts of the component in that order. See link:../argentum_generator/cli-app/readme.adoc[Argentum Generator] for details.
@@ -93,7 +93,7 @@ To regenerate the REST package after editing the OpenAPI specification, run:
 
 [source,shell]
 ----
-argentum_generator_app rest --component-name user_account
+argentum_generator_app rest --project-prefix argentum --component-name user_account
 ----
 
 This command always regenerates: it cleans `rest/src` and `rest/api-spec` and rewrites the whole `rest` package. The rest package is fully generated — do not edit it by hand.

@@ -14,6 +14,7 @@ const CARGO_TEMPLATE: &str = "infrastructure/Cargo.toml";
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Data {
+    project_prefix: String,
     component_name: String,
 }
 
@@ -43,11 +44,14 @@ where
     }
 
     pub fn generate(&self, params: &InfrastructureParams) -> Result<(), String> {
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
         let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
 
-        let output_path = format!("{}/infrastructure/Cargo.toml", component_name);
+        let output_path = format!("{}/infrastructure/Cargo.toml", dir);
 
         let data = Data {
+            project_prefix: project_prefix.clone(),
             component_name: component_name.clone(),
         };
 

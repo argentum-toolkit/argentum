@@ -38,7 +38,7 @@ cargo install --path argentum_rest_generator/cli-app/
 # How to use
 
 ```shell
-argentum_rest_generator_app --input api-doc/openapi.yaml --output rest/ --package-name user_account_rest
+argentum_rest_generator_app --input api-doc/openapi.yaml --output rest/ --component-name user_account
 ```
 
 Or you can generate via `cargo run` (sources should be cloned)
@@ -46,7 +46,7 @@ Or you can generate via `cargo run` (sources should be cloned)
 ```shell
 cd argentum/argentum_rest_generator/cli-app
 
-cargo run --   --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest
+cargo run --   --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --component-name user_account -p argentum_user_account_rest
 ```
 
 # Restrictions

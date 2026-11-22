@@ -67,6 +67,7 @@ where
         self.migration.generate(params)?;
 
         self.db_infrastructure.generate(DbInfrastructureParams {
+            project_prefix: params.project_prefix.clone(),
             component_name: params.component_name.clone(),
             entity_name: params.entity_name.clone(),
         })?;

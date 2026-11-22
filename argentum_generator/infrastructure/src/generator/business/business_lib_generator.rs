@@ -24,12 +24,13 @@ where
     }
 
     pub fn generate(&self, params: &BusinessParams) -> Result<(), String> {
-        self.file.generate(
-            &format!(
-                "{}/business/src/lib.rs",
-                params.component_name.to_case(Case::Snake)
-            ),
-            TEMPLATE,
-        )
+        let dir = format!(
+            "{}_{}",
+            params.project_prefix.to_case(Case::Snake),
+            params.component_name.to_case(Case::Snake)
+        );
+
+        self.file
+            .generate(&format!("{}/business/src/lib.rs", dir), TEMPLATE)
     }
 }

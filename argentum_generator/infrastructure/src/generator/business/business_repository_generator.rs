@@ -44,13 +44,15 @@ where
     }
 
     pub fn generate(&self, params: &BusinessParams) -> Result<(), String> {
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
         let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
         let entity_name = params.entity_name.to_case(Case::Pascal);
         let entity_snake = entity_name.to_case(Case::Snake);
 
         let output_path = format!(
             "{}/business/src/repository/{}_repository.rs",
-            component_name, entity_snake
+            dir, entity_snake
         );
 
         let data = Data {
@@ -69,7 +71,7 @@ where
 
         let lines = vec![format!("pub mod {}_repository;", entity_snake)];
 
-        let mod_path = format!("{}/business/src/repository/mod.rs", component_name);
+        let mod_path = format!("{}/business/src/repository/mod.rs", dir);
 
         append_mod(&mod_path, lines)?;
 

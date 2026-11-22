@@ -56,11 +56,12 @@ mod tests {
 
         let compose_path = temp_dir
             .path()
-            .join("test_comp/devops/docker/docker-compose.yaml");
+            .join("argentum_test_comp/devops/docker/docker-compose.yaml");
         std::fs::create_dir_all(compose_path.parent().unwrap()).unwrap();
         std::fs::write(&compose_path, "existing").unwrap();
 
         let result = test_devops_generator().generate(&DevopsParams {
+            project_prefix: "argentum".to_string(),
             component_name: "test_comp".to_string(),
         });
 

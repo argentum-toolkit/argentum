@@ -2,12 +2,12 @@ services:
   service.{{componentName}}.db:
     image: "postgres:18.0-alpine"
     environment:
-      - POSTGRES_DB=${POSTGRES_DB_FOR_ARGENTUM_{{upper_snake componentName}}}
+      - POSTGRES_DB=${POSTGRES_DB_FOR_{{upper_snake projectPrefix}}_{{upper_snake componentName}}}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_LOGGING=verbose
     volumes:
-      - db-{{kebab componentName}}:/var/lib/postgresql
+      - {{kebab projectPrefix}}-{{kebab componentName}}:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -16,4 +16,4 @@ services:
       start_period: 10s
 
 volumes:
-  db-{{kebab componentName}}:
+  {{kebab projectPrefix}}-{{kebab componentName}}:

@@ -71,11 +71,14 @@ mod tests {
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(temp_dir.path()).unwrap();
 
-        let openapi_path = temp_dir.path().join("test_comp/api-doc/openapi.yaml");
+        let openapi_path = temp_dir
+            .path()
+            .join("argentum_test_comp/api-doc/openapi.yaml");
         std::fs::create_dir_all(openapi_path.parent().unwrap()).unwrap();
         std::fs::write(&openapi_path, "existing").unwrap();
 
         let result = test_api_doc_generator().generate(&ApiDocParams {
+            project_prefix: "argentum".to_string(),
             component_name: "test_comp".to_string(),
         });
 

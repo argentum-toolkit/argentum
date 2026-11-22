@@ -13,7 +13,7 @@ use argentum_standard_business::data_type::id::Id;
 use argentum_standard_business::di_container::Container;
 use std::sync::Arc;
 
-pub fn {{package_name_to_container_provider_name packageName}}<I>(container: &mut Container, url_prefix: &'static str)
+pub fn {{componentName}}_rest_provide<I>(container: &mut Container, url_prefix: &'static str)
 where
     I: Id + 'static,
 {

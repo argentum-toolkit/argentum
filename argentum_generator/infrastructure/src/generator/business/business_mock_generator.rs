@@ -44,13 +44,15 @@ where
     }
 
     pub fn generate(&self, params: &BusinessParams) -> Result<(), String> {
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
         let component_name = params.component_name.to_case(Case::Snake);
+        let dir = format!("{}_{}", project_prefix, component_name);
         let entity_name = params.entity_name.to_case(Case::Pascal);
         let entity_snake = entity_name.to_case(Case::Snake);
 
         let output_path = format!(
             "{}/business/src/mock/repository/{}_repository_mock.rs",
-            component_name, entity_snake
+            dir, entity_snake
         );
 
         let data = Data {
@@ -68,18 +70,18 @@ where
             .render("", MOCK_TEMPLATE, &data, &output_path)?;
 
         append_mod(
-            &format!("{}/business/src/mock/repository/mod.rs", component_name),
+            &format!("{}/business/src/mock/repository/mod.rs", dir),
             vec![format!("pub mod {}_repository_mock;", entity_snake)],
         )?;
 
         append_mod(
-            &format!("{}/business/src/mock/mod.rs", component_name),
+            &format!("{}/business/src/mock/mod.rs", dir),
             vec!["pub mod repository;".to_string()],
         )?;
 
         for module in ["use_case", "service", "specification", "event"] {
             append_mod(
-                &format!("{}/business/src/{}/mod.rs", component_name, module),
+                &format!("{}/business/src/{}/mod.rs", dir, module),
                 Vec::new(),
             )?;
         }

@@ -16,10 +16,16 @@ pub enum GenerateCommand {
     /// Generate an api-doc folder for a component
     ApiDoc {
         #[arg(short, long)]
+        project_prefix: String,
+
+        #[arg(short, long)]
         component_name: String,
     },
     /// Generate a business package skeleton
     Business {
+        #[arg(short, long)]
+        project_prefix: String,
+
         #[arg(short, long)]
         component_name: String,
 
@@ -28,6 +34,9 @@ pub enum GenerateCommand {
     },
     /// Generate a whole component skeleton (business, api-doc, devops, infrastructure, ui)
     Component {
+        #[arg(short, long)]
+        project_prefix: String,
+
         #[arg(short, long)]
         component_name: String,
 
@@ -41,10 +50,16 @@ pub enum GenerateCommand {
         entity_name: String,
 
         #[arg(short, long)]
+        project_prefix: String,
+
+        #[arg(short, long)]
         component_name: String,
     },
     /// Generate a devops folder for a component
     Devops {
+        #[arg(short, long)]
+        project_prefix: String,
+
         #[arg(short, long)]
         component_name: String,
     },
@@ -56,6 +71,9 @@ pub enum GenerateCommand {
     /// Generate an infrastructure package skeleton
     Infrastructure {
         #[arg(short, long)]
+        project_prefix: String,
+
+        #[arg(short, long)]
         component_name: String,
 
         #[arg(short, long)]
@@ -64,10 +82,16 @@ pub enum GenerateCommand {
     /// Generate the rest package for a component from its api-doc OpenAPI spec
     Rest {
         #[arg(short, long)]
+        project_prefix: String,
+
+        #[arg(short, long)]
         component_name: String,
     },
     /// Generate a UI package skeleton for a component
     Ui {
+        #[arg(short, long)]
+        project_prefix: String,
+
         #[arg(short, long)]
         component_name: String,
     },

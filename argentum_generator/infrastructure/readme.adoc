@@ -25,6 +25,7 @@ let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
 let di = di_factory(logger)?;
 
 let params = ComponentParams {
+    project_prefix: "argentum".to_string(),
     component_name: "user_account".to_string(),
     entity_name: None,
 };
@@ -40,6 +41,7 @@ generator (which delegates to the REST generator infrastructure):
 use argentum_generator_infrastructure::params::RestParams;
 
 di.rest_generator.generate(&RestParams {
+    project_prefix: "argentum".to_string(),
     component_name: "user_account".to_string(),
 })?;
 ----

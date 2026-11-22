@@ -25,14 +25,16 @@ where
     }
 
     pub fn generate(&self, params: &RestParams) -> Result<(), String> {
+        let project_prefix = params.project_prefix.to_case(Case::Snake);
         let component_name = params.component_name.to_case(Case::Snake);
-        let output = format!("{component_name}/rest/");
-        let input = format!("{component_name}/api-doc/openapi.yaml");
-        let package_name = format!("argentum_{component_name}_rest");
+        let dir = format!("{}_{}", project_prefix, component_name);
+        let output = format!("{dir}/rest/");
+        let input = format!("{dir}/api-doc/openapi.yaml");
+        let package_name = format!("{project_prefix}_{component_name}_rest");
 
         if !Path::new(&input).is_file() {
             return Err(format!(
-                "Input OpenAPI specification `{input}` does not exist. Generate the api-doc folder for `{component_name}` first."
+                "Input OpenAPI specification `{input}` does not exist. Generate the api-doc folder for `{dir}` first."
             ));
         }
 
@@ -64,6 +66,7 @@ where
                 input,
                 output,
                 package_name,
+                component_name,
                 homepage: None,
                 repository: None,
                 documentation: None,

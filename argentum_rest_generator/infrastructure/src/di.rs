@@ -15,7 +15,7 @@ use crate::generator::{
     CargoTomlGenerator, Combiner, DiGenerator, GitIgnoreGenerator, LibGenerator, OasLoader,
     OasYamlGenerator, OpenApiGenerator, ReadmeAdocGenerator,
 };
-use crate::template::helper::package_name_to_container_provider_name;
+
 use argentum_log_business::LoggerTrait;
 use argentum_template_infrastructure::di::template_infrastructure_di_factory;
 use std::error::Error;
@@ -181,13 +181,7 @@ where
         ),
     ];
 
-    let template_di = template_infrastructure_di_factory(
-        templates,
-        vec![(
-            "package_name_to_container_provider_name",
-            Box::new(package_name_to_container_provider_name),
-        )],
-    )?;
+    let template_di = template_infrastructure_di_factory(templates, vec![])?;
 
     //services
     let renderer = template_di.renderer;
