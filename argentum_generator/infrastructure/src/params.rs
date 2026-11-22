@@ -41,3 +41,8 @@ pub struct FeAppParams {
 pub struct UiParams {
     pub component_name: String,
 }
+
+#[derive(Debug, Clone)]
+pub struct RestParams {
+    pub component_name: String,
+}

@@ -6,4 +6,4 @@ for f in ./*/*/Cargo.toml; do
   asciidoctor -r asciidoctor-mdpp -b mdpp $(dirname "$f")/readme.adoc -o $(dirname "$f")/README.md
 done
 
-asciidoctor -r asciidoctor-mdpp -b mdpp argentum_rest_generator_app/readme.adoc -o argentum_rest_generator_app/README.md
+asciidoctor -r asciidoctor-mdpp -b mdpp argentum_rest_generator/cli-app/readme.adoc -o argentum_rest_generator/cli-app/README.md

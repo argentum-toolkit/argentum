@@ -7,6 +7,7 @@ mod file_existence_checker;
 mod file_generator;
 pub mod infrastructure;
 mod mod_file_writer;
+pub mod rest;
 pub mod ui;
 
 pub use api_doc::ApiDocGenerator;
@@ -16,6 +17,7 @@ pub use devops::DevopsGenerator;
 pub use file_existence_checker::FileExistenceChecker;
 pub use file_generator::FileGenerator;
 pub use infrastructure::{DbInfrastructureGenerator, InfrastructureGenerator};
+pub use rest::RestGenerator;
 pub use ui::UiGenerator;
 
 #[cfg(test)]

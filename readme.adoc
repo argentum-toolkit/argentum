@@ -55,6 +55,7 @@ link:https://gitlab.com/argentum-toolkit/argentum-short-book/[Short Book]
 
 === Tools documentation
 
+* link:argentum_generator/readme.adoc[Argentum Generator]
 * link:argentum_rest_generator/readme.adoc[Argentum REST Generator]
 
 === Argentum ToolKit Architecture. Short description

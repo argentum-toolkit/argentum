@@ -1,7 +1,7 @@
 use argentum_generator_infrastructure::di::di_factory;
 use argentum_generator_infrastructure::params::{
     ApiDocParams, BusinessParams, ComponentParams, DbInfrastructureParams, DevopsParams,
-    FeAppParams, InfrastructureParams, UiParams,
+    FeAppParams, InfrastructureParams, RestParams, UiParams,
 };
 use argentum_log_business::{DefaultLogger, Level};
 use argentum_log_infrastructure::stdout::PrettyWriter;
@@ -73,6 +73,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 entity_name,
             };
             Ok(di.infrastructure_generator.generate(&params)?)
+        }
+        GenerateCommand::Rest { component_name } => {
+            let params = RestParams { component_name };
+            Ok(di.rest_generator.generate(&params)?)
         }
         GenerateCommand::Ui { component_name } => {
             let params = UiParams { component_name };

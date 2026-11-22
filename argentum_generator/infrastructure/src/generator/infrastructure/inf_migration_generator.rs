@@ -60,9 +60,19 @@ where
             entity_name,
         };
 
-        self.file_existence_checker
-            .ensure_absent(&migration_mod_path)?;
-        self.file_existence_checker.ensure_absent(&migration_path)?;
+        if self.file_existence_checker.exists(&migration_mod_path) {
+            self.logger
+                .info(format!("{migration_mod_path} already exists, skipped."));
+
+            return Ok(());
+        }
+
+        if self.file_existence_checker.exists(&migration_path) {
+            self.logger
+                .info(format!("{migration_path} already exists, skipped."));
+
+            return Ok(());
+        }
 
         self.renderer
             .render("", MIGRATION_MOD_TEMPLATE, &data, &migration_mod_path)?;

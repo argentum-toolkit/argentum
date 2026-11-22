@@ -1,7 +1,8 @@
 use crate::generator::OasLoader;
 use argentum_log_business::LoggerTrait;
 use argentum_openapi_infrastructure::data_type::{
-    ComponentRef, RefOrObject, RequestBody, Response, Schema, SchemaType, SpecificationRoot,
+    ComponentRef, Path as OasPath, RefOrObject, RequestBody, Response, Schema, SchemaType,
+    SpecificationRoot,
 };
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -422,6 +423,12 @@ where
         }
 
         for (uri, path) in &mut spec.paths {
+            let mut path = path.clone();
+
+            if let Some(reference) = path.reference.clone() {
+                path = self.resolve_path_ref(&reference, file_path)?;
+            }
+
             for operation in path.operations.values_mut() {
                 if let Some(ref_or_schema) = &mut operation.request_body {
                     self.collect_ref_to_request_body(ref_or_schema, &mut res_spec, file_path)?;
@@ -432,11 +439,43 @@ where
                 }
             }
 
-            res_spec.paths.insert(uri.clone(), path.clone());
+            res_spec.paths.insert(uri.clone(), path);
         }
 
         res_spec.components.security_schemes = spec.components.security_schemes.clone();
 
         Ok(res_spec)
+    }
+
+    fn resolve_path_ref(
+        &self,
+        reference: &str,
+        current_file_path: &str,
+    ) -> Result<OasPath, String> {
+        let (file_part, pointer) = reference.split_once("#/paths/").ok_or(format!(
+            "Wrong path reference {reference}. Expected: `<file>#/paths/<{{key}}>`"
+        ))?;
+
+        let key = pointer.replace("~1", "/").replace("~0", "~");
+
+        let inner_file_path = if file_part.is_empty() {
+            current_file_path.to_string()
+        } else {
+            let dir = Path::new(current_file_path)
+                .parent()
+                .ok_or("Can't read current file path")?;
+            let dir = dir
+                .to_str()
+                .ok_or("Can't convert parent file path into String")?;
+            format!("{dir}/{file_part}")
+        };
+
+        let include_spec = self.loader.load(&inner_file_path)?;
+
+        include_spec
+            .paths
+            .get(&key)
+            .cloned()
+            .ok_or(format!("Path `{key}` is not found in `{inner_file_path}`"))
     }
 }

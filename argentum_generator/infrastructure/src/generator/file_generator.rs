@@ -31,7 +31,12 @@ where
     }
 
     pub fn generate(&self, output_path: &str, template: &str) -> Result<(), String> {
-        self.file_existence_checker.ensure_absent(output_path)?;
+        if self.file_existence_checker.exists(output_path) {
+            self.logger
+                .info(format!("{output_path} already exists, skipped."));
+
+            return Ok(());
+        }
 
         self.renderer.render("", template, (), output_path)?;
 
@@ -68,14 +73,14 @@ mod tests {
     }
 
     #[test]
-    fn generate_does_not_overwrite_existing_file() {
+    fn generate_skips_existing_file() {
         let temp_dir = tempfile::tempdir().unwrap();
         let path = temp_dir.path().join("output.rs");
         std::fs::write(&path, "existing").unwrap();
 
         let result = test_file_generator().generate(path.to_str().unwrap(), "t");
 
-        assert!(result.is_err());
+        assert!(result.is_ok());
         assert_eq!(std::fs::read_to_string(&path).unwrap(), "existing");
     }
 }

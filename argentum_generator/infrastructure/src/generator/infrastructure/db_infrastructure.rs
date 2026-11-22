@@ -59,7 +59,12 @@ where
             entity_name: entity_name.clone(),
         };
 
-        self.file_existence_checker.ensure_absent(&output_path)?;
+        if self.file_existence_checker.exists(&output_path) {
+            self.logger
+                .info(format!("{output_path} already exists, skipped."));
+
+            return Ok(());
+        }
 
         self.renderer
             .render("", REPO_TEMPLATE, &data, &output_path)?;
@@ -96,7 +101,12 @@ where
             entity_name: entity_name.clone(),
         };
 
-        self.file_existence_checker.ensure_absent(&output_path)?;
+        if self.file_existence_checker.exists(&output_path) {
+            self.logger
+                .info(format!("{output_path} already exists, skipped."));
+
+            return Ok(());
+        }
 
         self.renderer
             .render("", DTO_TEMPLATE, &data, &output_path)?;
@@ -153,7 +163,7 @@ mod tests {
     }
 
     #[test]
-    fn generate_does_not_overwrite_existing_dto_file() {
+    fn generate_skips_existing_dto_file() {
         let _cwd_guard = crate::generator::test_util::lock_cwd();
         let temp_dir = tempfile::tempdir().unwrap();
         let original_dir = std::env::current_dir().unwrap();
@@ -172,7 +182,7 @@ mod tests {
 
         std::env::set_current_dir(original_dir).unwrap();
 
-        assert!(result.is_err());
+        assert!(result.is_ok());
         assert_eq!(std::fs::read_to_string(&dto_path).unwrap(), "existing");
     }
 }

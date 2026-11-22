@@ -2,7 +2,7 @@
 
 Reusable core of the component generator:
 
-* Generators for component parts: business, api-doc, devops, infrastructure, ui, fe-app (`generator`)
+* Generators for component parts: business, api-doc, rest, devops, infrastructure, ui, fe-app (`generator`)
 * Handlebars templates (`template`)
 * Plain parameter structs (`params`)
 
@@ -29,5 +29,17 @@ let params = ComponentParams {
     entity_name: None,
 };
 
-di.component_generator.generate(&params)?;
+di.component_generator.generate(&params)?
+----
+
+Individual generators are also available on the container, e.g. the `rest`
+generator (which delegates to the REST generator infrastructure):
+
+[source,rust]
+----
+use argentum_generator_infrastructure::params::RestParams;
+
+di.rest_generator.generate(&RestParams {
+    component_name: "user_account".to_string(),
+})?;
 ----

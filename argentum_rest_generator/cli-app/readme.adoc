@@ -1,6 +1,6 @@
 = Argentum ToolKit. REST Generator.
 
-REST Generator is a tools that creates API libraries from OpenAPI specification.
+REST Generator is a tool that creates API libraries from OpenAPI specification.
 
 Supported generators
 
@@ -63,6 +63,27 @@ cd argentum/argentum_rest_generator/cli-app
 
 cargo run -- --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --package-name argentum_user_account_rest
 ----
+
+=== Argentum path
+
+The optional `-a`/`--argentum-path` flag controls how the generated `Cargo.toml`
+and `readme.adoc` reference the component's business package
+(`argentum_<component>_business`).
+
+When generating inside the argentum repository, the value must be relative to
+the output directory. For an output of `<component>/rest/` use `-a ../..`:
+
+[source,shell]
+----
+argentum_rest_generator_app -a ../.. --input argentum_user_account/api-doc/openapi.yaml --output argentum_user_account/rest/ --package-name argentum_user_account_rest
+----
+
+This produces dependencies like `path = "../../argentum_user_account/business"`.
+An absolute repository path also works, but it bakes machine-specific absolute
+paths into the generated files, so the relative form is recommended.
+
+If the flag is omitted, the business dependency is not added to the generated
+`Cargo.toml`.
 
 == Restrictions
 

@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn generate_does_not_overwrite_existing_cargo_file() {
+    fn generate_skips_existing_cargo_file() {
         let _cwd_guard = crate::generator::test_util::lock_cwd();
         let temp_dir = tempfile::tempdir().unwrap();
         let original_dir = std::env::current_dir().unwrap();
@@ -84,7 +84,7 @@ mod tests {
 
         std::env::set_current_dir(original_dir).unwrap();
 
-        assert!(result.is_err());
+        assert!(result.is_ok());
         assert_eq!(std::fs::read_to_string(&cargo_path).unwrap(), "existing");
     }
 }

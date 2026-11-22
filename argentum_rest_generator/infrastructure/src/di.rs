@@ -40,7 +40,7 @@ where
 
 pub fn di_factory<L>(logger: Arc<L>) -> Result<Di<L>, Box<dyn Error>>
 where
-    L: LoggerTrait + 'static,
+    L: LoggerTrait,
 {
     let templates = vec![
         (

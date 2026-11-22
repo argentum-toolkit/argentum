@@ -51,7 +51,12 @@ where
             component_name: component_name.clone(),
         };
 
-        self.file_existence_checker.ensure_absent(&output_path)?;
+        if self.file_existence_checker.exists(&output_path) {
+            self.logger
+                .info(format!("{output_path} already exists, skipped."));
+
+            return Ok(());
+        }
 
         self.renderer
             .render("", CARGO_TEMPLATE, &data, &output_path)?;

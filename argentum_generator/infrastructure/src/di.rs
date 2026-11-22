@@ -15,6 +15,7 @@ use crate::generator::infrastructure::{
     InfAdapterGenerator, InfCargoGenerator, InfDbModGenerator, InfDiGenerator,
     InfGitIgnoreGenerator, InfLibGenerator, InfMigrationGenerator, InfReadmeGenerator,
 };
+use crate::generator::rest::RestGenerator;
 use crate::generator::ui::{
     UiCargoGenerator, UiLibGenerator, UiPageGenerator, UiPageModGenerator, UiReadmeGenerator,
     UiRsxModGenerator,
@@ -39,6 +40,7 @@ where
     pub devops_generator: Arc<DevopsGenerator<L>>,
     pub fe_app_generator: Arc<FeAppGenerator<L>>,
     pub infrastructure_generator: Arc<InfrastructureGenerator<L>>,
+    pub rest_generator: Arc<RestGenerator<L>>,
     pub ui_generator: Arc<UiGenerator<L>>,
     pub component_generator: Arc<ComponentGenerator<L>>,
 }
@@ -54,6 +56,7 @@ where
         devops_generator: Arc<DevopsGenerator<L>>,
         fe_app_generator: Arc<FeAppGenerator<L>>,
         infrastructure_generator: Arc<InfrastructureGenerator<L>>,
+        rest_generator: Arc<RestGenerator<L>>,
         ui_generator: Arc<UiGenerator<L>>,
         component_generator: Arc<ComponentGenerator<L>>,
     ) -> Self {
@@ -64,6 +67,7 @@ where
             devops_generator,
             fe_app_generator,
             infrastructure_generator,
+            rest_generator,
             ui_generator,
             component_generator,
         }
@@ -72,7 +76,7 @@ where
 
 pub fn di_factory<L>(logger: Arc<L>) -> Result<Di<L>, Box<dyn Error>>
 where
-    L: LoggerTrait + 'static,
+    L: LoggerTrait,
 {
     let templates = vec![
         (
@@ -498,10 +502,13 @@ where
         ui_page_generator,
     ));
 
+    let rest_generator = Arc::new(RestGenerator::new(logger.clone()));
+
     let component_generator = Arc::new(ComponentGenerator::new(
         logger.clone(),
         business_generator.clone(),
         api_doc_generator.clone(),
+        rest_generator.clone(),
         devops_generator.clone(),
         infrastructure_generator.clone(),
         ui_generator.clone(),
@@ -514,6 +521,7 @@ where
         devops_generator,
         fe_app_generator,
         infrastructure_generator,
+        rest_generator,
         ui_generator,
         component_generator,
     ))

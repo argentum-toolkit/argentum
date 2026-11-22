@@ -1,3 +1,9 @@
+openapi: 3.1.0
+
+info:
+  title: {{title componentName}} component's paths
+  version: 0.1.0-dev
+
 paths:
   /{{kebab componentName}}/example:
     post:
@@ -15,3 +21,5 @@ paths:
           $ref: "./response.oas.yaml#/components/responses/ExampleOk"
         "400":
           $ref: "./response.oas.yaml#/components/responses/ExampleBadRequest"
+
+components: {}

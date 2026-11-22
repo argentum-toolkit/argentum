@@ -61,6 +61,11 @@ pub enum GenerateCommand {
         #[arg(short, long)]
         entity_name: String,
     },
+    /// Generate the rest package for a component from its api-doc OpenAPI spec
+    Rest {
+        #[arg(short, long)]
+        component_name: String,
+    },
     /// Generate a UI package skeleton for a component
     Ui {
         #[arg(short, long)]

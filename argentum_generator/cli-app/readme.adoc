@@ -4,13 +4,14 @@ Component Generator creates components and their parts from templates.
 
 == Supported generators
 
-- component: whole component skeleton (business, api-doc, devops, infrastructure and ui packages). This is the main entry point.
+- component: whole component skeleton (business, api-doc, rest, devops, infrastructure and ui packages). This is the main entry point.
 - api-doc: OpenAPI stubs for a component
 - business: business package skeleton for a component
 - db-infrastructure: DTO and Postgres repository for an entity
 - devops: docker-compose files for a component's DB container
 - fe-app: Dioxus front-end application skeleton
 - infrastructure: infrastructure package skeleton for a component
+- rest: REST client/server package generated from a component's api-doc OpenAPI spec
 - ui: UI package skeleton for a component
 
 == How to install
@@ -47,6 +48,7 @@ argentum_generator_app db-infrastructure --component-name user_account --entity-
 argentum_generator_app devops --component-name user_account
 argentum_generator_app fe-app --app-name my_app
 argentum_generator_app infrastructure --component-name user_account --entity-name UserAccount
+argentum_generator_app rest --component-name user_account
 argentum_generator_app ui --component-name user_account
 ----
 
@@ -60,10 +62,26 @@ cargo run -p argentum_generator_app -- db-infrastructure --component-name user_a
 cargo run -p argentum_generator_app -- business --component-name user_account --entity-name UserAccount
 cargo run -p argentum_generator_app -- devops --component-name user_account
 cargo run -p argentum_generator_app -- infrastructure --component-name user_account --entity-name UserAccount
+cargo run -p argentum_generator_app -- rest --component-name user_account
 cargo run -p argentum_generator_app -- ui --component-name user_account
 ----
 
-`component` generates the business, api-doc, devops, infrastructure and ui packages for a component in one run. By default the entity name equals the component name in PascalCase (e.g. `user_account` -> `ProPro`); override it with `--entity-name`.
+`component` generates the business, api-doc, rest, devops, infrastructure and ui packages for a component in one run, in that order. By default the entity name equals the component name in PascalCase (e.g. `user_account` -> `UserAccount`); override it with `--entity-name`.
+
+== Overwrite semantics
+
+Overwrite semantics differ between generators: the business, api-doc, devops, infrastructure and ui generators never overwrite an existing file — when the target already exists, it is skipped with a console log, so re-running them on a generated component is safe. To regenerate a specific file, delete it first and run the generator again. The `rest` generator always regenerates: it deletes the component's `rest/src` and `rest/api-spec` folders and rewrites the whole `rest` package from the component's `api-doc/openapi.yaml`, so it can be re-run freely. The rest package is fully generated — nothing hand-written lives there.
+
+== Regenerating the rest package
+
+After editing `<component>/api-doc/openapi.yaml`, re-run the `rest` command to regenerate the REST package:
+
+[source,shell]
+----
+argentum_generator_app rest --component-name user_account
+----
+
+The `rest` command computes the argentum path for the generated `Cargo.toml` automatically, so no `--argentum-path` value is needed. The global `--argentum-path` option is used only by the `fe-app` generator.
 
 == Example
 
@@ -204,3 +222,19 @@ Result:
 
 - `user_account/devops/docker/docker-compose.yaml`
 - `user_account/devops/docker/docker-compose.dev.yaml`
+
+Generate the rest package for a `user_account` component from its api-doc OpenAPI spec:
+
+[source,shell]
+----
+argentum_generator_app rest --component-name user_account
+----
+
+Result:
+
+- `user_account/rest/Cargo.toml`
+- `user_account/rest/readme.adoc`
+- `user_account/rest/api-spec/...` (combined OpenAPI specification)
+- `user_account/rest/src/...` (dto, server, client, di and ui sources)
+
+The command requires `user_account/api-doc/openapi.yaml` to exist and fails with an error otherwise. It deletes `user_account/rest/src` and `user_account/rest/api-spec` before regenerating, so repeated runs always produce a fresh package.

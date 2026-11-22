@@ -4,10 +4,12 @@ use argentum_log_business::LoggerTrait;
 use convert_case::{Case, Casing};
 
 use crate::generator::{
-    ApiDocGenerator, BusinessGenerator, DevopsGenerator, InfrastructureGenerator, UiGenerator,
+    ApiDocGenerator, BusinessGenerator, DevopsGenerator, InfrastructureGenerator, RestGenerator,
+    UiGenerator,
 };
 use crate::params::{
-    ApiDocParams, BusinessParams, ComponentParams, DevopsParams, InfrastructureParams, UiParams,
+    ApiDocParams, BusinessParams, ComponentParams, DevopsParams, InfrastructureParams, RestParams,
+    UiParams,
 };
 
 pub struct ComponentGenerator<L>
@@ -17,6 +19,7 @@ where
     logger: Arc<L>,
     business: Arc<BusinessGenerator<L>>,
     api_doc: Arc<ApiDocGenerator<L>>,
+    rest: Arc<RestGenerator<L>>,
     devops: Arc<DevopsGenerator<L>>,
     infrastructure: Arc<InfrastructureGenerator<L>>,
     ui: Arc<UiGenerator<L>>,
@@ -30,6 +33,7 @@ where
         logger: Arc<L>,
         business: Arc<BusinessGenerator<L>>,
         api_doc: Arc<ApiDocGenerator<L>>,
+        rest: Arc<RestGenerator<L>>,
         devops: Arc<DevopsGenerator<L>>,
         infrastructure: Arc<InfrastructureGenerator<L>>,
         ui: Arc<UiGenerator<L>>,
@@ -38,6 +42,7 @@ where
             logger,
             business,
             api_doc,
+            rest,
             devops,
             infrastructure,
             ui,
@@ -68,6 +73,12 @@ where
         })?;
 
         self.logger.info("Api-doc folder is generated.");
+
+        self.rest.generate(&RestParams {
+            component_name: component_name.clone(),
+        })?;
+
+        self.logger.info("Rest package is generated.");
 
         self.devops.generate(&DevopsParams {
             component_name: component_name.clone(),

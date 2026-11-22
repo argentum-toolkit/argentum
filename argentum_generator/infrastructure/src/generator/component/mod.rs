@@ -24,7 +24,7 @@ mod tests {
     };
     use crate::generator::{
         ApiDocGenerator, BusinessGenerator, DbInfrastructureGenerator, DevopsGenerator,
-        FileExistenceChecker, FileGenerator, InfrastructureGenerator, UiGenerator,
+        FileExistenceChecker, FileGenerator, InfrastructureGenerator, RestGenerator, UiGenerator,
     };
     use crate::params::ComponentParams;
     use argentum_log_business::Level;
@@ -188,9 +188,10 @@ mod tests {
         ));
 
         ComponentGenerator::new(
-            logger,
+            logger.clone(),
             business_generator,
             api_doc_generator,
+            Arc::new(RestGenerator::new(logger.clone())),
             devops_generator,
             infrastructure_generator,
             ui_generator,
@@ -198,7 +199,7 @@ mod tests {
     }
 
     #[test]
-    fn generate_does_not_overwrite_existing_business_cargo_file() {
+    fn generate_skips_existing_business_cargo_file() {
         let _cwd_guard = crate::generator::test_util::lock_cwd();
         let temp_dir = tempfile::tempdir().unwrap();
         let original_dir = std::env::current_dir().unwrap();
@@ -208,6 +209,14 @@ mod tests {
         std::fs::create_dir_all(cargo_path.parent().unwrap()).unwrap();
         std::fs::write(&cargo_path, "existing").unwrap();
 
+        let openapi_path = temp_dir.path().join("test_comp/api-doc/openapi.yaml");
+        std::fs::create_dir_all(openapi_path.parent().unwrap()).unwrap();
+        std::fs::write(
+            &openapi_path,
+            "openapi: 3.0.0\ninfo:\n  title: test\n  version: 0.0.1\npaths: {}\ncomponents: {}\n",
+        )
+        .unwrap();
+
         let result = test_component_generator().generate(&ComponentParams {
             component_name: "test_comp".to_string(),
             entity_name: None,
@@ -215,7 +224,7 @@ mod tests {
 
         std::env::set_current_dir(original_dir).unwrap();
 
-        assert!(result.is_err());
+        assert!(result.is_ok());
         assert_eq!(std::fs::read_to_string(&cargo_path).unwrap(), "existing");
     }
 }
