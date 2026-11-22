@@ -1,7 +1,7 @@
 LabeledCheckbox {
     id: "{{ui.id}}",
     name: "{{ui.name}}",
-    label: "{{title}}",
+    label: "{{lookup this "title"}}",
     {{#if required}}
         value: {{snake name}}_value(),
     {{else}}

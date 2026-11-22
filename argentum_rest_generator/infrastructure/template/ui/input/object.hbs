@@ -5,7 +5,7 @@
                     violations: {{snake name}}_violations,
                     ui_wrapper: "{{ui.wrapper}}".to_string(),
                     {{#if title}}
-                    title: "{{title}}",
+                    title: "{{lookup this "title"}}",
                     {{/if}}
                     oninput: move |v: {{ upper_camel typeName }}| {
                         {{snake name}}_value.set(v);
@@ -20,7 +20,7 @@
                         violations: {{snake name}}_violations,
                         ui_wrapper: "{{ui.wrapper}}".to_string(),
                         {{#if title}}
-                        title: "{{title}}",
+                        title: "{{lookup this "title"}}",
                         {{/if}}
                         oninput: move |v: {{ upper_camel typeName }}| {
                             {{snake name}}_value.set(Some(v));
@@ -36,7 +36,7 @@
                         violations: {{snake name}}_violations,
                         ui_wrapper: "{{ui.wrapper}}".to_string(),
                         {{#if title}}
-                        title: "{{title}}",
+                        title: "{{lookup this "title"}}",
                         {{/if}}
                         oninput: move |v: Option<{{ upper_camel typeName }}>| {
                             {{snake name}}_value.set(v);

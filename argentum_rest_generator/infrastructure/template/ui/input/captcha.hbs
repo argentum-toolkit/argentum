@@ -1,7 +1,7 @@
 Captcha {
     id: "{{ui.id}}",
     name: "{{ui.name}}",
-    label: "{{title}}",
+    label: "{{lookup this "title"}}",
     required: {{required}},
     {{#if required}}
         value: {{snake name}}_value(),

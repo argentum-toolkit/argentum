@@ -1,4 +1,3 @@
 pub(crate) mod helper;
-mod renderer;
 
-pub(crate) use renderer::Renderer;
+pub(crate) use argentum_template_infrastructure::Renderer;

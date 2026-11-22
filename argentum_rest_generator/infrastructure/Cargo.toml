@@ -24,3 +24,4 @@ reqwest = "0.12.*"
 argentum_rest_infrastructure = { path = "../../argentum_rest/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_openapi_infrastructure = { path = "../../argentum_openapi/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_template_infrastructure = { path = "../../argentum_template/infrastructure", version = ">=0.4.0-dev,<0.5.0" }

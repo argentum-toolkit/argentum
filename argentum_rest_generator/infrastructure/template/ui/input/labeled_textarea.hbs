@@ -1,7 +1,7 @@
 LabeledTextarea {
     id: "{{ui.id}}",
     name: "{{ui.name}}",
-    label: "{{title}}",
+    label: "{{lookup this "title"}}",
     input_type: "text".to_string(),
     required: {{required}},
     {{#if required}}

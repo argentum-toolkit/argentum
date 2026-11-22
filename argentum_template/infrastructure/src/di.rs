@@ -20,6 +20,7 @@ impl TemplateInfrastructureDi {
 
 pub fn template_infrastructure_di_factory(
     templates: Vec<(&str, &str)>,
+    extra_helpers: Vec<(&str, Box<dyn handlebars::HelperDef + Send + Sync>)>,
 ) -> Result<TemplateInfrastructureDi, Box<dyn Error>> {
     let mut reg = Handlebars::new();
 
@@ -42,6 +43,10 @@ pub fn template_infrastructure_di_factory(
 
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
     reg.register_helper("escape_var_name", Box::new(escape_var_name_helper));
+
+    for (name, helper) in extra_helpers.into_iter() {
+        reg.register_helper(name, helper);
+    }
 
     let renderer = Arc::new(Renderer::new(Arc::new(reg)));
 

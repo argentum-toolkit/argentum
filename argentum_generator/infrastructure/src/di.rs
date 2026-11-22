@@ -258,7 +258,7 @@ where
         ),
     ];
 
-    let template_di = template_infrastructure_di_factory(templates)?;
+    let template_di = template_infrastructure_di_factory(templates, vec![])?;
 
     //services
     let file_existence_checker = Arc::new(FileExistenceChecker);

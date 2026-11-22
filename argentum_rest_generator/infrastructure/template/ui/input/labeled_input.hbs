@@ -31,7 +31,7 @@ input {
 LabeledInput {
     id: "{{ui.id}}",
     name: "{{ui.name}}",
-    label: "{{title}}",
+    label: "{{lookup this "title"}}",
     input_type: "{{inputType}}".to_string(),
     required: {{required}},
     {{#if emptyZero}}
