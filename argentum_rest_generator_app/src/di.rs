@@ -17,7 +17,7 @@ use crate::generator::{
 };
 use crate::template::Renderer;
 use crate::template::helper::{
-    camel_helper, content_type_to_type_helper, eq_helper, escape_var_name_helper, lower_helper,
+    camel_helper, content_type_to_type_helper, escape_var_name_helper, lower_helper,
     package_name_to_container_provider_name, snake_helper, trim_mod_helper, upper_camel_helper,
 };
 use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
@@ -220,7 +220,6 @@ pub fn di_factory() -> Result<Di<DefaultLogger<PrettyWriter>>, Box<dyn Error>> {
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
     reg.register_helper("lower", Box::new(lower_helper));
-    reg.register_helper("eq", Box::new(eq_helper));
 
     reg.register_helper(
         "content_type_to_type",

@@ -1,0 +1,206 @@
+= Argentum ToolKit. Generator.
+
+Component Generator creates components and their parts from templates.
+
+== Supported generators
+
+- component: whole component skeleton (business, api-doc, devops, infrastructure and ui packages). This is the main entry point.
+- api-doc: OpenAPI stubs for a component
+- business: business package skeleton for a component
+- db-infrastructure: DTO and Postgres repository for an entity
+- devops: docker-compose files for a component's DB container
+- fe-app: Dioxus front-end application skeleton
+- infrastructure: infrastructure package skeleton for a component
+- ui: UI package skeleton for a component
+
+== How to install
+
+=== Via cargo install
+
+[source,shell]
+----
+cargo install argentum_generator_app
+----
+
+.From source codes
+.Clone
+[source,shell]
+----
+git clone git@gitlab.com:argentum-toolkit/argentum.git
+----
+
+.Install binary
+[source,shell]
+----
+cargo install --path argentum_generator_app/
+----
+
+== How to use
+
+[source,shell]
+----
+argentum_generator_app component --component-name user_account
+argentum_generator_app component --component-name user_account --entity-name UserAccount
+argentum_generator_app api-doc --component-name user_account
+argentum_generator_app business --component-name user_account --entity-name UserAccount
+argentum_generator_app db-infrastructure --component-name user_account --entity-name User
+argentum_generator_app devops --component-name user_account
+argentum_generator_app fe-app --app-name my_app
+argentum_generator_app infrastructure --component-name user_account --entity-name UserAccount
+argentum_generator_app ui --component-name user_account
+----
+
+Or via `cargo run` from the repository root (sources should be cloned):
+
+[source,shell]
+----
+cargo run -p argentum_generator_app -- component --component-name user_account
+cargo run -p argentum_generator_app -- api-doc --component-name user_account
+cargo run -p argentum_generator_app -- db-infrastructure --component-name user_account --entity-name User
+cargo run -p argentum_generator_app -- business --component-name user_account --entity-name UserAccount
+cargo run -p argentum_generator_app -- devops --component-name user_account
+cargo run -p argentum_generator_app -- infrastructure --component-name user_account --entity-name UserAccount
+cargo run -p argentum_generator_app -- ui --component-name user_account
+----
+
+`component` generates the business, api-doc, devops, infrastructure and ui packages for a component in one run. By default the entity name equals the component name in PascalCase (e.g. `user_account` -> `ProPro`); override it with `--entity-name`.
+
+== Example
+
+Generate a whole `user_account` component skeleton:
+
+[source,shell]
+----
+argentum_generator_app component --component-name user_account
+----
+
+Result:
+
+- `user_account/business/...` (business package skeleton)
+- `user_account/api-doc/...` (OpenAPI stubs)
+- `user_account/devops/...` (docker-compose files)
+- `user_account/infrastructure/...` (infrastructure package skeleton)
+- `user_account/ui/Cargo.toml`
+- `user_account/ui/readme.adoc`
+- `user_account/ui/src/lib.rs`
+- `user_account/ui/src/rsx/mod.rs`
+- `user_account/ui/src/rsx/page/mod.rs`
+- `user_account/ui/src/rsx/page/user_account.rs`
+
+Generate a UI package skeleton for a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app ui --component-name user_account
+----
+
+Result:
+
+- `user_account/ui/Cargo.toml`
+- `user_account/ui/readme.adoc`
+- `user_account/ui/src/lib.rs`
+- `user_account/ui/src/rsx/mod.rs`
+- `user_account/ui/src/rsx/page/mod.rs`
+- `user_account/ui/src/rsx/page/user_account.rs`
+
+The generated UI package is self-contained: it depends only on `dioxus` and does not reference the (not yet generated) `argentum_<component>_rest` package.
+
+`fe-app` accepts the global `--argentum-path` option to link local argentum crates:
+
+[source,shell]
+----
+argentum_generator_app --argentum-path /path/to/argentum fe-app --app-name my_app
+----
+
+Generate an api-doc folder for a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app api-doc --component-name user_account
+----
+
+Result:
+
+- `user_account/api-doc/openapi.yaml`
+- `user_account/api-doc/paths.oas.yaml`
+- `user_account/api-doc/request.oas.yaml`
+- `user_account/api-doc/response.oas.yaml`
+- `user_account/api-doc/type.oas.yaml`
+
+Generate a business package skeleton for a `user_account` component with a `UserAccount` entity:
+
+[source,shell]
+----
+argentum_generator_app business --component-name user_account --entity-name UserAccount
+----
+
+Result:
+
+- `user_account/business/Cargo.toml`
+- `user_account/business/.gitignore`
+- `user_account/business/readme.adoc`
+- `user_account/business/src/lib.rs`
+- `user_account/business/src/di.rs`
+- `user_account/business/src/entity/user_account.rs` (+ `mod.rs`)
+- `user_account/business/src/repository/user_account_repository.rs` (+ `mod.rs`)
+- `user_account/business/src/mock/repository/user_account_repository_mock.rs` (+ `mod.rs` files for `mock`, `use_case`, `service`, `specification`, `event`)
+
+Generate a repository for a `UserAccount` entity in a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app db-infrastructure --component-name user_account --entity-name UserAccount
+----
+
+Result:
+
+- `user_account/infrastructure/src/db/dto/user_account_dto.rs`
+- `user_account/infrastructure/src/db/repository/user_account_repository.rs`
+
+The following lines are appended to `user_account/infrastructure/src/db/dto/mod.rs`:
+
+[source,rust]
+----
+mod user_account_dto;
+pub(crate) use user_account_dto::UserAccountDto;
+----
+
+The following lines are appended to `user_account/infrastructure/src/db/repository/mod.rs`:
+
+[source,rust]
+----
+mod user_account_repository;
+pub use user_account_repository::UserAccountRepository;
+----
+
+Generate an infrastructure package skeleton for a `user_account` component with a `UserAccount` entity:
+
+[source,shell]
+----
+argentum_generator_app infrastructure --component-name user_account --entity-name UserAccount
+----
+
+Result:
+
+- `user_account/infrastructure/Cargo.toml`
+- `user_account/infrastructure/.gitignore`
+- `user_account/infrastructure/readme.adoc`
+- `user_account/infrastructure/src/lib.rs`
+- `user_account/infrastructure/src/di.rs`
+- `user_account/infrastructure/src/db/mod.rs`
+- `user_account/infrastructure/src/db/adapter.rs`
+- `user_account/infrastructure/src/db/dto/user_account_dto.rs` (+ `mod.rs`)
+- `user_account/infrastructure/src/db/repository/user_account_repository.rs` (+ `mod.rs`)
+- `user_account/infrastructure/src/db/migration/migration_000_init.rs` (+ `mod.rs`)
+
+Generate a devops folder for a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app devops --component-name user_account
+----
+
+Result:
+
+- `user_account/devops/docker/docker-compose.yaml`
+- `user_account/devops/docker/docker-compose.dev.yaml`

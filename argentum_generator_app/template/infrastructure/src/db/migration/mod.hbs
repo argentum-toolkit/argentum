@@ -1,0 +1,7 @@
+mod migration_000_init;
+
+use argentum_db_infrastructure::slqx_postgres::migration::MigrationCollection;
+
+pub fn up(table_name_prefix: &str) -> MigrationCollection {
+    MigrationCollection::from([("000_init".into(), migration_000_init::up(table_name_prefix))])
+}

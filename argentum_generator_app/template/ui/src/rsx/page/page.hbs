@@ -1,0 +1,12 @@
+use dioxus::prelude::*;
+
+#[component]
+pub fn {{upper_camel componentName}}() -> Element {
+    rsx! {
+        section {
+            div { class: "container flex justify-center",
+                h2 { "{{title componentName}}" }
+            }
+        }
+    }
+}

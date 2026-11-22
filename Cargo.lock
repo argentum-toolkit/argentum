@@ -116,21 +116,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "argentum_component_generator_app"
-version = "0.4.0-dev"
-dependencies = [
- "argentum_log_business",
- "argentum_log_infrastructure",
- "argentum_template_infrastructure",
- "clap",
- "convert_case 0.8.0",
- "handlebars",
- "serde",
- "serde_json",
- "tempfile",
-]
-
-[[package]]
 name = "argentum_db_infrastructure"
 version = "0.4.0-dev"
 dependencies = [
@@ -250,6 +235,21 @@ dependencies = [
  "tokio",
  "uuid",
  "web-sys",
+]
+
+[[package]]
+name = "argentum_generator_app"
+version = "0.4.0-dev"
+dependencies = [
+ "argentum_log_business",
+ "argentum_log_infrastructure",
+ "argentum_template_infrastructure",
+ "clap",
+ "convert_case 0.8.0",
+ "handlebars",
+ "serde",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]

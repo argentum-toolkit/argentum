@@ -7,10 +7,6 @@ handlebars_helper!(camel_helper: |s: Option<String>| s.unwrap_or("".into()).to_c
 handlebars_helper!(lower_helper: |s: Option<String>| s.unwrap_or("".into()).to_case(Case::Lower));
 handlebars_helper!(content_type_to_type_helper: |s: Option<String>| s.unwrap_or("".into()).replace(['/', '-', '+'], "_").to_case(Case::UpperCamel));
 
-handlebars_helper!(eq_helper: |a: String, b: String| {
-    a == b
-});
-
 handlebars_helper!(trim_mod_helper: |s: String| {
     s.split("::").last().unwrap_or("")
 });

@@ -1,0 +1,69 @@
+use std::sync::Arc;
+
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
+use argentum_{{componentName}}_business::entity::{{entityName}};
+use argentum_{{componentName}}_business::repository::{{snake entityName}}_repository::{
+    {{entityName}}RepositoryError, {{entityName}}RepositoryTrait,
+};
+
+use argentum_db_infrastructure::adapter::DbAdapterError;
+use argentum_log_business::LoggerTrait;
+
+use async_trait::async_trait;
+use uuid::Uuid;
+
+use crate::db::{{upper_camel componentName}}SqlxPostgresAdapter;
+use crate::db::dto::{{entityName}}Dto;
+
+const TABLE_NAME: &str = "ag_{{componentName}}_{{snake entityName}}";
+
+pub struct {{entityName}}Repository<L>
+where
+    L: LoggerTrait,
+{
+    adapter: Arc<{{upper_camel componentName}}SqlxPostgresAdapter<L>>,
+}
+
+impl<L> {{entityName}}Repository<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(adapter: Arc<{{upper_camel componentName}}SqlxPostgresAdapter<L>>) -> Self {
+        Self { adapter }
+    }
+}
+
+#[async_trait]
+impl<L> {{entityName}}RepositoryTrait for {{entityName}}Repository<L>
+where
+    L: LoggerTrait,
+{
+    type Id = UniqueId;
+
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<{{entityName}}<Self::Id>>, {{entityName}}RepositoryError> {
+        let id: Uuid = id.into();
+        let sql = format!("SELECT id FROM {TABLE_NAME} WHERE id = $1 LIMIT 1");
+        let query_as = sqlx::query_as(sqlx::AssertSqlSafe(sql)).bind(id);
+        let result: Result<Option<{{entityName}}Dto>, DbAdapterError> =
+            self.adapter.fetch_one(query_as).await;
+
+        match result {
+            Ok(Some(dto)) => Ok(Some({{entityName}}::new(dto.id.into()))),
+            Ok(None) => Ok(None),
+            Err(e) => Err({{entityName}}RepositoryError::Find(Some(Arc::new(e)))),
+        }
+    }
+
+    async fn save(
+        &self,
+        {{snake entityName}}: &{{entityName}}<Self::Id>,
+    ) -> Result<(), {{entityName}}RepositoryError> {
+        // TODO: Implement save using the adapter
+        let _ = {{snake entityName}};
+
+        Ok(())
+    }
+}

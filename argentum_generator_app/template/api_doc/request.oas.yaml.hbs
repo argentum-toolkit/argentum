@@ -1,0 +1,17 @@
+openapi: 3.1.0
+
+info:
+  title: {{title componentName}} component's request bodies
+  version: 0.4.0-dev
+
+paths: {}
+
+components:
+  requestBodies:
+    ExampleRequestBody:
+      description: "Data required by the example operation"
+      required: true
+      content:
+        "application/json":
+          schema:
+            $ref: "type.oas.yaml#/components/schemas/ExampleSchema"

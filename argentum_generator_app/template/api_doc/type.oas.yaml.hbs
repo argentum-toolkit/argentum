@@ -1,0 +1,42 @@
+openapi: 3.1.0
+
+info:
+  title: {{title componentName}} component's types (schemas)
+  version: 0.4.0-dev
+
+paths: {}
+
+components:
+  schemas:
+    ExampleSchema:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name
+          example: example-name
+          x-ag-ui:
+            id: name
+            name: name
+            weight: 10
+      required:
+        - name
+
+    ExampleResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+      required:
+        - id
+
+    ExampleError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: error-message
+      required:
+        - message

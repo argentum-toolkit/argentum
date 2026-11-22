@@ -1,0 +1,17 @@
+paths:
+  /{{kebab componentName}}/example:
+    post:
+      summary: Example operation
+      description: Example operation of the {{kebab componentName}} component
+      tags:
+        - {{kebab componentName}}
+      operationId: {{upper_camel componentName}}Example
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/ExampleRequestBody"
+      responses:
+        "200":
+          $ref: "./response.oas.yaml#/components/responses/ExampleOk"
+        "400":
+          $ref: "./response.oas.yaml#/components/responses/ExampleBadRequest"
