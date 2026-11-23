@@ -47,7 +47,7 @@ impl<L> OpenApiGenerator<L>
 where
     L: LoggerTrait,
 {
-    pub fn new(
+    pub(crate) fn new(
         logger: Arc<L>,
         combiner: Arc<Combiner<L>>,
         oas_yaml_generator: Arc<OasYamlGenerator>,

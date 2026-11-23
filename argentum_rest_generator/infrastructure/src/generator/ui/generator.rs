@@ -21,7 +21,7 @@ pub struct UiGenerator {
 }
 
 impl UiGenerator {
-    pub fn new(
+    pub(crate) fn new(
         renderer: Arc<Renderer>,
         form_generator: Arc<FormGenerator>,
         form_data_generator: Arc<CallbacksGenerator>,
