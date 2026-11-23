@@ -1,0 +1,267 @@
+openapi: 3.1.0
+info:
+  contact:
+    url: https://gitlab.com/argentum-toolkit/argentum
+  description: Contact Us API
+  license:
+    name: LGPL-3.0-or-later
+  title: Argentum Contact Us component API
+  version: 0.4.0-dev
+externalDocs:
+  description: Find more info here
+  url: https://gitlab.com/argentum-toolkit/argentum
+servers:
+- description: Dev API Server with CORS
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8082'
+      enum:
+      - '8082'
+      - '8080'
+- description: Dev HTTP/2 API Server with CORS
+  url: https://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8443'
+      enum:
+      - '8443'
+      - '8080'
+- description: The production API server
+  url: http://localhost:{port}/{basePath}
+  variables:
+    basePath:
+      default: api/v1
+    port:
+      default: '8080'
+      enum:
+      - '80'
+      - '8080'
+tags:
+- description: Managing of the contact-us
+  name: contact-us
+paths:
+  /contact-us/guest-message:
+    post:
+      description: Guest sends a message with name and email
+      operationId: GuestSendsMessage
+      tags:
+      - contact-us
+      requestBody:
+        $ref: '#/components/requestBodies/GuestSendsMessageRequestBody'
+      summary: Guest sends a message
+      responses:
+        '201':
+          $ref: '#/components/responses/MessageCreatedSuccessfully'
+        '400':
+          $ref: '#/components/responses/400'
+      x-ag-form:
+        submit-label: Send
+  /contact-us/member-message:
+    post:
+      description: Logged-in member sends a message
+      operationId: MemberSendsMessage
+      tags:
+      - contact-us
+      security:
+      - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/MemberSendsMessageRequestBody'
+      summary: Member sends a message
+      responses:
+        '201':
+          $ref: '#/components/responses/MessageCreatedSuccessfully'
+        '400':
+          $ref: '#/components/responses/400'
+      x-ag-form:
+        submit-label: Send
+components:
+  requestBodies:
+    GuestSendsMessageRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GuestSendsMessageSchema'
+      description: Data required to send a message as a guest
+      required: true
+    MemberSendsMessageRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MemberSendsMessageSchema'
+      description: Data required to send a message as a logged-in member
+      required: true
+  schemas:
+    GuestSendsMessageSchema:
+      required:
+      - name
+      - email
+      - subject
+      - message
+      properties:
+        name:
+          example: John Doe
+          title: Name
+          type: string
+          x-ag-ui:
+            id: name
+            name: name
+            weight: 10
+            wrapper: none
+            optional-style: none
+        email:
+          example: test-email@test-email.com
+          title: Email
+          type: string
+          format: email
+          x-ag-ui:
+            id: email
+            name: email
+            weight: 20
+            wrapper: none
+            optional-style: none
+        subject:
+          example: Subject example
+          title: Subject
+          maxLength: 255
+          type: string
+          x-ag-ui:
+            id: subject
+            name: subject
+            weight: 30
+            wrapper: none
+            optional-style: none
+        message:
+          example: Message example
+          title: Message
+          type: string
+          format: text
+          x-ag-ui:
+            id: message
+            name: message
+            weight: 40
+            wrapper: none
+            optional-style: none
+        captcha:
+          example: captcha-token-example
+          description: Captcha token. Required when captcha is enabled on the server.
+          type: string
+          format: captcha
+          x-ag-ui:
+            id: captcha
+            name: captcha
+            weight: 35
+            wrapper: none
+            optional-style: none
+      type: object
+    MemberSendsMessageSchema:
+      required:
+      - subject
+      - message
+      properties:
+        subject:
+          example: Subject example
+          title: Subject
+          maxLength: 255
+          type: string
+          x-ag-ui:
+            id: subject
+            name: subject
+            weight: 10
+            wrapper: none
+            optional-style: none
+        message:
+          example: Message example
+          title: Message
+          type: string
+          format: text
+          x-ag-ui:
+            id: message
+            name: message
+            weight: 20
+            wrapper: none
+            optional-style: none
+        captcha:
+          example: captcha-token-example
+          description: Captcha token. Required when captcha is enabled on the server.
+          type: string
+          format: captcha
+          x-ag-ui:
+            id: captcha
+            name: captcha
+            weight: 15
+            wrapper: none
+            optional-style: none
+      type: object
+    MessageCreated:
+      required:
+      - id
+      properties:
+        id:
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+          type: string
+          format: uuid
+      type: object
+    ProblemDetail:
+      title: Schema for error response
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+      - status
+      - title
+      properties:
+        status:
+          example: '401'
+          maximum: 599.0
+          minimum: 400.0
+          type: integer
+          format: int32
+        title:
+          example: Bad Request
+          type: string
+        type:
+          example: about:blank
+          type: string
+        detail:
+          type: string
+        body:
+          $ref: '#/components/schemas/Violation'
+      type: object
+    Violation:
+      properties:
+        errors:
+          $ref: '#/components/schemas/ViolationErrors'
+        items:
+          $ref: '#/components/schemas/ViolationItems'
+      type: object
+    ViolationErrors:
+      items:
+        type: string
+      type: array
+    ViolationItems:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Violation'
+  responses:
+    '400':
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+      description: Bad request
+    MessageCreatedSuccessfully:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageCreated'
+      description: Created
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+      name: ''
+      in: header
+      open_id_connect_url: ''

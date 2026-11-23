@@ -16,6 +16,14 @@ services:
       - HOST_GID=${HOST_GID:-1000}
       - CARGO_PROFILE_RELEASE_DEBUG=2
       - AG_OIDC_DATABASE_URL
+      - AG_CONTACT_US_DATABASE_URL
+      - AG_CONTACT_US_ADMIN_EMAIL
+      - AG_SMTP_HOST
+      - AG_SMTP_PORT
+      - AG_SMTP_TLS_MODE
+      - AG_SMTP_USERNAME
+      - AG_SMTP_PASSWORD
+      - AG_EMAIL_FROM
       - AG_USER_ACCOUNT_DATABASE_URL
       - AG_USER_ACCOUNT_MEMBER_JWT_SECRET
       - AG_USER_DATABASE_URL
@@ -41,6 +49,8 @@ services:
       service.user_account.db:
         condition: service_healthy
       service.oidc.db:
+        condition: service_healthy
+      service.contact_us.db:
         condition: service_healthy
     working_dir: /code/examples/api-app
     ports:

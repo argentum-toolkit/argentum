@@ -1,0 +1,48 @@
+openapi: 3.1.0
+
+info:
+  title: Contact Us component's paths
+  version: 0.4.0-dev
+
+paths:
+  /contact-us/guest-message:
+    post:
+      summary: Guest sends a message
+      description: Guest sends a message with name and email
+      tags:
+        - contact-us
+      operationId: GuestSendsMessage
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/GuestSendsMessageRequestBody"
+      responses:
+        "201":
+          $ref: "./response.oas.yaml#/components/responses/MessageCreatedSuccessfully"
+        "400":
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+            400"
+      x-ag-form:
+        submit-label: "Send"
+
+  /contact-us/member-message:
+    post:
+      summary: Member sends a message
+      description: Logged-in member sends a message
+      tags:
+        - contact-us
+      operationId: MemberSendsMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: "./request.oas.yaml#/components/requestBodies/MemberSendsMessageRequestBody"
+      responses:
+        "201":
+          $ref: "./response.oas.yaml#/components/responses/MessageCreatedSuccessfully"
+        "400":
+          $ref:
+            "../../argentum_standard/api-doc/response.oas.yaml#/components/responses/\
+            400"
+      x-ag-form:
+        submit-label: "Send"
+
+components: {}

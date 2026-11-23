@@ -47,6 +47,7 @@ components:
           x-ag-ui:
             id: captcha
             name: captcha
+            weight: 35
       required:
         - email
         - name

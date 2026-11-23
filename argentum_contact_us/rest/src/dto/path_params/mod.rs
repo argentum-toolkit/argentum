@@ -1,0 +1,5 @@
+mod guest_sends_message_path_params;
+mod member_sends_message_path_params;
+
+pub use guest_sends_message_path_params::GuestSendsMessagePathParams;
+pub use member_sends_message_path_params::MemberSendsMessagePathParams;

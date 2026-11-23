@@ -33,7 +33,7 @@ pub(crate) fn Shell(main_class: &'static str, children: Element) -> Element {
                         ("Home".into(), Route::Home {}),
                         ("Blog".into(), Route::Blog {id: 1}),
                         ("About".into(), Route::About {}),
-                        ("Contacts".into(), Route::Contacts {}),
+                        ("Contact us".into(), Route::ContactUs {}),
                     ],
                     theme_config: theme_config()
                 }

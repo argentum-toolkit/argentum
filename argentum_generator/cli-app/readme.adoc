@@ -4,8 +4,7 @@ Component Generator creates components and their parts from templates.
 
 == Supported generators
 
-- component: whole component skeleton (business, api-doc, rest, devops, infrastructure, ui and api-app). This is the main entry point.
-- api-app: API application skeleton (api + migration binaries) wiring a generated component
+- component: whole component skeleton (business, api-doc, rest, devops, infrastructure, ui). This is the main entry point.
 - api-doc: OpenAPI stubs for a component
 - business: business package skeleton for a component
 - db-infrastructure: DTO and Postgres repository for an entity
@@ -45,7 +44,6 @@ All component-related commands require the `--project-prefix` option. It is prep
 ----
 argentum_generator_app component --project-prefix argentum --component-name user_account
 argentum_generator_app component --project-prefix argentum --component-name user_account --entity-name UserAccount
-argentum_generator_app api-app --project-prefix argentum --component-name user_account
 argentum_generator_app api-doc --project-prefix argentum --component-name user_account
 argentum_generator_app business --project-prefix argentum --component-name user_account --entity-name UserAccount
 argentum_generator_app db-infrastructure --project-prefix argentum --component-name user_account --entity-name User
@@ -61,7 +59,6 @@ Or via `cargo run` from the repository root (sources should be cloned):
 [source,shell]
 ----
 cargo run -p argentum_generator_app -- component --project-prefix argentum --component-name user_account
-cargo run -p argentum_generator_app -- api-app --project-prefix argentum --component-name user_account
 cargo run -p argentum_generator_app -- api-doc --project-prefix argentum --component-name user_account
 cargo run -p argentum_generator_app -- db-infrastructure --project-prefix argentum --component-name user_account --entity-name User
 cargo run -p argentum_generator_app -- business --project-prefix argentum --component-name user_account --entity-name UserAccount
@@ -71,11 +68,11 @@ cargo run -p argentum_generator_app -- rest --project-prefix argentum --componen
 cargo run -p argentum_generator_app -- ui --project-prefix argentum --component-name user_account
 ----
 
-`component` generates the business, api-doc, rest, devops, infrastructure, ui and api-app parts of a component in one run, in that order. By default the entity name equals the component name in PascalCase (e.g. `user_account` -> `UserAccount`); override it with `--entity-name`.
+`component` generates the business, api-doc, rest, devops, infrastructure and ui parts of a component in one run, in that order. By default the entity name equals the component name in PascalCase (e.g. `user_account` -> `UserAccount`); override it with `--entity-name`.
 
 == Overwrite semantics
 
-Overwrite semantics differ between generators: the business, api-doc, devops, infrastructure, ui and api-app generators never overwrite an existing file — when the target already exists, it is skipped with a console log, so re-running them on a generated component is safe. To regenerate a specific file, delete it first and run the generator again. The `rest` generator always regenerates: it deletes the component's `rest/src` and `rest/api-spec` folders and rewrites the whole `rest` package from the component's `api-doc/openapi.yaml`, so it can be re-run freely. The rest package is fully generated — nothing hand-written lives there.
+Overwrite semantics differ between generators: the business, api-doc, devops, infrastructure and ui generators never overwrite an existing file — when the target already exists, it is skipped with a console log, so re-running them on a generated component is safe. To regenerate a specific file, delete it first and run the generator again. The `rest` generator always regenerates: it deletes the component's `rest/src` and `rest/api-spec` folders and rewrites the whole `rest` package from the component's `api-doc/openapi.yaml`, so it can be re-run freely. The rest package is fully generated — nothing hand-written lives there.
 
 == Regenerating the rest package
 
@@ -109,24 +106,6 @@ Result:
 - `argentum_user_account/ui/src/rsx/mod.rs`
 - `argentum_user_account/ui/src/rsx/page/mod.rs`
 - `argentum_user_account/ui/src/rsx/page/user_account.rs`
-
-Generate an API application skeleton for a `user_account` component:
-
-[source,shell]
-----
-argentum_generator_app api-app --project-prefix argentum --component-name user_account
-----
-
-Result:
-
-- `argentum_user_account/api-app/Cargo.toml` (package `argentum_user_account_api_app` with `api` and `migration` binaries)
-- `argentum_user_account/api-app/readme.adoc`
-- `argentum_user_account/api-app/src/api/main.rs`
-- `argentum_user_account/api-app/src/api/di.rs`
-- `argentum_user_account/api-app/src/migration/main.rs`
-- `argentum_user_account/api-app/src/migration/di.rs`
-
-The generated app wires only the generated component (its business, infrastructure and rest packages) into an HTTP server and a migration runner; it does not depend on `argentum_skeleton` or other components. Environment variables follow the `<PROJECT_PREFIX>_` convention in upper snake case: `ARGENTUM_DATABASE_URL` (Postgres connection string, required) and `ARGENTUM_LISTEN` (listen address of the `api` binary, optional, default `0.0.0.0:8088`). The `api-app` generator computes the argentum path for the generated `Cargo.toml` automatically.
 
 Generate a UI package skeleton for a `user_account` component:
 

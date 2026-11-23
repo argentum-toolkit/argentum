@@ -1,7 +1,8 @@
 use crate::rsx::page::Blog;
 use crate::rsx::wrapper::{AccountWrapper, SiteWrapper};
+use argentum_contact_us_ui::rsx::page::ContactUs;
 use argentum_oidc_ui::rsx::page::AuthCallback;
-use argentum_skeleton_ui::rsx::page::{About, Contacts, Home};
+use argentum_skeleton_ui::rsx::page::{About, Home};
 use argentum_standard_ui::rsx::page::NotFound;
 use argentum_user_account_ui::rsx::page::Login;
 use argentum_user_account_ui::rsx::page::Registration;
@@ -21,8 +22,9 @@ pub enum Route {
         #[route("/about")]
         About {},
 
-        #[route("/contacts")]
-        Contacts {},
+
+        #[route("/contact-us")]
+        ContactUs {},
 
         #[nest("/user-account")]
             #[route("/login")]

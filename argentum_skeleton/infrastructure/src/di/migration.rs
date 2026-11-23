@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use argentum_contact_us_infrastructure::db::migration as contact_us_migration;
 use argentum_db_infrastructure::slqx_postgres::{
     SqlxPostgresAdapter,
     migration::{MigrationCollection, Migrator},
@@ -19,6 +20,7 @@ struct Env {
     pub ag_oidc_database_url: String,
     pub ag_user_database_url: String,
     pub ag_user_account_database_url: String,
+    pub ag_contact_us_database_url: String,
 }
 
 async fn create_migrator<L>(
@@ -26,6 +28,7 @@ async fn create_migrator<L>(
     database_url: &str,
     max_db_connections: u32,
     migrations: MigrationCollection,
+    component_name: &str,
 ) -> Result<Arc<Migrator<L>>, DiError>
 where
     L: LoggerTrait + 'static,
@@ -34,7 +37,12 @@ where
         .max_connections(max_db_connections)
         .connect(database_url)
         .await
-        .map_err(anyhow::Error::from)?;
+        .map_err(|e| {
+            DiError::with_context(
+                format!("Can't connect to the `{component_name}` database"),
+                e,
+            )
+        })?;
 
     let adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger.clone()));
 
@@ -61,6 +69,7 @@ where
         &env.ag_user_database_url,
         max_db_connections,
         user_migration::up("ag_user_"),
+        "user",
     )
     .await?;
 
@@ -69,16 +78,32 @@ where
         &env.ag_user_account_database_url,
         max_db_connections,
         user_account_migration::up("ag_user_account_"),
+        "user_account",
     )
     .await?;
 
     let oidc_migrator = create_migrator(
-        logger,
+        logger.clone(),
         &env.ag_oidc_database_url,
         max_db_connections,
         oidc_migration::up("ag_oidc_"),
+        "oidc",
     )
     .await?;
 
-    Ok(vec![user_migrator, user_account_migrator, oidc_migrator])
+    let contact_us_migrator = create_migrator(
+        logger,
+        &env.ag_contact_us_database_url,
+        max_db_connections,
+        contact_us_migration::up("ag_contact_us_"),
+        "contact_us",
+    )
+    .await?;
+
+    Ok(vec![
+        user_migrator,
+        user_account_migrator,
+        oidc_migrator,
+        contact_us_migrator,
+    ])
 }

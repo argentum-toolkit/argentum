@@ -16,3 +16,6 @@ include:
 
   - path:
       - ./argentum_oidc/devops/docker/docker-compose.yaml
+
+  - path:
+      - ./argentum_contact_us/devops/docker/docker-compose.yaml
