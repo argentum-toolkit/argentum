@@ -1,3 +1,7 @@
+use crate::generator::api_app::{
+    ApiAppApiDiGenerator, ApiAppApiMainGenerator, ApiAppCargoGenerator, ApiAppMigrationDiGenerator,
+    ApiAppMigrationMainGenerator, ApiAppReadmeGenerator,
+};
 use crate::generator::api_doc::{
     OpenApiGenerator, PathsGenerator, RequestGenerator, ResponseGenerator, TypeGenerator,
 };
@@ -21,8 +25,9 @@ use crate::generator::ui::{
     UiRsxModGenerator,
 };
 use crate::generator::{
-    ApiDocGenerator, BusinessGenerator, ComponentGenerator, DbInfrastructureGenerator,
-    DevopsGenerator, FileExistenceChecker, FileGenerator, InfrastructureGenerator, UiGenerator,
+    ApiAppGenerator, ApiDocGenerator, BusinessGenerator, ComponentGenerator,
+    DbInfrastructureGenerator, DevopsGenerator, FileExistenceChecker, FileGenerator,
+    InfrastructureGenerator, UiGenerator,
 };
 use argentum_log_business::LoggerTrait;
 use argentum_template_infrastructure::di::template_infrastructure_di_factory;
@@ -34,6 +39,7 @@ where
     L: LoggerTrait,
 {
     // Public services
+    pub api_app_generator: Arc<ApiAppGenerator<L>>,
     pub api_doc_generator: Arc<ApiDocGenerator<L>>,
     pub business_generator: Arc<BusinessGenerator<L>>,
     pub db_infrastructure_generator: Arc<DbInfrastructureGenerator<L>>,
@@ -50,6 +56,7 @@ where
     L: LoggerTrait,
 {
     pub fn new(
+        api_app_generator: Arc<ApiAppGenerator<L>>,
         api_doc_generator: Arc<ApiDocGenerator<L>>,
         business_generator: Arc<BusinessGenerator<L>>,
         db_infrastructure_generator: Arc<DbInfrastructureGenerator<L>>,
@@ -61,6 +68,7 @@ where
         component_generator: Arc<ComponentGenerator<L>>,
     ) -> Self {
         Self {
+            api_app_generator,
             api_doc_generator,
             business_generator,
             db_infrastructure_generator,
@@ -79,6 +87,30 @@ where
     L: LoggerTrait,
 {
     let templates = vec![
+        (
+            "api_app/Cargo.toml",
+            include_str!("../template/api_app/Cargo.toml.hbs"),
+        ),
+        (
+            "api_app/readme.adoc",
+            include_str!("../template/api_app/readme.adoc.hbs"),
+        ),
+        (
+            "api_app/src/api/main",
+            include_str!("../template/api_app/src/api/main.hbs"),
+        ),
+        (
+            "api_app/src/api/di",
+            include_str!("../template/api_app/src/api/di.hbs"),
+        ),
+        (
+            "api_app/src/migration/main",
+            include_str!("../template/api_app/src/migration/main.hbs"),
+        ),
+        (
+            "api_app/src/migration/di",
+            include_str!("../template/api_app/src/migration/di.hbs"),
+        ),
         (
             "api_doc/openapi.yaml",
             include_str!("../template/api_doc/openapi.yaml.hbs"),
@@ -504,6 +536,41 @@ where
 
     let rest_generator = Arc::new(RestGenerator::new(logger.clone()));
 
+    let api_app_cargo_generator = Arc::new(ApiAppCargoGenerator::new(
+        logger.clone(),
+        template_di.renderer.clone(),
+        file_existence_checker.clone(),
+    ));
+
+    let api_app_api_main_generator = Arc::new(ApiAppApiMainGenerator::new(file_generator.clone()));
+
+    let api_app_api_di_generator = Arc::new(ApiAppApiDiGenerator::new(
+        logger.clone(),
+        template_di.renderer.clone(),
+        file_existence_checker.clone(),
+    ));
+
+    let api_app_migration_main_generator =
+        Arc::new(ApiAppMigrationMainGenerator::new(file_generator.clone()));
+
+    let api_app_migration_di_generator = Arc::new(ApiAppMigrationDiGenerator::new(
+        logger.clone(),
+        template_di.renderer.clone(),
+        file_existence_checker.clone(),
+    ));
+
+    let api_app_readme_generator = Arc::new(ApiAppReadmeGenerator::new(file_generator.clone()));
+
+    let api_app_generator = Arc::new(ApiAppGenerator::new(
+        logger.clone(),
+        api_app_cargo_generator,
+        api_app_api_main_generator,
+        api_app_api_di_generator,
+        api_app_migration_main_generator,
+        api_app_migration_di_generator,
+        api_app_readme_generator,
+    ));
+
     let component_generator = Arc::new(ComponentGenerator::new(
         logger.clone(),
         business_generator.clone(),
@@ -512,9 +579,11 @@ where
         devops_generator.clone(),
         infrastructure_generator.clone(),
         ui_generator.clone(),
+        api_app_generator.clone(),
     ));
 
     Ok(Di::new(
+        api_app_generator,
         api_doc_generator,
         business_generator,
         db_infrastructure_generator,

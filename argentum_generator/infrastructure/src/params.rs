@@ -1,4 +1,10 @@
 #[derive(Debug, Clone)]
+pub struct ApiAppParams {
+    pub project_prefix: String,
+    pub component_name: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct ApiDocParams {
     pub project_prefix: String,
     pub component_name: String,

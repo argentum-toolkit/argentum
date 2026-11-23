@@ -1,0 +1,17 @@
+= Argentum {{title componentName}} component. API application.
+
+API and migration binaries for the `{{projectPrefix}}_{{componentName}}` component.
+The `api` binary wires the component's business, infrastructure and rest packages into an HTTP server. The `migration` binary runs the component's database migrations.
+
+== How to run
+
+[source,shell]
+----
+cargo run --bin migration
+cargo run --bin api
+----
+
+== Environment variables
+
+- `{{upper_snake projectPrefix}}_DATABASE_URL` — Postgres connection string, required by both binaries
+- `{{upper_snake projectPrefix}}_LISTEN` — listen address of the `api` binary, optional, default `0.0.0.0:8088`

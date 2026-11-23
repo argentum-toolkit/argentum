@@ -75,7 +75,7 @@ The component generator creates the whole skeleton in one run:
 argentum_generator_app component --project-prefix argentum --component-name user_account
 ----
 
-It generates the `business`, `api-doc`, `rest`, `devops`, `infrastructure` and `ui` parts of the component in that order. See link:../argentum_generator/cli-app/readme.adoc[Argentum Generator] for details.
+It generates the `business`, `api-doc`, `rest`, `devops`, `infrastructure`, `ui` and `api-app` parts of the component in that order. The `api-app` part is an API application skeleton (`api` and `migration` binaries) that wires the generated component into an HTTP server and a migration runner. See link:../argentum_generator/cli-app/readme.adoc[Argentum Generator] for details.
 
 Each part can also be generated separately with the standalone commands (`business`, `api-doc`, `devops`, `infrastructure`, `ui`). Re-running them on an already generated component is safe: existing files are skipped with a console log. To regenerate a specific file, delete it first and run the generator again.
 

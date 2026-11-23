@@ -4,12 +4,12 @@ use argentum_log_business::LoggerTrait;
 use convert_case::{Case, Casing};
 
 use crate::generator::{
-    ApiDocGenerator, BusinessGenerator, DevopsGenerator, InfrastructureGenerator, RestGenerator,
-    UiGenerator,
+    ApiAppGenerator, ApiDocGenerator, BusinessGenerator, DevopsGenerator, InfrastructureGenerator,
+    RestGenerator, UiGenerator,
 };
 use crate::params::{
-    ApiDocParams, BusinessParams, ComponentParams, DevopsParams, InfrastructureParams, RestParams,
-    UiParams,
+    ApiAppParams, ApiDocParams, BusinessParams, ComponentParams, DevopsParams,
+    InfrastructureParams, RestParams, UiParams,
 };
 
 pub struct ComponentGenerator<L>
@@ -23,6 +23,7 @@ where
     devops: Arc<DevopsGenerator<L>>,
     infrastructure: Arc<InfrastructureGenerator<L>>,
     ui: Arc<UiGenerator<L>>,
+    api_app: Arc<ApiAppGenerator<L>>,
 }
 
 impl<L> ComponentGenerator<L>
@@ -37,6 +38,7 @@ where
         devops: Arc<DevopsGenerator<L>>,
         infrastructure: Arc<InfrastructureGenerator<L>>,
         ui: Arc<UiGenerator<L>>,
+        api_app: Arc<ApiAppGenerator<L>>,
     ) -> Self {
         Self {
             logger,
@@ -46,6 +48,7 @@ where
             devops,
             infrastructure,
             ui,
+            api_app,
         }
     }
 
@@ -105,6 +108,13 @@ where
         })?;
 
         self.logger.info("UI package is generated.");
+
+        self.api_app.generate(&ApiAppParams {
+            project_prefix: project_prefix.clone(),
+            component_name: component_name.clone(),
+        })?;
+
+        self.logger.info("API app is generated.");
 
         self.logger.info(format!(
             "Component `{}_{}` is generated.",

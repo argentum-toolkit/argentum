@@ -5,6 +5,10 @@ pub use component_generator::ComponentGenerator;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::generator::api_app::{
+        ApiAppApiDiGenerator, ApiAppApiMainGenerator, ApiAppCargoGenerator,
+        ApiAppMigrationDiGenerator, ApiAppMigrationMainGenerator, ApiAppReadmeGenerator,
+    };
     use crate::generator::api_doc::{
         OpenApiGenerator, PathsGenerator, RequestGenerator, ResponseGenerator, TypeGenerator,
     };
@@ -23,8 +27,9 @@ mod tests {
         UiRsxModGenerator,
     };
     use crate::generator::{
-        ApiDocGenerator, BusinessGenerator, DbInfrastructureGenerator, DevopsGenerator,
-        FileExistenceChecker, FileGenerator, InfrastructureGenerator, RestGenerator, UiGenerator,
+        ApiAppGenerator, ApiDocGenerator, BusinessGenerator, DbInfrastructureGenerator,
+        DevopsGenerator, FileExistenceChecker, FileGenerator, InfrastructureGenerator,
+        RestGenerator, UiGenerator,
     };
     use crate::params::ComponentParams;
     use argentum_log_business::Level;
@@ -182,9 +187,31 @@ mod tests {
             )),
             Arc::new(UiPageGenerator::new(
                 logger.clone(),
-                renderer,
-                file_existence_checker,
+                renderer.clone(),
+                file_existence_checker.clone(),
             )),
+        ));
+
+        let api_app_generator = Arc::new(ApiAppGenerator::new(
+            logger.clone(),
+            Arc::new(ApiAppCargoGenerator::new(
+                logger.clone(),
+                renderer.clone(),
+                file_existence_checker.clone(),
+            )),
+            Arc::new(ApiAppApiMainGenerator::new(file_generator.clone())),
+            Arc::new(ApiAppApiDiGenerator::new(
+                logger.clone(),
+                renderer.clone(),
+                file_existence_checker.clone(),
+            )),
+            Arc::new(ApiAppMigrationMainGenerator::new(file_generator.clone())),
+            Arc::new(ApiAppMigrationDiGenerator::new(
+                logger.clone(),
+                renderer.clone(),
+                file_existence_checker.clone(),
+            )),
+            Arc::new(ApiAppReadmeGenerator::new(file_generator.clone())),
         ));
 
         ComponentGenerator::new(
@@ -195,6 +222,7 @@ mod tests {
             devops_generator,
             infrastructure_generator,
             ui_generator,
+            api_app_generator,
         )
     }
 

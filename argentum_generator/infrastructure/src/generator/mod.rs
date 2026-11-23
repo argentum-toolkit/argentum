@@ -1,3 +1,4 @@
+pub mod api_app;
 pub mod api_doc;
 pub mod business;
 pub mod component;
@@ -10,6 +11,7 @@ mod mod_file_writer;
 pub mod rest;
 pub mod ui;
 
+pub use api_app::ApiAppGenerator;
 pub use api_doc::ApiDocGenerator;
 pub use business::BusinessGenerator;
 pub use component::ComponentGenerator;

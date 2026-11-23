@@ -13,6 +13,14 @@ pub struct CliParams {
 
 #[derive(Subcommand, Debug)]
 pub enum GenerateCommand {
+    /// Generate an API application skeleton for a component
+    ApiApp {
+        #[arg(short, long)]
+        project_prefix: String,
+
+        #[arg(short, long)]
+        component_name: String,
+    },
     /// Generate an api-doc folder for a component
     ApiDoc {
         #[arg(short, long)]
@@ -32,7 +40,7 @@ pub enum GenerateCommand {
         #[arg(short, long)]
         entity_name: String,
     },
-    /// Generate a whole component skeleton (business, api-doc, devops, infrastructure, ui)
+    /// Generate a whole component skeleton (business, api-doc, rest, devops, infrastructure, ui, api-app)
     Component {
         #[arg(short, long)]
         project_prefix: String,

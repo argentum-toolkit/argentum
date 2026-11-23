@@ -1,7 +1,7 @@
 use argentum_generator_infrastructure::di::di_factory;
 use argentum_generator_infrastructure::params::{
-    ApiDocParams, BusinessParams, ComponentParams, DbInfrastructureParams, DevopsParams,
-    FeAppParams, InfrastructureParams, RestParams, UiParams,
+    ApiAppParams, ApiDocParams, BusinessParams, ComponentParams, DbInfrastructureParams,
+    DevopsParams, FeAppParams, InfrastructureParams, RestParams, UiParams,
 };
 use argentum_log_business::{DefaultLogger, Level};
 use argentum_log_infrastructure::stdout::PrettyWriter;
@@ -22,6 +22,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let di = di_factory(logger)?;
 
     match cli.command {
+        GenerateCommand::ApiApp {
+            project_prefix,
+            component_name,
+        } => {
+            let params = ApiAppParams {
+                project_prefix,
+                component_name,
+            };
+            Ok(di.api_app_generator.generate(&params)?)
+        }
         GenerateCommand::ApiDoc {
             project_prefix,
             component_name,

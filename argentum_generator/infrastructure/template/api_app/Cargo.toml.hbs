@@ -1,0 +1,48 @@
+[package]
+name = "{{projectPrefix}}_{{componentName}}_api_app"
+description = "Argentum {{title componentName}} component. API application"
+version = "0.1.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "LGPL-3.0-or-later"
+edition = "2024"
+homepage = "https://gitlab.com/argentum-toolkit/argentum"
+repository = "https://gitlab.com/argentum-toolkit/argentum"
+documentation = "https://gitlab.com/argentum-toolkit/argentum"
+
+[[bin]]
+name = "api"
+path = "src/api/main.rs"
+
+[[bin]]
+name = "migration"
+path = "src/migration/main.rs"
+
+[dependencies]
+anyhow = "1.*"
+
+argentum_db_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_db/infrastructure", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_log_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_log/business", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_log_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_log/infrastructure", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_rest_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_rest/infrastructure", {{/if}}version = ">=0.4.0-dev,<0.5.0", features = [
+  "server",
+] }
+argentum_standard_business = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/business", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+argentum_standard_infrastructure = { {{#if argentumPath}}path = "{{argentumPath}}/argentum_standard/infrastructure", {{/if}}version = ">=0.4.0-dev,<0.5.0" }
+{{projectPrefix}}_{{componentName}}_business = { path = "../business", version = ">=0.1.0-dev,<0.2.0" }
+{{projectPrefix}}_{{componentName}}_infrastructure = { path = "../infrastructure", version = ">=0.1.0-dev,<0.2.0" }
+{{projectPrefix}}_{{componentName}}_rest = { path = "../rest", version = ">=0.4.0-dev,<0.5.0", features = [
+  "server",
+] }
+
+envy = "0.4.*"
+
+serde = { version = "1.*", features = ["derive"] }
+sqlx = { version = "0.9.*", features = [
+  "runtime-tokio",
+  "tls-native-tls",
+  "postgres",
+  "uuid",
+  "any",
+] }
+
+tokio = { version = "1.*", features = ["full"] }

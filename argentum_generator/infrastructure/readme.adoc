@@ -2,7 +2,7 @@
 
 Reusable core of the component generator:
 
-* Generators for component parts: business, api-doc, rest, devops, infrastructure, ui, fe-app (`generator`)
+* Generators for component parts: business, api-doc, rest, devops, infrastructure, ui, fe-app, api-app (`generator`)
 * Handlebars templates (`template`)
 * Plain parameter structs (`params`)
 
@@ -41,6 +41,19 @@ generator (which delegates to the REST generator infrastructure):
 use argentum_generator_infrastructure::params::RestParams;
 
 di.rest_generator.generate(&RestParams {
+    project_prefix: "argentum".to_string(),
+    component_name: "user_account".to_string(),
+})?;
+----
+
+Or the `api-app` generator, which produces an API application skeleton
+(api + migration binaries) wiring the generated component:
+
+[source,rust]
+----
+use argentum_generator_infrastructure::params::ApiAppParams;
+
+di.api_app_generator.generate(&ApiAppParams {
     project_prefix: "argentum".to_string(),
     component_name: "user_account".to_string(),
 })?;
