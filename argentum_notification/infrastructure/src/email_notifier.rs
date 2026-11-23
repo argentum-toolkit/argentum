@@ -1,6 +1,7 @@
 use argentum_notification_business::{Notification, NotificationError, NotifierTrait};
 use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
 
+use lettre::message::header::ContentType;
 use lettre::{Message, SmtpTransport, Transport, address::AddressError};
 
 use argentum_standard_business::data_type::id::Id;
@@ -94,6 +95,7 @@ where
             .from(form_mbox)
             .to(to_mbox)
             .subject(notification.subject)
+            .header(ContentType::TEXT_HTML)
             .body(notification.body);
 
         let email = match building_result {
