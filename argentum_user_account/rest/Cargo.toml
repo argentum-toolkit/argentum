@@ -11,7 +11,7 @@ readme = "README.md"
 
 [features]
 client = ["dep:reqwest"]
-server = ["dep:hyper"]
+server = ["dep:hyper", "argentum_rest_infrastructure/server"]
 ui = ["dep:dioxus", "dep:dioxus-logger", "dep:argentum_standard_infrastructure", "dep:argentum_standard_ui"]
 web = ["dioxus/web", "argentum_standard_ui/web"]
 

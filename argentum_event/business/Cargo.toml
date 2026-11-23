@@ -14,4 +14,6 @@ argentum_standard_business = { path = "../../argentum_standard/business", versio
 
 async-trait = "0.1.*"
 thiserror = "2.*"
-tokio = { version = "1.*" }
+
+[dev-dependencies]
+tokio = { version = "1.*", features = ["macros", "rt"] }

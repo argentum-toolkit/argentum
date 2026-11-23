@@ -6,13 +6,6 @@ enum Status {
     Failed(String),
 }
 
-#[cfg(feature = "web")]
-impl Status {
-    pub(crate) fn fail(&self, err: &str) -> Self {
-        Self::Failed(err.into())
-    }
-}
-
 #[component]
 pub fn AuthCallback(provider: String, code: String, state: String) -> Element {
     #[cfg(not(feature = "web"))]

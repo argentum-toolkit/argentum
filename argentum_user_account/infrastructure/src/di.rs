@@ -141,7 +141,7 @@ where
     });
 
     container.provide_factory::<dyn MemberDeletesAccountTrait<Id = UniqueId>, _>(|c| {
-        let uc = c.resolve::<MemberDeletesAccountUc<UniqueId, L>>()?;
+        let uc = c.resolve::<MemberDeletesAccountUc<UniqueId>>()?;
         Ok(Arc::new(MemberDeletesAccountHandler::new(uc)))
     });
 

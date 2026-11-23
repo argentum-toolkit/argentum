@@ -173,7 +173,7 @@ pub fn user_account_business_provide<I, L>(
         )))
     });
 
-    container.provide_factory::<MemberDeletesAccountUc<I, L>, _>(move |c| {
+    container.provide_factory::<MemberDeletesAccountUc<I>, _>(move |c| {
         let password_checker = c.resolve::<PasswordCredentialChecker<I>>()?;
         let session_repository = c.resolve::<dyn SessionRepositoryTrait<Id = I>>()?;
         let email_confirmation_token_repository =
@@ -184,7 +184,6 @@ pub fn user_account_business_provide<I, L>(
         let guest_binding_repository = c.resolve::<dyn GuestBindingRepositoryTrait<Id = I>>()?;
         let member_repository = c.resolve::<dyn MemberRepositoryTrait<Id = I>>()?;
         let event_dispatcher = c.resolve::<EventDispatcher>()?;
-        let logger = c.resolve::<L>()?;
 
         Ok(Arc::new(MemberDeletesAccountUc::new(
             password_checker,
@@ -195,7 +194,6 @@ pub fn user_account_business_provide<I, L>(
             guest_binding_repository,
             member_repository,
             event_dispatcher,
-            logger,
         )))
     });
 

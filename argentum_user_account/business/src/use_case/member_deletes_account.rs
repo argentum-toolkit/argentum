@@ -13,7 +13,6 @@ use crate::{
     },
 };
 use argentum_event_business::{EventDispatcher, EventDispatcherError};
-use argentum_log_business::LoggerTrait;
 use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::repository::{
     guest_binding_repository::{GuestBindingRepositoryError, GuestBindingRepositoryTrait},
@@ -23,10 +22,9 @@ use argentum_user_business::repository::{
 use secrecy::SecretString;
 use std::sync::Arc;
 
-pub struct MemberDeletesAccountUc<I, L>
+pub struct MemberDeletesAccountUc<I>
 where
     I: Id,
-    L: LoggerTrait,
 {
     password_checker: Arc<PasswordCredentialChecker<I>>,
     session_repository: Arc<dyn SessionRepositoryTrait<Id = I>>,
@@ -36,13 +34,11 @@ where
     guest_binding_repository: Arc<dyn GuestBindingRepositoryTrait<Id = I>>,
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     event_dispatcher: Arc<EventDispatcher>,
-    logger: Arc<L>,
 }
 
-impl<I, L> MemberDeletesAccountUc<I, L>
+impl<I> MemberDeletesAccountUc<I>
 where
     I: Id + 'static,
-    L: LoggerTrait,
 {
     pub fn new(
         password_checker: Arc<PasswordCredentialChecker<I>>,
@@ -53,7 +49,6 @@ where
         guest_binding_repository: Arc<dyn GuestBindingRepositoryTrait<Id = I>>,
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         event_dispatcher: Arc<EventDispatcher>,
-        logger: Arc<L>,
     ) -> Self {
         Self {
             password_checker,
@@ -64,7 +59,6 @@ where
             guest_binding_repository,
             member_repository,
             event_dispatcher,
-            logger,
         }
     }
 
@@ -195,7 +189,6 @@ mod test {
     };
     use argentum_encryption_business::mock::password::{EncryptorMock, ValidatorMock};
     use argentum_event_business::{Event, EventDispatcher, EventListener};
-    use argentum_log_business::{DefaultLogger, Level, StdoutWriter};
     use argentum_standard_business::data_type::EmailAddress;
     use argentum_standard_business::data_type::id::IdFactory;
     use argentum_standard_business::mock::data_type::id_factory::IdFactoryMock;
@@ -249,9 +242,6 @@ mod test {
         let listener = Arc::new(EventNameListener::default());
         event_dispatcher.register_listener(listener.clone())?;
 
-        let writer = Arc::new(StdoutWriter::new());
-        let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
-
         let uc = MemberDeletesAccountUc::new(
             password_checker,
             session_repository.clone(),
@@ -261,7 +251,6 @@ mod test {
             guest_binding_repository.clone(),
             member_repository.clone(),
             event_dispatcher,
-            logger,
         );
 
         let user_id = id_factory.create();
@@ -378,9 +367,6 @@ mod test {
         let listener = Arc::new(EventNameListener::default());
         event_dispatcher.register_listener(listener.clone())?;
 
-        let writer = Arc::new(StdoutWriter::new());
-        let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
-
         let uc = MemberDeletesAccountUc::new(
             password_checker,
             session_repository.clone(),
@@ -390,7 +376,6 @@ mod test {
             guest_binding_repository.clone(),
             member_repository.clone(),
             event_dispatcher,
-            logger,
         );
 
         let user_id = id_factory.create();
@@ -458,9 +443,6 @@ mod test {
         let listener = Arc::new(EventNameListener::default());
         event_dispatcher.register_listener(listener.clone())?;
 
-        let writer = Arc::new(StdoutWriter::new());
-        let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
-
         let uc = MemberDeletesAccountUc::new(
             password_checker,
             session_repository.clone(),
@@ -470,7 +452,6 @@ mod test {
             guest_binding_repository.clone(),
             member_repository.clone(),
             event_dispatcher,
-            logger,
         );
 
         let user_id = id_factory.create();
@@ -538,9 +519,6 @@ mod test {
         let listener = Arc::new(EventNameListener::default());
         event_dispatcher.register_listener(listener.clone())?;
 
-        let writer = Arc::new(StdoutWriter::new());
-        let logger = Arc::new(DefaultLogger::new(Level::Info, writer.clone()));
-
         let uc = MemberDeletesAccountUc::new(
             password_checker,
             session_repository,
@@ -550,7 +528,6 @@ mod test {
             guest_binding_repository,
             member_repository,
             event_dispatcher,
-            logger,
         );
 
         let user_id = id_factory.create();

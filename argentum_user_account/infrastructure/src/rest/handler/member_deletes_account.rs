@@ -1,4 +1,3 @@
-use argentum_log_business::LoggerTrait;
 use argentum_rest_infrastructure::data_type::error::{
     Forbidden, HttpError, InternalServerError, Unauthorized,
 };
@@ -15,29 +14,26 @@ use argentum_user_business::entity::user::{User, UserTrait};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct MemberDeletesAccountHandler<I, L>
+pub struct MemberDeletesAccountHandler<I>
 where
     I: Id,
-    L: LoggerTrait,
 {
-    uc: Arc<MemberDeletesAccountUc<I, L>>,
+    uc: Arc<MemberDeletesAccountUc<I>>,
 }
 
-impl<I, L> MemberDeletesAccountHandler<I, L>
+impl<I> MemberDeletesAccountHandler<I>
 where
     I: Id,
-    L: LoggerTrait,
 {
-    pub fn new(uc: Arc<MemberDeletesAccountUc<I, L>>) -> Self {
+    pub fn new(uc: Arc<MemberDeletesAccountUc<I>>) -> Self {
         Self { uc }
     }
 }
 
 #[async_trait]
-impl<I, L> MemberDeletesAccountTrait for MemberDeletesAccountHandler<I, L>
+impl<I> MemberDeletesAccountTrait for MemberDeletesAccountHandler<I>
 where
     I: Id + From<UniqueId> + 'static,
-    L: LoggerTrait,
 {
     type Id = I;
 

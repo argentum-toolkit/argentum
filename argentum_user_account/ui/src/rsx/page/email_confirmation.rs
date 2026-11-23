@@ -7,13 +7,6 @@ enum Status {
     Success,
 }
 
-#[cfg(feature = "web")]
-impl Status {
-    pub(crate) fn fail(&self, err: &str) -> Self {
-        Self::Failed(err.into())
-    }
-}
-
 #[component]
 pub fn EmailConfirmation(token: String) -> Element {
     #[cfg(not(feature = "web"))]
@@ -56,7 +49,6 @@ pub fn EmailConfirmation(token: String) -> Element {
 
         let client = use_context::<Signal<Client>>();
 
-        let home = home_url.clone();
         use_resource(move || {
             use argentum_rest_infrastructure::data_type::HttpRequest;
 

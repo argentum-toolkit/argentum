@@ -17,7 +17,7 @@ anyhow = "1.*"
 argentum_captcha_business = { path = "../../argentum_captcha/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.4.0-dev,<0.5.0" }
-argentum_encryption_infrastructure = { path = "../../argentum_encryption/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+
 argentum_event_business = { path = "../../argentum_event/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
@@ -29,8 +29,6 @@ argentum_user_account_rest = { path = "../rest", version = ">=0.4.0-dev,<0.5.0",
   "server",
 ] }
 argentum_user_business = { path = "../../argentum_user/business", version = ">=0.4.0-dev,<0.5.0" }
-argentum_user_infrastructure = { path = "../../argentum_user/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
-
 async-trait = "0.1.*"
 base64 = "0.22.*"
 jiff = { version = "1.*", features = ["serde"] }
