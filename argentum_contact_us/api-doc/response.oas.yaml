@@ -1,0 +1,16 @@
+openapi: 3.1.0
+
+info:
+  title: Contact Us component's responses
+  version: 0.4.0-dev
+
+paths: {}
+
+components:
+  responses:
+    MessageCreatedSuccessfully:
+      description: Created
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "type.oas.yaml#/components/schemas/MessageCreated"

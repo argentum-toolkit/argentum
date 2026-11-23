@@ -1,0 +1,53 @@
+use argentum_rest_infrastructure::data_type::DeserializableSchemaRaw;
+use argentum_rest_infrastructure::data_type::SerializableBody;
+use argentum_standard_business::invariant_violation::{
+    InvariantResult, ViolationItem, ViolationObject, Violations,
+};
+use std::collections::BTreeMap;
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
+pub struct MessageCreated {
+    #[serde(rename = "id")]
+    pub id: uuid::Uuid,
+}
+
+impl MessageCreated {
+    pub fn new(id: uuid::Uuid) -> Self {
+        Self { id }
+    }
+}
+
+impl SerializableBody for MessageCreated {}
+
+impl DeserializableSchemaRaw<'_> for MessageCreated {
+    type Raw = MessageCreatedRaw;
+
+    fn try_from_raw(raw: Self::Raw) -> InvariantResult<Self> {
+        let mut argentum_violations: ViolationObject = BTreeMap::new();
+
+        let id = raw.id;
+        if id.is_none() {
+            argentum_violations.insert(
+                "id".into(),
+                Violations::new(vec!["field is required".to_string()], None),
+            );
+        }
+
+        if argentum_violations.is_empty()
+            && let Some(id) = id
+        {
+            Ok(Self::new(id))
+        } else {
+            Err(Violations::new(
+                vec!["wrong data for MessageCreated".to_string()],
+                Some(ViolationItem::Object(argentum_violations)),
+            ))
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+pub struct MessageCreatedRaw {
+    #[serde(rename = "id")]
+    pub id: Option<uuid::Uuid>,
+}

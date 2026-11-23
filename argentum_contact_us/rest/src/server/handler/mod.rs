@@ -1,0 +1,5 @@
+mod guest_sends_message_handler;
+mod member_sends_message_handler;
+
+pub use guest_sends_message_handler::GuestSendsMessageTrait;
+pub use member_sends_message_handler::MemberSendsMessageTrait;

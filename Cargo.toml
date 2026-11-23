@@ -2,6 +2,11 @@
 members = [
     "argentum_captcha/business",
     "argentum_captcha/infrastructure",
+
+    "argentum_contact_us/business",
+    "argentum_contact_us/infrastructure",
+    "argentum_contact_us/rest",
+    "argentum_contact_us/ui",
     "argentum_generator/cli-app",
     "argentum_generator/infrastructure",
     "argentum_db/infrastructure",

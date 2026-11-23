@@ -1,0 +1,5 @@
+mod guest_sends_message_request;
+mod member_sends_message_request;
+
+pub use guest_sends_message_request::GuestSendsMessageRequest;
+pub use member_sends_message_request::MemberSendsMessageRequest;

@@ -1,0 +1,5 @@
+mod guest_sends_message_form_processor;
+mod member_sends_message_form_processor;
+
+pub use guest_sends_message_form_processor::GuestSendsMessageFormProcessor;
+pub use member_sends_message_form_processor::MemberSendsMessageFormProcessor;

@@ -6,6 +6,9 @@ include:
       - ./devops/docker/cors-dev/docker-compose.yaml
 
   - path:
+      - ./devops/docker/mailhog-dev/docker-compose.yaml
+
+  - path:
       - ./devops/docker/open-api-dev/docker-compose.yaml
 
   - path:
@@ -22,3 +25,7 @@ include:
   - path:
       - ./argentum_oidc/devops/docker/docker-compose.yaml
       - ./argentum_oidc/devops/docker/docker-compose.dev.yaml
+
+  - path:
+      - ./argentum_contact_us/devops/docker/docker-compose.yaml
+      - ./argentum_contact_us/devops/docker/docker-compose.dev.yaml

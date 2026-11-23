@@ -1,0 +1,106 @@
+openapi: 3.1.0
+
+info:
+  title: Contact Us component's types (schemas)
+  version: 0.4.0-dev
+
+paths: {}
+
+components:
+  schemas:
+    GuestSendsMessageSchema:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name
+          example: John Doe
+          x-ag-ui:
+            id: name
+            name: name
+            weight: 10
+        email:
+          type: string
+          title: Email
+          format: email
+          example: test-email@test-email.com
+          x-ag-ui:
+            id: email
+            name: email
+            weight: 20
+        subject:
+          type: string
+          title: Subject
+          maxLength: 255
+          example: Subject example
+          x-ag-ui:
+            id: subject
+            name: subject
+            weight: 30
+        message:
+          type: string
+          title: Message
+          format: text
+          example: Message example
+          x-ag-ui:
+            id: message
+            name: message
+            weight: 40
+        captcha:
+          type: string
+          format: captcha
+          description: Captcha token. Required when captcha is enabled on the server.
+          example: captcha-token-example
+          x-ag-ui:
+            id: captcha
+            name: captcha
+            weight: 35
+      required:
+        - name
+        - email
+        - subject
+        - message
+
+    MemberSendsMessageSchema:
+      type: object
+      properties:
+        subject:
+          type: string
+          title: Subject
+          maxLength: 255
+          example: Subject example
+          x-ag-ui:
+            id: subject
+            name: subject
+            weight: 10
+        message:
+          type: string
+          title: Message
+          format: text
+          example: Message example
+          x-ag-ui:
+            id: message
+            name: message
+            weight: 20
+        captcha:
+          type: string
+          format: captcha
+          description: Captcha token. Required when captcha is enabled on the server.
+          example: captcha-token-example
+          x-ag-ui:
+            id: captcha
+            name: captcha
+            weight: 15
+      required:
+        - subject
+        - message
+
+    MessageCreated:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 20c31ece-c78c-45d6-9ef3-8452e8eea571
+      required:
+        - id

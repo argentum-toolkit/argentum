@@ -12,12 +12,12 @@ use crate::dto::schema::UserNameRaw;
 pub struct RegistrationWithPasswordSchema {
     #[serde(rename = "name")]
     pub name: UserName,
-    #[serde(rename = "captcha")]
-    pub captcha: Option<String>,
     #[serde(rename = "email")]
     pub email: String,
     #[serde(rename = "password")]
     pub password: String,
+    #[serde(rename = "captcha")]
+    pub captcha: Option<String>,
     #[serde(rename = "terms")]
     pub terms: bool,
 }
@@ -25,16 +25,16 @@ pub struct RegistrationWithPasswordSchema {
 impl RegistrationWithPasswordSchema {
     pub fn new(
         name: UserName,
-        captcha: Option<String>,
         email: String,
         password: String,
+        captcha: Option<String>,
         terms: bool,
     ) -> Self {
         Self {
             name,
-            captcha,
             email,
             password,
+            captcha,
             terms,
         }
     }
@@ -65,7 +65,6 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
                 None
             }
         };
-        let captcha = raw.captcha;
         let email = raw.email;
         if email.is_none() {
             argentum_violations.insert(
@@ -80,6 +79,7 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
                 Violations::new(vec!["field is required".to_string()], None),
             );
         }
+        let captcha = raw.captcha;
         let terms = raw.terms;
         if terms.is_none() {
             argentum_violations.insert(
@@ -94,7 +94,7 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
             && let Some(password) = password
             && let Some(terms) = terms
         {
-            Ok(Self::new(name, captcha, email, password, terms))
+            Ok(Self::new(name, email, password, captcha, terms))
         } else {
             Err(Violations::new(
                 vec!["wrong data for RegistrationWithPasswordSchema".to_string()],
@@ -108,12 +108,12 @@ impl DeserializableSchemaRaw<'_> for RegistrationWithPasswordSchema {
 pub struct RegistrationWithPasswordSchemaRaw {
     #[serde(rename = "name")]
     pub name: Option<UserNameRaw>,
-    #[serde(rename = "captcha")]
-    pub captcha: Option<String>,
     #[serde(rename = "email")]
     pub email: Option<String>,
     #[serde(rename = "password")]
     pub password: Option<String>,
+    #[serde(rename = "captcha")]
+    pub captcha: Option<String>,
     #[serde(rename = "terms")]
     pub terms: Option<bool>,
 }

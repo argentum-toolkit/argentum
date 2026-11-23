@@ -1,0 +1,69 @@
+openapi: 3.1.0
+
+info:
+  title: Argentum Contact Us component API
+  version: 0.4.0-dev
+  description: Contact Us API
+  license:
+    name: LGPL-3.0-or-later
+    identifier: LGPL-3.0-or-later
+
+  contact:
+    url: https://gitlab.com/argentum-toolkit/argentum
+
+servers:
+  - url: http://localhost:{port}/{basePath}
+    description: Dev API Server with CORS
+    variables:
+      port:
+        enum:
+          - "8082"
+          - "8080"
+        default: "8082"
+      basePath:
+        default: api/v1
+  - url: https://localhost:{port}/{basePath}
+    description: Dev HTTP/2 API Server with CORS
+    variables:
+      port:
+        enum:
+          - "8443"
+          - "8080"
+        default: "8443"
+      basePath:
+        default: api/v1
+  - url: http://localhost:{port}/{basePath}
+    description: The production API server
+    variables:
+      port:
+        enum:
+          - "80"
+          - "8080"
+        default: "8080"
+      basePath:
+        default: api/v1
+
+externalDocs:
+  description: Find more info here
+  url: https://gitlab.com/argentum-toolkit/argentum
+
+paths:
+  /contact-us/guest-message:
+    $ref: "./paths.oas.yaml#/paths/~1contact-us~1guest-message"
+
+  /contact-us/member-message:
+    $ref: "./paths.oas.yaml#/paths/~1contact-us~1member-message"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      in: header
+
+tags:
+  - name: contact-us
+    description: Managing of the contact-us
+
+#security:
+#  - bearerAuth: []

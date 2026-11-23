@@ -16,6 +16,11 @@ argentum_db_infrastructure = { path = "../../argentum_db/infrastructure", versio
 argentum_encryption_business = { path = "../../argentum_encryption/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_captcha_business = { path = "../../argentum_captcha/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_captcha_infrastructure = { path = "../../argentum_captcha/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_contact_us_business = { path = "../../argentum_contact_us/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_contact_us_infrastructure = { path = "../../argentum_contact_us/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_contact_us_rest = { path = "../../argentum_contact_us/rest", version = ">=0.4.0-dev,<0.5.0", features = [
+  "server",
+] }
 argentum_encryption_infrastructure = { path = "../../argentum_encryption/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_event_business = { path = "../../argentum_event/business", version = ">=0.4.0-dev,<0.5.0" }
 argentum_notification_business = { path = "../../argentum_notification/business", version = ">=0.4.0-dev,<0.5.0" }

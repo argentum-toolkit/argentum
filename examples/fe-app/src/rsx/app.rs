@@ -48,6 +48,9 @@ pub(crate) fn App() -> Element {
         }
     }
 
+    let cu_api_url = env!("AG_CONTACT_US_API_URL");
+    argentum_contact_us_ui::di::di_init(cu_api_url);
+
     argentum_user_ui::di::di_init(u_api_url);
     argentum_oidc_ui::di::di_init(oidc_api_url);
 

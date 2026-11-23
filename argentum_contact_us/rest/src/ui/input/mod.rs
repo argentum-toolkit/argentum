@@ -1,0 +1,12 @@
+mod guest_sends_message_schema_input;
+mod guest_sends_message_schema_optional_input;
+mod member_sends_message_schema_input;
+mod member_sends_message_schema_optional_input;
+
+pub use guest_sends_message_schema_input::GuestSendsMessageSchemaInput;
+pub use guest_sends_message_schema_optional_input::GuestSendsMessageSchemaOptionalInput;
+pub use member_sends_message_schema_input::MemberSendsMessageSchemaInput;
+pub use member_sends_message_schema_optional_input::MemberSendsMessageSchemaOptionalInput;
+
+pub use guest_sends_message_schema_input::GuestSendsMessageSchemaInputProcessor;
+pub use member_sends_message_schema_input::MemberSendsMessageSchemaInputProcessor;

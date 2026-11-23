@@ -404,6 +404,7 @@ components:
           x-ag-ui:
             id: captcha
             name: captcha
+            weight: 35
             wrapper: none
             optional-style: none
       type: object
