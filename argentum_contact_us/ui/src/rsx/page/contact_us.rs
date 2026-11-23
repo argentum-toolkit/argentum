@@ -14,11 +14,23 @@ pub fn ContactUs() -> Element {
         use argentum_user_account_ui::security::ClientSideAuthenticator;
         let authenticator = use_context::<Signal<ClientSideAuthenticator>>();
 
-        let auth = authenticator.read();
+        let mut auth_state = use_signal(|| None::<(bool, String)>);
 
-        let auth_token = auth.get_token().expect("Can't get authentication token");
+        use_effect(move || {
+            let auth = authenticator.read();
 
-        (auth.get_user().is_some(), auth_token)
+            let state = match auth.get_user() {
+                Some((token, _)) => Some((true, token)),
+                None => auth.get_token().map(|token| (false, token)),
+            };
+
+            auth_state.set(state);
+        });
+
+        match auth_state() {
+            Some((is_member, token)) => (is_member, token),
+            None => (false, String::new()),
+        }
     };
 
     #[cfg(not(feature = "web"))]
