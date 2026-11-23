@@ -1,0 +1,14 @@
+use crate::mock::repository::{{snake entityName}}_repository_mock::{{entityName}}RepositoryMock;
+use crate::repository::{{snake entityName}}_repository::{{entityName}}RepositoryTrait;
+use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::di_container::Container;
+use std::sync::Arc;
+
+pub fn {{componentName}}_business_provide<I>(container: &mut Container)
+where
+    I: Id + 'static,
+{
+    container.provide_factory::<dyn {{entityName}}RepositoryTrait<Id = I>, _>(|_c| {
+        Ok(Arc::new({{entityName}}RepositoryMock::new()))
+    });
+}

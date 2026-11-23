@@ -1,0 +1,64 @@
+use argentum_db_infrastructure::slqx_postgres::{
+    SqlxPostgresAdapter,
+    migration::{MigrationCollection, Migrator},
+};
+use argentum_log_business::{DefaultLogger, Level, LoggerTrait};
+use argentum_log_infrastructure::log_bridge::LogBridge;
+use argentum_log_infrastructure::stdout::PrettyWriter;
+use argentum_standard_business::di_container::DiError;
+use serde::Deserialize;
+use sqlx::postgres::PgPoolOptions;
+use std::sync::Arc;
+
+use {{projectPrefix}}_{{componentName}}_infrastructure::db::migration as {{componentName}}_migration;
+
+#[derive(Deserialize, Debug)]
+struct Env {
+    pub {{projectPrefix}}_database_url: String,
+}
+
+async fn create_migrator<L>(
+    logger: Arc<L>,
+    database_url: &str,
+    max_db_connections: u32,
+    migrations: MigrationCollection,
+) -> Result<Arc<Migrator<L>>, DiError>
+where
+    L: LoggerTrait + 'static,
+{
+    let pool = PgPoolOptions::new()
+        .max_connections(max_db_connections)
+        .connect(database_url)
+        .await
+        .map_err(anyhow::Error::from)?;
+
+    let adapter = Arc::new(SqlxPostgresAdapter::new(pool, logger.clone()));
+
+    Ok(Arc::new(Migrator::new(
+        adapter,
+        migrations,
+        "{{projectPrefix}}_{{componentName}}__migrations",
+        logger,
+    )))
+}
+
+pub async fn di_factory() -> Result<Vec<Arc<Migrator<DefaultLogger<PrettyWriter>>>>, DiError> {
+    let log_writer = Arc::new(PrettyWriter::new());
+    let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+
+    LogBridge::install(logger.clone());
+
+    let env: Env =
+        envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
+    let max_db_connections = 5;
+
+    let {{componentName}}_migrator = create_migrator(
+        logger,
+        &env.{{projectPrefix}}_database_url,
+        max_db_connections,
+        {{componentName}}_migration::up("{{projectPrefix}}_{{componentName}}_"),
+    )
+    .await?;
+
+    Ok(vec![{{componentName}}_migrator])
+}

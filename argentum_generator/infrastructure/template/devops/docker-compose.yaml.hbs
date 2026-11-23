@@ -1,0 +1,19 @@
+services:
+  service.{{componentName}}.db:
+    image: "postgres:18.0-alpine"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_FOR_{{upper_snake projectPrefix}}_{{upper_snake componentName}}}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_LOGGING=verbose
+    volumes:
+      - {{kebab projectPrefix}}-{{kebab componentName}}:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  {{kebab projectPrefix}}-{{kebab componentName}}:

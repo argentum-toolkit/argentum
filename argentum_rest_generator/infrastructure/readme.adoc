@@ -1,0 +1,37 @@
+= Argentum ToolKit. REST Generator. Infrastructure layer.
+
+Reusable core of the REST generator:
+
+* OpenAPI specification loading and combining (`extractor`, `generator::combiner`, `generator::loader`)
+* Source code generators for client, server, DTO and UI parts (`generator`)
+* Handlebars templates and helpers (`template`)
+
+The layer is storage- and transport-agnostic: callers provide a logger and
+`di::di_factory` returns a container with the `OpenApiGenerator` service.
+
+== How to use
+
+[source,rust]
+----
+use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_infrastructure::stdout::PrettyWriter;
+use argentum_rest_generator_infrastructure::{di::di_factory, generator_params::GeneratorParams};
+use std::sync::Arc;
+
+let log_writer = Arc::new(PrettyWriter::new());
+let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+
+let di = di_factory(logger)?;
+
+let params = GeneratorParams {
+    input: "api-doc/openapi.yaml".to_string(),
+    output: "rest/".to_string(),
+    package_name: "argentum_user_account_rest".to_string(),
+    homepage: None,
+    repository: None,
+    documentation: None,
+    argentum_path: None,
+};
+
+di.openapi_generator.generate(params)?;
+----

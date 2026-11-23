@@ -1,0 +1,14 @@
+use std::ops::Deref;
+
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
+
+pub struct {{upper_camel componentName}}SqlxPostgresAdapter<L: LoggerTrait>(pub SqlxPostgresAdapter<L>);
+
+impl<L: LoggerTrait> Deref for {{upper_camel componentName}}SqlxPostgresAdapter<L> {
+    type Target = SqlxPostgresAdapter<L>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

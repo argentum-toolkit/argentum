@@ -1,0 +1,263 @@
+= Argentum ToolKit. Generator.
+
+Component Generator creates components and their parts from templates.
+
+== Supported generators
+
+- component: whole component skeleton (business, api-doc, rest, devops, infrastructure, ui and api-app). This is the main entry point.
+- api-app: API application skeleton (api + migration binaries) wiring a generated component
+- api-doc: OpenAPI stubs for a component
+- business: business package skeleton for a component
+- db-infrastructure: DTO and Postgres repository for an entity
+- devops: docker-compose files for a component's DB container
+- fe-app: Dioxus front-end application skeleton
+- infrastructure: infrastructure package skeleton for a component
+- rest: REST client/server package generated from a component's api-doc OpenAPI spec
+- ui: UI package skeleton for a component
+
+== How to install
+
+=== Via cargo install
+
+[source,shell]
+----
+cargo install argentum_generator_app
+----
+
+.From source codes
+.Clone
+[source,shell]
+----
+git clone git@gitlab.com:argentum-toolkit/argentum.git
+----
+
+.Install binary
+[source,shell]
+----
+cargo install --path argentum_generator/cli-app/
+----
+
+== How to use
+
+All component-related commands require the `--project-prefix` option. It is prepended to the component directory (`argentum_user_account/`) and to the generated package names (`argentum_user_account_business`, `argentum_user_account_rest`, `argentum_user_account_infrastructure`, `argentum_user_account_ui`), and it is used as the database table prefix (`argentum_user_account_<entity>`) and in the generated devops environment variables. There is no default value.
+
+[source,shell]
+----
+argentum_generator_app component --project-prefix argentum --component-name user_account
+argentum_generator_app component --project-prefix argentum --component-name user_account --entity-name UserAccount
+argentum_generator_app api-app --project-prefix argentum --component-name user_account
+argentum_generator_app api-doc --project-prefix argentum --component-name user_account
+argentum_generator_app business --project-prefix argentum --component-name user_account --entity-name UserAccount
+argentum_generator_app db-infrastructure --project-prefix argentum --component-name user_account --entity-name User
+argentum_generator_app devops --project-prefix argentum --component-name user_account
+argentum_generator_app fe-app --app-name my_app
+argentum_generator_app infrastructure --project-prefix argentum --component-name user_account --entity-name UserAccount
+argentum_generator_app rest --project-prefix argentum --component-name user_account
+argentum_generator_app ui --project-prefix argentum --component-name user_account
+----
+
+Or via `cargo run` from the repository root (sources should be cloned):
+
+[source,shell]
+----
+cargo run -p argentum_generator_app -- component --project-prefix argentum --component-name user_account
+cargo run -p argentum_generator_app -- api-app --project-prefix argentum --component-name user_account
+cargo run -p argentum_generator_app -- api-doc --project-prefix argentum --component-name user_account
+cargo run -p argentum_generator_app -- db-infrastructure --project-prefix argentum --component-name user_account --entity-name User
+cargo run -p argentum_generator_app -- business --project-prefix argentum --component-name user_account --entity-name UserAccount
+cargo run -p argentum_generator_app -- devops --project-prefix argentum --component-name user_account
+cargo run -p argentum_generator_app -- infrastructure --project-prefix argentum --component-name user_account --entity-name UserAccount
+cargo run -p argentum_generator_app -- rest --project-prefix argentum --component-name user_account
+cargo run -p argentum_generator_app -- ui --project-prefix argentum --component-name user_account
+----
+
+`component` generates the business, api-doc, rest, devops, infrastructure, ui and api-app parts of a component in one run, in that order. By default the entity name equals the component name in PascalCase (e.g. `user_account` -> `UserAccount`); override it with `--entity-name`.
+
+== Overwrite semantics
+
+Overwrite semantics differ between generators: the business, api-doc, devops, infrastructure, ui and api-app generators never overwrite an existing file — when the target already exists, it is skipped with a console log, so re-running them on a generated component is safe. To regenerate a specific file, delete it first and run the generator again. The `rest` generator always regenerates: it deletes the component's `rest/src` and `rest/api-spec` folders and rewrites the whole `rest` package from the component's `api-doc/openapi.yaml`, so it can be re-run freely. The rest package is fully generated — nothing hand-written lives there.
+
+== Regenerating the rest package
+
+After editing `<component>/api-doc/openapi.yaml`, re-run the `rest` command to regenerate the REST package:
+
+[source,shell]
+----
+argentum_generator_app rest --project-prefix argentum --component-name user_account
+----
+
+The `rest` command computes the argentum path for the generated `Cargo.toml` automatically, so no `--argentum-path` value is needed. The global `--argentum-path` option is used only by the `fe-app` generator.
+
+== Example
+
+Generate a whole `user_account` component skeleton:
+
+[source,shell]
+----
+argentum_generator_app component --project-prefix argentum --component-name user_account
+----
+
+Result:
+
+- `argentum_user_account/business/...` (business package skeleton)
+- `argentum_user_account/api-doc/...` (OpenAPI stubs)
+- `argentum_user_account/devops/...` (docker-compose files)
+- `argentum_user_account/infrastructure/...` (infrastructure package skeleton)
+- `argentum_user_account/ui/Cargo.toml`
+- `argentum_user_account/ui/readme.adoc`
+- `argentum_user_account/ui/src/lib.rs`
+- `argentum_user_account/ui/src/rsx/mod.rs`
+- `argentum_user_account/ui/src/rsx/page/mod.rs`
+- `argentum_user_account/ui/src/rsx/page/user_account.rs`
+
+Generate an API application skeleton for a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app api-app --project-prefix argentum --component-name user_account
+----
+
+Result:
+
+- `argentum_user_account/api-app/Cargo.toml` (package `argentum_user_account_api_app` with `api` and `migration` binaries)
+- `argentum_user_account/api-app/readme.adoc`
+- `argentum_user_account/api-app/src/api/main.rs`
+- `argentum_user_account/api-app/src/api/di.rs`
+- `argentum_user_account/api-app/src/migration/main.rs`
+- `argentum_user_account/api-app/src/migration/di.rs`
+
+The generated app wires only the generated component (its business, infrastructure and rest packages) into an HTTP server and a migration runner; it does not depend on `argentum_skeleton` or other components. Environment variables follow the `<PROJECT_PREFIX>_` convention in upper snake case: `ARGENTUM_DATABASE_URL` (Postgres connection string, required) and `ARGENTUM_LISTEN` (listen address of the `api` binary, optional, default `0.0.0.0:8088`). The `api-app` generator computes the argentum path for the generated `Cargo.toml` automatically.
+
+Generate a UI package skeleton for a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app ui --project-prefix argentum --component-name user_account
+----
+
+Result:
+
+- `argentum_user_account/ui/Cargo.toml`
+- `argentum_user_account/ui/readme.adoc`
+- `argentum_user_account/ui/src/lib.rs`
+- `argentum_user_account/ui/src/rsx/mod.rs`
+- `argentum_user_account/ui/src/rsx/page/mod.rs`
+- `argentum_user_account/ui/src/rsx/page/user_account.rs`
+
+The generated UI package is self-contained: it depends only on `dioxus` and does not reference the (not yet generated) `argentum_<component>_rest` package.
+
+`fe-app` accepts the global `--argentum-path` option to link local argentum crates:
+
+[source,shell]
+----
+argentum_generator_app --argentum-path /path/to/argentum fe-app --app-name my_app
+----
+
+Generate an api-doc folder for a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app api-doc --project-prefix argentum --component-name user_account
+----
+
+Result:
+
+- `argentum_user_account/api-doc/openapi.yaml`
+- `argentum_user_account/api-doc/paths.oas.yaml`
+- `argentum_user_account/api-doc/request.oas.yaml`
+- `argentum_user_account/api-doc/response.oas.yaml`
+- `argentum_user_account/api-doc/type.oas.yaml`
+
+Generate a business package skeleton for a `user_account` component with a `UserAccount` entity:
+
+[source,shell]
+----
+argentum_generator_app business --project-prefix argentum --component-name user_account --entity-name UserAccount
+----
+
+Result:
+
+- `argentum_user_account/business/Cargo.toml`
+- `argentum_user_account/business/.gitignore`
+- `argentum_user_account/business/readme.adoc`
+- `argentum_user_account/business/src/lib.rs`
+- `argentum_user_account/business/src/di.rs`
+- `argentum_user_account/business/src/entity/user_account.rs` (+ `mod.rs`)
+- `argentum_user_account/business/src/repository/user_account_repository.rs` (+ `mod.rs`)
+- `argentum_user_account/business/src/mock/repository/user_account_repository_mock.rs` (+ `mod.rs` files for `mock`, `use_case`, `service`, `specification`, `event`)
+
+Generate a repository for a `UserAccount` entity in a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app db-infrastructure --project-prefix argentum --component-name user_account --entity-name UserAccount
+----
+
+Result:
+
+- `argentum_user_account/infrastructure/src/db/dto/user_account_dto.rs`
+- `argentum_user_account/infrastructure/src/db/repository/user_account_repository.rs`
+
+The following lines are appended to `argentum_user_account/infrastructure/src/db/dto/mod.rs`:
+
+[source,rust]
+----
+mod user_account_dto;
+pub(crate) use user_account_dto::UserAccountDto;
+----
+
+The following lines are appended to `argentum_user_account/infrastructure/src/db/repository/mod.rs`:
+
+[source,rust]
+----
+mod user_account_repository;
+pub use user_account_repository::UserAccountRepository;
+----
+
+Generate an infrastructure package skeleton for a `user_account` component with a `UserAccount` entity:
+
+[source,shell]
+----
+argentum_generator_app infrastructure --project-prefix argentum --component-name user_account --entity-name UserAccount
+----
+
+Result:
+
+- `argentum_user_account/infrastructure/Cargo.toml`
+- `argentum_user_account/infrastructure/.gitignore`
+- `argentum_user_account/infrastructure/readme.adoc`
+- `argentum_user_account/infrastructure/src/lib.rs`
+- `argentum_user_account/infrastructure/src/di.rs`
+- `argentum_user_account/infrastructure/src/db/mod.rs`
+- `argentum_user_account/infrastructure/src/db/adapter.rs`
+- `argentum_user_account/infrastructure/src/db/dto/user_account_dto.rs` (+ `mod.rs`)
+- `argentum_user_account/infrastructure/src/db/repository/user_account_repository.rs` (+ `mod.rs`)
+- `argentum_user_account/infrastructure/src/db/migration/migration_000_init.rs` (+ `mod.rs`)
+
+Generate a devops folder for a `user_account` component:
+
+[source,shell]
+----
+argentum_generator_app devops --project-prefix argentum --component-name user_account
+----
+
+Result:
+
+- `argentum_user_account/devops/docker/docker-compose.yaml`
+- `argentum_user_account/devops/docker/docker-compose.dev.yaml`
+
+Generate the rest package for a `user_account` component from its api-doc OpenAPI spec:
+
+[source,shell]
+----
+argentum_generator_app rest --project-prefix argentum --component-name user_account
+----
+
+Result:
+
+- `argentum_user_account/rest/Cargo.toml`
+- `argentum_user_account/rest/readme.adoc`
+- `argentum_user_account/rest/api-spec/...` (combined OpenAPI specification)
+- `argentum_user_account/rest/src/...` (dto, server, client, di and ui sources)
+
+The command requires `argentum_user_account/api-doc/openapi.yaml` to exist and fails with an error otherwise. It deletes `argentum_user_account/rest/src` and `argentum_user_account/rest/api-spec` before regenerating, so repeated runs always produce a fresh package.

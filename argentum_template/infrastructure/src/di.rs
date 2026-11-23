@@ -1,7 +1,7 @@
 use crate::Renderer;
 use crate::helper::{
-    camel_helper, content_type_to_type_helper, eq_helper, escape_var_name_helper, lower_helper,
-    snake_helper, trim_mod_helper, upper_camel_helper,
+    camel_helper, content_type_to_type_helper, escape_var_name_helper, kebab_helper, lower_helper,
+    snake_helper, title_helper, trim_mod_helper, upper_camel_helper, upper_snake_helper,
 };
 use handlebars::Handlebars;
 use std::error::Error;
@@ -20,6 +20,7 @@ impl TemplateInfrastructureDi {
 
 pub fn template_infrastructure_di_factory(
     templates: Vec<(&str, &str)>,
+    extra_helpers: Vec<(&str, Box<dyn handlebars::HelperDef + Send + Sync>)>,
 ) -> Result<TemplateInfrastructureDi, Box<dyn Error>> {
     let mut reg = Handlebars::new();
 
@@ -31,7 +32,9 @@ pub fn template_infrastructure_di_factory(
     reg.register_helper("camel", Box::new(camel_helper));
     reg.register_helper("upper_camel", Box::new(upper_camel_helper));
     reg.register_helper("lower", Box::new(lower_helper));
-    reg.register_helper("eq", Box::new(eq_helper));
+    reg.register_helper("kebab", Box::new(kebab_helper));
+    reg.register_helper("upper_snake", Box::new(upper_snake_helper));
+    reg.register_helper("title", Box::new(title_helper));
 
     reg.register_helper(
         "content_type_to_type",
@@ -40,6 +43,10 @@ pub fn template_infrastructure_di_factory(
 
     reg.register_helper("trim_mod", Box::new(trim_mod_helper));
     reg.register_helper("escape_var_name", Box::new(escape_var_name_helper));
+
+    for (name, helper) in extra_helpers.into_iter() {
+        reg.register_helper(name, helper);
+    }
 
     let renderer = Arc::new(Renderer::new(Arc::new(reg)));
 

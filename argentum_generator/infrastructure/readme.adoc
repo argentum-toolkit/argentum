@@ -1,0 +1,60 @@
+= Argentum ToolKit. Generator. Infrastructure layer.
+
+Reusable core of the component generator:
+
+* Generators for component parts: business, api-doc, rest, devops, infrastructure, ui, fe-app, api-app (`generator`)
+* Handlebars templates (`template`)
+* Plain parameter structs (`params`)
+
+The layer is transport-agnostic: callers provide a logger and
+`di::di_factory` returns a container with all generator services.
+
+== How to use
+
+[source,rust]
+----
+use argentum_generator_infrastructure::di::di_factory;
+use argentum_generator_infrastructure::params::ComponentParams;
+use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_infrastructure::stdout::PrettyWriter;
+use std::sync::Arc;
+
+let log_writer = Arc::new(PrettyWriter::new());
+let logger = Arc::new(DefaultLogger::new(Level::Trace, log_writer));
+
+let di = di_factory(logger)?;
+
+let params = ComponentParams {
+    project_prefix: "argentum".to_string(),
+    component_name: "user_account".to_string(),
+    entity_name: None,
+};
+
+di.component_generator.generate(&params)?
+----
+
+Individual generators are also available on the container, e.g. the `rest`
+generator (which delegates to the REST generator infrastructure):
+
+[source,rust]
+----
+use argentum_generator_infrastructure::params::RestParams;
+
+di.rest_generator.generate(&RestParams {
+    project_prefix: "argentum".to_string(),
+    component_name: "user_account".to_string(),
+})?;
+----
+
+Or the `api-app` generator, which produces an API application skeleton
+(api + migration binaries) wiring the generated component:
+
+[source,rust]
+----
+use argentum_generator_infrastructure::params::ApiAppParams;
+
+di.api_app_generator.generate(&ApiAppParams {
+    project_prefix: "argentum".to_string(),
+    component_name: "user_account".to_string(),
+})?;
+----

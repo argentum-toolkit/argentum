@@ -1,0 +1,12 @@
+= Argentum ToolKit. Generator.
+
+Component Generator creates components and their parts from templates.
+
+== Structure
+
+* link:cli-app/readme.adoc[CLI application] — standalone command line entry point
+* link:infrastructure/readme.adoc[Infrastructure library] — reusable generation core
+(generators, templates). Used by the CLI application.
+
+The `rest` generator is built on top of
+link:../argentum_rest_generator/readme.adoc[Argentum REST Generator].

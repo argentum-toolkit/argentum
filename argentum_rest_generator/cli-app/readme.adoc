@@ -1,0 +1,108 @@
+= Argentum ToolKit. REST Generator.
+
+REST Generator is a tool that creates API libraries from OpenAPI specification.
+
+Supported generators
+
+[cols="1,3,1"]
+|===
+|Language | Type | Supported versions
+
+|Rust
+|Server side API package
+|3.1 and 3
+
+|===
+
+== Key features
+
+- Parsing instead of validation
+- Generated code compatible with Argentum REST
+- Clean and human-readable error responses
+- Low code duplication in generated code
+- Extendable and reusable generated code
+
+== How to install
+
+=== Via cargo install
+
+[source,shell]
+----
+cargo install argentum_rest_generator_app
+----
+
+.From source codes
+.Clone
+[source,shell]
+----
+git clone git@gitlab.com:argentum-toolkit/argentum.git
+
+----
+
+.Install binary
+[source,shell]
+----
+cargo install --path argentum_rest_generator/cli-app/
+
+----
+
+== How to use
+
+.Generate REST API server library
+[source,shell]
+----
+argentum_rest_generator_app --input api-doc/openapi.yaml --output rest/ --component-name user_account
+----
+
+The package name is derived from the component name (`<component>_rest`).
+Pass `-p`/`--package-name` explicitly to override it:
+
+Or you can generate via `cargo run` (sources should be cloned)
+
+.Example
+[source,shell]
+----
+cd argentum/argentum_rest_generator/cli-app
+
+cargo run -- --input ../argentum_user_account/api-doc/openapi.yaml --output ../argentum_user_account/rest/ --component-name user_account -p argentum_user_account_rest
+----
+
+=== Argentum path
+
+The optional `-a`/`--argentum-path` flag controls how the generated `Cargo.toml`
+and `readme.adoc` reference the component's business package
+(`argentum_<component>_business`).
+
+When generating inside the argentum repository, the value must be relative to
+the output directory. For an output of `<component>/rest/` use `-a ../..`:
+
+[source,shell]
+----
+argentum_rest_generator_app -a ../.. --input argentum_user_account/api-doc/openapi.yaml --output argentum_user_account/rest/ --component-name user_account -p argentum_user_account_rest
+----
+
+This produces dependencies like `path = "../../argentum_user_account/business"`.
+An absolute repository path also works, but it bakes machine-specific absolute
+paths into the generated files, so the relative form is recommended.
+
+If the flag is omitted, the business dependency is not added to the generated
+`Cargo.toml`.
+
+=== Component name
+
+The required `-c`/`--component-name` flag declares the component name used in
+the generated DI provider function (e.g. `user_account` produces
+`user_account_rest_provide`). It is passed explicitly instead of being derived
+from the package name, so any project prefix works.
+
+The optional `-p`/`--package-name` flag overrides the generated crate name.
+When omitted, the crate is named `<component>_rest`.
+
+== Restrictions
+
+- supports only `$ref` params in case if OpenAPI objects supports `$ref`.
+(Doesn't support inline objects in this case)
+- Schemas supports only Object type (Array, AnyOf, AllOf are not implemented yet)
+- we don't use OpenAPI tags.
+If you need similar functionality, we would like to recommend split your API to packages
+

@@ -1,0 +1,72 @@
+use std::collections::HashMap;
+
+use crate::entity::{{entityName}};
+use crate::repository::{{snake entityName}}_repository::{
+    {{entityName}}RepositoryError, {{entityName}}RepositoryTrait,
+};
+use argentum_standard_business::data_type::id::Id;
+use argentum_standard_business::error::PoisonedLockError;
+use std::sync::Arc;
+use std::sync::RwLock;
+
+use async_trait::async_trait;
+
+#[derive(Default)]
+pub struct {{entityName}}RepositoryMock<I>
+where
+    I: Id,
+{
+    {{snake entityName}}s: RwLock<HashMap<I, {{entityName}}<I>>>,
+}
+
+impl<I> {{entityName}}RepositoryMock<I>
+where
+    I: Id,
+{
+    pub fn new() -> Self {
+        Self {
+            {{snake entityName}}s: RwLock::new(HashMap::new()),
+        }
+    }
+}
+
+#[async_trait]
+impl<I> {{entityName}}RepositoryTrait for {{entityName}}RepositoryMock<I>
+where
+    I: Id,
+{
+    type Id = I;
+
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<{{entityName}}<Self::Id>>, {{entityName}}RepositoryError> {
+        let guard = self
+            .{{snake entityName}}s
+            .read()
+            .map_err(|_| {{entityName}}RepositoryError::Other(Some(Arc::new(PoisonedLockError))))?;
+
+        let result = guard.get(&id).map(|t| {{entityName}}::new(t.id));
+
+        Ok(result)
+    }
+
+    async fn save(
+        &self,
+        {{snake entityName}}: &{{entityName}}<Self::Id>,
+    ) -> Result<(), {{entityName}}RepositoryError> {
+        match self
+            .{{snake entityName}}s
+            .write()
+            .map_err(|_| {{entityName}}RepositoryError::Other(Some(Arc::new(PoisonedLockError))))?
+            .insert(
+                {{snake entityName}}.id,
+                {{entityName}}::new({{snake entityName}}.id),
+            )
+            .is_none()
+        {
+            true => Ok(()),
+            false => Err({{entityName}}RepositoryError::Save(None)),
+        }
+    }
+}

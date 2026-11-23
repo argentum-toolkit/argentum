@@ -1,0 +1,147 @@
+use argentum_log_business::{DefaultLogger, Level};
+use argentum_log_infrastructure::stdout::PrettyWriter;
+
+use argentum_rest_infrastructure::{
+    di::rest_infrastructure_provide,
+    service::{
+        ErrorHandler, ErrorPreHandler, ResponseToJsonTransformer, RouterCombinator, RouterTrait,
+        server::Http1Server,
+    },
+};
+// use argentum_rest_infrastructure::service::server::Http2Server;
+use argentum_standard_business::di_container::{Container, DiError};
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
+use serde::Deserialize;
+use std::sync::Arc;
+
+use {{projectPrefix}}_{{componentName}}_business::di::{{componentName}}_business_provide;
+use {{projectPrefix}}_{{componentName}}_infrastructure::di::{{componentName}}_infrastructure_provider;
+use {{projectPrefix}}_{{componentName}}_rest::{{componentName}}_rest_provide;
+use {{projectPrefix}}_{{componentName}}_rest::server::Router;
+
+fn default_listen() -> String {
+    "0.0.0.0:8088".to_string()
+}
+
+#[derive(Deserialize, Debug)]
+struct Env {
+    pub {{projectPrefix}}_database_url: String,
+    #[serde(default = "default_listen")]
+    pub {{projectPrefix}}_listen: String,
+}
+
+fn resolve_router(container: &Container) -> Result<Arc<dyn RouterTrait>, DiError> {
+    let pre_handler = container.resolve::<ErrorPreHandler>()?;
+
+    let {{componentName}}_router = container.resolve::<Router<UniqueId>>()?;
+
+    let routers: Vec<Arc<dyn RouterTrait>> = vec![{{componentName}}_router];
+
+    Ok(Arc::new(RouterCombinator::new(routers, pre_handler)))
+}
+
+pub async fn di_factory_http1() -> Result<Arc<Http1Server<DefaultLogger<PrettyWriter>>>, DiError> {
+    let mut container = Container::new();
+    container.provide_factory::<DefaultLogger<PrettyWriter>, _>(|_c| {
+        let log_writer = Arc::new(PrettyWriter::new());
+
+        Ok(Arc::new(DefaultLogger::new(Level::Trace, log_writer)))
+    });
+
+    // let listen = "172.18.0.1:8088";
+    // let listen = "127.0.0.1:8088";
+    let env: Env =
+        envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
+
+    rest_infrastructure_provide::<UniqueId, DefaultLogger<PrettyWriter>>(&mut container);
+
+    {{componentName}}_business_provide::<UniqueId>(&mut container);
+
+    {{componentName}}_infrastructure_provider::<UniqueId, DefaultLogger<PrettyWriter>>(
+        &mut container,
+        env.{{projectPrefix}}_database_url.clone(),
+        10,
+    )
+    .await?;
+
+    {{componentName}}_rest_provide::<UniqueId>(&mut container, "/api/v1");
+
+    container.provide_factory::<Http1Server<DefaultLogger<PrettyWriter>>, _>(move |c| {
+        let logger = c.resolve::<DefaultLogger<PrettyWriter>>()?;
+
+        let router = resolve_router(c)?;
+        let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
+        let error_handler = c.resolve::<ErrorHandler<DefaultLogger<PrettyWriter>>>()?;
+        let addr = env
+            .{{projectPrefix}}_listen
+            .parse()
+            .map_err(|e| DiError::with_context("Unable to parse socket address", e))?;
+
+        Ok(Arc::new(Http1Server::new(
+            addr,
+            router,
+            response_transformer,
+            error_handler,
+            logger,
+        )))
+    });
+
+    let http1_server: Arc<_> = container
+        .resolve::<Http1Server<DefaultLogger<PrettyWriter>>>()
+        .unwrap();
+
+    Ok(http1_server)
+}
+
+// pub async fn di_factory_http2() -> Result<Arc<Http2Server<DefaultLogger<PrettyWriter>>>, DiError> {
+//     let mut container = Container::new();
+//     container.provide_factory::<DefaultLogger<PrettyWriter>, _>(|_c| {
+//         let log_writer = Arc::new(PrettyWriter::new());
+//
+//         Ok(Arc::new(DefaultLogger::new(Level::Trace, log_writer)))
+//     });
+//
+//     let env: Env =
+//         envy::from_env::<Env>().map_err(|e| DiError::with_context("Can't load environment", e))?;
+//
+//     rest_infrastructure_provide::<UniqueId, DefaultLogger<PrettyWriter>>(&mut container);
+//
+//     {{componentName}}_business_provide::<UniqueId>(&mut container);
+//
+//     {{componentName}}_infrastructure_provider::<UniqueId, DefaultLogger<PrettyWriter>>(
+//         &mut container,
+//         env.{{projectPrefix}}_database_url.clone(),
+//         10,
+//     )
+//     .await?;
+//
+//     {{componentName}}_rest_provide::<UniqueId>(&mut container, "/api/v1");
+//
+//     container.provide_factory::<Http2Server<DefaultLogger<PrettyWriter>>, _>(move |c| {
+//         let logger = c.resolve::<DefaultLogger<PrettyWriter>>()?;
+//
+//         let router = resolve_router(c)?;
+//         let response_transformer = c.resolve::<ResponseToJsonTransformer>()?;
+//         let error_handler = c.resolve::<ErrorHandler<DefaultLogger<PrettyWriter>>>()?;
+//         let addr = env
+//             .{{projectPrefix}}_listen
+//             .parse()
+//             .map_err(|e| DiError::with_context("Unable to parse socket address", e))?;
+//
+//         Ok(Arc::new(Http2Server::new(
+//             addr,
+//             &env.{{projectPrefix}}_tls_cert_file,
+//             &env.{{projectPrefix}}_tls_key_file,
+//             router,
+//             response_transformer,
+//             error_handler,
+//             logger,
+//         )))
+//     });
+//
+//     let http2_server: Arc<_> = container
+//         .resolve::<Http2Server<DefaultLogger<PrettyWriter>>>()
+//         .unwrap();
+//
+//     Ok(http2_server)
+// }

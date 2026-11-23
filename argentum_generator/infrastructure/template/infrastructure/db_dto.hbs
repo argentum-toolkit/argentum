@@ -1,0 +1,6 @@
+use sqlx::FromRow;
+
+#[derive(FromRow)]
+pub(crate) struct {{entityName}}Dto {
+    pub id: sqlx::types::Uuid,
+}

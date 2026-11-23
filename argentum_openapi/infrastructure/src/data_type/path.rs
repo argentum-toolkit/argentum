@@ -5,6 +5,9 @@ use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Path {
+    #[serde(rename = "$ref", skip_serializing_if = "Option::is_none")]
+    pub reference: Option<String>,
+
     #[serde(flatten)]
     pub operations: HashMap<Method, Operation>,
 

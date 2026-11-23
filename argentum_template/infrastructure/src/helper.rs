@@ -5,11 +5,10 @@ handlebars_helper!(snake_helper: |s: Option<String>| s.unwrap_or("".into()).to_c
 handlebars_helper!(upper_camel_helper: |s: Option<String>| s.unwrap_or("".into()).to_case(Case::UpperCamel));
 handlebars_helper!(camel_helper: |s: Option<String>| s.unwrap_or("".into()).to_case(Case::Camel));
 handlebars_helper!(lower_helper: |s: Option<String>| s.unwrap_or("".into()).to_case(Case::Lower));
+handlebars_helper!(kebab_helper: |s: Option<String>| s.unwrap_or("".into()).to_case(Case::Kebab));
+handlebars_helper!(upper_snake_helper: |s: Option<String>| s.unwrap_or("".into()).to_case(Case::UpperSnake));
+handlebars_helper!(title_helper: |s: Option<String>| s.unwrap_or("".into()).to_case(Case::Title));
 handlebars_helper!(content_type_to_type_helper: |s: Option<String>| s.unwrap_or("".into()).replace(['/', '-', '+'], "_").to_case(Case::UpperCamel));
-
-handlebars_helper!(eq_helper: |a: String, b: String| {
-    a == b
-});
 
 handlebars_helper!(trim_mod_helper: |s: String| {
     s.split("::").last().unwrap_or("")

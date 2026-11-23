@@ -1,0 +1,17 @@
+use argentum_standard_business::data_type::id::Id;
+
+pub struct {{entityName}}<I>
+where
+    I: Id,
+{
+    pub id: I,
+}
+
+impl<I> {{entityName}}<I>
+where
+    I: Id,
+{
+    pub fn new(id: I) -> Self {
+        Self { id }
+    }
+}

@@ -1,0 +1,24 @@
+[package]
+name = "argentum_generator_infrastructure"
+description = "Argentum toolkit. Generator. Infrastructure layer."
+version = "0.4.0-dev"
+authors = ["Vital Leshchyk <VitalLeshchyk@gmail.com>"]
+license = "LGPL-3.0-or-later"
+edition = "2024"
+homepage = "https://gitlab.com/argentum-toolkit/argentum"
+repository = "https://gitlab.com/argentum-toolkit/argentum"
+documentation = "https://gitlab.com/argentum-toolkit/argentum"
+readme = "README.md"
+
+[dependencies]
+convert_case = "0.8.*"
+handlebars = "6.*"
+serde = { version = "1.*", features = ["derive"] }
+serde_json = "1.*"
+
+argentum_log_business = { path = "../../argentum_log/business", version = ">=0.4.0-dev,<0.5.0" }
+argentum_rest_generator_infrastructure = { path = "../../argentum_rest_generator/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+argentum_template_infrastructure = { path = "../../argentum_template/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
+
+[dev-dependencies]
+tempfile = "3.*"

@@ -1,0 +1,32 @@
+use crate::entity::{{entityName}};
+use argentum_standard_business::data_type::id::Id;
+use std::{error::Error, sync::Arc};
+
+use async_trait::async_trait;
+
+#[async_trait]
+pub trait {{entityName}}RepositoryTrait: Sync + Send {
+    type Id: Id;
+
+    async fn find(
+        &self,
+        id: Self::Id,
+    ) -> Result<Option<{{entityName}}<Self::Id>>, {{entityName}}RepositoryError>;
+
+    async fn save(
+        &self,
+        {{snake entityName}}: &{{entityName}}<Self::Id>,
+    ) -> Result<(), {{entityName}}RepositoryError>;
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum {{entityName}}RepositoryError {
+    #[error("Can't save {{snake entityName}}")]
+    Save(#[source] Option<Arc<dyn Error + Send + Sync>>),
+
+    #[error("Can't find {{snake entityName}}")]
+    Find(#[source] Option<Arc<dyn Error + Send + Sync>>),
+
+    #[error("{{entityName}} repository error")]
+    Other(#[source] Option<Arc<dyn Error + Send + Sync>>),
+}

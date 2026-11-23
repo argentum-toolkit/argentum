@@ -1,0 +1,73 @@
+{{#if ui.hidden}}
+input {
+    id: "{{ui.id}}",
+    name: "{{ui.name}}",
+    r#type: "hidden",
+    required: {{required}},
+    {{#if emptyZero}}
+        {{#if required}}
+            value: if {{snake name}}_value() == 0 { "".to_string() } else { {{snake name}}_value().to_string() },
+        {{else}}
+            value: if {{snake name}}_value().unwrap_or_default() == 0 { "".to_string() } else { {{snake name}}_value().unwrap_or_default().to_string() },
+        {{/if}}
+    {{else}}
+        {{#if required}}
+            value: {{snake name}}_value(),
+        {{else}}
+            value: {{snake name}}_value().unwrap_or_default(),
+        {{/if}}
+    {{/if}}
+    oninput: move |event| {
+        let value = event.value().parse::<{{valueType}}>().unwrap_or_default();
+        {{#if required}}
+        {{snake name}}_value.set(value);
+        {{else}}
+        {{snake name}}_value.set(Some(value));
+        {{/if}}
+        update();
+    },
+}
+{{else}}
+LabeledInput {
+    id: "{{ui.id}}",
+    name: "{{ui.name}}",
+    label: "{{lookup this "title"}}",
+    input_type: "{{inputType}}".to_string(),
+    required: {{required}},
+    {{#if emptyZero}}
+        {{#if required}}
+            value: if {{snake name}}_value() == 0 { "".to_string() } else { {{snake name}}_value().to_string() },
+        {{else}}
+            value: if {{snake name}}_value().unwrap_or_default() == 0 { "".to_string() } else { {{snake name}}_value().unwrap_or_default().to_string() },
+        {{/if}}
+    {{else}}
+        {{#if required}}
+            value: {{snake name}}_value(),
+        {{else}}
+            value: {{snake name}}_value().unwrap_or_default(),
+        {{/if}}
+    {{/if}}
+
+    violations: {{snake name}}_violations,
+    oninput: move |v: {{valueType}}| {
+        {{#if minimum}}
+        if v < {{minimum}} {
+            return;
+        }
+        {{/if}}
+        {{#if maximum}}
+        if v > {{maximum}} {
+            return;
+        }
+        {{/if}}
+        {{#if required}}
+        {{snake name}}_value.set(v);
+        {{else}}
+        {{snake name}}_value.set(Some(v));
+        {{/if}}
+        update();
+    },
+
+    processor: processor.{{snake name}}_processor,
+}
+{{/if}}

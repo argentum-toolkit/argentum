@@ -1,0 +1,23 @@
+openapi: 3.1.0
+
+info:
+  title: {{title componentName}} component's responses
+  version: 0.4.0-dev
+
+paths: {}
+
+components:
+  responses:
+    ExampleOk:
+      description: OK
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "type.oas.yaml#/components/schemas/ExampleResult"
+
+    ExampleBadRequest:
+      description: Bad request
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "type.oas.yaml#/components/schemas/ExampleError"

@@ -1,0 +1,36 @@
+use std::sync::Arc;
+
+use argentum_log_business::LoggerTrait;
+
+use crate::{generator::FileGenerator, params::BusinessParams};
+
+use convert_case::{Case, Casing};
+
+const TEMPLATE: &str = "business/src/lib";
+
+pub struct BusinessLibGenerator<L>
+where
+    L: LoggerTrait,
+{
+    file: Arc<FileGenerator<L>>,
+}
+
+impl<L> BusinessLibGenerator<L>
+where
+    L: LoggerTrait,
+{
+    pub fn new(file: Arc<FileGenerator<L>>) -> Self {
+        Self { file }
+    }
+
+    pub fn generate(&self, params: &BusinessParams) -> Result<(), String> {
+        let dir = format!(
+            "{}_{}",
+            params.project_prefix.to_case(Case::Snake),
+            params.component_name.to_case(Case::Snake)
+        );
+
+        self.file
+            .generate(&format!("{}/business/src/lib.rs", dir), TEMPLATE)
+    }
+}

@@ -1,0 +1,49 @@
+use crate::db::repository::{{entityName}}Repository;
+use crate::db::{{upper_camel componentName}}SqlxPostgresAdapter;
+
+use argentum_db_infrastructure::slqx_postgres::SqlxPostgresAdapter;
+use argentum_log_business::LoggerTrait;
+
+use argentum_standard_business::{
+    data_type::id::Id,
+    di_container::{Container, DiError},
+};
+use argentum_standard_infrastructure::data_type::unique_id::UniqueId;
+
+use {{projectPrefix}}_{{componentName}}_business::repository::{{snake entityName}}_repository::{{entityName}}RepositoryTrait;
+
+use sqlx::postgres::PgPoolOptions;
+use std::sync::Arc;
+
+pub async fn {{componentName}}_infrastructure_provider<I, L>(
+    container: &mut Container,
+    connection_url: impl Into<String>,
+    max_db_connections: u32,
+) -> Result<(), DiError>
+where
+    I: Id + 'static,
+    L: LoggerTrait + 'static,
+{
+    let connection_url = connection_url.into();
+    let pool = PgPoolOptions::new()
+        .max_connections(max_db_connections)
+        .min_connections(2)
+        .connect(&connection_url)
+        .await
+        .map_err(anyhow::Error::from)?;
+
+    container.provide_factory::<{{upper_camel componentName}}SqlxPostgresAdapter<L>, _>(move |c| {
+        let logger = c.resolve::<L>()?;
+
+        Ok(Arc::new({{upper_camel componentName}}SqlxPostgresAdapter(
+            SqlxPostgresAdapter::new(pool.clone(), logger),
+        )))
+    });
+
+    container.provide_factory::<dyn {{entityName}}RepositoryTrait<Id = UniqueId>, _>(|c| {
+        let adapter = c.resolve::<{{upper_camel componentName}}SqlxPostgresAdapter<L>>()?;
+        Ok(Arc::new({{entityName}}Repository::new(adapter)))
+    });
+
+    Ok(())
+}
