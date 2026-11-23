@@ -1,3 +1,5 @@
+use askama_escape::escape;
+
 use crate::entity::EmailConfirmationToken;
 use crate::repository::email_confirmation_token_repository::{
     EmailConfirmationTokenRepositoryError, EmailConfirmationTokenRepositoryTrait,
@@ -67,10 +69,16 @@ where
         let body = format!(
             "<p>Hello, <b>{}</b>!</p>
             <p>Thank you for registering with {}. To complete your registration, please confirm your email address by clicking the link below:</p>
+            <br/>
             <p><a href=\"{}{}\" style=\"background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Confirm Email Address</a></p>
+            <br/>
             <p>If you did not request this registration, please ignore this email.</p>
             <p><br/><br/><i>Best regards,<br>The {} Team</i></p>",
-            user.name.first, self.product_name, self.email_confirmation_front_url, token, self.product_name,
+            escape(&user.name.first.to_string(), askama_escape::Html),
+            self.product_name,
+            self.email_confirmation_front_url,
+            token,
+            self.product_name,
         );
 
         let subject = format!("Confirm Your Email for {}", self.product_name);

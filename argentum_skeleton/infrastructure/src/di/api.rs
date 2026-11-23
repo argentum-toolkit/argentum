@@ -199,6 +199,7 @@ where
         10,
         env.ag_contact_us_admin_email.clone(),
         env.ag_email_from.clone(),
+        env.ag_product_name.clone(),
         env.ag_smtp_host.clone(),
         env.ag_smtp_port,
         env.ag_smtp_tls_mode.clone(),

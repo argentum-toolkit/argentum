@@ -30,6 +30,7 @@ argentum_standard_business = { path = "../../argentum_standard/business", versio
 argentum_standard_infrastructure = { path = "../../argentum_standard/infrastructure", version = ">=0.4.0-dev,<0.5.0" }
 argentum_contact_us_business = { path = "../business", version = ">=0.4.0-dev,<0.5.0" }
 
+askama_escape = "0.13"
 async-trait = "0.1.*"
 jiff = { version = "1.*", features = ["serde"] }
 jiff-sqlx = { version = "1.*", features = ["postgres"] }

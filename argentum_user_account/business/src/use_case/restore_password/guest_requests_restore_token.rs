@@ -108,15 +108,15 @@ where
             </p>
 
         ",
-            user.name.first,
-            last,
+            askama_escape::escape(&user.name.first.to_string(), askama_escape::Html),
+            askama_escape::escape(&last, askama_escape::Html),
             self.product_name,
             self.restore_password_front_url,
             token,
             self.product_name,
         );
 
-        let subject = format!("Reset password {}", self.product_name);
+        let subject = format!("Reset password. {}", self.product_name);
         let notification = Notification::new(user.id, body, subject);
         if let Err(e) = self.notifier.send(notification).await {
             self.logger

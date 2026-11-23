@@ -26,6 +26,7 @@ pub async fn contact_us_infrastructure_provider<I, L>(
     max_db_connections: u32,
     admin_email: impl Into<String>,
     email_from: impl Into<String>,
+    product_name: impl Into<String>,
     smtp_host: impl Into<String>,
     smtp_port: u16,
     smtp_tls_mode: impl Into<String>,
@@ -74,6 +75,7 @@ where
     }
 
     let email_from = email_from.into();
+    let product_name = product_name.into();
     let smtp_username = smtp_username.into();
     let smtp_password = smtp_password.into();
     let smtp_tls_mode = smtp_tls_mode.into();
@@ -92,6 +94,7 @@ where
         Ok(Arc::new(EmailAdminNotifier::new(
             email_from.clone(),
             admin_email.clone(),
+            product_name.clone(),
             member_repository,
             transport.clone(),
         )))

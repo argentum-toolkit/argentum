@@ -1,4 +1,4 @@
-use crate::notifier::body::build_body;
+use crate::notifier::body::{build_body, build_subject};
 
 use argentum_contact_us_business::entity::Message;
 use argentum_contact_us_business::notifier::admin_notifier::{
@@ -8,6 +8,7 @@ use argentum_standard_business::data_type::id::Id;
 use argentum_user_business::entity::user::Member;
 use argentum_user_business::repository::user_repository::MemberRepositoryTrait;
 use async_trait::async_trait;
+use lettre::message::header::ContentType;
 use lettre::{Message as EmailMessage, SmtpTransport, Transport, address::AddressError};
 use std::sync::Arc;
 
@@ -39,6 +40,7 @@ use std::sync::Arc;
 /// let notifier = EmailAdminNotifier::<UIntId>::new(
 ///     "Demo app <demo@examples.com>".to_string(),
 ///     "admin@examples.com".to_string(),
+///     "Demo app".to_string(),
 ///     Arc::new(MemberRepositoryMock::new()),
 ///     Arc::new(mailer),
 /// );
@@ -49,6 +51,7 @@ where
 {
     from: String,
     admin_email: String,
+    product_name: String,
     member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
     smtp_transport: Arc<SmtpTransport>,
 }
@@ -60,12 +63,14 @@ where
     pub fn new(
         from: String,
         admin_email: String,
+        product_name: String,
         member_repository: Arc<dyn MemberRepositoryTrait<Id = I>>,
         smtp_transport: Arc<SmtpTransport>,
     ) -> Self {
         Self {
             from,
             admin_email,
+            product_name,
             member_repository,
             smtp_transport,
         }
@@ -95,7 +100,8 @@ where
             None => None,
         };
 
-        let body = build_body(message, sender.as_ref());
+        let subject = build_subject(message, sender.as_ref(), &self.product_name);
+        let body = build_body(message, sender.as_ref(), &self.product_name);
 
         let to_mbox = self
             .admin_email
@@ -112,7 +118,8 @@ where
         let email = EmailMessage::builder()
             .from(from_mbox)
             .to(to_mbox)
-            .subject(message.subject.clone())
+            .subject(subject)
+            .header(ContentType::TEXT_HTML)
             .body(body)
             .map_err(|e| AdminNotifierError::External(Arc::new(e)))?;
 
